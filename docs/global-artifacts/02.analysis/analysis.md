@@ -1,140 +1,173 @@
-# OO Analysis
+# Domain Analysis – Entities and Value Objects
 
-The construction process of the domain model is based on the client specifications, especially the nouns (for _concepts_) and verbs (for _relations_) used.
+## 1. Purpose
 
-## Rationale to identify domain conceptual classes
-To identify domain conceptual classes, start by making a list of candidate conceptual classes inspired by the list of categories suggested in the book "Applying UML and Patterns: An Introduction to Object-Oriented Analysis and Design and Iterative Development".
+This document defines the classification of domain concepts into **Entities** and **Value Objects**, according to Domain-Driven Design (DDD) principles.
 
+The classification is based strictly on the system requirements (Section 3 and all User Stories) and follows the definitions provided in the course materials.
 
-### _Conceptual Class Category List_
+According to DDD:
 
-**Business Transactions**
+- An **Entity** is an object with identity that persists over time.
+- A **Value Object** is defined only by its attributes, has no identity, and should be immutable.
 
-* 
-
----
-
-**Transaction Line Itemss**
-
-* 
+This classification precedes aggregate design and focuses exclusively on domain semantics.
 
 ---
 
-**Product/Service related to a Transaction or Transaction Line Item**
+## 2. Entities
 
-* 
+Entities are domain concepts that:
 
----
+- Have a unique identity
+- Exist independently over time
+- Are subject to lifecycle changes
+- Are referenced by other parts of the system
 
-**Transaction Records**
+### Air Control Area
+Identified by a unique area code.  
+Manages geographic boundaries and is referenced by airports and weather data.
 
-* 
+### Air Transport Company
+Identified by unique IATA and ICAO codes.  
+Manages aircraft, flight routes, collaborators, and pilots.
 
----  
+### Aircraft
+Identified by a unique registration.  
+Has operational status and configuration.  
+Cannot be used in flights if decommissioned.
 
-**Roles of People or Organizations**
+### Aircraft Model
+Identified by model name and manufacturer combination.  
+Has technical characteristics and a set of certified engine models.
 
-* 
+### Engine Model
+Identified by model name and manufacturer combination.  
+Defines engine type, power, efficiency, and fuel characteristics.
 
----
+### Airport
+Identified globally by unique IATA and ICAO codes.  
+Has geographic location and elevation.  
+Associated with exactly one Air Control Area.
 
-**Places**
+### User
+Identified by a unique valid email.  
+Has name, phone number, security clearance, and skills assessment data.
 
-* 
+### Pilot
+Represents a system user certified to operate one or more aircraft models.  
+Cannot be removed if assigned to existing flight plans.
 
----
+### Collaborator
+Represents a user associated with an Air Transport Company or Air Control Area.  
+Used to manage operational data.
 
-**Noteworthy Events**
+### Flight Route
+Identified by a unique route name.  
+Connects two airports and may be activated or deactivated.
 
-* 
+### Flight
+Identified by a unique flight designator.  
+Represents a scheduled flight instance between airports.
 
----
+### Flight Plan
+Represents the structured definition of a flight.  
+Includes route, legs, segments, fuel data, and validation status.
 
-**Physical Objects**
+### Flight Leg
+Represents one take-off and landing within a flight plan.
 
-* 
+### Segment
+Represents a linear path between two coordinates with altitude constraints.
 
----
-
-**Descriptions of Things**
-
-* 
-
----
-
-**Catalogs**
-
-* 
-
----
-
-**Containers**
-
-* 
-
----
-
-**Elements of Containers**
-
-* 
-
----
-
-**Organizations**
-
-* 
-
----
-
-**Other External/Collaborating Systems**
-
-* 
-
----
-
-**Records of finance, work, contracts, legal matters**
-
-* 
+### Weather Record
+Represents atmospheric conditions associated with a specific air control area and date.  
+Can be registered, imported, and queried.
 
 ---
 
-**Financial Instruments**
+## 3. Value Objects
 
-* 
+Value Objects represent descriptive concepts. They:
+
+- Do not have identity
+- Are compared by value
+- Should be immutable
+
+The following domain concepts are classified as Value Objects:
+
+### Coordinates
+Defined by latitude and longitude.  
+Used to represent airport locations and segment endpoints.
+
+### IATACode
+Three-letter airport or company identifier with format constraints.
+
+### ICAOCode
+Four-letter airport identifier or company code with format constraints.
+
+### AircraftRegistration
+Represents the registration identifier of an aircraft.
+
+### RouteName
+Represents the unique identifier of a flight route.
+
+### FlightDesignator
+Represents the formatted identifier of a flight.
+
+### FuelQuantity
+Represents the amount of fuel assigned to a flight or leg.  
+Must be strictly positive.
+
+### DateTime
+Represents departure and arrival times.  
+Must correspond to valid calendar values.
+
+### GeographicBoundary
+Represents the spatial limits of an Air Control Area.
+
+### SecurityClearance
+Represents clearance level and expiration date associated with a user.
+
+### CabinConfiguration
+Represents the number of seats per class in an aircraft.
 
 ---
 
-**Documents mentioned/used to perform some work/**
+## 4. Observations
 
-* 
+### 4.1 Identity is Central to the Domain
+
+Most core domain objects require persistent identity:
+
+- Aircraft → registration
+- Airport → IATA/ICAO
+- User → email
+- Route → name
+- Flight → designator
+
+This indicates a domain strongly centered on Entities.
 
 ---
 
+### 4.2 Descriptive Concepts Should Not Be Modeled as Primitives
 
-## Rationale to identify associations between conceptual classes
+Several concepts initially appear as primitive types (e.g., String, double), but represent domain concepts and therefore must be modeled as Value Objects:
 
-An association is a relationship between instances of objects that indicates a relevant connection and that is worth of remembering, or it is derivable from the List of Common Associations:
+- Email
+- Codes (IATA/ICAO)
+- Fuel quantity
+- Coordinates
+- Registration identifiers
 
-- **_A_** is physically or logically part of **_B_**
-- **_A_** is physically or logically contained in/on **_B_**
-- **_A_** is a description for **_B_**
-- **_A_** known/logged/recorded/reported/captured in **_B_**
-- **_A_** uses or manages or owns **_B_**
-- **_A_** is related with a transaction (item) of **_B_**
-- etc.
+This aligns with the DDD principle that primitive types are often insufficient to model domain concepts.
 
+---
 
-| Concept (A) 		|  Association   	|  Concept (B) |
-|----------	   		|:-------------:		|------:       |
-| C1  	| verb1    		 	| C2  |
-| ...  	| ...    		 	| ...  |
+### 4.3 Structural vs Independent Concepts
 
+Some entities exist independently (e.g., Airport, Aircraft), while others are structural parts of larger domain concepts (e.g., Flight Leg within a Flight Plan).
 
+This distinction will be considered during aggregate design.
 
-## Domain Model
-
-**Do NOT forget to identify concept atributes too.**
-
-**Insert below the Domain Model Diagram in a SVG format**
-
-![Domain Model](svg/DM.svg)
+---
