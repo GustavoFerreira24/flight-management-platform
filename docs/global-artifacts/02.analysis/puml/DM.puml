@@ -10,68 +10,68 @@ hide methods
 
 'title Domain Model
 
-class Organization {
-    name
-    vatNumber
-    website
-    phoneNumber
-    email
+class FlightPlan {
+    flightDesignator
+    departureDate
+    arrivalDate
+    status
 }
 
-class Task {
-    reference
-    description
-    informalDescription
-    technicalDescription
-    duration
-    cost
+class FuelQty <<Value Object>> {
+        - amount
+        - unit <<enum>>
+    }
+
+class FlightLeg {
+
 }
 
-class Category {
-    description
+class FlightRoute <<Agregate Root>> {
+    type
 }
 
-class Employee {
-    name
-    email
-    position
-    phone
+class Airport {
+
 }
 
-class TechnicalSkill{
-    shortDescription
-    fullDescription
+class AirTransportCompany {
+
 }
 
-class ActivityArea{
-    shortDescription
-    fullDescription
+class Aircraft {
+
 }
 
-class FeatureTS{
-    mandatory
+class FlightRouteName <<Value Object>> {
+
 }
 
-'class User {
-'    name
-'    email
-'    password
-'}
-class PostalAddress{
-    street
-    zipCode
-    city
+class Report {
+    tottalFlights
+    result
+    generateAT
 }
 
-Organization "1" - "*" Employee : has >
-Organization "1" - "*" Task: owns >
-Employee "1" -- "*" Task : creates >
-Task "*" - "1" Category: cataloged as >
-TechnicalSkill "*" - "1" ActivityArea: regarding an >
+class Pilot{
 
-Category "*" - "*" TechnicalSkill :  requires >
-(Category, TechnicalSkill) . FeatureTS
+}
 
-Organization "1" -left "1" PostalAddress : located At >
+class SafetyViolation{
+    timestamp
+    severity
+    type
+}
+
+FlightRoute - "1" Airport : for >
+FlightRoute - "1" Airport : to >
+FlightRoute "*" - "1" AirTransportCompany
+FlightRoute - "1" FlightRouteName
+
+FlightPlan - "1" FlightRoute
+FlightPlan "*" - "1" Pilot
+FlightPlan - "1" Aircraft
+FlightPlan "1" - "*" FlightLeg
+FlightPlan - "*" FuelQty
+
 
 @enduml
