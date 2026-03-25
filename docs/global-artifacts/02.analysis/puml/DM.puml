@@ -10,68 +10,79 @@ hide methods
 
 'title Domain Model
 
-class Organization {
-    name
-    vatNumber
-    website
-    phoneNumber
-    email
+class Simulation  {
+    timeRange
+    safetyThreshold
+    status
 }
 
-class Task {
-    reference
-    description
-    informalDescription
-    technicalDescription
-    duration
-    cost
+class FlightPlan <<Aggregate Root>> {
+    flightDesignator
+    departureDate
+    arrivalDate
+    status
 }
 
-class Category {
-    description
+class FuelQty <<Value Object>> {
+        - amount
+        - unit <<enum>>
+    }
+
+class FlightLeg {
+
 }
 
-class Employee {
-    name
-    email
-    position
-    phone
+class FlightRoute <<Aggregate Root>> {
+    type
 }
 
-class TechnicalSkill{
-    shortDescription
-    fullDescription
+class Airport {
+
 }
 
-class ActivityArea{
-    shortDescription
-    fullDescription
+class AirTransportCompany {
+
 }
 
-class FeatureTS{
-    mandatory
+class Aircraft {
+
 }
 
-'class User {
-'    name
-'    email
-'    password
-'}
-class PostalAddress{
-    street
-    zipCode
-    city
+class FlightRouteName <<Value Object>> {
+
 }
 
-Organization "1" - "*" Employee : has >
-Organization "1" - "*" Task: owns >
-Employee "1" -- "*" Task : creates >
-Task "*" - "1" Category: cataloged as >
-TechnicalSkill "*" - "1" ActivityArea: regarding an >
+class Report {
+    tottalFlights
+    result
+    generateAT
+}
 
-Category "*" - "*" TechnicalSkill :  requires >
-(Category, TechnicalSkill) . FeatureTS
+class Pilot{
 
-Organization "1" -left "1" PostalAddress : located At >
+}
+
+class SafetyViolation{
+    timestamp
+    severity
+    type
+}
+
+Simulation "*" --> "*" FlightPlan
+Simulation "1" --> "*" Report
+Simulation "1" --> "*" SafetyViolation
+
+
+FlightRoute --> "1" Airport : for >
+FlightRoute --> "1" Airport : to >
+FlightRoute "*" --> "1" AirTransportCompany
+FlightRoute --> "1" FlightRouteName
+
+FlightPlan --> "1" FlightRoute
+FlightPlan "*" --> "1" Pilot
+FlightPlan --> "1" Aircraft
+FlightPlan "1" --> "*" FlightLeg
+FlightPlan --> "*" FuelQty
+
 
 @enduml
