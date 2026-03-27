@@ -24,9 +24,9 @@ class FlightPlan <<Aggregate Root>> {
 }
 
 class FuelQty <<Value Object>> {
-        - amount
-        - unit <<enum>>
-    }
+    - amount
+    - unit <<enum>>
+}
 
 class FlightLeg {
 
@@ -37,7 +37,15 @@ class FlightRoute <<Aggregate Root>> {
 }
 
 class Airport {
+    icaoCode
+    iataCode
+    elevation
+    coordinates
+}
 
+class AirControlArea <<Aggregate Root>> {
+    code
+    geographicBoundaries
 }
 
 class AirTransportCompany {
@@ -53,36 +61,58 @@ class FlightRouteName <<Value Object>> {
 }
 
 class Report {
-    tottalFlights
+    totalFlights
     result
-    generateAT
+    generatedAt
 }
 
-class Pilot{
+class Pilot {
 
 }
 
-class SafetyViolation{
+class SafetyViolation {
     timestamp
     severity
     type
 }
 
+class WeatherData <<Aggregate Root>> {
+    day
+}
+
+class WeatherMeasurement <<Value Object>> {
+    parameter
+    value
+    unit
+}
+
+class WeatherProvider {
+    name
+    providerType
+}
+
 Simulation "*" --> "*" FlightPlan
 Simulation "1" --> "*" Report
 Simulation "1" --> "*" SafetyViolation
+Simulation "*" --> "*" WeatherData
+Simulation "*" --> "1" AirControlArea : geographic area >
 
-
-FlightRoute --> "1" Airport : for >
-FlightRoute --> "1" Airport : to >
+FlightRoute "*" --> "1" Airport : from >
+FlightRoute "*" --> "1" Airport : to >
 FlightRoute "*" --> "1" AirTransportCompany
-FlightRoute --> "1" FlightRouteName
+FlightRoute "1" --> "1" FlightRouteName
 
-FlightPlan --> "1" FlightRoute
+FlightPlan "*" --> "1" FlightRoute
 FlightPlan "*" --> "1" Pilot
-FlightPlan --> "1" Aircraft
+FlightPlan "*" --> "1" Aircraft
 FlightPlan "1" --> "*" FlightLeg
-FlightPlan --> "*" FuelQty
+FlightPlan "1" --> "*" FuelQty
+FlightPlan "*" --> "*" WeatherData
 
+Airport "*" --> "1" AirControlArea
+
+WeatherData "*" --> "1" AirControlArea
+WeatherData "*" --> "1" WeatherProvider
+WeatherData "1" --> "*" WeatherMeasurement
 
 @enduml
