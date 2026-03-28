@@ -25,12 +25,25 @@ class FlightPlan <<Aggregate Root>> {
 }
 
 class FuelQty <<Value Object>> {
-    - amount
-    - unit <<enum>>
+    amount
+    unit <<enum>>
 }
 
 class FlightLeg {
+    legNumber
+    departureTime
+    arrivalTime
+}
 
+class Segment {
+    windDirection
+    windSpeed
+}
+
+class AltitudeSlot <<Value Object>> {
+    minAltitude
+    maxAltitude
+    width
 }
 
 class FlightRoute <<Aggregate Root>> {
@@ -44,7 +57,7 @@ class Airport <<Aggregate Root>> {
     name
     town
     country
-    elevation
+    altitude
 }
 
 class AirControlArea <<Aggregate Root>> {
@@ -181,7 +194,6 @@ FlightPlan "*" --> "1" FlightRoute
 FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
 FlightPlan "1" --> "*" FlightLeg
-FlightPlan "1" --> "*" FuelQty
 FlightPlan "*" --> "*" WeatherData
 
 Airport "*" --> "1" AirControlArea
@@ -210,5 +222,11 @@ Collaborator "*" --> "1" AirTransportCompany
 Pilot "*" --> "1" SystemUser
 Pilot "*" --> "1" AirTransportCompany : belongs to >
 Pilot "*" --> "*" AircraftModel : certified for >
+
+FlightLeg "1" --> "1" FuelQty : fuel load >
+FlightLeg "*" --> "1" Airport : departs from >
+FlightLeg "*" --> "1" Airport : arrives at >
+FlightLeg "1" --> "*" Segment : composed of >
+Segment "1" --> "*" AltitudeSlot
 
 @enduml
