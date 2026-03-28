@@ -8,7 +8,6 @@ skinparam classAttributeIconSize 0
 hide circle
 hide methods
 
-'title Domain Model
 
 class Simulation  {
     timeRange
@@ -40,7 +39,6 @@ class Airport {
     icaoCode
     iataCode
     elevation
-    coordinates
 }
 
 class AirControlArea <<Aggregate Root>> {
@@ -48,8 +46,11 @@ class AirControlArea <<Aggregate Root>> {
     geographicBoundaries
 }
 
-class AirTransportCompany {
-
+class AirTransportCompany <<Aggregate Root>> {
+    name
+    iataDesignator
+    icaoDesignator
+    country
 }
 
 class Aircraft {
@@ -108,6 +109,38 @@ class SkillsAssessment <<Value Object>> {
     nextDueDate
 }
 
+class Coordinates <<Value Object>> {
+    latitude
+    longitude
+}
+
+class AircraftModel <<Aggregate Root>> {
+    modelId
+    type <<enum>>
+    motorization <<enum>>
+    emptyWeight
+    MTOW
+    MZFW
+    maxFuelCapacity
+    serviceCeiling
+    cruiseSpeed
+    wingArea
+    dragCoefficient
+    liftCoefficient
+}
+
+class EngineModel <<Aggregate Root>> {
+    name
+    type <<enum>>
+    thrust
+    TSFC
+}
+
+class Manufacturer {
+    name
+    country
+}
+
 
 
 Simulation "*" --> "*" FlightPlan
@@ -136,5 +169,11 @@ WeatherData "1" --> "*" WeatherMeasurement
 
 SystemUser "1" --> "1" SecurityClearance : has >
 SystemUser "1" --> "1" SkillsAssessment : has >
+
+Airport "1" --> "1" Coordinates
+Manufacturer "1" --> "*" AircraftModel : makes >
+Manufacturer "1" --> "*" EngineModel : makes >
+AircraftModel "*" --> "*" EngineModel : certified engines >
+
 
 @enduml
