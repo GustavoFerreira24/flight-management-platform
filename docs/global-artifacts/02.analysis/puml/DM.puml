@@ -8,8 +8,9 @@ skinparam classAttributeIconSize 0
 hide circle
 hide methods
 
+'title Domain Model
 
-class Simulation  {
+class Simulation <<Aggregate Root>> {
     timeRange
     safetyThreshold
     status
@@ -35,7 +36,7 @@ class FlightRoute <<Aggregate Root>> {
     type
 }
 
-class Airport {
+class Airport <<Aggregate Root>> {
     icaoCode
     iataCode
     elevation
@@ -114,10 +115,15 @@ class Coordinates <<Value Object>> {
     longitude
 }
 
+class Manufacturer <<Value Object>> {
+    name
+    country
+}
+
 class AircraftModel <<Aggregate Root>> {
-    modelId
+    name
     type <<enum>>
-    motorization <<enum>>
+    maxRange
     emptyWeight
     MTOW
     MZFW
@@ -129,19 +135,17 @@ class AircraftModel <<Aggregate Root>> {
     liftCoefficient
 }
 
+class AircraftVariant {
+    variantId
+}
+
 class EngineModel <<Aggregate Root>> {
     name
     type <<enum>>
     thrust
+    fuelType
     TSFC
 }
-
-class Manufacturer {
-    name
-    country
-}
-
-
 
 Simulation "*" --> "*" FlightPlan
 Simulation "1" --> "*" Report
@@ -162,6 +166,7 @@ FlightPlan "1" --> "*" FuelQty
 FlightPlan "*" --> "*" WeatherData
 
 Airport "*" --> "1" AirControlArea
+Airport "1" --> "1" Coordinates
 
 WeatherData "*" --> "1" AirControlArea
 WeatherData "*" --> "1" WeatherProvider
@@ -170,10 +175,10 @@ WeatherData "1" --> "*" WeatherMeasurement
 SystemUser "1" --> "1" SecurityClearance : has >
 SystemUser "1" --> "1" SkillsAssessment : has >
 
-Airport "1" --> "1" Coordinates
-Manufacturer "1" --> "*" AircraftModel : makes >
-Manufacturer "1" --> "*" EngineModel : makes >
-AircraftModel "*" --> "*" EngineModel : certified engines >
+AircraftModel "1" --> "1" Manufacturer : made by >
+AircraftModel "1" --> "*" AircraftVariant
+AircraftVariant "*" --> "1" EngineModel
 
+EngineModel "1" --> "1" Manufacturer : made by >
 
 @enduml
