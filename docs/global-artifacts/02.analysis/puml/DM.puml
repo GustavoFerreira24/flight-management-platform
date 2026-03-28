@@ -91,6 +91,25 @@ class WeatherProvider {
     providerType
 }
 
+class SystemUser <<Aggregate Root>> {
+    email
+    name
+    phoneNumber
+    status <<enum>>
+}
+
+class SecurityClearance <<Value Object>> {
+    level
+    expiryDate
+}
+
+class SkillsAssessment <<Value Object>> {
+    assessedAt
+    nextDueDate
+}
+
+
+
 Simulation "*" --> "*" FlightPlan
 Simulation "1" --> "*" Report
 Simulation "1" --> "*" SafetyViolation
@@ -114,5 +133,8 @@ Airport "*" --> "1" AirControlArea
 WeatherData "*" --> "1" AirControlArea
 WeatherData "*" --> "1" WeatherProvider
 WeatherData "1" --> "*" WeatherMeasurement
+
+SystemUser "1" --> "1" SecurityClearance : has >
+SystemUser "1" --> "1" SkillsAssessment : has >
 
 @enduml
