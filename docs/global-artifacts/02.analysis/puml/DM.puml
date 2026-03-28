@@ -18,6 +18,7 @@ class Simulation <<Aggregate Root>> {
 
 class FlightPlan <<Aggregate Root>> {
     flightDesignator
+    type <<enum>>
     departureDate
     arrivalDate
     status
@@ -33,12 +34,16 @@ class FlightLeg {
 }
 
 class FlightRoute <<Aggregate Root>> {
-    type
+    status <<enum>>
+    deactivatedFrom
 }
 
 class Airport <<Aggregate Root>> {
     icaoCode
     iataCode
+    name
+    town
+    country
     elevation
 }
 
@@ -54,12 +59,25 @@ class AirTransportCompany <<Aggregate Root>> {
     country
 }
 
-class Aircraft {
+class Aircraft <<Aggregate Root>> {
+    registrationNumber
+    country
+    operationalStatus <<enum>>
+    crewSize
+}
 
+class CabinConfiguration <<Value Object>> {
+    economySeats
+    businessSeats
+    firstClassSeats
+}
+
+class Collaborator {
+    position
 }
 
 class FlightRouteName <<Value Object>> {
-
+    designation
 }
 
 class Report {
@@ -69,7 +87,7 @@ class Report {
 }
 
 class Pilot {
-
+    status <<enum>>
 }
 
 class SafetyViolation {
@@ -123,6 +141,7 @@ class Manufacturer <<Value Object>> {
 class AircraftModel <<Aggregate Root>> {
     name
     type <<enum>>
+    motorization <<enum>>
     maxRange
     emptyWeight
     MTOW
@@ -180,5 +199,16 @@ AircraftModel "1" --> "*" AircraftVariant
 AircraftVariant "*" --> "1" EngineModel
 
 EngineModel "1" --> "1" Manufacturer : made by >
+
+Aircraft "*" --> "1" AirTransportCompany : belongs to >
+Aircraft "*" --> "1" AircraftVariant : is of >
+Aircraft "1" --> "1" CabinConfiguration
+
+Collaborator "*" --> "1" SystemUser
+Collaborator "*" --> "1" AirTransportCompany
+
+Pilot "*" --> "1" SystemUser
+Pilot "*" --> "1" AirTransportCompany : belongs to >
+Pilot "*" --> "*" AircraftModel : certified for >
 
 @enduml
