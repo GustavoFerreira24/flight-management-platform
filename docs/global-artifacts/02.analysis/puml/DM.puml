@@ -16,11 +16,15 @@ class Simulation <<Aggregate Root>> {
     status
 }
 
-class FlightPlan <<Aggregate Root>> {
+class Flight {
     flightDesignator
     type <<enum>>
-    departureDate
-    arrivalDate
+    departureDay
+    departureTime
+    scheduledArrival
+}
+
+class FlightPlan <<Aggregate Root>> {
     status
 }
 
@@ -185,16 +189,27 @@ Simulation "1" --> "*" SafetyViolation
 Simulation "*" --> "*" WeatherData
 Simulation "*" --> "1" AirControlArea : geographic area >
 
+FlightRoute "1" --> "*" Flight
 FlightRoute "*" --> "1" Airport : from >
 FlightRoute "*" --> "1" Airport : to >
 FlightRoute "*" --> "1" AirTransportCompany
 FlightRoute "1" --> "1" FlightRouteName
 
-FlightPlan "*" --> "1" FlightRoute
+Flight "1" --> "*" FlightPlan
+
 FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
 FlightPlan "1" --> "*" FlightLeg
 FlightPlan "*" --> "*" WeatherData
+
+FlightLeg "1" --> "1" FuelQty : fuel load >
+FlightLeg "*" --> "1" Airport : departs from >
+FlightLeg "*" --> "1" Airport : arrives at >
+FlightLeg "1" --> "*" Segment : composed of >
+
+Segment "1" --> "*" AltitudeSlot
+Segment "1" --> "1" Coordinates : start >
+Segment "1" --> "1" Coordinates : end >
 
 Airport "*" --> "1" AirControlArea
 Airport "1" --> "1" Coordinates
@@ -202,6 +217,7 @@ Airport "1" --> "1" Coordinates
 WeatherData "*" --> "1" AirControlArea
 WeatherData "*" --> "1" WeatherProvider
 WeatherData "1" --> "*" WeatherMeasurement
+WeatherMeasurement "1" --> "1" Coordinates
 
 SystemUser "1" --> "1" SecurityClearance : has >
 SystemUser "1" --> "1" SkillsAssessment : has >
@@ -222,11 +238,5 @@ Collaborator "*" --> "1" AirTransportCompany
 Pilot "*" --> "1" SystemUser
 Pilot "*" --> "1" AirTransportCompany : belongs to >
 Pilot "*" --> "*" AircraftModel : certified for >
-
-FlightLeg "1" --> "1" FuelQty : fuel load >
-FlightLeg "*" --> "1" Airport : departs from >
-FlightLeg "*" --> "1" Airport : arrives at >
-FlightLeg "1" --> "*" Segment : composed of >
-Segment "1" --> "*" AltitudeSlot
 
 @enduml
