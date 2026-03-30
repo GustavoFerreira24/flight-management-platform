@@ -2,13 +2,10 @@
 skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
-'skinparam linetype ortho
-'left to right direction
 skinparam classAttributeIconSize 0
 hide circle
 hide methods
 
-'title Domain Model
 
 class Simulation <<Aggregate Root>> {
     timeRange
@@ -128,7 +125,7 @@ class WeatherProvider {
     providerType
 }
 
-class SystemUser <<Aggregate Root>> {
+class User <<Aggregate Root>> {
     email
     name
     phoneNumber
@@ -183,6 +180,20 @@ class EngineModel <<Aggregate Root>> {
     TSFC
 }
 
+class Node {
+    id
+}
+
+class FlightExecution {
+    status <<enum>>
+}
+
+class AircraftPosition <<Value Object>> {
+    altitude
+    velocity
+    timestamp
+}
+
 Simulation "*" --> "*" FlightPlan
 Simulation "1" --> "*" Report
 Simulation "1" --> "*" SafetyViolation
@@ -219,8 +230,8 @@ WeatherData "*" --> "1" WeatherProvider
 WeatherData "1" --> "*" WeatherMeasurement
 WeatherMeasurement "1" --> "1" Coordinates
 
-SystemUser "1" --> "1" SecurityClearance : has >
-SystemUser "1" --> "1" SkillsAssessment : has >
+User "1" --> "1" SecurityClearance : has >
+User "1" --> "1" SkillsAssessment : has >
 
 AircraftModel "1" --> "1" Manufacturer : made by >
 AircraftModel "1" --> "*" AircraftVariant
@@ -232,11 +243,24 @@ Aircraft "*" --> "1" AirTransportCompany : belongs to >
 Aircraft "*" --> "1" AircraftVariant : is of >
 Aircraft "1" --> "1" CabinConfiguration
 
-Collaborator "*" --> "1" SystemUser
+Collaborator "*" --> "1" User
 Collaborator "*" --> "1" AirTransportCompany
 
-Pilot "*" --> "1" SystemUser
+Pilot "*" --> "1" User
 Pilot "*" --> "1" AirTransportCompany : belongs to >
 Pilot "*" --> "*" AircraftModel : certified for >
+
+Node "1" --> "1" Coordinates
+Node "1" --> "*" Segment : connects >
+
+Simulation "1" --> "*" FlightExecution : tracks >
+FlightExecution "*" --> "1" FlightPlan : executes >
+
+FlightExecution "1" --> "*" AircraftPosition
+AircraftPosition "1" --> "1" Coordinates
+
+SafetyViolation "1" --> "*" AircraftPosition
+SafetyViolation "*" --> "*" FlightExecution : involves >
+
 
 @enduml

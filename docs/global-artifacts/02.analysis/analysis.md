@@ -63,7 +63,7 @@ Identified globally by unique IATA (3-letter) and ICAO (4-letter) codes (US052).
 Characterized by name, town, country, coordinates, and elevation (altitude above sea level) (Section 3.2).  
 Associated with exactly one Air Control Area.
 
-### System User
+### User
 Identified by a unique valid email address.  
 Has name and phone number.  
 Must have an active security clearance with an expiration date, and a periodic skills assessment (Section 3.1.1).  
@@ -71,13 +71,13 @@ Roles in the system include: Admin, Backoffice Operator, Air Transport Company C
 At present, a user may only have one role at a time, though this may change in the future (Section 3.1.1).
 
 ### Pilot
-Represents a System User certified to operate one or more aircraft models (US075).  
+Represents a User certified to operate one or more aircraft models (US075).  
 Belongs to exactly one Air Transport Company at a time, though they may change company over time (confirmed in forum Q&A).  
 Cannot be deactivated if they have flight plans currently assigned (US077).  
 Has an active/inactive status within the company's roster.
 
 ### Collaborator
-Represents a System User associated with a customer entity — which may be either an Air Transport Company or an Air Control Area (US061).  
+Represents a User associated with a customer entity — which may be either an Air Transport Company or an Air Control Area (US061).  
 Carries a position attribute that belongs to the relationship between the user and the customer, not to either individually.  
 Email and phone number may be edited; all other information is immutable after registration (US063).  
 Can be disabled to revoke system access (US064).
@@ -175,11 +175,11 @@ Represents the number of seats per class (economy, business, first) in a specifi
 Total seats cannot exceed the aircraft model's maximum capacity (US070).
 
 ### SecurityClearance
-Represents the security clearance level and expiration date associated with a System User.  
+Represents the security clearance level and expiration date associated with a User.  
 Automatically expires at a given date and must be renewed (Section 3.1.1).
 
 ### SkillsAssessment
-Represents the periodic skills assessment associated with a System User.  
+Represents the periodic skills assessment associated with a User.  
 Required by regulation every five years (Section 3.1.1).  
 Records the date of assessment and the date the next assessment is due.
 
@@ -209,7 +209,7 @@ Most core domain objects require persistent identity:
 
 - Aircraft → registration number
 - Airport → IATA/ICAO codes
-- System User → email
+-  User → email
 - Flight Route → route name (encoding company identity)
 - Flight → flight designator
 - Air Transport Company → IATA and ICAO codes
