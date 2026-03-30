@@ -14,7 +14,6 @@ class Simulation <<Aggregate Root>> {
 }
 
 class Flight {
-    flightDesignator
     type <<enum>>
     departureDay
     departureTime
@@ -53,29 +52,19 @@ class FlightRoute <<Aggregate Root>> {
 }
 
 class Airport <<Aggregate Root>> {
-    icaoCode
-    iataCode
     name
     town
-    country
     altitude
 }
 
 class AirControlArea <<Aggregate Root>> {
-    code
-    geographicBoundaries
 }
 
 class AirTransportCompany <<Aggregate Root>> {
     name
-    iataDesignator
-    icaoDesignator
-    country
 }
 
 class Aircraft <<Aggregate Root>> {
-    registrationNumber
-    country
     operationalStatus <<enum>>
     crewSize
 }
@@ -92,6 +81,10 @@ class Collaborator {
 
 class FlightRouteName <<Value Object>> {
     designation
+}
+
+class FlightDesignator <<Value Object>> {
+    value
 }
 
 class Report {
@@ -126,9 +119,7 @@ class WeatherProvider {
 }
 
 class User <<Aggregate Root>> {
-    email
     name
-    phoneNumber
     status <<enum>>
 }
 
@@ -149,7 +140,38 @@ class Coordinates <<Value Object>> {
 
 class Manufacturer <<Value Object>> {
     name
-    country
+}
+
+class Country <<Value Object>> {
+    name
+}
+
+class IATACode <<Value Object>> {
+    value
+}
+
+class ICAOCode <<Value Object>> {
+    value
+}
+
+class AircraftRegistration <<Value Object>> {
+    value
+}
+
+class EmailAddress <<Value Object>> {
+    value
+}
+
+class PhoneNumber <<Value Object>> {
+    value
+}
+
+class AirControlAreaCode <<Value Object>> {
+    value
+}
+
+class GeographicBoundary <<Value Object>> {
+    value
 }
 
 class AircraftModel <<Aggregate Root>> {
@@ -207,6 +229,7 @@ FlightRoute "*" --> "1" AirTransportCompany
 FlightRoute "1" --> "1" FlightRouteName
 
 Flight "1" --> "*" FlightPlan
+Flight "1" --> "1" FlightDesignator
 
 FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
@@ -224,6 +247,12 @@ Segment "1" --> "1" Coordinates : end >
 
 Airport "*" --> "1" AirControlArea
 Airport "1" --> "1" Coordinates
+Airport "1" --> "1" IATACode
+Airport "1" --> "1" ICAOCode
+Airport "1" --> "1" Country
+
+AirControlArea "1" --> "1" AirControlAreaCode
+AirControlArea "1" --> "1" GeographicBoundary
 
 WeatherData "*" --> "1" AirControlArea
 WeatherData "*" --> "1" WeatherProvider
@@ -232,9 +261,12 @@ WeatherMeasurement "1" --> "1" Coordinates
 
 User "1" --> "1" SecurityClearance : has >
 User "1" --> "1" SkillsAssessment : has >
+User "1" --> "1" EmailAddress
+User "1" --> "1" PhoneNumber
 
 AircraftModel "1" --> "1" Manufacturer : made by >
 AircraftModel "1" --> "*" AircraftVariant
+
 AircraftVariant "*" --> "1" EngineModel
 
 EngineModel "1" --> "1" Manufacturer : made by >
@@ -242,9 +274,16 @@ EngineModel "1" --> "1" Manufacturer : made by >
 Aircraft "*" --> "1" AirTransportCompany : belongs to >
 Aircraft "*" --> "1" AircraftVariant : is of >
 Aircraft "1" --> "1" CabinConfiguration
+Aircraft "1" --> "1" AircraftRegistration
+Aircraft "1" --> "1" Country
+
+AirTransportCompany "1" --> "1" IATACode
+AirTransportCompany "1" --> "1" ICAOCode
+AirTransportCompany "1" --> "1" Country
 
 Collaborator "*" --> "1" User
-Collaborator "*" --> "1" AirTransportCompany
+Collaborator "*" --> "0..1" AirTransportCompany
+Collaborator "*" --> "0..1" AirControlArea
 
 Pilot "*" --> "1" User
 Pilot "*" --> "1" AirTransportCompany : belongs to >
@@ -262,5 +301,6 @@ AircraftPosition "1" --> "1" Coordinates
 SafetyViolation "1" --> "*" AircraftPosition
 SafetyViolation "*" --> "*" FlightExecution : involves >
 
+Manufacturer "1" --> "1" Country
 
 @enduml
