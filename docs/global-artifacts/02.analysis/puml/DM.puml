@@ -202,10 +202,6 @@ class EngineModel <<Aggregate Root>> {
     TSFC
 }
 
-class Node {
-    id
-}
-
 class FlightExecution {
     status <<enum>>
 }
@@ -288,9 +284,6 @@ Collaborator "*" --> "0..1" AirControlArea
 Pilot "*" --> "1" User
 Pilot "*" --> "1" AirTransportCompany : belongs to >
 Pilot "*" --> "*" AircraftModel : certified for >
-
-Node "1" --> "1" Coordinates
-Node "1" --> "*" Segment : connects >
 
 Simulation "1" --> "*" FlightExecution : tracks >
 FlightExecution "*" --> "1" FlightPlan : executes >

@@ -95,6 +95,12 @@ Represents a scheduled flight instance associated with a route.
 Has a type (regular or charter), departure day/time, and scheduled arrival.  
 The relationship between Route, Flight, and Flight Plan is 1:N at each level — one route may have many flights, and one flight may have many flight plans, though only one may be approved/validated at a time (confirmed in forum Q&A).
 
+### Flight Execution
+Represents the execution of an individual flight during simulation.
+According to US101, each flight is executed as a separate process that follows its flight plan and continuously sends position updates.
+A Flight Execution executes one Flight Plan, has its own lifecycle and execution state (e.g. running, terminated) and produces a sequence of aircraft positions over time
+The existence of a status attribute is justified by US109, which requires reporting individual execution statuses, confirming that each flight execution must be tracked independently.
+
 ### Flight Plan
 Represents the formal, structured definition of how a flight takes place (Section 3.4).  
 Described using the Core Flight DSL and validated through lexical, syntactic, and semantic analysis (US081, US083).  
@@ -150,6 +156,11 @@ Used in Airport and Air Transport Company.
 ### AircraftRegistration
 Represents the unique registration identifier of an aircraft.  
 Globally unique and immutable once assigned.
+
+### AircraftPosition
+Represents the state of an aircraft at a specific moment during a simulation.
+It includes coordinates, altitude, velocity and timestamp.
+Each FlightExecution generates multiple AircraftPosition instances, creating a timeline of the aircraft’s movement.
 
 ### RouteName
 Represents the unique identifier of a Flight Route.  
@@ -285,3 +296,27 @@ The client confirmed that weather conditions are not uniform across an air contr
 The client confirmed that while the simulation itself runs as a C module, the information sent to the simulator and the results received back must be stored in the core Java system. This means `Simulation`, `Report`, and `SafetyViolation` are legitimate domain entities, not implementation artefacts.
 
 Simulation performance settings (e.g. time step, precision) were deferred to Sprint 2 and need not be detailed in the current domain model.
+
+---
+
+
+### 4.8 Simulation Execution and Temporal Behaviour
+
+The introduction of Flight Execution and AircraftPosition allows the domain model to represent runtime behaviour, not just static flight planning.
+
+While Flight Plan defines how a flight should occur, Flight Execution captures how it actually unfolds during simulation.
+
+AircraftPosition introduces a temporal dimension to the model, representing the aircraft’s state at specific points in time. This enables:
+
+- Tracking aircraft movement over time
+- Comparing positions of different aircraft at the same instant
+- Supporting the detection of potential safety violations
+
+This design aligns with the simulation requirements, where flights are executed step-by-step and their positions are continuously monitored.
+
+### 4.9 Node/Junction Exclusion from the Domain Model
+
+Although nodes/junctions appear in the specification, the client said in the forum that there are no user stories that require managing them, that we can avoid that.
+
+For that reason, Node/Junction was not included in the Domain Model.
+
