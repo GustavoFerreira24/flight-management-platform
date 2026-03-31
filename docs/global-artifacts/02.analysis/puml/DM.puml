@@ -34,6 +34,12 @@ package "Simulation Aggregate" {
         velocity
         timestamp
     }
+    class Coordinates <<Value Object>> {
+        latitude
+        longitude
+    }
+
+    AircraftPosition "1" --> "1" Coordinates
 
 
 }
@@ -64,6 +70,7 @@ package "FlightPlan Aggregate" {
         departureTime
     }
 
+
     class FuelQty <<Value Object>> {
         amount
         unit <<enum>>
@@ -87,7 +94,27 @@ package "Airport Aggregate" {
         altitude
     }
 
+    class Coordinates <<Value Object>> {
+            latitude
+            longitude
+    }
 
+    class Country <<Value Object>> {
+       name
+    }
+
+    class IATACode <<Value Object>> {
+        value
+    }
+
+    class ICAOCode <<Value Object>> {
+       value
+    }
+
+    Airport "1" --> "1" Coordinates
+    Airport "1" --> "1" Country
+    Airport "1" --> "1" IATACode
+    Airport "1" --> "1" ICAOCode
 
 }
 
@@ -113,6 +140,23 @@ package "AirTransportCompany Aggregate" {
     class AirTransportCompany <<Aggregate Root>> {
         name
     }
+
+    class Country <<Value Object>> {
+       name
+    }
+
+    class IATACode <<Value Object>> {
+        value
+    }
+
+    class ICAOCode <<Value Object>> {
+       value
+    }
+
+    AirTransportCompany "1" --> "1" Country
+    AirTransportCompany "1" --> "1" IATACode
+    AirTransportCompany "1" --> "1" ICAOCode
+
 
 }
 
@@ -160,6 +204,13 @@ package "Aircraft Aggregate" {
         value
     }
 
+    class Country <<Value Object>> {
+       name
+    }
+
+    Aircraft "1" --> "1" Country
+
+
 }
 
 package "AircraftModel Aggregate" {
@@ -187,6 +238,15 @@ package "AircraftModel Aggregate" {
     class Manufacturer <<Value Object>> {
         name
     }
+
+    class Country <<Value Object>> {
+       name
+    }
+
+    Manufacturer "1" --> "1" Country
+    AircraftModel "1" --> "1" Manufacturer
+
+
 }
 
 
@@ -199,6 +259,13 @@ package "EngineModel Aggregate" {
         fuelType
         TSFC
     }
+
+    class Manufacturer <<Value Object>> {
+            name
+    }
+
+    EngineModel "1" --> "1" Manufacturer
+
 
 }
 
@@ -219,6 +286,14 @@ package "WeatherData Aggregate" {
         name
         providerType
     }
+
+    class Coordinates <<Value Object>> {
+            latitude
+            longitude
+    }
+
+    WeatherMeasurement "1" --> "1" Coordinates
+
 }
 
 
@@ -235,27 +310,6 @@ class Pilot {
 }
 
 
-
-
-
-class Coordinates <<Value Object>> {
-    latitude
-    longitude
-}
-
-
-
-class IATACode <<Value Object>> {
-    value
-}
-
-class ICAOCode <<Value Object>> {
-   value
-}
-
-class Country <<Value Object>> {
-   name
-}
 
 Simulation "*" --> "*" FlightPlan
 Simulation "1" --> "*" Report
@@ -282,10 +336,6 @@ FlightPlan "1" --> "1" FuelQty
 
 
 Airport "*" --> "1" AirControlArea
-Airport "1" --> "1" Coordinates
-Airport "1" --> "1" IATACode
-Airport "1" --> "1" ICAOCode
-Airport "1" --> "1" Country
 
 AirControlArea "1" --> "1" AirControlAreaCode
 AirControlArea "1" --> "1" GeographicBoundary
@@ -293,29 +343,23 @@ AirControlArea "1" --> "1" GeographicBoundary
 WeatherData "*" --> "1" AirControlArea
 WeatherData "*" --> "1" WeatherProvider
 WeatherData "1" --> "*" WeatherMeasurement
-WeatherMeasurement "1" --> "1" Coordinates
 
 User "1" --> "1" SecurityClearance : has >
 User "1" --> "1" SkillsAssessment : has >
 User "1" --> "1" EmailAddress
 User "1" --> "1" PhoneNumber
 
-AircraftModel "1" --> "1" Manufacturer : made by >
 AircraftModel "1" --> "*" AircraftVariant
 
 AircraftVariant "*" --> "1" EngineModel
 
-EngineModel "1" --> "1" Manufacturer : made by >
 
 Aircraft "*" --> "1" AirTransportCompany : belongs to >
 Aircraft "*" --> "1" AircraftVariant : is of >
 Aircraft "1" --> "1" CabinConfiguration
 Aircraft "1" --> "1" AircraftRegistration
-Aircraft "1" --> "1" Country
 
-AirTransportCompany "1" --> "1" IATACode
-AirTransportCompany "1" --> "1" ICAOCode
-AirTransportCompany "1" --> "1" Country
+
 
 Collaborator "*" --> "1" User
 Collaborator "*" --> "0..1" AirTransportCompany
@@ -329,11 +373,8 @@ Simulation "1" --> "*" FlightExecution : tracks >
 FlightExecution "*" --> "1" FlightPlan : executes >
 
 FlightExecution "1" --> "*" AircraftPosition
-AircraftPosition "1" --> "1" Coordinates
 
 SafetyViolation "1" --> "*" AircraftPosition
 SafetyViolation "*" --> "*" FlightExecution : involves >
-
-Manufacturer "1" --> "1" Country
 
 @enduml
