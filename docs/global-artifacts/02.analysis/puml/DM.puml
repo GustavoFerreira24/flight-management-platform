@@ -64,23 +64,6 @@ package "FlightPlan Aggregate" {
         departureTime
     }
 
-    class FlightLeg {
-        legNumber
-        departureTime
-        arrivalTime
-    }
-
-    class Segment <<Value Object>> {
-        windDirection
-        windSpeed
-    }
-
-    class AltitudeSlot <<Value Object>> {
-        minAltitude
-        maxAltitude
-        width
-    }
-
     class FuelQty <<Value Object>> {
         amount
         unit <<enum>>
@@ -291,19 +274,12 @@ Flight "1" *-- "0..*" FlightPlan
 FlightPlan "1" --> "1" FlightDesignator
 FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
-FlightPlan "1" --> "*" FlightLeg
 FlightPlan "*" --> "*" WeatherData
 FlightPlan "*" --> "1" FlightRoute
 FlightPlan *-- Departure
 
-FlightLeg "1" --> "1" FuelQty : fuel load >
-FlightLeg "*" --> "1" Airport : departs from >
-FlightLeg "*" --> "1" Airport : arrives at >
-FlightLeg "1" --> "*" Segment : composed of >
+FlightPlan "1" --> "1" FuelQty
 
-Segment "1" --> "*" AltitudeSlot
-Segment "1" --> "1" Coordinates : start >
-Segment "1" --> "1" Coordinates : end >
 
 Airport "*" --> "1" AirControlArea
 Airport "1" --> "1" Coordinates
