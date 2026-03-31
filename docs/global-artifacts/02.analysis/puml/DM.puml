@@ -13,15 +13,11 @@ class Simulation <<Aggregate Root>> {
     status
 }
 
-class Flight {
-    type <<enum>>
+class FlightPlan <<Aggregate Root>> {
+    status
     departureDay
     departureTime
     scheduledArrival
-}
-
-class FlightPlan <<Aggregate Root>> {
-    status
 }
 
 class FuelQty <<Value Object>> {
@@ -35,7 +31,7 @@ class FlightLeg {
     arrivalTime
 }
 
-class Segment {
+class Segment <<Value Object>> {
     windDirection
     windSpeed
 }
@@ -47,6 +43,7 @@ class AltitudeSlot <<Value Object>> {
 }
 
 class FlightRoute <<Aggregate Root>> {
+    type <<enum>>
     status <<enum>>
     deactivatedFrom
 }
@@ -80,7 +77,7 @@ class Collaborator {
 }
 
 class FlightRouteName <<Value Object>> {
-    designation
+    value
 }
 
 class FlightDesignator <<Value Object>> {
@@ -111,6 +108,7 @@ class WeatherMeasurement <<Value Object>> {
     parameter
     value
     unit
+    altitude
 }
 
 class WeatherProvider {
@@ -218,19 +216,17 @@ Simulation "1" --> "*" SafetyViolation
 Simulation "*" --> "*" WeatherData
 Simulation "*" --> "1" AirControlArea : geographic area >
 
-FlightRoute "1" --> "*" Flight
 FlightRoute "*" --> "1" Airport : from >
 FlightRoute "*" --> "1" Airport : to >
 FlightRoute "*" --> "1" AirTransportCompany
 FlightRoute "1" --> "1" FlightRouteName
 
-Flight "1" --> "*" FlightPlan
-Flight "1" --> "1" FlightDesignator
-
+FlightPlan "1" --> "1" FlightDesignator
 FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
 FlightPlan "1" --> "*" FlightLeg
 FlightPlan "*" --> "*" WeatherData
+FlightPlan "*" --> "1" FlightRoute
 
 FlightLeg "1" --> "1" FuelQty : fuel load >
 FlightLeg "*" --> "1" Airport : departs from >
