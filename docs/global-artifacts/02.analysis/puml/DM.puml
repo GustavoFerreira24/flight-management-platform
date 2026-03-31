@@ -6,208 +6,264 @@ skinparam classAttributeIconSize 0
 hide circle
 hide methods
 
+package "Simulation Aggregate" {
+    class Simulation <<Aggregate Root>> {
+        timeRange
+        safetyThreshold
+        status
+    }
 
-class Simulation <<Aggregate Root>> {
-    timeRange
-    safetyThreshold
-    status
+    class FlightExecution {
+        status <<enum>>
+    }
+
+    class Report {
+        totalFlights
+        result
+        generatedAt
+    }
+
+    class SafetyViolation {
+        timestamp
+        severity
+        type
+    }
+
+    class AircraftPosition <<Value Object>> {
+        altitude
+        velocity
+        timestamp
+    }
+
+
 }
 
-class FlightPlan <<Aggregate Root>> {
-    status
-    departureDay
-    departureTime
-    scheduledArrival
+package "FlightRoute Aggregate" {
+
+    class FlightRoute <<Aggregate Root>> {
+        type <<enum>>
+        status <<enum>>
+        deactivatedFrom
+    }
+
+    class FlightRouteName <<Value Object>> {
+        value
+    }
+
 }
 
-class FuelQty <<Value Object>> {
-    amount
-    unit <<enum>>
+package "FlightPlan Aggregate" {
+
+    class FlightPlan <<Aggregate Root>> {
+        status
+        departureDay
+        departureTime
+        scheduledArrival
+    }
+
+    class FlightLeg {
+        legNumber
+        departureTime
+        arrivalTime
+    }
+
+    class Segment <<Value Object>> {
+        windDirection
+        windSpeed
+    }
+
+    class AltitudeSlot <<Value Object>> {
+        minAltitude
+        maxAltitude
+        width
+    }
+
+    class FuelQty <<Value Object>> {
+        amount
+        unit <<enum>>
+    }
+
+    class FlightDesignator <<Value Object>> {
+        value
+    }
+
 }
 
-class FlightLeg {
-    legNumber
-    departureTime
-    arrivalTime
+package "Airport Aggregate" {
+
+    class Airport <<Aggregate Root>> {
+        name
+        town
+        altitude
+    }
+
+
+
 }
 
-class Segment <<Value Object>> {
-    windDirection
-    windSpeed
+package "AirControlArea Aggregate" {
+
+    class AirControlArea <<Aggregate Root>> {
+        name
+    }
+
+    class AirControlAreaCode <<Value Object>> {
+        value
+    }
+
+    class GeographicBoundary <<Value Object>> {
+        value
+    }
+
+
 }
 
-class AltitudeSlot <<Value Object>> {
-    minAltitude
-    maxAltitude
-    width
+package "AirTransportCompany Aggregate" {
+
+    class AirTransportCompany <<Aggregate Root>> {
+        name
+    }
+
 }
 
-class FlightRoute <<Aggregate Root>> {
-    type <<enum>>
-    status <<enum>>
-    deactivatedFrom
+
+package "User Aggregate" {
+
+    class User <<Aggregate Root>> {
+           name
+           status <<enum>>
+    }
+
+    class EmailAddress <<Value Object>> {
+        value
+    }
+
+    class PhoneNumber <<Value Object>> {
+        value
+    }
+
+    class SecurityClearance <<Value Object>> {
+            level
+            expiryDate
+        }
+
+        class SkillsAssessment <<Value Object>> {
+            assessedAt
+            nextDueDate
+        }
 }
 
-class Airport <<Aggregate Root>> {
-    name
-    town
-    altitude
+package "Aircraft Aggregate" {
+
+    class Aircraft <<Aggregate Root>> {
+        operationalStatus <<enum>>
+        crewSize
+    }
+
+    class CabinConfiguration <<Value Object>> {
+        economySeats
+        businessSeats
+        firstClassSeats
+    }
+
+    class AircraftRegistration <<Value Object>> {
+        value
+    }
+
 }
 
-class AirControlArea <<Aggregate Root>> {
+package "AircraftModel Aggregate" {
+
+    class AircraftModel <<Aggregate Root>> {
+        name
+        type <<enum>>
+        motorization <<enum>>
+        maxRange
+        emptyWeight
+        MTOW
+        MZFW
+        maxFuelCapacity
+        serviceCeiling
+        cruiseSpeed
+        wingArea
+        dragCoefficient
+        liftCoefficient
+    }
+
+    class AircraftVariant {
+        variantId
+    }
+
+    class Manufacturer <<Value Object>> {
+        name
+    }
 }
 
-class AirTransportCompany <<Aggregate Root>> {
-    name
+
+package "EngineModel Aggregate" {
+
+    class EngineModel <<Aggregate Root>> {
+        name
+        type <<enum>>
+        thrust
+        fuelType
+        TSFC
+    }
+
 }
 
-class Aircraft <<Aggregate Root>> {
-    operationalStatus <<enum>>
-    crewSize
+package "WeatherData Aggregate" {
+
+    class WeatherData <<Aggregate Root>> {
+          day
+    }
+
+    class WeatherMeasurement <<Value Object>> {
+        parameter
+        value
+        unit
+        altitude
+    }
 }
 
-class CabinConfiguration <<Value Object>> {
-    economySeats
-    businessSeats
-    firstClassSeats
-}
+
 
 class Collaborator {
     position
 }
 
-class FlightRouteName <<Value Object>> {
-    value
-}
 
-class FlightDesignator <<Value Object>> {
-    value
-}
 
-class Report {
-    totalFlights
-    result
-    generatedAt
-}
 
 class Pilot {
     status <<enum>>
 }
 
-class SafetyViolation {
-    timestamp
-    severity
-    type
-}
-
-class WeatherData <<Aggregate Root>> {
-    day
-}
-
-class WeatherMeasurement <<Value Object>> {
-    parameter
-    value
-    unit
-    altitude
-}
 
 class WeatherProvider {
     name
     providerType
 }
 
-class User <<Aggregate Root>> {
-    name
-    status <<enum>>
-}
 
-class SecurityClearance <<Value Object>> {
-    level
-    expiryDate
-}
-
-class SkillsAssessment <<Value Object>> {
-    assessedAt
-    nextDueDate
-}
 
 class Coordinates <<Value Object>> {
     latitude
     longitude
 }
 
-class Manufacturer <<Value Object>> {
-    name
-}
 
-class Country <<Value Object>> {
-    name
-}
 
 class IATACode <<Value Object>> {
     value
 }
 
 class ICAOCode <<Value Object>> {
-    value
+   value
 }
 
-class AircraftRegistration <<Value Object>> {
-    value
-}
-
-class EmailAddress <<Value Object>> {
-    value
-}
-
-class PhoneNumber <<Value Object>> {
-    value
-}
-
-class AirControlAreaCode <<Value Object>> {
-    value
-}
-
-class GeographicBoundary <<Value Object>> {
-    value
-}
-
-class AircraftModel <<Aggregate Root>> {
-    name
-    type <<enum>>
-    motorization <<enum>>
-    maxRange
-    emptyWeight
-    MTOW
-    MZFW
-    maxFuelCapacity
-    serviceCeiling
-    cruiseSpeed
-    wingArea
-    dragCoefficient
-    liftCoefficient
-}
-
-class AircraftVariant {
-    variantId
-}
-
-class EngineModel <<Aggregate Root>> {
-    name
-    type <<enum>>
-    thrust
-    fuelType
-    TSFC
-}
-
-class FlightExecution {
-    status <<enum>>
-}
-
-class AircraftPosition <<Value Object>> {
-    altitude
-    velocity
-    timestamp
+class Country <<Value Object>> {
+   name
 }
 
 Simulation "*" --> "*" FlightPlan
