@@ -56,9 +56,12 @@ package "FlightPlan Aggregate" {
 
     class FlightPlan <<Aggregate Root>> {
         status
+        scheduledArrival
+    }
+
+    class Departure <<Value Object>> {
         departureDay
         departureTime
-        scheduledArrival
     }
 
     class FlightLeg {
@@ -228,6 +231,11 @@ package "WeatherData Aggregate" {
         unit
         altitude
     }
+
+    class WeatherProvider {
+        name
+        providerType
+    }
 }
 
 
@@ -244,10 +252,6 @@ class Pilot {
 }
 
 
-class WeatherProvider {
-    name
-    providerType
-}
 
 
 
@@ -290,6 +294,7 @@ FlightPlan "*" --> "1" Aircraft
 FlightPlan "1" --> "*" FlightLeg
 FlightPlan "*" --> "*" WeatherData
 FlightPlan "*" --> "1" FlightRoute
+FlightPlan *-- Departure
 
 FlightLeg "1" --> "1" FuelQty : fuel load >
 FlightLeg "*" --> "1" Airport : departs from >
