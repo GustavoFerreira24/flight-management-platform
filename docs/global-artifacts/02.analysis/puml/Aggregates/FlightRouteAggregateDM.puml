@@ -1,0 +1,22 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class FlightRoute <<Aggregate Root>> {
+    type <<enum>>
+    status <<enum>>
+    deactivatedFrom
+}
+
+class FlightRouteName <<Value Object>> {
+    value
+}
+
+FlightRoute *-- FlightRouteName
+
+
+@enduml

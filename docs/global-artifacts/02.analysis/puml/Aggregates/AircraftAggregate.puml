@@ -1,0 +1,33 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class Aircraft <<Aggregate Root>> {
+    operationalStatus <<enum>>
+    crewSize
+}
+
+class CabinConfiguration <<Value Object>> {
+    economySeats
+    businessSeats
+    firstClassSeats
+}
+
+class AircraftRegistration <<Value Object>> {
+    value
+}
+
+class Country <<Value Object>> {
+   name
+}
+
+' Todas as relações de Value Objects convertidas para composição
+Aircraft *-- Country
+Aircraft *-- CabinConfiguration
+Aircraft *-- AircraftRegistration
+
+@enduml

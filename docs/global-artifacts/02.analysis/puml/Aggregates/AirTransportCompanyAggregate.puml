@@ -1,0 +1,29 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class AirTransportCompany <<Aggregate Root>> {
+    name
+}
+
+class Country <<Value Object>> {
+   name
+}
+
+class IATACode <<Value Object>> {
+    value
+}
+
+class ICAOCode <<Value Object>> {
+   value
+}
+
+AirTransportCompany *-- Country
+AirTransportCompany *-- IATACode
+AirTransportCompany *-- ICAOCode
+
+@enduml

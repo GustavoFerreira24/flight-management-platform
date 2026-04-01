@@ -1,0 +1,41 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class AircraftModel <<Aggregate Root>> {
+    name
+    type <<enum>>
+    motorization <<enum>>
+    maxRange
+    emptyWeight
+    MTOW
+    MZFW
+    maxFuelCapacity
+    serviceCeiling
+    cruiseSpeed
+    wingArea
+    dragCoefficient
+    liftCoefficient
+}
+' Verificar se isto é uma entity
+class AircraftVariant <<Entity>> {
+    variantId
+}
+
+class Manufacturer <<Value Object>> {
+    name
+}
+
+class Country <<Value Object>> {
+   name
+}
+
+Manufacturer *-- Country
+AircraftModel *-- Manufacturer
+AircraftModel *-- AircraftVariant
+
+@enduml

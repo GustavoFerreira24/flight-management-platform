@@ -1,0 +1,56 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class Simulation <<Aggregate Root>> {
+    timeRange
+    safetyThreshold
+    status
+}
+
+class FlightExecution <<Entity>> {
+    status <<enum>>
+}
+
+class Report <<Entity>> {
+    totalFlights
+    result
+    generatedAt
+}
+
+class SafetyViolation <<Entity>> {
+    timestamp
+    severity
+    type
+}
+
+class AircraftPosition <<Value Object>> {
+    altitude
+    velocity
+    timestamp
+}
+
+class Coordinates <<Value Object>> {
+    latitude
+    longitude
+}
+
+' Mudança para Composição: Tudo isto faz parte do ciclo de vida da Simulação
+Simulation *-- Report
+Simulation *-- SafetyViolation
+Simulation *-- FlightExecution
+
+' Uma violação guarda as posições onde ocorreu (Composição)
+SafetyViolation *-- AircraftPosition
+
+' A posição é definida por coordenadas (Composição)
+AircraftPosition *-- Coordinates
+
+' Associação Simples: A violação APENAS REFERENCIA quais execuções de voo estiveram envolvidas
+SafetyViolation "1" --> "*" FlightExecution : involves >
+
+@enduml

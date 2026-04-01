@@ -1,0 +1,37 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class User <<Aggregate Root>> {
+    name
+    status <<enum>>
+}
+
+class EmailAddress <<Value Object>> {
+    value
+}
+
+class PhoneNumber <<Value Object>> {
+    value
+}
+
+class SecurityClearance <<Value Object>> {
+    level
+    expiryDate
+}
+
+class SkillsAssessment <<Value Object>> {
+    assessedAt
+    nextDueDate
+}
+
+User *-- SecurityClearance
+User *-- SkillsAssessment
+User *-- EmailAddress
+User *-- PhoneNumber
+
+@enduml
