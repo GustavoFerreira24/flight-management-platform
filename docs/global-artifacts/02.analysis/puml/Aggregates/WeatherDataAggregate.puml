@@ -1,0 +1,35 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class WeatherData <<Aggregate Root>> {
+    day
+}
+
+class WeatherMeasurement <<Value Object>> {
+    parameter
+    value
+    unit
+    altitude
+}
+
+' Verificar se isto é uma entity
+class WeatherProvider <<Entity>> {
+    name
+    providerType
+}
+
+class Coordinates <<Value Object>> {
+    latitude
+    longitude
+}
+
+WeatherData --> WeatherProvider
+WeatherData *-- WeatherMeasurement
+WeatherMeasurement *-- Coordinates
+
+@enduml

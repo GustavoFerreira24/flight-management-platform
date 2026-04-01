@@ -1,0 +1,24 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class AirControlArea <<Aggregate Root>> {
+    name
+}
+
+class AirControlAreaCode <<Value Object>> {
+    value
+}
+
+class GeographicBoundary <<Value Object>> {
+    value
+}
+
+AirControlArea *-- AirControlAreaCode
+AirControlArea *-- GeographicBoundary
+
+@enduml

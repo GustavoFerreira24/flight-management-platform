@@ -1,0 +1,38 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class Airport <<Aggregate Root>> {
+    name
+    town
+    altitude
+}
+
+class Coordinates <<Value Object>> {
+    latitude
+    longitude
+}
+
+class Country <<Value Object>> {
+    name
+}
+
+class IATACode <<Value Object>> {
+    value
+}
+
+class ICAOCode <<Value Object>> {
+    value
+}
+
+
+Airport *-- Coordinates
+Airport *-- Country
+Airport *-- IATACode
+Airport *-- ICAOCode
+
+@enduml

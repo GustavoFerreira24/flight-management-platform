@@ -1,0 +1,32 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+class FlightPlan <<Aggregate Root>> {
+    status
+    scheduledArrival
+}
+
+class Departure <<Value Object>> {
+    departureDay
+    departureTime
+}
+
+class FuelQty <<Value Object>> {
+    amount
+    unit <<enum>>
+}
+
+class FlightDesignator <<Value Object>> {
+    value
+}
+
+FlightPlan *-- FlightDesignator
+FlightPlan *-- Departure
+FlightPlan *-- FuelQty
+
+@enduml
