@@ -47,14 +47,16 @@ package "Simulation Aggregate" {
 package "FlightRoute Aggregate" {
 
     class FlightRoute <<Aggregate Root>> {
-        type <<enum>>
         status <<enum>>
         deactivatedFrom
     }
 
-    class FlightRouteName <<Value Object>> {
+    class RouteDesignator <<Value Object>> {
         value
     }
+
+    FlightRoute "1" --> "1" RouteDesignator
+
 
 }
 
@@ -80,10 +82,10 @@ package "FlightPlan Aggregate" {
         value
     }
 
-    class Flight {
-        departureDay
-        departureTime
-    }
+    FlightPlan *-- Departure
+    FlightPlan "1" --> "1" FlightDesignator
+    FlightPlan *-- FuelQty
+
 }
 
 package "Airport Aggregate" {
@@ -296,17 +298,30 @@ package "WeatherData Aggregate" {
 
 }
 
+package "Flight Aggregate" {
 
+    class Flight <<Aggregate Root>> {
+        type <<enum>>
+    }
 
-class Collaborator {
-    position
+    class FlightDesignator <<Value Object>> {
+        value
+    }
+
+    Flight "1" --> "1" FlightDesignator
+}
+
+package "Pilot Aggregate" {
+    class Pilot {
+        status <<enum>>
+    }
+
 }
 
 
 
-
-class Pilot {
-    status <<enum>>
+class Collaborator {
+    position
 }
 
 
@@ -320,19 +335,15 @@ Simulation "*" --> "1" AirControlArea : geographic area >
 FlightRoute "*" --> "1" Airport : from >
 FlightRoute "*" --> "1" Airport : to >
 FlightRoute "*" --> "1" AirTransportCompany
-FlightRoute "1" --> "1" FlightRouteName
 FlightRoute "1" *-- "0..*" Flight
 
 Flight "1" *-- "0..*" FlightPlan
 
-FlightPlan "1" --> "1" FlightDesignator
 FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
 FlightPlan "*" --> "*" WeatherData
 FlightPlan "*" --> "1" FlightRoute
-FlightPlan *-- Departure
 
-FlightPlan "1" --> "1" FuelQty
 
 
 Airport "*" --> "1" AirControlArea
