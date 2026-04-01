@@ -7,27 +7,28 @@ hide circle
 hide methods
 
 class Aircraft <<Aggregate Root>> {
-    operationalStatus <<enum>>
-    crewSize
-}
+        operationalStatus <<enum>>
+        crewSize
+    }
 
-class CabinConfiguration <<Value Object>> {
-    economySeats
-    businessSeats
-    firstClassSeats
-}
+    class CabinConfiguration <<Value Object>> {
+        economySeats
+        businessSeats
+        firstClassSeats
+    }
 
-class AircraftRegistration <<Value Object>> {
-    value
-}
+    class AircraftRegistration <<Value Object>> {
+        value
+    }
 
-class Country <<Value Object>> {
-   name
-}
+    class Country <<Value Object>> {
+       name
+    }
 
-' Todas as relações de Value Objects convertidas para composição
-Aircraft *-- Country
-Aircraft *-- CabinConfiguration
-Aircraft *-- AircraftRegistration
+    Aircraft "1" --> "1" Country
+    Aircraft "1" --> "1" CabinConfiguration
+    Aircraft "1" --> "1" AircraftRegistration
+
+
 
 @enduml

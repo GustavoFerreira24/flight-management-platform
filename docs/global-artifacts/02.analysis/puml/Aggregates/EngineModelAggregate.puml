@@ -6,19 +6,22 @@ skinparam classAttributeIconSize 0
 hide circle
 hide methods
 
-class EngineModel <<Aggregate Root>> {
-    name
-    type <<enum>>
-    thrust
-    fuelType
-    TSFC
-}
+package "EngineModel Aggregate" {
 
-class Manufacturer <<Value Object>> {
-    name
-}
+    class EngineModel <<Aggregate Root>> {
+        name
+        type <<enum>>
+        thrust
+        fuelType
+        TSFC
+    }
 
-' Relação de composição
-EngineModel *-- Manufacturer
+    class EngineModelDesignator <<Value Object>> {
+        value
+    }
+
+    EngineModel "1" --> "1" EngineModelDesignator
+
+}
 
 @enduml

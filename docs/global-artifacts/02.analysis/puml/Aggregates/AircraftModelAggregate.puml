@@ -7,35 +7,31 @@ hide circle
 hide methods
 
 class AircraftModel <<Aggregate Root>> {
-    name
-    type <<enum>>
-    motorization <<enum>>
-    maxRange
-    emptyWeight
-    MTOW
-    MZFW
-    maxFuelCapacity
-    serviceCeiling
-    cruiseSpeed
-    wingArea
-    dragCoefficient
-    liftCoefficient
-}
-' Verificar se isto é uma entity
-class AircraftVariant <<Entity>> {
-    variantId
-}
+        name
+        type <<enum>>
+        motorization <<enum>>
+        maxRange
+        emptyWeight
+        MTOW
+        MZFW
+        maxFuelCapacity
+        serviceCeiling
+        cruiseSpeed
+        wingArea
+        dragCoefficient
+        liftCoefficient
+    }
 
-class Manufacturer <<Value Object>> {
-    name
-}
+    class AircraftModelDesignator <<Value Object>> {
+        value
+    }
 
-class Country <<Value Object>> {
-   name
-}
+    class AircraftVariant <<Entity>> {
+        variantId
+    }
 
-Manufacturer *-- Country
-AircraftModel *-- Manufacturer
-AircraftModel *-- AircraftVariant
+    AircraftModel "1" --> "1" AircraftModelDesignator
+    AircraftModel "1" *-- "0..*" AircraftVariant
+}
 
 @enduml

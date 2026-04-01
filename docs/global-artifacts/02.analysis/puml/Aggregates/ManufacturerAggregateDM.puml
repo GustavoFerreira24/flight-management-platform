@@ -1,0 +1,31 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+
+package "Manufacturer Aggregate" {
+
+    class Manufacturer <<Aggregate Root>> {
+        name
+    }
+
+    class ManufacturerDesignator <<Value Object>> {
+        value
+    }
+
+    class Country <<Value Object>> {
+        name
+    }
+
+    Manufacturer "1" --> "1" ManufacturerDesignator
+    Manufacturer "1" --> "1" Country
+}
+
+
+
+
+@enduml

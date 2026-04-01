@@ -1,0 +1,26 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide circle
+hide methods
+
+
+class Pilot <<Aggregate Root>>{
+        status <<enum>>
+    }
+
+    class PilotID <<Value Object>> {
+        value
+    }
+
+    class Certification <<Value Object>> {
+        issuedAt
+        validUntil
+     }
+
+    Pilot "1" --> "1" PilotID
+    Pilot *-- "0..*" Certification
+
+@enduml

@@ -12,32 +12,37 @@ class Simulation <<Aggregate Root>> {
     status
 }
 
-class FlightExecution <<Entity>> {
-    status <<enum>>
-}
+class Simulation <<Aggregate Root>> {
+        timeRange
+        safetyThreshold
+        status
+    }
 
-class Report <<Entity>> {
-    totalFlights
-    result
-    generatedAt
-}
+    class FlightExecution <<Entity>> {
+        status <<enum>>
+    }
 
-class SafetyViolation <<Entity>> {
-    timestamp
-    severity
-    type
-}
+    class Report <<Value Object>> {
+        totalFlights
+        result
+        generatedAt
+    }
 
-class AircraftPosition <<Value Object>> {
-    altitude
-    velocity
-    timestamp
-}
+    class SafetyViolation <<Value Object>> {
+        timestamp
+        severity
+        type
+    }
 
-class Coordinates <<Value Object>> {
-    latitude
-    longitude
-}
+    class AircraftPosition <<Value Object>> {
+        altitude
+        velocity
+        timestamp
+    }
+    class Coordinates <<Value Object>> {
+        latitude
+        longitude
+    }
 
 ' Mudança para Composição: Tudo isto faz parte do ciclo de vida da Simulação
 Simulation *-- Report
@@ -51,6 +56,6 @@ SafetyViolation *-- AircraftPosition
 AircraftPosition *-- Coordinates
 
 ' Associação Simples: A violação APENAS REFERENCIA quais execuções de voo estiveram envolvidas
-SafetyViolation "1" --> "*" FlightExecution : involves >
+SafetyViolation "1" --> "*" FlightExecution
 
 @enduml

@@ -13,17 +13,17 @@ package "Simulation Aggregate" {
         status
     }
 
-    class FlightExecution {
+    class FlightExecution <<Entity>> {
         status <<enum>>
     }
 
-    class Report {
+    class Report <<Value Object>> {
         totalFlights
         result
         generatedAt
     }
 
-    class SafetyViolation {
+    class SafetyViolation <<Value Object>> {
         timestamp
         severity
         type
@@ -134,6 +134,8 @@ package "AirControlArea Aggregate" {
         value
     }
 
+    AirControlArea "1" --> "1" AirControlAreaCode
+    AirControlArea "1" --> "1" GeographicBoundary
 
 }
 
@@ -179,14 +181,19 @@ package "User Aggregate" {
     }
 
     class SecurityClearance <<Value Object>> {
-            level
-            expiryDate
-        }
+         level
+         expiryDate
+    }
 
-        class SkillsAssessment <<Value Object>> {
-            assessedAt
-            nextDueDate
-        }
+    class SkillsAssessment <<Value Object>> {
+          assessedAt
+          extDueDate
+    }
+
+    User "1" --> "1" SecurityClearance
+    User "1" --> "1" SkillsAssessment
+    User "1" --> "1" EmailAddress
+    User "1" --> "1" PhoneNumber
 }
 
 package "Aircraft Aggregate" {
@@ -211,6 +218,8 @@ package "Aircraft Aggregate" {
     }
 
     Aircraft "1" --> "1" Country
+    Aircraft "1" --> "1" CabinConfiguration
+    Aircraft "1" --> "1" AircraftRegistration
 
 
 }
@@ -233,22 +242,16 @@ package "AircraftModel Aggregate" {
         liftCoefficient
     }
 
-    class AircraftVariant {
+    class AircraftModelDesignator <<Value Object>> {
+        value
+    }
+
+    class AircraftVariant <<Entity>> {
         variantId
     }
 
-    class Manufacturer <<Value Object>> {
-        name
-    }
-
-    class Country <<Value Object>> {
-       name
-    }
-
-    Manufacturer "1" --> "1" Country
-    AircraftModel "1" --> "1" Manufacturer
-
-
+    AircraftModel "1" --> "1" AircraftModelDesignator
+    AircraftModel "1" *-- "0..*" AircraftVariant
 }
 
 
@@ -262,12 +265,11 @@ package "EngineModel Aggregate" {
         TSFC
     }
 
-    class Manufacturer <<Value Object>> {
-            name
+    class EngineModelDesignator <<Value Object>> {
+        value
     }
 
-    EngineModel "1" --> "1" Manufacturer
-
+    EngineModel "1" --> "1" EngineModelDesignator
 
 }
 
@@ -312,10 +314,42 @@ package "Flight Aggregate" {
 }
 
 package "Pilot Aggregate" {
-    class Pilot {
+
+    class Pilot <<Aggregate Root>>{
         status <<enum>>
     }
 
+    class PilotID <<Value Object>> {
+        value
+    }
+
+    class Certification <<Value Object>> {
+        issuedAt
+        validUntil
+     }
+
+    Pilot "1" --> "1" PilotID
+    Pilot *-- "0..*" Certification
+
+}
+
+
+package "Manufacturer Aggregate" {
+
+    class Manufacturer <<Aggregate Root>> {
+        name
+    }
+
+    class ManufacturerDesignator <<Value Object>> {
+        value
+    }
+
+    class Country <<Value Object>> {
+        name
+    }
+
+    Manufacturer "1" --> "1" ManufacturerDesignator
+    Manufacturer "1" --> "1" Country
 }
 
 
@@ -330,7 +364,7 @@ Simulation "*" --> "*" FlightPlan
 Simulation "1" --> "*" Report
 Simulation "1" --> "*" SafetyViolation
 Simulation "*" --> "*" WeatherData
-Simulation "*" --> "1" AirControlArea : geographic area >
+Simulation "*" --> "1" AirControlArea
 
 FlightRoute "*" --> "1" Airport : from >
 FlightRoute "*" --> "1" Airport : to >
@@ -348,27 +382,21 @@ FlightPlan "*" --> "1" FlightRoute
 
 Airport "*" --> "1" AirControlArea
 
-AirControlArea "1" --> "1" AirControlAreaCode
-AirControlArea "1" --> "1" GeographicBoundary
+
 
 WeatherData "*" --> "1" AirControlArea
 WeatherData "*" --> "1" WeatherProvider
 WeatherData "1" --> "*" WeatherMeasurement
 
-User "1" --> "1" SecurityClearance : has >
-User "1" --> "1" SkillsAssessment : has >
-User "1" --> "1" EmailAddress
-User "1" --> "1" PhoneNumber
 
-AircraftModel "1" --> "*" AircraftVariant
+
 
 AircraftVariant "*" --> "1" EngineModel
 
 
-Aircraft "*" --> "1" AirTransportCompany : belongs to >
-Aircraft "*" --> "1" AircraftVariant : is of >
-Aircraft "1" --> "1" CabinConfiguration
-Aircraft "1" --> "1" AircraftRegistration
+Aircraft "*" --> "1" AirTransportCompany
+Aircraft "*" --> "1" AircraftVariant
+
 
 
 
@@ -377,15 +405,15 @@ Collaborator "*" --> "0..1" AirTransportCompany
 Collaborator "*" --> "0..1" AirControlArea
 
 Pilot "*" --> "1" User
-Pilot "*" --> "1" AirTransportCompany : belongs to >
-Pilot "*" --> "*" AircraftModel : certified for >
+Pilot "*" --> "1" AirTransportCompany
+Pilot "*" --> "*" AircraftModel
 
-Simulation "1" --> "*" FlightExecution : tracks >
-FlightExecution "*" --> "1" FlightPlan : executes >
+Simulation "1" --> "*" FlightExecution
+FlightExecution "*" --> "1" FlightPlan
 
 FlightExecution "1" --> "*" AircraftPosition
 
 SafetyViolation "1" --> "*" AircraftPosition
-SafetyViolation "*" --> "*" FlightExecution : involves >
+SafetyViolation "*" --> "*" FlightExecution
 
 @enduml
