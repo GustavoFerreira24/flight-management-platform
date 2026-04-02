@@ -1,45 +1,50 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title AirTransportCompany Aggregate Scenario: Register Air Transport Company
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "Backoffice Operator" as BO
+boundary ":RegisterAirTransportCompanyUI" as UI
+control ":RegisterAirTransportCompanyController" as C
+participant "airTransportCompanyRepository\n:AirTransportCompanyRepository" as CompanyRepo
+participant "airTransportCompany\n:AirTransportCompany" as Company
+participant "country\n:Country" as Country
+participant "iataCode\n:IATACode" as IATACode
+participant "icaoCode\n:ICAOCode" as ICAOCode
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+BO -> UI : request to register air transport company
+UI -> BO : ask for name, country,\nIATA code and ICAO code
 
-class AirTransportCompany <<Aggregate Root>> {
-    name
-}
+BO -> UI : submit company data
+UI -> C : registerAirTransportCompany(data)
 
-class Country <<Value Object>> {
-   name
-}
+C -> CompanyRepo : existsByIATACode(data.iataCode)
+CompanyRepo --> C : false
 
-class IATACode <<Value Object>> {
-    value
-}
+C -> CompanyRepo : existsByICAOCode(data.icaoCode)
+CompanyRepo --> C : false
 
-class ICAOCode <<Value Object>> {
-   value
-}
+C -> Company ++ : create(data.name)
 
-AirTransportCompany *-- Country
-AirTransportCompany *-- IATACode
-AirTransportCompany *-- ICAOCode
+Company -> Country ++ : create(data.country)
+Country --> Company : country created
+
+Company -> IATACode ++ : create(data.iataCode)
+IATACode --> Company : IATA code created
+
+Company -> ICAOCode ++ : create(data.icaoCode)
+ICAOCode --> Company : ICAO code created
+
+Company -> Company : validateInvariants()\n- exactly one country exists\n- exactly one IATA code exists\n- exactly one ICAO code exists
+
+C -> CompanyRepo : save(company)
+CompanyRepo --> C : success
+
+C --> UI : airTransportCompanyCreated
+UI --> BO : confirm company registration
 
 @enduml
