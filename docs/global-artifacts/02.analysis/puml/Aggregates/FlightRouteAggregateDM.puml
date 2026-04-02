@@ -1,8 +1,24 @@
 @startuml
-skinparam monochrome true
-skinparam packageStyle rectangle
-skinparam shadowing false
-skinparam classAttributeIconSize 0
+skinparam {
+    BackgroundColor white
+    RoundCorner 8
+    Shadowing false
+    Handwritten false
+    ClassAttributeIconSize 0
+
+    ClassBackgroundColor white
+    ClassBorderColor #495057
+    ClassFontSize 12
+
+    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
+    ClassBorderColor<<Aggregate Root>> #228BE6
+
+    ClassBackgroundColor<<Value Object>> #FFF9DB
+    ClassBorderColor<<Value Object>> #FAB005
+
+    ClassBackgroundColor<<Entity>> #F3F0FF
+    ClassBorderColor<<Entity>> #7950F2
+}
 hide circle
 hide methods
 
@@ -12,11 +28,11 @@ class FlightRoute <<Aggregate Root>> {
     deactivatedFrom
 }
 
-class FlightRouteName <<Value Object>> {
+class RouteDesignator <<Value Object>> {
     value
 }
 
-FlightRoute *-- FlightRouteName
+FlightRoute *-- RouteDesignator
 
 
 @enduml

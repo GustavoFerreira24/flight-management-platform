@@ -61,7 +61,13 @@ package "Simulation Aggregate" {
         longitude
     }
 
-    AircraftPosition "1" --> "1" Coordinates
+    Simulation *-- Report
+    Simulation *-- SafetyViolation
+    Simulation *-- FlightExecution
+    SafetyViolation *-- AircraftPosition
+    SafetyViolation "1" --> "*" FlightExecution
+    FlightExecution "1" --> "*" AircraftPosition
+    AircraftPosition *-- Coordinates
 
 
 }
@@ -78,7 +84,7 @@ package "FlightRoute Aggregate" {
         value
     }
 
-    FlightRoute "1" --> "1" RouteDesignator
+    FlightRoute *-- RouteDesignator
 
 
 }
@@ -126,10 +132,10 @@ package "Airport Aggregate" {
        value
     }
 
-    Airport "1" --> "1" Coordinates
-    Airport "1" --> "1" Country
-    Airport "1" --> "1" IATACode
-    Airport "1" --> "1" ICAOCode
+    Airport *-- Coordinates
+    Airport *-- Country
+    Airport *-- IATACode
+    Airport *-- ICAOCode
 
 }
 
@@ -147,11 +153,11 @@ package "AirControlArea Aggregate" {
         minLatitude
         maxLatitude
         minLongitude
-         maxLongitude
+        maxLongitude
     }
 
-    AirControlArea "1" --> "1" AirControlAreaCode
-    AirControlArea "1" --> "1" GeographicBoundary
+    AirControlArea *-- AirControlAreaCode
+    AirControlArea *-- GeographicBoundary
 
 }
 
@@ -173,9 +179,9 @@ package "AirTransportCompany Aggregate" {
        value
     }
 
-    AirTransportCompany "1" --> "1" Country
-    AirTransportCompany "1" --> "1" IATACode
-    AirTransportCompany "1" --> "1" ICAOCode
+    AirTransportCompany *-- Country
+    AirTransportCompany *-- IATACode
+    AirTransportCompany *-- ICAOCode
 
 
 }
@@ -203,13 +209,13 @@ package "User Aggregate" {
 
     class SkillsAssessment <<Value Object>> {
           assessedAt
-          extDueDate
+          nextDueDate
     }
 
-    User "1" --> "1" SecurityClearance
-    User "1" --> "1" SkillsAssessment
-    User "1" --> "1" EmailAddress
-    User "1" --> "1" PhoneNumber
+    User *-- SecurityClearance
+    User *-- SkillsAssessment
+    User *-- EmailAddress
+    User *-- PhoneNumber
 }
 
 package "Aircraft Aggregate" {
@@ -223,7 +229,6 @@ package "Aircraft Aggregate" {
         economySeats
         businessSeats
         firstClassSeats
-        maxCargoWeight
     }
 
     class AircraftRegistration <<Value Object>> {
@@ -234,9 +239,9 @@ package "Aircraft Aggregate" {
        name
     }
 
-    Aircraft "1" --> "1" Country
-    Aircraft "1" --> "1" CabinConfiguration
-    Aircraft "1" --> "1" AircraftRegistration
+    Aircraft *-- Country
+    Aircraft *-- CabinConfiguration
+    Aircraft *-- AircraftRegistration
 
 
 }
@@ -267,8 +272,8 @@ package "AircraftModel Aggregate" {
         variantId
     }
 
-    AircraftModel "1" --> "1" AircraftModelDesignator
-    AircraftModel "1" *-- "0..*" AircraftVariant
+    AircraftModel *-- AircraftModelDesignator
+    AircraftModel *-- AircraftVariant
 }
 
 
@@ -286,7 +291,7 @@ package "EngineModel Aggregate" {
         value
     }
 
-    EngineModel "1" --> "1" EngineModelDesignator
+    EngineModel *-- EngineModelDesignator
 
 }
 
@@ -303,7 +308,7 @@ package "WeatherData Aggregate" {
         altitude
     }
 
-    class WeatherProvider {
+    class WeatherProvider <<Entity>> {
         name
         providerType
     }
@@ -313,7 +318,9 @@ package "WeatherData Aggregate" {
             longitude
     }
 
-    WeatherMeasurement "1" --> "1" Coordinates
+    WeatherData --> WeatherProvider
+    WeatherData *-- WeatherMeasurement
+    WeatherMeasurement *-- Coordinates
 
 }
 
@@ -348,10 +355,10 @@ package "Pilot Aggregate" {
     class Certification <<Value Object>> {
         issuedAt
         validUntil
-     }
+    }
 
-    Pilot "1" --> "1" PilotID
-    Pilot *-- "0..*" Certification
+    Pilot *-- PilotID
+    Pilot *-- Certification
 
 }
 
@@ -370,8 +377,8 @@ package "Manufacturer Aggregate" {
         name
     }
 
-    Manufacturer "1" --> "1" ManufacturerDesignator
-    Manufacturer "1" --> "1" Country
+    Manufacturer *-- ManufacturerDesignator
+    Manufacturer *-- Country
 }
 
 
@@ -383,8 +390,6 @@ class Collaborator {
 
 
 Simulation "*" --> "*" FlightPlan
-Simulation "1" --> "*" Report
-Simulation "1" --> "*" SafetyViolation
 Simulation "*" --> "*" WeatherData
 Simulation "*" --> "1" AirControlArea
 
@@ -399,26 +404,15 @@ FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
 FlightPlan "*" --> "*" WeatherData
 
-
-
 Airport "*" --> "1" AirControlArea
 
-
-
 WeatherData "*" --> "1" AirControlArea
-WeatherData "*" --> "1" WeatherProvider
-WeatherData "1" --> "*" WeatherMeasurement
-
-
-
 
 AircraftVariant "*" --> "1" EngineModel
 
 
 Aircraft "*" --> "1" AirTransportCompany
 Aircraft "*" --> "1" AircraftVariant
-
-
 
 
 Collaborator "*" --> "1" User
@@ -429,12 +423,7 @@ Pilot "*" --> "1" User
 Pilot "*" --> "1" AirTransportCompany
 Pilot "*" --> "*" AircraftModel
 
-Simulation "1" --> "*" FlightExecution
 FlightExecution "*" --> "1" FlightPlan
 
-FlightExecution "1" --> "*" AircraftPosition
-
-SafetyViolation "1" --> "*" AircraftPosition
-SafetyViolation "*" --> "*" FlightExecution
 
 @enduml
