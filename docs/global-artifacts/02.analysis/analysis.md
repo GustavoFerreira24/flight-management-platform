@@ -100,7 +100,7 @@ The relationship between Route, Flight, and Flight Plan is 1:N at each level —
 ### <span style="color:#70AD47">Flight Execution</span>
 Represents the execution of an individual flight during simulation.  
 According to US101, each flight is executed as a separate process that follows its flight plan and continuously sends position updates.  
-A Flight Execution executes one Flight Plan, has its own lifecycle and execution state (e.g. running, terminated) and produces a sequence of aircraft positions over time  
+A Flight Execution executes one Flight Plan, has its own lifecycle and execution state (e.g. running, terminated) and produces a sequence of aircraft positions over time.  
 The existence of a status attribute is justified by US109, which requires reporting individual execution statuses, confirming that each flight execution must be tracked independently.
 
 ### <span style="color:#70AD47">Flight Plan</span>
@@ -131,6 +131,12 @@ May originate from multiple external weather service providers, allowing data ag
 Represents an external weather data source.
 Weather data may originate from multiple providers to allow aggregation (US042).  
 Does not have its own user stories for management — it is a reference entity used to identify the origin of imported weather records.
+
+### <span style="color:#70AD47">Manufacturer</span>
+Identified by name and country.  
+Represents the maker of aircraft models or engine models.  
+Is referenced by AircraftModel and EngineModel.  
+Has its own identity and exists independently of those models.
 
 ---
 
@@ -163,6 +169,7 @@ Globally unique and immutable once assigned.
 Represents the state of an aircraft at a specific moment during a simulation.
 It includes coordinates, altitude, velocity and timestamp.
 Each FlightExecution generates multiple AircraftPosition instances, creating a timeline of the aircraft’s movement.
+AircraftPosition belongs to a FlightExecution and does not exist independently.
 
 ### <span style="color:#70AD47">RouteName</span>
 Represents the unique identifier of a Flight Route.  
@@ -201,12 +208,6 @@ Represents a single atmospheric measurement within a Weather Data record.
 Defined by a parameter type (e.g. wind speed, temperature, pressure), a numeric value, and a unit.  
 Has no identity of its own — it is meaningful only as part of a Weather Data record.  
 Includes coordinates to reflect that conditions vary by location within an air control area.
-
-### <span style="color:#70AD47">Manufacturer</span>
-Represents the maker of an aircraft model or engine model.  
-Defined by name and country.  
-Has no independent user stories for lifecycle management — it is descriptive information stored within the aircraft or engine model it belongs to (Section 3.1.2: *"only basic information (name and country) needs to be stored"*).  
-A single entity may be both an aircraft and an engine manufacturer.
 
 ### <span style="color:#70AD47">GeographicBoundary</span>
 Represents the spatial limits of an Air Control Area.  
@@ -248,8 +249,7 @@ This aligns with the DDD principle that primitive types are often insufficient t
 
 ### <span style="color:#70AD47">4.3 Structural vs Independent Concepts</span>
 
-Some entities exist independently and have their own lifecycle (e.g. Airport, Aircraft, Flight Route), while others are structural parts of larger domain concepts (e.g. Flight Leg within a Flight Plan, Segment within a Flight Leg).
-
+Some entities exist independently and have their own lifecycle (e.g. Airport, Aircraft, Flight Route), while others are structural or descriptive parts of larger domain concepts (e.g. AircraftPosition within a FlightExecution, WeatherMeasurement within WeatherData).
 This distinction is critical during aggregate design: structural concepts that cannot exist outside their parent should be contained within the parent's aggregate boundary and accessed exclusively through it.
 
 ---
@@ -270,17 +270,13 @@ This hierarchy was absent from early versions of the domain model and is a criti
 
 ---
 
-### <span style="color:#70AD47">4.5 Debate on Flight Legs and Segments in the Domain Model</span>
+### <span style="color:#70AD47">4.5 Flight Legs and Segments Outside the Domain Model</span>
 
-The client expressed doubt about whether Flight Legs need explicit representation in the DDD Domain Model, noting that they may exist solely within the DSL specification processed by ANTLR. Similarly, Segments and Nodes/Junctions were suggested to potentially reside only in the flight plan file specification rather than as stored domain objects.
+Although Section 3.4.1 defines the structure Flight Plan → Flight Leg → Segment, the client later suggested that Flight Legs, Segments, and Nodes/Junctions may exist only as part of the flight plan specification processed by ANTLR, rather than as explicit concepts in the DDD Domain Model.
 
-The team has retained both Flight Leg and Segment in the domain model for the following reasons:
+Following that clarification, the team decided not to include Flight Leg and Segment in the final Domain Model.
 
-1. Section 3.4.1 explicitly defines the hierarchical structure: Flight Plan → Flight Leg → Segment.
-2. US082 requires associating weather data with a flight plan — without segment-level granularity, it is not possible to associate weather conditions accurately, since conditions vary by location within an air control area.
-3. Semantic validation rules in Section 3.4.5 (e.g. arrival airport of leg N must match departure of leg N+1) imply that legs have domain-meaningful structure.
-
-This decision should be formally validated with the client before implementation.
+This decision is justified because there are no user stories requiring their independent management, and their main role is within DSL specification, validation, and processing.
 
 ---
 
@@ -295,7 +291,13 @@ The client confirmed that weather conditions are not uniform across an air contr
 
 ### <span style="color:#70AD47">4.7 Simulation Information Must Be in the System</span>
 
-The client confirmed that while the simulation itself runs as a C module, the information sent to the simulator and the results received back must be stored in the core Java system. This means `Simulation`, `Report`, and `SafetyViolation` are legitimate domain entities, not implementation artefacts.
+The client confirmed that while the simulation itself runs as a C module, the information sent to the simulator and the results received back must be stored in the core Java system.  
+This justifies the presence of the Simulation aggregate.
+
+Within the simulation:
+- FlightExecution represents execution state and is modelled as an Entity
+- AircraftPosition represents temporal state as a Value Object
+- Report and SafetyViolation represent descriptive results of the simulation
 
 Simulation performance settings (e.g. time step, precision) were deferred to Sprint 2 and need not be detailed in the current domain model.
 
@@ -321,3 +323,10 @@ Although nodes/junctions appear in the specification, the client said in the for
 
 For that reason, Node/Junction was not included in the Domain Model.
 
+### <span style="color:#70AD47">4.10 The Role of Aircraft Variant</span>
+
+The introduction of `AircraftVariant` clarifies how the domain connects aircraft models, certified engine models, and actual aircraft.
+
+Although an Aircraft Model defines the general characteristics of an aircraft, the requirements make it clear that engine configuration is also domain-relevant. An aircraft model may support multiple certified engine models, and each valid combination of aircraft model and engine model constitutes a distinct aircraft variant.
+
+This distinction is important because an actual `Aircraft` is not only of a given model, but of a specific variant, including its engine configuration. Without `AircraftVariant`, the model would not express which certified engine configuration is actually being used by a given aircraft.
