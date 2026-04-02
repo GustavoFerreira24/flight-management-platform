@@ -26,6 +26,8 @@ class FlightRoute <<Aggregate Root>> {
     type <<enum>>
     status <<enum>>
     deactivatedFrom
+    departureAirport
+    arrivalAirport
 }
 
 class RouteDesignator <<Value Object>> {

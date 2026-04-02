@@ -24,7 +24,6 @@ skinparam {
     ClassBorderColor<<Entity>> #7950F2
 }
 
-' Esconder elementos desnecessários
 hide circle
 hide methods
 
@@ -78,6 +77,8 @@ package "FlightRoute Aggregate" {
         type <<enum>>
         status <<enum>>
         deactivatedFrom
+        departureAirport
+        arrivalAirport
     }
 
     class RouteDesignator <<Value Object>> {
@@ -93,7 +94,12 @@ package "FlightPlan Aggregate" {
 
     class FlightPlan <<Aggregate Root>> {
         status
+        plannedDeparture
         scheduledArrival
+    }
+
+    class FlightPlanID <<Value Object>> {
+        value
     }
 
 
@@ -104,6 +110,7 @@ package "FlightPlan Aggregate" {
 
 
     FlightPlan *-- FuelQty
+    FlightPlan *-- FlightPlanID
 
 }
 
@@ -192,6 +199,11 @@ package "User Aggregate" {
     class User <<Aggregate Root>> {
            name
            status <<enum>>
+           roles <<enum>>
+    }
+
+    class UserID <<Value Object>> {
+        value
     }
 
     class EmailAddress <<Value Object>> {
@@ -216,6 +228,7 @@ package "User Aggregate" {
     User *-- SkillsAssessment
     User *-- EmailAddress
     User *-- PhoneNumber
+    User *-- UserID
 }
 
 package "Aircraft Aggregate" {
@@ -262,6 +275,7 @@ package "AircraftModel Aggregate" {
         wingArea
         dragCoefficient
         liftCoefficient
+        passCapacity
     }
 
     class AircraftModelDesignator <<Value Object>> {
@@ -274,6 +288,7 @@ package "AircraftModel Aggregate" {
 
     AircraftModel *-- AircraftModelDesignator
     AircraftModel *-- AircraftVariant
+
 }
 
 
@@ -367,6 +382,7 @@ package "Manufacturer Aggregate" {
 
     class Manufacturer <<Aggregate Root>> {
         name
+        manufacturerType <<enum>>
     }
 
     class ManufacturerDesignator <<Value Object>> {
@@ -383,18 +399,12 @@ package "Manufacturer Aggregate" {
 
 
 
-class Collaborator {
-    position
-}
-
-
-
 Simulation "*" --> "*" FlightPlan
 Simulation "*" --> "*" WeatherData
 Simulation "*" --> "1" AirControlArea
 
-FlightRoute "*" --> "1" Airport : from >
-FlightRoute "*" --> "1" Airport : to >
+FlightRoute "*" --> "1" Airport
+FlightRoute "*" --> "1" Airport
 FlightRoute "*" --> "1" AirTransportCompany
 FlightRoute "1" --> "0..*" Flight
 
@@ -412,18 +422,18 @@ AircraftVariant "*" --> "1" EngineModel
 
 
 Aircraft "*" --> "1" AirTransportCompany
-Aircraft "*" --> "1" AircraftVariant
 
-
-Collaborator "*" --> "1" User
-Collaborator "*" --> "0..1" AirTransportCompany
-Collaborator "*" --> "0..1" AirControlArea
 
 Pilot "*" --> "1" User
 Pilot "*" --> "1" AirTransportCompany
 Pilot "*" --> "*" AircraftModel
 
 FlightExecution "*" --> "1" FlightPlan
+
+AircraftModel "*" --> "1" Manufacturer
+EngineModel "*" --> "1" Manufacturer
+
+Aircraft "*" --> "1" AircraftModel
 
 
 @enduml

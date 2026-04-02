@@ -24,6 +24,7 @@ hide methods
 
 class Manufacturer <<Aggregate Root>> {
         name
+        manufacturerType <<enum>>
 }
 
 class ManufacturerDesignator <<Value Object>> {

@@ -24,7 +24,12 @@ hide methods
 
 class FlightPlan <<Aggregate Root>> {
     status
+    plannedDeparture
     scheduledArrival
+}
+
+class FlightPlanID <<Value Object>> {
+        value
 }
 
 class FuelQty <<Value Object>> {
@@ -34,5 +39,6 @@ class FuelQty <<Value Object>> {
 
 
 FlightPlan *-- FuelQty
+FlightPlan *-- FlightPlanID
 
 @enduml
