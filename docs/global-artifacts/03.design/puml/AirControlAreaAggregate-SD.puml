@@ -1,43 +1,43 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title AirControlArea Aggregate Scenario: Register Air Control Area
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "Backoffice Operator" as BO
+boundary ":RegisterAirControlAreaUI" as UI
+control ":RegisterAirControlAreaController" as C
+participant "airControlAreaRepository\n:AirControlAreaRepository" as AreaRepo
+participant "airControlArea\n:AirControlArea" as Area
+participant "areaCode\n:AirControlAreaCode" as AreaCode
+participant "boundary\n:GeographicBoundary" as Boundary
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+BO -> UI : request to register air control area
+UI -> BO : ask for name, area code,\nand geographic boundary
 
-class AirControlArea <<Aggregate Root>> {
-    name
-}
+BO -> UI : submit area data
+UI -> C : registerAirControlArea(data)
 
-class AirControlAreaCode <<Value Object>> {
-    value
-}
+C -> AreaRepo : existsByCode(data.areaCode)
+AreaRepo --> C : false
 
-class GeographicBoundary <<Value Object>> {
-    minLatitude
-    maxLatitude
-    minLongitude
-    maxLongitude
-}
+C -> Area ++ : create(data.name)
 
-AirControlArea *-- AirControlAreaCode
-AirControlArea *-- GeographicBoundary
+Area -> AreaCode ++ : create(data.areaCode)
+AreaCode --> Area : code created
+
+Area -> Boundary ++ : create(\ndata.minLatitude,\ndata.maxLatitude,\ndata.minLongitude,\ndata.maxLongitude)
+Boundary --> Area : boundary created
+
+Area -> Area : validateInvariants()\n- code is unique in the system\n- minLatitude < maxLatitude\n- minLongitude < maxLongitude
+
+C -> AreaRepo : save(area)
+AreaRepo --> C : success
+
+C --> UI : airControlAreaCreated
+UI --> BO : confirm air control area registration
 
 @enduml
