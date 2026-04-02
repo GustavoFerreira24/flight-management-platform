@@ -1,48 +1,61 @@
-# Project AIControl
+# <span style="color:#E67E22">Project AIControl</span>
 
-## 1. Description of the Project
+## <span style="color:#2E75B6">1. Description of the Project</span>
 
 AIControl is an integrative project developed in the 4th semester of the Licenciatura em Engenharia Informática  at ISEP, integrating the course units EAPLI, LPROG, RCOMP, and SCOMP.
 
 The system is a back-office management platform developed for **AISafe**, a startup targeting the aircraft flight control market. The platform covers three main areas:
 
-- **Basic configuration** — registration and management of aircraft models,
+- **<span style="color:#70AD47">Basic configuration</span>** — registration and management of aircraft models,
   engine models, manufacturers, air transport companies, airports, air
   control areas, and users.
-- **Flight management** — creation and management of flight routes and
+
+- **<span style="color:#70AD47">Flight management</span>** — creation and management of flight routes and
   flight plans, including import and validation of flight plans described
   in a custom **Domain Specific Language (DSL)** processed with ANTLR.
-- **Flight simulation** — simulation of individual flight plans (validating
+
+- **<span style="color:#70AD47">Flight simulation</span>** — simulation of individual flight plans (validating
   fuel load and altitude requirements) and full air control area simulations,
   detecting potential safety violations across multiple concurrent flights.
 
-The solution is implemented primarily in **Java**, with simulation components in **C** . Networking features expose functionality via **TCP**  and **UDP** . The project follows **Domain-Driven Design (DDD)**, **SCRUM**, and a **Test-Driven Development (TDD)** approach, with JPA/ORM for data persistence.
+The solution is implemented primarily in **Java**, with simulation components in **C**. Networking features expose functionality via **TCP** and **UDP**. The project follows **Domain-Driven Design (DDD)**, **SCRUM**, and a **Test-Driven Development (TDD)** approach, with JPA/ORM for data persistence.
 
-## 2. Planning and Technical Documentation
+---
+
+## <span style="color:#2E75B6">2. Planning and Technical Documentation</span>
 
 [Planning and Technical Documentation](docs/readme.md)
 
-## 3. How to Build
+---
+
+## <span style="color:#2E75B6">3. How to Build</span>
 
     mvn clean install
 
-## 4. How to Execute Tests
+---
+
+## <span style="color:#2E75B6">4. How to Execute Tests</span>
 
     mvn test
 
-## 5. How to Run
+---
+
+## <span style="color:#2E75B6">5. How to Run</span>
 
     mvn exec:java
 
-## 6. How to Install/Deploy into Another Machine (or Virtual Machine)
+---
 
-### Prerequisites
+## <span style="color:#2E75B6">6. How to Install/Deploy into Another Machine (or Virtual Machine)</span>
+
+### <span style="color:#70AD47">Prerequisites</span>
+
 - Java 21+
 - Maven 3.8+
 - A relational database (e.g. PostgreSQL or MySQL) running and accessible
 - (For simulation components) GCC compiler with POSIX support (Linux only)
 
-### Steps
+### <span style="color:#70AD47">Steps</span>
 
 1. Clone the repository:
 
@@ -64,10 +77,10 @@ The solution is implemented primarily in **Java**, with simulation components in
 
        mvn exec:java
 
-## 7. How to Generate PlantUML Diagrams
+---
+
+## <span style="color:#2E75B6">7. How to Generate PlantUML Diagrams</span>
 
 To generate plantuml diagrams for documentation execute the script (for the moment, only for linux/unix/macos):
 
     ./generate-plantuml-diagrams.sh
-
-

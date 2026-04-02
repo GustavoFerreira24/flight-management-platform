@@ -1,0 +1,58 @@
+@startuml
+skinparam {
+    BackgroundColor white
+    RoundCorner 8
+    Shadowing false
+    Handwritten false
+    ClassAttributeIconSize 0
+    PackageStyle frame
+
+    PackageBackgroundColor #F8F9FA
+    PackageBorderColor #ADB5BD
+
+    ClassBackgroundColor white
+    ClassBorderColor #495057
+    ClassFontSize 12
+
+    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
+    ClassBorderColor<<Aggregate Root>> #228BE6
+
+    ClassBackgroundColor<<Value Object>> #FFF9DB
+    ClassBorderColor<<Value Object>> #FAB005
+
+    ClassBackgroundColor<<Entity>> #F3F0FF
+    ClassBorderColor<<Entity>> #7950F2
+}
+hide circle
+hide methods
+
+class Airport <<Aggregate Root>> {
+    name
+    town
+    altitude
+}
+
+class Coordinates <<Value Object>> {
+    latitude
+    longitude
+}
+
+class Country <<Value Object>> {
+    name
+}
+
+class IATACode <<Value Object>> {
+    value
+}
+
+class ICAOCode <<Value Object>> {
+    value
+}
+
+
+Airport *-- Coordinates
+Airport *-- Country
+Airport *-- IATACode
+Airport *-- ICAOCode
+
+@enduml
