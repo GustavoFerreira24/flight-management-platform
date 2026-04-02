@@ -22,19 +22,27 @@ skinparam {
 hide circle
 hide methods
 
-class EngineModel <<Aggregate Root>> {
+ class EngineModel <<Aggregate Root>> {
         name
-        type <<enum>>
         thrust
-        fuelType
         TSFC
-}
+    }
 
-class EngineModelDesignator <<Value Object>> {
+    class EngineModelDesignator <<Value Object>> {
         value
-}
+    }
 
-EngineModel *-- EngineModelDesignator
+    class EngineType <<Value Object>> {
+        value
+    }
+
+    class FuelType <<Value Object>> {
+        value
+    }
+
+    EngineModel *-- EngineModelDesignator
+    EngineModel *-- EngineType
+    EngineModel *-- FuelType
 
 }
 

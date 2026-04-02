@@ -296,9 +296,7 @@ package "EngineModel Aggregate" {
 
     class EngineModel <<Aggregate Root>> {
         name
-        type <<enum>>
         thrust
-        fuelType
         TSFC
     }
 
@@ -306,7 +304,17 @@ package "EngineModel Aggregate" {
         value
     }
 
+    class EngineType <<Value Object>> {
+        value
+    }
+
+    class FuelType <<Value Object>> {
+        value
+    }
+
     EngineModel *-- EngineModelDesignator
+    EngineModel *-- EngineType
+    EngineModel *-- FuelType
 
 }
 
