@@ -1,57 +1,48 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
-    PackageStyle frame
+title AircraftModel Aggregate Scenario: Add Certified Variant to Aircraft Model
 
-    PackageBackgroundColor #F8F9FA
-    PackageBorderColor #ADB5BD
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+autonumber
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+actor "Backoffice Operator" as BO
+boundary ":ManageAircraftModelUI" as UI
+control ":ManageAircraftModelController" as C
+participant "aircraftModelRepository\n:AircraftModelRepository" as AircraftModelRepo
+participant "engineModelRepository\n:EngineModelRepository" as EngineModelRepo
+participant "aircraftModel\n:AircraftModel" as AircraftModel
+participant "engineModel\n:EngineModel" as EngineModel
+participant "aircraftVariant\n:AircraftVariant" as AircraftVariant
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+BO -> UI : request to add certified variant
+UI -> BO : ask for aircraft model and engine model
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+BO -> UI : submit aircraftModelId and engineModelId
+UI -> C : addCertifiedVariant(aircraftModelId, engineModelId)
 
-class AircraftModel <<Aggregate Root>> {
-        name
-        type <<enum>>
-        motorization <<enum>>
-        maxRange
-        emptyWeight
-        MTOW
-        MZFW
-        maxFuelCapacity
-        serviceCeiling
-        cruiseSpeed
-        wingArea
-        dragCoefficient
-        liftCoefficient
-    }
+C -> AircraftModelRepo : findById(aircraftModelId)
+AircraftModelRepo --> C : aircraftModel
 
-class AircraftModelDesignator <<Value Object>> {
-        value
-}
+C -> EngineModelRepo : findById(engineModelId)
+EngineModelRepo --> C : engineModel
 
-class AircraftVariant <<Entity>> {
-        variantId
-}
+C -> AircraftModel : addVariant(engineModel)
+activate AircraftModel
 
-    AircraftModel *-- AircraftModelDesignator
-    AircraftModel *-- AircraftVariant
-}
+AircraftModel -> AircraftModel : ensureEngineModelNotDuplicated(engineModel)
+AircraftModel -> AircraftModel : ensureEngineTypeCompatibility(engineModel)
+AircraftModel -> AircraftVariant ++ : create(engineModel)
+AircraftVariant --> AircraftModel : variant created
+AircraftModel -> AircraftModel : ensureAtLeastOneCertifiedVariant()
+
+deactivate AircraftModel
+
+C -> AircraftModelRepo : save(aircraftModel)
+AircraftModelRepo --> C : success
+
+C --> UI : variantAdded
+UI --> BO : confirm certified variant addition
 
 @enduml

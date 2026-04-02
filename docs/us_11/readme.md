@@ -1,6 +1,6 @@
-# US11 – Aggregate Justification
+# <span style="color:#E67E22">US11 – Aggregate Justification</span>
 
-## 1. Context
+## <span style="color:#2E75B6">1. Context</span>
 
 This user story is part of Sprint 1 and focuses on the **design of the Domain Model using Domain-Driven Design (DDD)** principles.
 
@@ -10,27 +10,27 @@ The objective is to justify the defined aggregates by:
 
 This is the first time this task is being developed.
 
-### 1.1 List of issues
+### <span style="color:#70AD47">1.1 List of issues</span>
 
-Analysis:  
+**Analysis:**  
 Already performed through the definition of the Domain Model and Aggregate boundaries.
 
-Design:  
+**Design:**  
 Definition of sequence diagrams and aggregate invariants.
 
 
-## 2. Requirements
+## <span style="color:#2E75B6">2. Requirements</span>
 
-**US11** As Project Manager, I want the team to illustrate one representative scenario per aggregate with a sequence 
-diagram and a short explana@on, so that the aggregate’s responsibility is demonstrated through an invariant it enforces. 
+**US11** As Project Manager, I want the team to illustrate one representative scenario per aggregate with a sequence
+diagram and a short explanation, so that the aggregate’s responsibility is demonstrated through an invariant it enforces.
 This justification will make aggregate design decisions more explicit and easier to review by the project manager.
 
 **Acceptance Criteria:**
 
-- Ac1: Each aggregate must have one representative scenario
-- Ac2: Each scenario must be represented using a sequence diagram
-- Ac3: Each aggregate must include a justification based on invariants
-- Ac4: The justification must clearly explain the responsibility of the aggregate
+- <span style="color:#70AD47">Ac1:</span> Each aggregate must have one representative scenario
+- <span style="color:#70AD47">Ac2:</span> Each scenario must be represented using a sequence diagram
+- <span style="color:#70AD47">Ac3:</span> Each aggregate must include a justification based on invariants
+- <span style="color:#70AD47">Ac4:</span> The justification must clearly explain the responsibility of the aggregate
 
 **Dependencies/References:**
 
@@ -39,7 +39,7 @@ This user story depends on:
 - Aggregate identification and validation according to DDD rules
 
 
-## 3. Analysis
+## <span style="color:#2E75B6">3. Analysis</span>
 
 The analysis activities related to this user story were previously performed in **US10**, where the Domain Model and Aggregate boundaries were defined.
 
@@ -55,11 +55,10 @@ Supporting artifacts can be found in:
 
 This user story does not introduce new analysis activities, but rather builds upon the results of US10.
 
-NAO SE ENQUADRA (no additional analysis required in US11)
+**NAO SE ENQUADRA** (no additional analysis required in US11)
 
 
-
-## 4. Design
+## <span style="color:#2E75B6">4. Design</span>
 
 The design phase focuses on demonstrating aggregate responsibilities through behavior.
 
@@ -72,7 +71,7 @@ Sequence diagrams are located in:
 
 `../global-artifacts/03.design/`
 
-### 4.1 Realization
+### <span style="color:#70AD47">4.1 Realization</span>
 
 Each aggregate is documented individually with:
 - scenario description
@@ -80,7 +79,7 @@ Each aggregate is documented individually with:
 - sequence diagram
 - invariant justification
 
-#### Aggregates:
+#### <span style="color:#70AD47">Aggregates:</span>
 
 - [AirControlAreaAggregate](./Aggregates/AirControlAreaAggregate.md)
 - [AircraftAggregate](./Aggregates/AircraftAggregate.md)
@@ -97,7 +96,7 @@ Each aggregate is documented individually with:
 - [WeatherDataAggregate](./Aggregates/WeatherDataAggregate.md)
 
 
-## 6. Integration/Demonstration
+## <span style="color:#2E75B6">6. Integration/Demonstration</span>
 
 The results of this user story integrate with:
 - the Domain Model (analysis phase)
@@ -110,7 +109,7 @@ The sequence diagrams and justifications serve as a foundation for:
 No execution scripts are required.
 
 
-## 7. Observations
+## <span style="color:#2E75B6">7. Observations</span>
 
 This user story reinforces key DDD concepts:
 - Aggregates as consistency boundaries

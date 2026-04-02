@@ -1,51 +1,54 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title Aircraft Aggregate Scenario: Register Aircraft in Company Fleet
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "ATC Collaborator" as ATC
+boundary ":AddAircraftUI" as UI
+control ":AddAircraftController" as C
+participant "aircraftModelRepository\n:AircraftModelRepository" as AircraftModelRepo
+participant "aircraftRepository\n:AircraftRepository" as AircraftRepo
+participant "aircraftModel\n:AircraftModel" as AircraftModel
+participant "aircraft\n:Aircraft" as Aircraft
+participant "registration\n:AircraftRegistration" as Registration
+participant "cabinConfiguration\n:CabinConfiguration" as CabinConfiguration
+participant "country\n:Country" as Country
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
+ATC -> UI : request to add aircraft
+UI -> ATC : ask for registration, country,\ncrew size, cabin configuration,\naircraft model
 
-hide circle
-hide methods
+ATC -> UI : submit aircraft data
+UI -> C : addAircraft(data, aircraftModelId)
 
-class Aircraft <<Aggregate Root>> {
-        operationalStatus <<enum>>
-        crewSize
-    }
+C -> AircraftModelRepo : findById(aircraftModelId)
+AircraftModelRepo --> C : aircraftModel
 
-    class CabinConfiguration <<Value Object>> {
-        economySeats
-        businessSeats
-        firstClassSeats
-    }
+C -> AircraftRepo : existsByRegistration(data.registration)
+AircraftRepo --> C : false
 
-    class AircraftRegistration <<Value Object>> {
-        value
-    }
+C -> Aircraft ++ : create(data, aircraftModel)
 
-    class Country <<Value Object>> {
-       name
-    }
+Aircraft -> Registration ++ : create(data.registration)
+Registration --> Aircraft : registration created
 
-    Aircraft *-- Country
-    Aircraft *-- CabinConfiguration
-    Aircraft *-- AircraftRegistration
+Aircraft -> Country ++ : create(data.country)
+Country --> Aircraft : country created
 
+Aircraft -> CabinConfiguration ++ : create(data.economySeats,\ndata.businessSeats,\ndata.firstClassSeats)
+CabinConfiguration --> Aircraft : cabin configuration created
 
+Aircraft -> Aircraft : validateCrewSize(data.crewSize)
+Aircraft -> Aircraft : validateCabinCapacity(aircraftModel)\n- total seats <= model passenger capacity
+Aircraft -> Aircraft : setOperationalStatus()
+
+C -> AircraftRepo : save(aircraft)
+AircraftRepo --> C : success
+
+C --> UI : aircraftAdded
+UI --> ATC : confirm aircraft registration
 
 @enduml
