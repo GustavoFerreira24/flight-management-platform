@@ -23,7 +23,7 @@ hide circle
 hide methods
 
  class EngineModel <<Aggregate Root>> {
-        name
+        power
         thrust
         TSFC
     }

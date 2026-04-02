@@ -27,9 +27,6 @@ hide circle
 hide methods
 
 class AircraftModel <<Aggregate Root>> {
-        name
-        type <<enum>>
-        motorization <<enum>>
         maxRange
         emptyWeight
         MTOW
@@ -43,16 +40,25 @@ class AircraftModel <<Aggregate Root>> {
         passCapacity
     }
 
-class AircraftModelDesignator <<Value Object>> {
+    class AircraftModelDesignator <<Value Object>> {
         value
-}
+    }
 
-class AircraftVariant <<Entity>> {
+    class AircraftVariant <<Entity>> {
         variantId
-}
+    }
+
+    class AircraftModelType <<Value Object>> {
+        value
+    }
+
+    class AircraftModelMotorization <<Value Object>> {
+        value
+    }
 
     AircraftModel *-- AircraftModelDesignator
     AircraftModel *-- AircraftVariant
-}
+    AircraftModel *-- AircraftModelType
+    AircraftModel *-- AircraftModelMotorization
 
 @enduml

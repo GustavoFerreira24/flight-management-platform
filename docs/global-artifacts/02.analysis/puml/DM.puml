@@ -31,7 +31,11 @@ package "Simulation Aggregate" {
     class Simulation <<Aggregate Root>> {
         timeRange
         safetyThreshold
-        status
+
+    }
+
+    class SimulationStatus <<Value Object>> {
+        value
     }
 
     class FlightExecution <<Entity>> {
@@ -67,6 +71,7 @@ package "Simulation Aggregate" {
     Simulation *-- Report
     Simulation *-- SafetyViolation
     Simulation *-- FlightExecution
+    Simulation *-- SimulationStatus
     SafetyViolation *-- AircraftPosition
     SafetyViolation "1" --> "*" FlightExecution
     FlightExecution "1" --> "*" AircraftPosition
@@ -104,7 +109,6 @@ package "FlightRoute Aggregate" {
 package "FlightPlan Aggregate" {
 
     class FlightPlan <<Aggregate Root>> {
-        status
         plannedDeparture
         scheduledArrival
     }
@@ -113,6 +117,9 @@ package "FlightPlan Aggregate" {
         value
     }
 
+    class FlightPlanStatus <<Value Object>> {
+        value
+    }
 
     class FuelQty <<Value Object>> {
         amount
@@ -125,6 +132,7 @@ package "FlightPlan Aggregate" {
 
     FlightPlan *-- FuelQty
     FlightPlan *-- FlightPlanID
+    FlightPlan *-- FlightPlanStatus
     FuelQty *-- FuelUnit
 
 }
@@ -289,7 +297,6 @@ package "Aircraft Aggregate" {
 package "AircraftModel Aggregate" {
 
     class AircraftModel <<Aggregate Root>> {
-        name
         maxRange
         emptyWeight
         MTOW
@@ -330,7 +337,7 @@ package "AircraftModel Aggregate" {
 package "EngineModel Aggregate" {
 
     class EngineModel <<Aggregate Root>> {
-        name
+        power
         thrust
         TSFC
     }

@@ -28,19 +28,21 @@ hide circle
 hide methods
 
 class Simulation <<Aggregate Root>> {
-    timeRange
-    safetyThreshold
-    status
-}
-
-class Simulation <<Aggregate Root>> {
         timeRange
         safetyThreshold
-        status
+
+    }
+
+    class SimulationStatus <<Value Object>> {
+        value
     }
 
     class FlightExecution <<Entity>> {
-        status <<enum>>
+
+    }
+
+    class FlightExecutionStatus <<Value Object>> {
+        value
     }
 
     class Report <<Value Object>> {
@@ -65,11 +67,14 @@ class Simulation <<Aggregate Root>> {
         longitude
     }
 
-Simulation *-- Report
-Simulation *-- SafetyViolation
-Simulation *-- FlightExecution
-SafetyViolation *-- AircraftPosition
-SafetyViolation "1" --> "*" FlightExecution
-AircraftPosition *-- Coordinates
+    Simulation *-- Report
+    Simulation *-- SafetyViolation
+    Simulation *-- FlightExecution
+    Simulation *-- SimulationStatus
+    SafetyViolation *-- AircraftPosition
+    SafetyViolation "1" --> "*" FlightExecution
+    FlightExecution "1" --> "*" AircraftPosition
+    AircraftPosition *-- Coordinates
+    FlightExecution *-- FlightExecutionStatus
 
 @enduml

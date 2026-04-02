@@ -33,7 +33,6 @@ class WeatherMeasurement <<Value Object>> {
     altitude
 }
 
-' Verificar se isto é uma entity
 class WeatherProvider <<Entity>> {
     name
     providerType

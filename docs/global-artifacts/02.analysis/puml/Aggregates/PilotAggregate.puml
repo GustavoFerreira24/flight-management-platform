@@ -23,20 +23,24 @@ hide circle
 hide methods
 
 
-class Pilot <<Aggregate Root>>{
-        status <<enum>>
-}
+ class Pilot <<Aggregate Root>>{
+    }
 
-class PilotID <<Value Object>> {
+    class PilotID <<Value Object>> {
         value
-}
+    }
 
-class Certification <<Value Object>> {
+    class Certification <<Value Object>> {
         issuedAt
         validUntil
-}
+    }
 
-Pilot *-- PilotID
-Pilot *-- Certification
+    class PilotStatus <<Value Object>> {
+        value
+    }
+
+    Pilot *-- PilotID
+    Pilot *-- Certification
+    Pilot *-- PilotStatus
 
 @enduml

@@ -23,37 +23,45 @@ hide circle
 hide methods
 
 class User <<Aggregate Root>> {
-    name
-    status <<enum>>
-    roles <<enum>>
-}
+           name
+    }
 
-class UserID <<Value Object>> {
+    class UserID <<Value Object>> {
         value
-}
+    }
 
-class EmailAddress <<Value Object>> {
-    value
-}
+    class EmailAddress <<Value Object>> {
+        value
+    }
 
-class PhoneNumber <<Value Object>> {
-    value
-}
+    class PhoneNumber <<Value Object>> {
+        value
+    }
 
-class SecurityClearance <<Value Object>> {
-    level
-    expiryDate
-}
+    class SecurityClearance <<Value Object>> {
+         level
+         expiryDate
+    }
 
-class SkillsAssessment <<Value Object>> {
-    assessedAt
-    nextDueDate
-}
+    class SkillsAssessment <<Value Object>> {
+          assessedAt
+          nextDueDate
+    }
 
-User *-- SecurityClearance
-User *-- SkillsAssessment
-User *-- EmailAddress
-User *-- PhoneNumber
-User *-- UserID
+    class UserStatus <<Value Object>> {
+        value
+    }
+
+    class UserRoles <<Value Object>> {
+        value
+    }
+
+    User *-- UserStatus
+    User *-- UserRoles
+    User *-- SecurityClearance
+    User *-- SkillsAssessment
+    User *-- EmailAddress
+    User *-- PhoneNumber
+    User *-- UserID
 
 @enduml

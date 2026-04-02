@@ -23,8 +23,7 @@ skinparam {
 hide circle
 hide methods
 
-class Aircraft <<Aggregate Root>> {
-        operationalStatus <<enum>>
+ class Aircraft <<Aggregate Root>> {
         crewSize
     }
 
@@ -42,9 +41,14 @@ class Aircraft <<Aggregate Root>> {
        name
     }
 
+    class AircraftOperationalStatus <<Value Object>> {
+        value
+    }
+
     Aircraft *-- Country
     Aircraft *-- CabinConfiguration
     Aircraft *-- AircraftRegistration
+    Aircraft *-- AircraftOperationalStatus
 
 
 

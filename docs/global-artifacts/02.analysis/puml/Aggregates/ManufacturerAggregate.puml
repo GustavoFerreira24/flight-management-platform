@@ -22,21 +22,25 @@ skinparam {
 hide circle
 hide methods
 
-class Manufacturer <<Aggregate Root>> {
+ class Manufacturer <<Aggregate Root>> {
         name
-        manufacturerType <<enum>>
-}
+    }
 
-class ManufacturerDesignator <<Value Object>> {
+    class ManufacturerDesignator <<Value Object>> {
         value
-}
+    }
 
-class Country <<Value Object>> {
+    class Country <<Value Object>> {
         name
-}
+    }
 
-Manufacturer *-- ManufacturerDesignator
-Manufacturer *-- Country
+    class ManufacturerType <<Value Object>> {
+        value
+    }
+
+    Manufacturer *-- ManufacturerDesignator
+    Manufacturer *-- Country
+    Manufacturer *-- ManufacturerType
 }
 
 

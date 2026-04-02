@@ -22,17 +22,25 @@ skinparam {
 hide circle
 hide methods
 
-class FlightRoute <<Aggregate Root>> {
-    type <<enum>>
-    status <<enum>>
-    deactivatedFrom
-}
+ class FlightRoute <<Aggregate Root>> {
+        deactivatedFrom
+    }
 
-class RouteDesignator <<Value Object>> {
-    value
-}
+    class RouteDesignator <<Value Object>> {
+        value
+    }
 
-FlightRoute *-- RouteDesignator
+    class FlightRouteType <<Value Object>> {
+        value
+    }
+
+    class FlightRouteStatus <<Value Object>> {
+        value
+    }
+
+    FlightRoute *-- RouteDesignator
+    FlightRoute *-- FlightRouteType
+    FlightRoute *-- FlightRouteStatus
 
 
 @enduml

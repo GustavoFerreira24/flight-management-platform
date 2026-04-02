@@ -22,23 +22,31 @@ skinparam {
 hide circle
 hide methods
 
-class FlightPlan <<Aggregate Root>> {
-    status
-    plannedDeparture
-    scheduledArrival
-}
+ class FlightPlan <<Aggregate Root>> {
+        plannedDeparture
+        scheduledArrival
+    }
 
-class FlightPlanID <<Value Object>> {
+    class FlightPlanID <<Value Object>> {
         value
-}
+    }
 
-class FuelQty <<Value Object>> {
-    amount
-    unit <<enum>>
-}
+    class FlightPlanStatus <<Value Object>> {
+        value
+    }
+
+    class FuelQty <<Value Object>> {
+        amount
+    }
+
+    class FuelUnit <<Value Object>> {
+        value
+    }
 
 
-FlightPlan *-- FuelQty
-FlightPlan *-- FlightPlanID
+    FlightPlan *-- FuelQty
+    FlightPlan *-- FlightPlanID
+    FlightPlan *-- FlightPlanStatus
+    FuelQty *-- FuelUnit
 
 @enduml
