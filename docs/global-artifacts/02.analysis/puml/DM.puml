@@ -35,7 +35,11 @@ package "Simulation Aggregate" {
     }
 
     class FlightExecution <<Entity>> {
-        status <<enum>>
+
+    }
+
+    class FlightExecutionStatus <<Value Object>> {
+        value
     }
 
     class Report <<Value Object>> {
@@ -67,6 +71,7 @@ package "Simulation Aggregate" {
     SafetyViolation "1" --> "*" FlightExecution
     FlightExecution "1" --> "*" AircraftPosition
     AircraftPosition *-- Coordinates
+    FlightExecution *-- FlightExecutionStatus
 
 
 }
@@ -74,8 +79,6 @@ package "Simulation Aggregate" {
 package "FlightRoute Aggregate" {
 
     class FlightRoute <<Aggregate Root>> {
-        type <<enum>>
-        status <<enum>>
         deactivatedFrom
     }
 
@@ -83,7 +86,17 @@ package "FlightRoute Aggregate" {
         value
     }
 
+    class FlightRouteType <<Value Object>> {
+        value
+    }
+
+    class FlightRouteStatus <<Value Object>> {
+        value
+    }
+
     FlightRoute *-- RouteDesignator
+    FlightRoute *-- FlightRouteType
+    FlightRoute *-- FlightRouteStatus
 
 
 }
@@ -103,12 +116,16 @@ package "FlightPlan Aggregate" {
 
     class FuelQty <<Value Object>> {
         amount
-        unit <<enum>>
+    }
+
+    class FuelUnit <<Value Object>> {
+        value
     }
 
 
     FlightPlan *-- FuelQty
     FlightPlan *-- FlightPlanID
+    FuelQty *-- FuelUnit
 
 }
 
@@ -196,8 +213,6 @@ package "User Aggregate" {
 
     class User <<Aggregate Root>> {
            name
-           status <<enum>>
-           roles <<enum>>
     }
 
     class UserID <<Value Object>> {
@@ -222,6 +237,16 @@ package "User Aggregate" {
           nextDueDate
     }
 
+    class UserStatus <<Value Object>> {
+        value
+    }
+
+    class UserRoles <<Value Object>> {
+        value
+    }
+
+    User *-- UserStatus
+    User *-- UserRoles
     User *-- SecurityClearance
     User *-- SkillsAssessment
     User *-- EmailAddress
@@ -232,7 +257,6 @@ package "User Aggregate" {
 package "Aircraft Aggregate" {
 
     class Aircraft <<Aggregate Root>> {
-        operationalStatus <<enum>>
         crewSize
     }
 
@@ -250,9 +274,14 @@ package "Aircraft Aggregate" {
        name
     }
 
+    class AircraftOperationalStatus <<Value Object>> {
+        value
+    }
+
     Aircraft *-- Country
     Aircraft *-- CabinConfiguration
     Aircraft *-- AircraftRegistration
+    Aircraft *-- AircraftOperationalStatus
 
 
 }
@@ -261,8 +290,6 @@ package "AircraftModel Aggregate" {
 
     class AircraftModel <<Aggregate Root>> {
         name
-        type <<enum>>
-        motorization <<enum>>
         maxRange
         emptyWeight
         MTOW
@@ -284,8 +311,18 @@ package "AircraftModel Aggregate" {
         variantId
     }
 
+    class AircraftModelType <<Value Object>> {
+        value
+    }
+
+    class AircraftModelMotorization <<Value Object>> {
+        value
+    }
+
     AircraftModel *-- AircraftModelDesignator
     AircraftModel *-- AircraftVariant
+    AircraftModel *-- AircraftModelType
+    AircraftModel *-- AircraftModelMotorization
 
 }
 
@@ -366,7 +403,6 @@ package "Flight Aggregate" {
 package "Pilot Aggregate" {
 
     class Pilot <<Aggregate Root>>{
-        status <<enum>>
     }
 
     class PilotID <<Value Object>> {
@@ -378,8 +414,13 @@ package "Pilot Aggregate" {
         validUntil
     }
 
+    class PilotStatus <<Value Object>> {
+        value
+    }
+
     Pilot *-- PilotID
     Pilot *-- Certification
+    Pilot *-- PilotStatus
 
 }
 
@@ -388,7 +429,6 @@ package "Manufacturer Aggregate" {
 
     class Manufacturer <<Aggregate Root>> {
         name
-        manufacturerType <<enum>>
     }
 
     class ManufacturerDesignator <<Value Object>> {
@@ -399,8 +439,13 @@ package "Manufacturer Aggregate" {
         name
     }
 
+    class ManufacturerType <<Value Object>> {
+        value
+    }
+
     Manufacturer *-- ManufacturerDesignator
     Manufacturer *-- Country
+    Manufacturer *-- ManufacturerType
 }
 
 
