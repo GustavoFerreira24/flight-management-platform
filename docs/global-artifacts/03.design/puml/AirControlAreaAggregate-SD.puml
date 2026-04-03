@@ -19,20 +19,21 @@ BO -> UI : request to register air control area
 UI -> BO : ask for name, area code,\nand geographic boundary
 
 BO -> UI : submit area data
-UI -> C : registerAirControlArea(data)
+UI -> C : registerAirControlArea(name, areaCode,\nminLatitude, maxLatitude,\nminLongitude, maxLongitude)
 
-C -> AreaRepo : existsByCode(data.areaCode)
+C -> AreaRepo : existsByCode(areaCode)
 AreaRepo --> C : false
 
-C -> Area ++ : create(data.name)
+C -> Area ++ : create(name, areaCode,\nminLatitude, maxLatitude,\nminLongitude, maxLongitude)
 
-Area -> AreaCode ++ : create(data.areaCode)
+Area -> AreaCode ++ : create(areaCode)
 AreaCode --> Area : code created
 
-Area -> Boundary ++ : create(\ndata.minLatitude,\ndata.maxLatitude,\ndata.minLongitude,\ndata.maxLongitude)
+Area -> Boundary ++ : create(minLatitude, maxLatitude,\nminLongitude, maxLongitude)
 Boundary --> Area : boundary created
 
-Area -> Area : validateInvariants()\n- code is unique in the system\n- minLatitude < maxLatitude\n- minLongitude < maxLongitude
+Area -> Area : validateInternalInvariants()\n- minLatitude < maxLatitude\n- minLongitude < maxLongitude
+Area --> C : area created
 
 C -> AreaRepo : save(area)
 AreaRepo --> C : success

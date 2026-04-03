@@ -19,6 +19,7 @@ The system must ensure that the area code is unique in the system and that the g
 
   An `AirControlArea` must have a unique `AirControlAreaCode` in the system.
 
+
 - <span style="color:#70AD47">Valid Geographic Boundary</span>
 
   A `GeographicBoundary` must always be valid, meaning `minLatitude < maxLatitude` and `minLongitude < maxLongitude`.
@@ -26,21 +27,28 @@ The system must ensure that the area code is unique in the system and that the g
 
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Boundary Integrity</span>
+- <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
-  The `AirControlArea` acts as the Aggregate Root and is responsible for creating and keeping together its identifying and 
-spatial information. Since `AirControlAreaCode` and `GeographicBoundary` have no independent lifecycle outside the context 
-of the area, the root ensures that the aggregate is always created in a valid state.
+  `AirControlArea` is the Aggregate Root and the single access point for creating a new air control area. It 
+encapsulates the creation of `AirControlAreaCode` and `GeographicBoundary`, ensuring that these Value Objects cannot be 
+created or changed independently outside the aggregate.
 
-- <span style="color:#70AD47">Business Invariant Control</span>
 
-  This scenario demonstrates that the `AirControlArea` is responsible for enforcing the business rules associated with its 
-identity and boundary. By centralizing validation inside the Aggregate Root, invalid coordinate ranges and inconsistent 
-area definitions are prevented.
+- <span style="color:#70AD47">Internal Consistency Enforcement</span>
+
+  The aggregate is responsible for guaranteeing that its internal state is always valid. In this scenario, that means 
+the `GeographicBoundary` can only be created with consistent coordinate limits, namely `minLatitude < maxLatitude` and 
+`minLongitude < maxLongitude`.
+
+
+- <span style="color:#70AD47">System-Wide Uniqueness Support</span>
+
+  The uniqueness of `AirControlAreaCode` is a business rule that depends on the existing state of the system. Therefore, 
+it is verified through the repository before the aggregate is persisted. The registration only succeeds if no other 
+`AirControlArea` already uses the same code.
+
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate `AirControlAreaCode` or `GeographicBoundary` directly. They interact only with the
-  `AirControlArea`, which decides whether the creation operation is valid. This preserves the consistency of the aggregate 
-and makes its boundary explicit.
-
+  External components do not manipulate `AirControlAreaCode` or `GeographicBoundary` directly. They interact only with 
+`AirControlArea`, which preserves the consistency of the aggregate and makes its boundary explicit.

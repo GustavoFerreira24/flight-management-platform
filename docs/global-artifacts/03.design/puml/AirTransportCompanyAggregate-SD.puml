@@ -17,29 +17,29 @@ participant "iataCode\n:IATACode" as IATACode
 participant "icaoCode\n:ICAOCode" as ICAOCode
 
 BO -> UI : request to register air transport company
-UI -> BO : ask for name, country,\nIATA code and ICAO code
+UI -> BO : ask for name, country,\nIATA code, and ICAO code
 
 BO -> UI : submit company data
-UI -> C : registerAirTransportCompany(data)
+UI -> C : registerAirTransportCompany(name, country,\niataCode, icaoCode)
 
-C -> CompanyRepo : existsByIATACode(data.iataCode)
+C -> CompanyRepo : existsByIATACode(iataCode)
 CompanyRepo --> C : false
 
-C -> CompanyRepo : existsByICAOCode(data.icaoCode)
+C -> CompanyRepo : existsByICAOCode(icaoCode)
 CompanyRepo --> C : false
 
-C -> Company ++ : create(data.name)
+C -> Company ++ : create(name)
 
-Company -> Country ++ : create(data.country)
+Company -> Country ++ : create(country)
 Country --> Company : country created
 
-Company -> IATACode ++ : create(data.iataCode)
+Company -> IATACode ++ : create(iataCode)
 IATACode --> Company : IATA code created
 
-Company -> ICAOCode ++ : create(data.icaoCode)
+Company -> ICAOCode ++ : create(icaoCode)
 ICAOCode --> Company : ICAO code created
 
-Company -> Company : validateInvariants()\n- exactly one country exists\n- exactly one IATA code exists\n- exactly one ICAO code exists
+Company --> C : company created
 
 C -> CompanyRepo : save(company)
 CompanyRepo --> C : success

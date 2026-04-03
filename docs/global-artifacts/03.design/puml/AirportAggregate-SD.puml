@@ -20,35 +20,36 @@ participant "iataCode\n:IATACode" as IATACode
 participant "icaoCode\n:ICAOCode" as ICAOCode
 
 BO -> UI : request to register airport
-UI -> BO : ask for name, town, country,\ncoordinates, altitude, IATA, ICAO,\nair control area
+UI -> BO : ask for name, town, country,\ncoordinates, altitude, IATA code,\nICAO code, and air control area
 
 BO -> UI : submit airport data
-UI -> C : registerAirport(data, airControlAreaCode)
+UI -> C : registerAirport(name, town, country,\nlatitude, longitude, altitude,\niataCode, icaoCode, airControlAreaCode)
 
-C -> AirportRepo : existsByIATACode(data.iataCode)
+C -> AirportRepo : existsByIATACode(iataCode)
 AirportRepo --> C : false
 
-C -> AirportRepo : existsByICAOCode(data.icaoCode)
+C -> AirportRepo : existsByICAOCode(icaoCode)
 AirportRepo --> C : false
 
 C -> AreaRepo : findByCode(airControlAreaCode)
 AreaRepo --> C : airControlArea
 
-C -> Airport ++ : create(data.name, data.town, data.altitude, airControlArea)
+C -> Airport ++ : create(name, town, altitude, airControlArea)
 
-Airport -> Country ++ : create(data.country)
+Airport -> Country ++ : create(country)
 Country --> Airport : country created
 
-Airport -> Coordinates ++ : create(data.latitude, data.longitude)
+Airport -> Coordinates ++ : create(latitude, longitude)
 Coordinates --> Airport : coordinates created
 
-Airport -> IATACode ++ : create(data.iataCode)
+Airport -> IATACode ++ : create(iataCode)
 IATACode --> Airport : IATA code created
 
-Airport -> ICAOCode ++ : create(data.icaoCode)
+Airport -> ICAOCode ++ : create(icaoCode)
 ICAOCode --> Airport : ICAO code created
 
-Airport -> Airport : validateInvariants()\n- coordinates are valid\n- exactly one IATA code exists\n- exactly one ICAO code exists
+Airport -> Airport : validateInternalInvariants()\n- coordinates are valid
+Airport --> C : airport created
 
 C -> AirportRepo : save(airport)
 AirportRepo --> C : success
