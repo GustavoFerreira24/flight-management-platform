@@ -13,22 +13,31 @@ control ":RegisterEngineModelController" as C
 participant "engineModelRepository\n:EngineModelRepository" as EngineRepo
 participant "engineModel\n:EngineModel" as EngineModel
 participant "designator\n:EngineModelDesignator" as Designator
+participant "engineType\n:EngineType" as EngineType
+participant "fuelType\n:FuelType" as FuelType
 
 BO -> UI : request to register engine model
-UI -> BO : ask for name, type,\nthrust, fuel type, TSFC, designator
+UI -> BO : ask for designator, engine type,\npower, thrust, fuel type, and TSFC
 
 BO -> UI : submit engine model data
-UI -> C : registerEngineModel(data)
+UI -> C : registerEngineModel(designator, engineType,\npower, thrust, fuelType, TSFC)
 
-C -> EngineRepo : existsByDesignator(data.designator)
+C -> EngineRepo : existsByDesignator(designator)
 EngineRepo --> C : false
 
-C -> EngineModel ++ : create(data.name, data.type,\ndata.thrust, data.fuelType, data.TSFC)
+C -> EngineModel ++ : create(power, thrust, TSFC)
 
-EngineModel -> Designator ++ : create(data.designator)
+EngineModel -> Designator ++ : create(designator)
 Designator --> EngineModel : designator created
 
-EngineModel -> EngineModel : validateInvariants()\n- thrust > 0\n- TSFC > 0\n- type is defined\n- fuel type is defined
+EngineModel -> EngineType ++ : create(engineType)
+EngineType --> EngineModel : engine type created
+
+EngineModel -> FuelType ++ : create(fuelType)
+FuelType --> EngineModel : fuel type created
+
+EngineModel -> EngineModel : validateInternalInvariants()\n- thrust > 0\n- TSFC > 0
+EngineModel --> C : engine model created
 
 C -> EngineRepo : save(engineModel)
 EngineRepo --> C : success

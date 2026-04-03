@@ -28,14 +28,14 @@ AircraftModelRepo --> C : aircraftModel
 C -> EngineModelRepo : findById(engineModelId)
 EngineModelRepo --> C : engineModel
 
-C -> AircraftModel : addVariant(engineModel)
+C -> AircraftModel : addCertifiedVariant(engineModel)
 activate AircraftModel
 
 AircraftModel -> AircraftModel : ensureEngineModelNotDuplicated(engineModel)
 AircraftModel -> AircraftModel : ensureEngineTypeCompatibility(engineModel)
-AircraftModel -> AircraftVariant ++ : create(engineModel)
+
+AircraftModel -> AircraftVariant ++ : createFrom(engineModel)
 AircraftVariant --> AircraftModel : variant created
-AircraftModel -> AircraftModel : ensureAtLeastOneCertifiedVariant()
 
 deactivate AircraftModel
 

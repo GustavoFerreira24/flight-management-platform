@@ -2,7 +2,7 @@
 
 ## <span style="color:#2E75B6">Scenario</span>
 
-The Backoffice Operator registers a new engine model by providing its name, type, thrust, fuel type, TSFC, and designator.
+The Backoffice Operator registers a new engine model by providing its designator, engine type, power, thrust, fuel type, and TSFC.  
 The system must ensure that the engine model is created with valid performance and identification data.
 
 ## <span style="color:#2E75B6">Domain Model</span>
@@ -17,33 +17,48 @@ The system must ensure that the engine model is created with valid performance a
 
 - <span style="color:#70AD47">Unique Engine Model Designator</span>
 
-    An `EngineModel` must have a unique `EngineModelDesignator` in the system.
+  An `EngineModel` must have a unique `EngineModelDesignator` in the system.
+
 
 - <span style="color:#70AD47">Valid Performance Values</span>
 
   An `EngineModel` must always have physically valid performance attributes, namely `thrust > 0` and `TSFC > 0`.
 
+
 - <span style="color:#70AD47">Complete Technical Definition</span>
 
-  An `EngineModel` must always have a defined engine type and fuel type.
+  An `EngineModel` must always have a defined `EngineType` and `FuelType`.
+
 
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Engine Model Integrity</span>
+- <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
-  The `EngineModel` acts as the Aggregate Root and is responsible for creating and maintaining the technical identity of 
-the engine model. Since `EngineModelDesignator` has no independent lifecycle outside the engine context, the root ensures 
-that the aggregate is created in a valid and consistent state.
+  `EngineModel` is the Aggregate Root and the single entry point for creating a new engine model. It encapsulates the 
+creation of `EngineModelDesignator`, `EngineType`, and `FuelType`, ensuring that these Value Objects cannot exist 
+independently outside the aggregate.
 
-- <span style="color:#70AD47">Business Invariant Control</span>
 
-  This scenario demonstrates that the `EngineModel` is responsible for enforcing the core business rules of the aggregate, 
-especially the validity of its technical and performance attributes. By centralizing these checks inside the Aggregate 
-Root, invalid engine definitions are prevented.
+- <span style="color:#70AD47">Internal Consistency Enforcement</span>
+
+  The aggregate guarantees that its internal state is always valid. In this scenario, this includes ensuring that the 
+engine model is created only with physically valid performance values, namely positive thrust and positive TSFC.
+
+
+- <span style="color:#70AD47">System-Wide Uniqueness Support</span>
+
+  The uniqueness of `EngineModelDesignator` is a business rule that depends on the global state of the system. Therefore, 
+it is verified through the repository before the aggregate is persisted, ensuring that no duplicate engine model 
+designators exist.
+
+
+- <span style="color:#70AD47">Complete Technical Definition</span>
+
+  The aggregate is also responsible for ensuring that an engine model is not created with an incomplete technical 
+definition. In this scenario, that means the engine model must always include a defined `EngineType` and `FuelType`.
+
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate the `EngineModelDesignator` directly. They interact only with the `EngineModel`, 
-which decides whether the registration is valid. This preserves the consistency of the aggregate and makes its boundary 
-explicit.
-
+  External components do not manipulate `EngineModelDesignator`, `EngineType`, or `FuelType` directly. They interact 
+only with `EngineModel`, which preserves the consistency of the aggregate and clearly defines its boundary.

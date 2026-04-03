@@ -22,31 +22,55 @@ passenger capacity of the selected aircraft model.
 
   An Aircraft must have a unique AircraftRegistration in the system.
 
+
 - <span style="color:#70AD47">Valid Cabin Configuration</span>
 
     The total number of seats in the CabinConfiguration must not exceed the passenger capacity of the associated 
 AircraftModel.
 
+
 - <span style="color:#70AD47">Valid Initial State</span>
 
   An Aircraft must always be created with valid registration, country, crew size, and cabin configuration.
 
+
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Aircraft Consistency</span>
+- <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
-  The Aircraft acts as the Aggregate Root and is responsible for creating and keeping together its identifying and 
-operational information. Since AircraftRegistration, Country, and CabinConfiguration have no independent meaning 
-outside the aircraft context, the root ensures that the aggregate is always created in a valid state.
+  `Aircraft` is the Aggregate Root and the single entry point for creating a new aircraft. It encapsulates the creation 
+of `AircraftRegistration`, `Country`, `CabinConfiguration`, and `AircraftOperationalStatus`, ensuring that these Value 
+Objects cannot exist independently outside the aggregate.
+
+
+- <span style="color:#70AD47">Internal Consistency Enforcement</span>
+
+  The aggregate guarantees that its internal state is always valid. In this scenario, this includes ensuring that the 
+`CabinConfiguration` is consistent with the aircraft’s operational constraints.
+
+
+- <span style="color:#70AD47">System-Wide Uniqueness Support</span>
+
+  The uniqueness of `AircraftRegistration` is a business rule that depends on the global state of the system. Therefore, 
+it is verified through the repository before the aggregate is persisted.
+
+
+- <span style="color:#70AD47">Association with Another Aggregate Root</span>
+
+  An `Aircraft` must be associated with an existing `AircraftModel`, which is another Aggregate Root in the domain model.  
+The model is retrieved through its repository before the aircraft is created, ensuring that the relationship is 
+established only with a valid aggregate.
+
 
 - <span style="color:#70AD47">Business Invariant Control</span>
 
-  This scenario demonstrates that the Aircraft is responsible for enforcing the main business rules of the aggregate, 
-especially the relation between cabin configuration and the capacity of the selected aircraft model. By centralizing 
-validation inside the Aggregate Root, invalid aircraft configurations are prevented.
+  The aggregate is responsible for enforcing the rule that the total number of seats in the `CabinConfiguration` must 
+not exceed the passenger capacity defined by the associated `AircraftModel`. This ensures that invalid aircraft 
+configurations are prevented.
+
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate AircraftRegistration, Country, or CabinConfiguration directly. They interact 
-only with the Aircraft, which decides whether the operation is valid. This preserves the internal consistency of the 
-aggregate and makes its boundary explicit.
+  External components do not manipulate `AircraftRegistration`, `Country`, `CabinConfiguration`, or 
+`AircraftOperationalStatus` directly. They interact only with `Aircraft`, which preserves the consistency of the 
+aggregate and clearly defines its boundary.

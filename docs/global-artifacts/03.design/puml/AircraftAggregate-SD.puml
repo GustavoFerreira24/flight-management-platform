@@ -17,35 +17,36 @@ participant "aircraft\n:Aircraft" as Aircraft
 participant "registration\n:AircraftRegistration" as Registration
 participant "cabinConfiguration\n:CabinConfiguration" as CabinConfiguration
 participant "country\n:Country" as Country
+participant "status\n:AircraftOperationalStatus" as Status
 
 ATC -> UI : request to add aircraft
 UI -> ATC : ask for registration, country,\ncrew size, cabin configuration,\naircraft model
 
 ATC -> UI : submit aircraft data
-UI -> C : addAircraft(data, aircraftModelId)
+UI -> C : addAircraft(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModelId)
 
 C -> AircraftModelRepo : findById(aircraftModelId)
 AircraftModelRepo --> C : aircraftModel
 
-C -> AircraftRepo : existsByRegistration(data.registration)
+C -> AircraftRepo : existsByRegistration(registration)
 AircraftRepo --> C : false
 
-C -> Aircraft ++ : create(data, aircraftModel)
+C -> Aircraft ++ : create(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModel)
 
-Aircraft -> Registration ++ : create(data.registration)
+Aircraft -> Registration ++ : create(registration)
 Registration --> Aircraft : registration created
 
-Aircraft -> Country ++ : create(data.country)
+Aircraft -> Country ++ : create(country)
 Country --> Aircraft : country created
 
-Aircraft -> CabinConfiguration ++ : create(data.economySeats,\ndata.businessSeats,\ndata.firstClassSeats)
+Aircraft -> CabinConfiguration ++ : create(economySeats,\nbusinessSeats, firstClassSeats)
 CabinConfiguration --> Aircraft : cabin configuration created
 
-Aircraft -> AircraftOperationalStatus ++ : create(defaultStatus)
-AircraftOperationalStatus --> Aircraft : operational status created
+Aircraft -> Status ++ : create(defaultStatus)
+Status --> Aircraft : operational status created
 
-Aircraft -> Aircraft : validateCrewSize(data.crewSize)
-Aircraft -> Aircraft : validateCabinCapacity(aircraftModel)\n- total seats <= model passenger capacity
+Aircraft -> Aircraft : validateInternalInvariants()\n- total seats <= aircraftModel passenger capacity
+Aircraft --> C : aircraft created
 
 C -> AircraftRepo : save(aircraft)
 AircraftRepo --> C : success

@@ -2,8 +2,8 @@
 
 ## <span style="color:#2E75B6">Scenario</span>
 
-The Backoffice Operator registers a new manufacturer by providing its name, designator, and country.
-The system must ensure that the manufacturer is created with valid identifying information and one consistent country.
+The Backoffice Operator registers a new manufacturer by providing its name, designator, country, and manufacturer type.  
+The system must ensure that the manufacturer is created with valid identifying information and one consistent technical classification.
 
 ## <span style="color:#2E75B6">Domain Model</span>
 
@@ -19,27 +19,35 @@ The system must ensure that the manufacturer is created with valid identifying i
 
   A `Manufacturer` must have a unique `ManufacturerDesignator` in the system.
 
+
 - <span style="color:#70AD47">Consistent Identification</span>
 
-  A `Manufacturer` must always have exactly one valid `ManufacturerDesignator` and exactly one `Country`.
+  A `Manufacturer` must always have one valid `ManufacturerDesignator`, one `Country`, and one `ManufacturerType`.
 
 
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Manufacturer Integrity</span>
+- <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
-  The `Manufacturer` acts as the Aggregate Root and is responsible for creating and keeping together the manufacturer’s 
-identifying information. Since `ManufacturerDesignator` and `Country` have no independent lifecycle outside the manufacturer 
-context, the root ensures that the aggregate is created in a valid and consistent state.
+  `Manufacturer` is the Aggregate Root and the single entry point for creating a new manufacturer. It encapsulates the 
+creation of `ManufacturerDesignator`, `Country`, and `ManufacturerType`, ensuring that these Value Objects cannot exist 
+independently outside the aggregate.
 
-- <span style="color:#70AD47">Business Invariant Control</span>
 
-  This scenario demonstrates that the `Manufacturer` is responsible for enforcing the core business rules of the aggregate, 
-especially the consistency of its identifying information. By centralizing validation inside the Aggregate Root, invalid 
-or incomplete manufacturer definitions are prevented.
+- <span style="color:#70AD47">Internal Consistency Enforcement</span>
+
+  The aggregate is responsible for keeping together the manufacturer’s identifying and classification information as one 
+consistent whole. This prevents incomplete or ambiguous manufacturer definitions inside the aggregate boundary.
+
+
+- <span style="color:#70AD47">System-Wide Uniqueness Support</span>
+
+  The uniqueness of `ManufacturerDesignator` is a business rule that depends on the global state of the system. 
+Therefore, it is verified through the repository before the aggregate is persisted, ensuring that no duplicate 
+manufacturer designators exist.
+
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate `ManufacturerDesignator` or `Country` directly. They interact only with the
-`Manufacturer`, which decides whether the registration is valid. This preserves the consistency of the aggregate and makes 
-its boundary explicit.
+  External components do not manipulate `ManufacturerDesignator`, `Country`, or `ManufacturerType` directly. They 
+interact only with `Manufacturer`, which preserves the consistency of the aggregate and clearly defines its boundary.
