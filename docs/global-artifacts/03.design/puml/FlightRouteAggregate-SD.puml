@@ -12,6 +12,7 @@ boundary ":ManageFlightRouteUI" as UI
 control ":ManageFlightRouteController" as C
 participant "flightRouteRepository\n:FlightRouteRepository" as RouteRepo
 participant "flightRoute\n:FlightRoute" as Route
+participant "flightRouteStatus\n:FlightRouteStatus" as FlightRouteStatus
 
 ATC -> UI : request to deactivate flight route
 UI -> ATC : ask for route identifier\nand deactivation date
@@ -20,7 +21,7 @@ ATC -> UI : submit routeId and date
 UI -> C : deactivateRoute(routeId, date)
 
 C -> RouteRepo : findById(routeId)
-RouteRepo --> C : flightRoute
+RouteRepo --> C : route
 
 C -> Route : deactivateFrom(date)
 

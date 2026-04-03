@@ -21,23 +21,24 @@ ATC -> UI : request to create flight
 UI -> ATC : ask for route, flight designator,\ndeparture day and departure time
 
 ATC -> UI : submit flight data
-UI -> C : createFlight(data, routeId)
+UI -> C : createFlight(routeId, flightDesignator,\ndepartureDay, departureTime)
 
 C -> RouteRepo : findById(routeId)
 RouteRepo --> C : flightRoute
 
-C -> FlightRepo : existsByDesignator(data.flightDesignator)
+C -> FlightRepo : existsByDesignator(flightDesignator)
 FlightRepo --> C : false
 
-C -> Flight ++ : create()
+C -> Flight ++ : create(flightRoute, flightDesignator,\ndepartureDay, departureTime)
 
-Flight -> Designator ++ : create(data.flightDesignator)
+Flight -> Designator ++ : create(flightDesignator)
 Designator --> Flight : designator created
 
-Flight -> Departure ++ : create(data.departureDay, data.departureTime)
+Flight -> Departure ++ : create(departureDay, departureTime)
 Departure --> Flight : departure created
 
-Flight -> Flight : validateInvariants()\n- flight designator is valid and unique\n- departure day is defined\n- departure time is defined
+Flight -> Flight : validateInternalInvariants()\n- departure day is defined\n- departure time is defined
+Flight --> C : flight created
 
 C -> FlightRepo : save(flight)
 FlightRepo --> C : success

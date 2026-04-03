@@ -18,13 +18,15 @@ participant "flight\n:Flight" as Flight
 participant "aircraft\n:Aircraft" as Aircraft
 participant "pilot\n:Pilot" as Pilot
 participant "flightPlan\n:FlightPlan" as FlightPlan
+participant "flightPlanStatus\n:FlightPlanStatus" as FlightPlanStatus
 participant "fuelQty\n:FuelQty" as FuelQty
+participant "fuelUnit\n:FuelUnit" as FuelUnit
 
 P -> UI : request to create flight plan
-UI -> P : ask for flight, aircraft,\nplanned departure, scheduled arrival\nand fuel quantity
+UI -> P : ask for flight, aircraft,\nplanned departure, scheduled arrival,\nfuel quantity, and fuel unit
 
 P -> UI : submit flight plan data
-UI -> C : createFlightPlan(data, flightId, aircraftId, pilotId)
+UI -> C : createFlightPlan(flightId, aircraftId, pilotId,\nplannedDeparture, scheduledArrival,\nfuelAmount, fuelUnit)
 
 C -> FlightRepo : findById(flightId)
 FlightRepo --> C : flight
@@ -35,18 +37,19 @@ AircraftRepo --> C : aircraft
 C -> PilotRepo : findById(pilotId)
 PilotRepo --> C : pilot
 
-C -> FlightPlan ++ : create(data.plannedDeparture, data.scheduledArrival)
+C -> FlightPlan ++ : create(flight, aircraft, pilot,\nplannedDeparture, scheduledArrival)
 
-FlightPlan -> FlightPlanStatus ++ : create(initialStatus)
+FlightPlan -> FlightPlanStatus ++ : create(DRAFT)
 FlightPlanStatus --> FlightPlan : status created
 
-FlightPlan -> FuelQty ++ : create(data.fuelAmount)
+FlightPlan -> FuelQty ++ : create(fuelAmount)
 FuelQty --> FlightPlan : fuel quantity created
 
-FuelQty -> FuelUnit ++ : create(data.fuelUnit)
+FuelQty -> FuelUnit ++ : create(fuelUnit)
 FuelUnit --> FuelQty : fuel unit created
 
-FlightPlan -> FlightPlan : validateInvariants()\n- fuel quantity > 0\n- status is valid for creation
+FlightPlan -> FlightPlan : validateInternalInvariants()\n- fuel quantity > 0\n- initial status is valid
+FlightPlan --> C : flight plan created
 
 C -> FlightPlanRepo : save(flightPlan)
 FlightPlanRepo --> C : success

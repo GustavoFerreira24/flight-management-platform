@@ -78,12 +78,6 @@ Belongs to exactly one Air Transport Company at a time, though they may change c
 Cannot be deactivated if they have flight plans currently assigned (US077).  
 Has an active/inactive status within the company's roster.
 
-### <span style="color:#70AD47">Collaborator</span>
-Represents a User associated with a customer entity — which may be either an Air Transport Company or an Air Control Area (US061).  
-Carries a position attribute that belongs to the relationship between the user and the customer, not to either individually.  
-Email and phone number may be edited; all other information is immutable after registration (US063).  
-Can be disabled to revoke system access (US064).
-
 ### <span style="color:#70AD47">Flight Route</span>
 Identified by a unique route name composed of the company's 2-letter initials followed by up to 4 digits (e.g. TP123) (US073).  
 Connects exactly two airports (origin and destination).  
@@ -109,17 +103,6 @@ Described using the Core Flight DSL and validated through lexical, syntactic, an
 Includes the aircraft, pilot, one or more flight legs, and fuel information.  
 Status progresses from draft to validated.  
 A flight plan is fundamentally a document, as stated by the client in the forum.
-
-### <span style="color:#70AD47">Flight Leg</span>
-Represents a single, non-stop journey segment between two airports within a flight plan, defined by one take-off and one landing (Section 3.4.1).  
-Each leg contains departure information, arrival information, route, one or more segments, and fuel data.  
-The arrival airport of leg N must match the departure airport of leg N+1 (Section 3.4.5).  
-**Note:** The client expressed doubt about whether Flight Leg needs to be represented in the DDD Domain Model, suggesting it may exist only within the DSL specification. The team has opted to maintain it given its explicit role in Section 3.4.1 and its relevance to weather data association (US082). This decision should be validated with the client.
-
-### <span style="color:#70AD47">Segment</span>
-Represents a linear path connecting two coordinate points within a flight leg.  
-Characterized by start and end coordinates, allowed altitude slots, and wind conditions (direction and speed) (Section 3.2).  
-**Note:** The client suggested that segments and nodes may not need to be stored independently in the system and could exist solely as part of the DSL specification (confirmed in forum Q&A). The team has retained Segment in the model to support semantic validation and weather data association, but this decision should be validated.
 
 ### <span style="color:#70AD47">Weather Data (Weather Record)</span>
 Represents atmospheric conditions registered for a specific air control area on a specific day.
@@ -184,11 +167,6 @@ Format: airline designator (2 letters) + numeric flight number (up to 4 digits) 
 Represents the amount of fuel assigned to a flight leg.  
 Must be strictly positive (Section 3.4.5).  
 Includes the numeric amount and a unit of measure.
-
-### <span style="color:#70AD47">AltitudeSlot</span>
-Represents an allowed altitude band within a segment.  
-Defined by minimum altitude, maximum altitude, and width.  
-A segment may have multiple altitude slots simultaneously to support aircraft climbing and descending (Section 3.2, confirmed in forum Q&A).
 
 ### <span style="color:#70AD47">CabinConfiguration</span>
 Represents the number of seats per class (economy, business, first) in a specific aircraft.  
