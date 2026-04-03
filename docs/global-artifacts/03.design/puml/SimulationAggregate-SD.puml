@@ -1,75 +1,59 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
-    PackageStyle frame
+title Simulation Aggregate Scenario: Execute Simulation and Integrate Results
 
-    PackageBackgroundColor #F8F9FA
-    PackageBorderColor #ADB5BD
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+autonumber
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+actor "Flight Control Operator" as FCO
+boundary ":RunSimulationUI" as UI
+control ":RunSimulationController" as C
+participant "simulationRepo\n:SimulationRepository" as SimRepo
+participant "flightPlanRepo\n:FlightPlanRepository" as FPRepo
+participant "aircraftRepo\n:AircraftRepository" as ARepo
+participant "weatherDataRepo\n:WeatherDataRepository" as WRepo
+participant "<<external>>\n:CSimulationModule" as CSim
+participant "simulation\n:Simulation" as Sim
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+FCO -> UI : request simulation execution
+UI -> C : executeSimulation(simulationId)
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+C -> SimRepo : findById(simulationId)
+SimRepo --> C : simulation
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
+note over C
+Retrieve domain information required
+to execute the simulation in the C module
+end note
 
-hide circle
-hide methods
+C -> FPRepo : findIncludedFlightPlans(simulation)
+FPRepo --> C : flightPlans
 
-class Simulation <<Aggregate Root>> {
-    timeRange
-    safetyThreshold
-    status
-}
+C -> ARepo : findAircraftFor(flightPlans)
+ARepo --> C : aircraft
 
-class Simulation <<Aggregate Root>> {
-        timeRange
-        safetyThreshold
-        status
-    }
+C -> WRepo : findByAreaAndTimeRange(\nsimulation.area, simulation.timeRange)
+WRepo --> C : weatherData
 
-    class FlightExecution <<Entity>> {
-        status <<enum>>
-    }
+C -> CSim : runSimulation(\nsimulation.parameters,\nflightPlans,\naircraft,\nweatherData)
+activate CSim
+CSim --> C : simulationResults
+deactivate CSim
 
-    class Report <<Value Object>> {
-        totalFlights
-        result
-        generatedAt
-    }
+C -> Sim : concludeWith(simulationResults)
+activate Sim
+Sim -> Sim : recordFlightExecutions(...)
+Sim -> Sim : recordSafetyViolations(...)
+Sim -> Sim : generateReport(...)
+Sim -> Sim : validateInvariants()
+deactivate Sim
 
-    class SafetyViolation <<Value Object>> {
-        timestamp
-        severity
-        type
-    }
+C -> SimRepo : save(simulation)
+SimRepo --> C : success
 
-    class AircraftPosition <<Value Object>> {
-        altitude
-        velocity
-        timestamp
-    }
-    class Coordinates <<Value Object>> {
-        latitude
-        longitude
-    }
-
-Simulation *-- Report
-Simulation *-- SafetyViolation
-Simulation *-- FlightExecution
-SafetyViolation *-- AircraftPosition
-SafetyViolation "1" --> "*" FlightExecution
-AircraftPosition *-- Coordinates
+C --> UI : simulationConcluded(reportSummary)
+UI --> FCO : display report summary
 
 @enduml
