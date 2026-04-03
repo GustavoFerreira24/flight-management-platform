@@ -2,9 +2,8 @@
 
 ## <span style="color:#2E75B6">Scenario</span>
 
-The Air Transport Company Collaborator creates a new flight by providing the route, the flight designator, and the
-departure day and time.  
-The system must ensure that the flight is created with a unique designator and a valid departure definition.
+The Air Transport Company Collaborator creates a new flight by providing the route, the flight designator, and the departure day and time.  
+The system must ensure that the flight is created with a unique designator, a valid departure definition, and an association with an existing flight route.
 
 ## <span style="color:#2E75B6">Domain Model</span>
 
@@ -18,32 +17,46 @@ The system must ensure that the flight is created with a unique designator and a
 
 - <span style="color:#70AD47">Unique Flight Designator</span>
 
-    A `Flight` must have a unique `FlightDesignator` in the system.
-
+  A `Flight` must have a unique `FlightDesignator` in the system.
 
 
 - <span style="color:#70AD47">Valid Departure Definition</span>
 
   A `Flight` must always have one defined `Departure`, including both departure day and departure time.
 
+
+- <span style="color:#70AD47">Association with One Route</span>
+
+  A `Flight` must always be associated with one existing `FlightRoute`.
+
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Flight Integrity</span>
+- <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
-  The `Flight` acts as the Aggregate Root and is responsible for creating and keeping together the identifying and
-  scheduling information of the flight. Since `FlightDesignator` and `Departure` have no independent lifecycle outside the
-  flight context, the root ensures that the aggregate is created in a valid and consistent state.
+  `Flight` is the Aggregate Root and the single entry point for creating a new flight.  
+  It encapsulates the creation of `FlightDesignator` and `Departure`, ensuring that these Value Objects cannot exist 
+independently outside the aggregate.
 
 
-- <span style="color:#70AD47">Business Invariant Control</span>
+- <span style="color:#70AD47">Internal Consistency Enforcement</span>
 
-  This scenario demonstrates that the `Flight` is responsible for enforcing the core business rules of the aggregate,
-  especially the uniqueness of the flight designator and the existence of one coherent departure definition. By
-  centralizing validation inside the Aggregate Root, invalid or incomplete flight definitions are prevented.
+  The aggregate guarantees that its internal state is always valid.  
+In this scenario, this includes ensuring that the flight is created with a complete departure definition, including both departure day and departure time.
+
+
+- <span style="color:#70AD47">System-Wide Uniqueness Support</span>
+
+  The uniqueness of `FlightDesignator` is a business rule that depends on the global state of the system.  
+Therefore, it is verified through the repository before the aggregate is persisted, ensuring that no duplicate flight designators exist.
+
+
+- <span style="color:#70AD47">Association with Another Aggregate Root</span>
+
+  A `Flight` exists in the context of a `FlightRoute`, which is another Aggregate Root in the domain model.  
+In this scenario, the associated route is obtained through its repository before the flight is created, ensuring that the relationship is established only with an existing aggregate root.
 
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate `FlightDesignator` or `Departure` directly. They interact only with the `Flight`,
-  which decides whether the creation operation is valid. This preserves the consistency of the aggregate and makes its
-  boundary explicit.
+  External components do not manipulate `FlightDesignator` or `Departure` directly.  
+They interact only with `Flight`, which preserves the consistency of the aggregate and clearly defines its boundary.
