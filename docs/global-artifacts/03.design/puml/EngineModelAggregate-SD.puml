@@ -1,41 +1,39 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title EngineModel Aggregate Scenario: Register Engine Model
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "Backoffice Operator" as BO
+boundary ":RegisterEngineModelUI" as UI
+control ":RegisterEngineModelController" as C
+participant "engineModelRepository\n:EngineModelRepository" as EngineRepo
+participant "engineModel\n:EngineModel" as EngineModel
+participant "designator\n:EngineModelDesignator" as Designator
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+BO -> UI : request to register engine model
+UI -> BO : ask for name, type,\nthrust, fuel type, TSFC, designator
 
-class EngineModel <<Aggregate Root>> {
-        name
-        type <<enum>>
-        thrust
-        fuelType
-        TSFC
-}
+BO -> UI : submit engine model data
+UI -> C : registerEngineModel(data)
 
-class EngineModelDesignator <<Value Object>> {
-        value
-}
+C -> EngineRepo : existsByDesignator(data.designator)
+EngineRepo --> C : false
 
-EngineModel *-- EngineModelDesignator
+C -> EngineModel ++ : create(data.name, data.type,\ndata.thrust, data.fuelType, data.TSFC)
 
-}
+EngineModel -> Designator ++ : create(data.designator)
+Designator --> EngineModel : designator created
+
+EngineModel -> EngineModel : validateInvariants()\n- thrust > 0\n- TSFC > 0\n- type is defined\n- fuel type is defined
+
+C -> EngineRepo : save(engineModel)
+EngineRepo --> C : success
+
+C --> UI : engineModelCreated
+UI --> BO : confirm engine model registration
 
 @enduml

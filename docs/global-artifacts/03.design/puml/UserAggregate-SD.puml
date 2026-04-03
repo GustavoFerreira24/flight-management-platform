@@ -1,53 +1,42 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title User Aggregate Scenario: Activate User
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "Administrator" as Admin
+boundary ":ManageUserUI" as UI
+control ":ManageUserController" as C
+participant "userRepository\n:UserRepository" as UserRepo
+participant "user\n:User" as User
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+Admin -> UI : request to activate user
+UI -> Admin : ask for user identifier
 
-class User <<Aggregate Root>> {
-    name
-    status <<enum>>
-}
+Admin -> UI : submit user identifier
+UI -> C : activateUser(userId)
 
-class EmailAddress <<Value Object>> {
-    value
-}
+C -> UserRepo : findById(userId)
+UserRepo --> C : user
 
-class PhoneNumber <<Value Object>> {
-    value
-}
+C -> User : activate()
 
-class SecurityClearance <<Value Object>> {
-    level
-    expiryDate
-}
+activate User
 
-class SkillsAssessment <<Value Object>> {
-    assessedAt
-    nextDueDate
-}
+User -> User : ensureSecurityClearanceIsValid()\n- current date <= expiryDate
+User -> User : ensureSkillsAssessmentIsUpToDate()\n- current date <= nextDueDate
+User -> UserStatus ++ : create(ACTIVE)
+UserStatus --> User : status updated
 
-User *-- SecurityClearance
-User *-- SkillsAssessment
-User *-- EmailAddress
-User *-- PhoneNumber
+deactivate User
+
+C -> UserRepo : save(user)
+UserRepo --> C : success
+
+C --> UI : userActivated
+UI --> Admin : confirm user activation
 
 @enduml

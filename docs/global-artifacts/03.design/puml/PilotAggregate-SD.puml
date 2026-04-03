@@ -1,42 +1,42 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title US11 - Pilot Aggregate Scenario: Activate Pilot with Valid Certification
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "ATC Collaborator" as ATC
+boundary ":ManagePilotUI" as UI
+control ":ManagePilotController" as C
+participant "pilotRepository\n:PilotRepository" as PilotRepo
+participant "pilot\n:Pilot" as Pilot
+participant "certification\n:Certification" as Certification
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+ATC -> UI : request to activate pilot
+UI -> ATC : ask for pilotId
 
+ATC -> UI : submit pilotId
+UI -> C : activatePilot(pilotId)
 
-class Pilot <<Aggregate Root>>{
-        status <<enum>>
-}
+C -> PilotRepo : findById(pilotId)
+PilotRepo --> C : pilot
 
-class PilotID <<Value Object>> {
-        value
-}
+C -> Pilot : activate()
 
-class Certification <<Value Object>> {
-        issuedAt
-        validUntil
-}
+activate Pilot
 
-Pilot *-- PilotID
-Pilot *-- Certification
+Pilot -> Pilot : ensureCertificationIsValid()\n- current date < validUntil
+Pilot -> PilotStatus ++ : create(ACTIVE)
+PilotStatus --> Pilot : status updated
+
+deactivate Pilot
+
+C -> PilotRepo : save(pilot)
+PilotRepo --> C : success
+
+C --> UI : pilotActivated
+UI --> ATC : confirm pilot activation
 
 @enduml

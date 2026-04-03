@@ -1,0 +1,48 @@
+@startuml
+title Flight Aggregate Scenario: Create Flight
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "ATC Collaborator" as ATC
+boundary ":CreateFlightUI" as UI
+control ":CreateFlightController" as C
+participant "flightRouteRepository\n:FlightRouteRepository" as RouteRepo
+participant "flightRepository\n:FlightRepository" as FlightRepo
+participant "flightRoute\n:FlightRoute" as Route
+participant "flight\n:Flight" as Flight
+participant "flightDesignator\n:FlightDesignator" as Designator
+participant "departure\n:Departure" as Departure
+
+ATC -> UI : request to create flight
+UI -> ATC : ask for route, flight designator,\ndeparture day and departure time
+
+ATC -> UI : submit flight data
+UI -> C : createFlight(data, routeId)
+
+C -> RouteRepo : findById(routeId)
+RouteRepo --> C : flightRoute
+
+C -> FlightRepo : existsByDesignator(data.flightDesignator)
+FlightRepo --> C : false
+
+C -> Flight ++ : create()
+
+Flight -> Designator ++ : create(data.flightDesignator)
+Designator --> Flight : designator created
+
+Flight -> Departure ++ : create(data.departureDay, data.departureTime)
+Departure --> Flight : departure created
+
+Flight -> Flight : validateInvariants()\n- flight designator is valid and unique\n- departure day is defined\n- departure time is defined
+
+C -> FlightRepo : save(flight)
+FlightRepo --> C : success
+
+C --> UI : flightCreated
+UI --> ATC : confirm flight creation
+
+@enduml
