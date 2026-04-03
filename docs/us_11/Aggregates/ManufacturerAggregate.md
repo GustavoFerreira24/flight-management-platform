@@ -2,7 +2,8 @@
 
 ## <span style="color:#2E75B6">Scenario</span>
 
-Descrever cenário de uso do agregado
+The Backoffice Operator registers a new manufacturer by providing its name, designator, and country.
+The system must ensure that the manufacturer is created with valid identifying information and one consistent country.
 
 ## <span style="color:#2E75B6">Domain Model</span>
 
@@ -13,18 +14,32 @@ Descrever cenário de uso do agregado
 ![Manufacturer SD](../../global-artifacts/03.design/svg/ManufacturerAggregate-SD.svg)
 
 ## <span style="color:#2E75B6">Invariants</span>
-- Descrever invariante 1
-- Descrever invariante 2
-- ...
+
+- <span style="color:#70AD47">Unique Manufacturer Designator</span>
+
+  A `Manufacturer` must have a unique `ManufacturerDesignator` in the system.
+
+- <span style="color:#70AD47">Consistent Identification</span>
+
+  A `Manufacturer` must always have exactly one valid `ManufacturerDesignator` and exactly one `Country`.
+
 
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Ponto 1</span>
+- <span style="color:#70AD47">Manufacturer Integrity</span>
 
-Justificar ponto 1
+  The `Manufacturer` acts as the Aggregate Root and is responsible for creating and keeping together the manufacturer’s 
+identifying information. Since `ManufacturerDesignator` and `Country` have no independent lifecycle outside the manufacturer 
+context, the root ensures that the aggregate is created in a valid and consistent state.
 
-- <span style="color:#70AD47">Ponto 2</span>
+- <span style="color:#70AD47">Business Invariant Control</span>
 
-Justificar ponto 2
+  This scenario demonstrates that the `Manufacturer` is responsible for enforcing the core business rules of the aggregate, 
+especially the consistency of its identifying information. By centralizing validation inside the Aggregate Root, invalid 
+or incomplete manufacturer definitions are prevented.
 
-...
+- <span style="color:#70AD47">Encapsulation of Internal State</span>
+
+  External components do not manipulate `ManufacturerDesignator` or `Country` directly. They interact only with the
+`Manufacturer`, which decides whether the registration is valid. This preserves the consistency of the aggregate and makes 
+its boundary explicit.

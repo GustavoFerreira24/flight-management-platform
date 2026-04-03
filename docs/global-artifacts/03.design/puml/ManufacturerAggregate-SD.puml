@@ -1,44 +1,43 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title Manufacturer Aggregate Scenario: Register Manufacturer
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "Backoffice Operator" as BO
+boundary ":RegisterManufacturerUI" as UI
+control ":RegisterManufacturerController" as C
+participant "manufacturerRepository\n:ManufacturerRepository" as ManufacturerRepo
+participant "manufacturer\n:Manufacturer" as Manufacturer
+participant "designator\n:ManufacturerDesignator" as Designator
+participant "country\n:Country" as Country
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+BO -> UI : request to register manufacturer
+UI -> BO : ask for name, designator and country
 
-class Manufacturer <<Aggregate Root>> {
-        name
-}
+BO -> UI : submit manufacturer data
+UI -> C : registerManufacturer(data)
 
-class ManufacturerDesignator <<Value Object>> {
-        value
-}
+C -> ManufacturerRepo : existsByDesignator(data.designator)
+ManufacturerRepo --> C : false
 
-class Country <<Value Object>> {
-        name
-}
+C -> Manufacturer ++ : create(data.name)
 
-Manufacturer *-- ManufacturerDesignator
-Manufacturer *-- Country
-}
+Manufacturer -> Designator ++ : create(data.designator)
+Designator --> Manufacturer : designator created
 
+Manufacturer -> Country ++ : create(data.country)
+Country --> Manufacturer : country created
 
+Manufacturer -> Manufacturer : validateInvariants()\n- designator is valid\n- exactly one country exists
 
+C -> ManufacturerRepo : save(manufacturer)
+ManufacturerRepo --> C : success
+
+C --> UI : manufacturerCreated
+UI --> BO : confirm manufacturer registration
 
 @enduml
