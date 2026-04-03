@@ -1,38 +1,52 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title FlightPlan Aggregate Scenario: Create Flight Plan
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "Pilot" as P
+boundary ":CreateFlightPlanUI" as UI
+control ":CreateFlightPlanController" as C
+participant "flightRepository\n:FlightRepository" as FlightRepo
+participant "aircraftRepository\n:AircraftRepository" as AircraftRepo
+participant "pilotRepository\n:PilotRepository" as PilotRepo
+participant "flightPlanRepository\n:FlightPlanRepository" as FlightPlanRepo
+participant "flight\n:Flight" as Flight
+participant "aircraft\n:Aircraft" as Aircraft
+participant "pilot\n:Pilot" as Pilot
+participant "flightPlan\n:FlightPlan" as FlightPlan
+participant "fuelQty\n:FuelQty" as FuelQty
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+P -> UI : request to create flight plan
+UI -> P : ask for flight, aircraft,\nscheduled arrival and fuel quantity
 
-class FlightPlan <<Aggregate Root>> {
-    status
-    scheduledArrival
-}
+P -> UI : submit flight plan data
+UI -> C : createFlightPlan(data, flightId, aircraftId, pilotId)
 
-class FuelQty <<Value Object>> {
-    amount
-    unit <<enum>>
-}
+C -> FlightRepo : findById(flightId)
+FlightRepo --> C : flight
 
+C -> AircraftRepo : findById(aircraftId)
+AircraftRepo --> C : aircraft
 
-FlightPlan *-- FuelQty
+C -> PilotRepo : findById(pilotId)
+PilotRepo --> C : pilot
+
+C -> FlightPlan ++ : create(data.scheduledArrival)
+FlightPlan -> FlightPlan : setInitialStatus()\n- status = draft
+
+FlightPlan -> FuelQty ++ : create(data.fuelAmount, data.fuelUnit)
+FuelQty --> FlightPlan : fuel quantity created
+
+FlightPlan -> FlightPlan : validateInvariants()\n- fuel quantity > 0\n- status is valid for creation
+
+C -> FlightPlanRepo : save(flightPlan)
+FlightPlanRepo --> C : success
+
+C --> UI : flightPlanCreated
+UI --> P : confirm flight plan creation
 
 @enduml

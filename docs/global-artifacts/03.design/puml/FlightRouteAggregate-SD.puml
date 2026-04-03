@@ -1,38 +1,41 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title FlightRoute Aggregate Scenario: Deactivate Flight Route
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "ATC Collaborator" as ATC
+boundary ":ManageFlightRouteUI" as UI
+control ":ManageFlightRouteController" as C
+participant "flightRouteRepository\n:FlightRouteRepository" as RouteRepo
+participant "flightRoute\n:FlightRoute" as Route
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+ATC -> UI : request to deactivate flight route
+UI -> ATC : ask for route identifier\nand deactivation date
 
-class FlightRoute <<Aggregate Root>> {
-    type <<enum>>
-    status <<enum>>
-    deactivatedFrom
-}
+ATC -> UI : submit routeId and date
+UI -> C : deactivateRoute(routeId, date)
 
-class RouteDesignator <<Value Object>> {
-    value
-}
+C -> RouteRepo : findById(routeId)
+RouteRepo --> C : flightRoute
 
-FlightRoute *-- RouteDesignator
+C -> Route : deactivateFrom(date)
 
+activate Route
+
+Route -> Route : validateDeactivationDate(date)\n- date must be in the future
+Route -> Route : ensureRouteIsActive()
+Route -> Route : setStatus(INACTIVE)\nsetDeactivatedFrom(date)
+
+deactivate Route
+
+C -> RouteRepo : save(route)
+RouteRepo --> C : success
+
+C --> UI : routeDeactivated
+UI --> ATC : confirm route deactivation
 
 @enduml
