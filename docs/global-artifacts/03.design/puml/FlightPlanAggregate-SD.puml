@@ -21,7 +21,7 @@ participant "flightPlan\n:FlightPlan" as FlightPlan
 participant "fuelQty\n:FuelQty" as FuelQty
 
 P -> UI : request to create flight plan
-UI -> P : ask for flight, aircraft,\nscheduled arrival and fuel quantity
+UI -> P : ask for flight, aircraft,\nplanned departure, scheduled arrival\nand fuel quantity
 
 P -> UI : submit flight plan data
 UI -> C : createFlightPlan(data, flightId, aircraftId, pilotId)
@@ -35,11 +35,16 @@ AircraftRepo --> C : aircraft
 C -> PilotRepo : findById(pilotId)
 PilotRepo --> C : pilot
 
-C -> FlightPlan ++ : create(data.scheduledArrival)
-FlightPlan -> FlightPlan : setInitialStatus()\n- status = draft
+C -> FlightPlan ++ : create(data.plannedDeparture, data.scheduledArrival)
 
-FlightPlan -> FuelQty ++ : create(data.fuelAmount, data.fuelUnit)
+FlightPlan -> FlightPlanStatus ++ : create(initialStatus)
+FlightPlanStatus --> FlightPlan : status created
+
+FlightPlan -> FuelQty ++ : create(data.fuelAmount)
 FuelQty --> FlightPlan : fuel quantity created
+
+FuelQty -> FuelUnit ++ : create(data.fuelUnit)
+FuelUnit --> FuelQty : fuel unit created
 
 FlightPlan -> FlightPlan : validateInvariants()\n- fuel quantity > 0\n- status is valid for creation
 

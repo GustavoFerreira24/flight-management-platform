@@ -41,9 +41,11 @@ Country --> Aircraft : country created
 Aircraft -> CabinConfiguration ++ : create(data.economySeats,\ndata.businessSeats,\ndata.firstClassSeats)
 CabinConfiguration --> Aircraft : cabin configuration created
 
+Aircraft -> AircraftOperationalStatus ++ : create(defaultStatus)
+AircraftOperationalStatus --> Aircraft : operational status created
+
 Aircraft -> Aircraft : validateCrewSize(data.crewSize)
 Aircraft -> Aircraft : validateCabinCapacity(aircraftModel)\n- total seats <= model passenger capacity
-Aircraft -> Aircraft : setOperationalStatus()
 
 C -> AircraftRepo : save(aircraft)
 AircraftRepo --> C : success

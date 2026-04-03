@@ -28,7 +28,8 @@ C -> Pilot : activate()
 activate Pilot
 
 Pilot -> Pilot : ensureCertificationIsValid()\n- current date < validUntil
-Pilot -> Pilot : setStatus(ACTIVE)
+Pilot -> PilotStatus ++ : create(ACTIVE)
+PilotStatus --> Pilot : status updated
 
 deactivate Pilot
 

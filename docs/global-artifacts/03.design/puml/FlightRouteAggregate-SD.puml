@@ -28,7 +28,9 @@ activate Route
 
 Route -> Route : validateDeactivationDate(date)\n- date must be in the future
 Route -> Route : ensureRouteIsActive()
-Route -> Route : setStatus(INACTIVE)\nsetDeactivatedFrom(date)
+Route -> FlightRouteStatus ++ : create(INACTIVE)
+FlightRouteStatus --> Route : status updated
+Route -> Route : setDeactivatedFrom(date)
 
 deactivate Route
 

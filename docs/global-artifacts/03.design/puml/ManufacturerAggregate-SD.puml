@@ -16,7 +16,7 @@ participant "designator\n:ManufacturerDesignator" as Designator
 participant "country\n:Country" as Country
 
 BO -> UI : request to register manufacturer
-UI -> BO : ask for name, designator and country
+UI -> BO : ask for name, designator, country\nand manufacturer type
 
 BO -> UI : submit manufacturer data
 UI -> C : registerManufacturer(data)
@@ -26,11 +26,14 @@ ManufacturerRepo --> C : false
 
 C -> Manufacturer ++ : create(data.name)
 
-Manufacturer -> Designator ++ : create(data.designator)
-Designator --> Manufacturer : designator created
+Manufacturer -> ManufacturerDesignator ++ : create(data.designator)
+ManufacturerDesignator --> Manufacturer : designator created
 
 Manufacturer -> Country ++ : create(data.country)
 Country --> Manufacturer : country created
+
+Manufacturer -> ManufacturerType ++ : create(data.manufacturerType)
+ManufacturerType --> Manufacturer : manufacturer type created
 
 Manufacturer -> Manufacturer : validateInvariants()\n- designator is valid\n- exactly one country exists
 

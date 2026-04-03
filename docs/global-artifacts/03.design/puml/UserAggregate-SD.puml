@@ -28,7 +28,8 @@ activate User
 
 User -> User : ensureSecurityClearanceIsValid()\n- current date <= expiryDate
 User -> User : ensureSkillsAssessmentIsUpToDate()\n- current date <= nextDueDate
-User -> User : setStatus(ACTIVE)
+User -> UserStatus ++ : create(ACTIVE)
+UserStatus --> User : status updated
 
 deactivate User
 
