@@ -12,7 +12,7 @@ boundary ":ManagePilotUI" as UI
 control ":ManagePilotController" as C
 participant "pilotRepository\n:PilotRepository" as PilotRepo
 participant "pilot\n:Pilot" as Pilot
-participant "certification\n:Certification" as Certification
+participant "pilotStatus\n:PilotStatus" as PilotStatus
 
 ATC -> UI : request to activate pilot
 UI -> ATC : ask for pilotId
@@ -27,7 +27,7 @@ C -> Pilot : activate()
 
 activate Pilot
 
-Pilot -> Pilot : ensureCertificationIsValid()\n- current date < validUntil
+Pilot -> Pilot : ensureCertificationIsValid()\n- current date <= validUntil
 Pilot -> PilotStatus ++ : create(ACTIVE)
 PilotStatus --> Pilot : status updated
 

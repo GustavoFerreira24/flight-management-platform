@@ -12,6 +12,7 @@ boundary ":ManageUserUI" as UI
 control ":ManageUserController" as C
 participant "userRepository\n:UserRepository" as UserRepo
 participant "user\n:User" as User
+participant "userStatus\n:UserStatus" as UserStatus
 
 Admin -> UI : request to activate user
 UI -> Admin : ask for user identifier

@@ -258,12 +258,12 @@ package "User Aggregate" {
         value
     }
 
-    class UserRoles <<Value Object>> {
+    class UserRole <<Value Object>> {
         value
     }
 
     User *-- UserStatus
-    User *-- UserRoles
+    User *-- UserRole
     User *-- SecurityClearance
     User *-- SkillsAssessment
     User *-- EmailAddress

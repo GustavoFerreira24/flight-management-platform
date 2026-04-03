@@ -22,26 +22,32 @@ The system must ensure that the pilot can only be activated if their certificati
 
 - <span style="color:#70AD47">Activation Requires Valid Certification</span>
 
-  A `Pilot` can only transition to the active state if the current date is before the certification’s validUntil date.
+  A `Pilot` can only transition to the active state if the current date is on or before the certification’s `validUntil` date.
 
 
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Lifecycle Integrity</span>
+- <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
-  The Pilot acts as the Aggregate Root and is responsible for controlling the lifecycle of the pilot. The root ensures 
-that the pilot’s operational status is always consistent with their certification validity.
+  `Pilot` is the Aggregate Root and is responsible for controlling the lifecycle and operational status of the pilot.  
+  The transition to an active state is only allowed through the root, which ensures that certification requirements are satisfied before activation.
 
 
 - <span style="color:#70AD47">Business Invariant Control</span>
 
-  This scenario demonstrates that the `Pilot` is responsible for enforcing the core business rules of the aggregate, 
-especially the temporal relationship between certification validity and activation. By centralizing this validation 
-inside the Aggregate Root, invalid pilot activations are prevented.
+  This scenario demonstrates that `Pilot` is responsible for enforcing the core business rules associated with 
+activation. In particular, it guarantees that a pilot cannot become active if the associated `Certification` is no 
+longer valid.
+
+
+- <span style="color:#70AD47">Temporal Consistency</span>
+
+  The aggregate enforces temporal consistency between the pilot’s operational status and the validity period of the 
+associated certification. This ensures that the status of the pilot is always coherent with the pilot’s qualification to 
+operate.
 
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate the `Certification` directly when deciding activation. They interact only with the 
-`Pilot`, which determines whether the operation is valid. This preserves the consistency of the aggregate and makes its 
-boundary explicit.
+  External components do not manipulate `Certification` or `PilotStatus` directly when deciding activation. They 
+interact only with `Pilot`, which preserves the consistency of the aggregate and clearly defines its boundary.
