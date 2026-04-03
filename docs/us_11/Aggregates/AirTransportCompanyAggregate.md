@@ -18,28 +18,37 @@ identifying information.
 
 - <span style="color:#70AD47">Unique Company Codes</span>
 
-    An `AirTransportCompany` must have a unique `IATACode` and a unique `ICAOCode` in the system.
+  An `AirTransportCompany` must have a unique `IATACode` and a unique `ICAOCode` in the system.
+
 
 - <span style="color:#70AD47">Consistent Identification</span>
 
-    An `AirTransportCompany` must always have exactly one Country, exactly one `IATACode`, and exactly one `ICAOCode`.
+  An `AirTransportCompany` must always have one `Country`, one `IATACode`, and one `ICAOCode`.
+
 
 ## <span style="color:#2E75B6">Justification</span>
 
-- <span style="color:#70AD47">Company Integrity</span>
+- <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
-  The `AirTransportCompany` acts as the Aggregate Root and is responsible for creating and keeping together the company’s 
-identifying information. Since `Country`, `IATACode`, and `ICAOCode` have no independent lifecycle outside the company 
-context, the root ensures that the aggregate is created in a valid and consistent state.
+  `AirTransportCompany` is the Aggregate Root and the single entry point for creating a new air transport company. It 
+encapsulates the creation of `Country`, `IATACode`, and `ICAOCode`, ensuring that these Value Objects cannot exist 
+independently outside the aggregate.
 
-- <span style="color:#70AD47">Business Invariant Control</span>
 
-  This scenario demonstrates that the `AirTransportCompany` is responsible for enforcing the core business rules of the 
-aggregate, especially the requirement that the company has one coherent set of identification codes. By centralizing 
-validation inside the Aggregate Root, invalid or ambiguous company definitions are prevented.
+- <span style="color:#70AD47">Internal Consistency Enforcement</span>
+
+  The aggregate is responsible for keeping together the company’s identifying information as one consistent whole. This 
+prevents the creation of incomplete or ambiguous company definitions inside the aggregate boundary.
+
+
+- <span style="color:#70AD47">System-Wide Uniqueness Support</span>
+
+  The uniqueness of `IATACode` and `ICAOCode` is a business rule that depends on the global state of the system. 
+Therefore, it is verified through the repository before the aggregate is persisted, ensuring that no duplicate company 
+codes exist.
+
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate Country, `IATACode`, or `ICAOCode` directly. They interact only with the
-`AirTransportCompany`, which decides whether the registration is valid. This preserves the consistency of the aggregate 
-and makes its boundary explicit.
+  External components do not manipulate `Country`, `IATACode`, or `ICAOCode` directly.  
+  They interact only with `AirTransportCompany`, which preserves the consistency of the aggregate and clearly defines its boundary.
