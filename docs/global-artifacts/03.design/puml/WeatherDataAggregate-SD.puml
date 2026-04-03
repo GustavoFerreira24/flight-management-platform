@@ -1,51 +1,63 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
+title WeatherData Aggregate Scenario: Register Weather Measurement
 
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
 
-    ClassBackgroundColor<<Aggregate Root>> #E7F5FF
-    ClassBorderColor<<Aggregate Root>> #228BE6
+autonumber
 
-    ClassBackgroundColor<<Value Object>> #FFF9DB
-    ClassBorderColor<<Value Object>> #FAB005
+actor "Weather Person" as WP
+boundary ":RegisterWeatherDataUI" as UI
+control ":RegisterWeatherDataController" as C
+participant "weatherDataRepository\n:WeatherDataRepository" as WeatherRepo
+participant "weatherProviderRepository\n:WeatherProviderRepository" as ProviderRepo
+participant "weatherData\n:WeatherData" as WeatherData
+participant "weatherMeasurement\n:WeatherMeasurement" as Measurement
+participant "coordinates\n:Coordinates" as Coordinates
 
-    ClassBackgroundColor<<Entity>> #F3F0FF
-    ClassBorderColor<<Entity>> #7950F2
-}
-hide circle
-hide methods
+WP -> UI : request to register weather data
+UI -> WP : ask for day, air control area,\nprovider, parameter, value,\nunit, altitude and coordinates
 
-class WeatherData <<Aggregate Root>> {
-    day
-}
+WP -> UI : submit weather data
+UI -> C : registerWeatherMeasurement(data, providerId, areaId)
 
-class WeatherMeasurement <<Value Object>> {
-    parameter
-    value
-    unit
-    altitude
-}
+C -> ProviderRepo : findById(providerId)
+ProviderRepo --> C : provider
 
-' Verificar se isto é uma entity
-class WeatherProvider <<Entity>> {
-    name
-    providerType
-}
+C -> WeatherRepo : findByDayAndArea(data.day, areaId)
+WeatherRepo --> C : weatherData
 
-class Coordinates <<Value Object>> {
-    latitude
-    longitude
-}
+alt weather data already exists for day and area
+    C -> WeatherData : addMeasurement(data, provider)
 
-WeatherData --> WeatherProvider
-WeatherData *-- WeatherMeasurement
-WeatherMeasurement *-- Coordinates
+    activate WeatherData
+    WeatherData -> Measurement ++ : create(data.parameter,\ndata.value, data.unit,\ndata.altitude, provider)
+    Measurement -> Coordinates ++ : create(data.latitude, data.longitude)
+    Coordinates --> Measurement : coordinates created
+    Measurement --> WeatherData : measurement created
+
+    WeatherData -> WeatherData : validateInvariants()\n- all measurements belong to same day\n- all measurements belong to same area\n- measurement data is valid
+    deactivate WeatherData
+
+else no weather data exists for day and area
+    C -> WeatherData ++ : create(data.day, areaId)
+    C -> WeatherData : addMeasurement(data, provider)
+
+    activate WeatherData
+    WeatherData -> Measurement ++ : create(data.parameter,\ndata.value, data.unit,\ndata.altitude, provider)
+    Measurement -> Coordinates ++ : create(data.latitude, data.longitude)
+    Coordinates --> Measurement : coordinates created
+    Measurement --> WeatherData : measurement created
+
+    WeatherData -> WeatherData : validateInvariants()\n- all measurements belong to same day\n- all measurements belong to same area\n- measurement data is valid
+    deactivate WeatherData
+end
+
+C -> WeatherRepo : save(weatherData)
+WeatherRepo --> C : success
+
+C --> UI : weatherDataRegistered
+UI --> WP : confirm weather data registration
 
 @enduml
