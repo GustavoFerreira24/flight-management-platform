@@ -54,9 +54,16 @@ package "Simulation Aggregate" {
 
     class SafetyViolation <<Value Object>> {
         timestamp
-        severity
-        type
     }
+
+    class SafetyViolationType <<Value Object>> {
+        name
+    }
+
+    class SafetyViolationSeverity <<Value Object>> {
+        value
+    }
+
 
     class AircraftPosition <<Value Object>> {
         altitude
@@ -77,6 +84,8 @@ package "Simulation Aggregate" {
     FlightExecution "1" --> "*" AircraftPosition
     AircraftPosition *-- Coordinates
     FlightExecution *-- FlightExecutionStatus
+    SafetyViolation *-- SafetyViolationType
+    SafetyViolationType *-- SafetyViolationSeverity
 
 
 }
@@ -367,15 +376,24 @@ package "WeatherData Aggregate" {
     }
 
     class WeatherMeasurement <<Value Object>> {
-        parameter
         value
-        unit
         altitude
     }
 
     class WeatherProvider <<Entity>> {
         name
-        providerType
+    }
+
+    class WeatherProviderType <<Value Object>> {
+        value
+    }
+
+    class WeatherParameter <<Value Object>> {
+        name
+    }
+
+    class WeatherUnit <<Value Object>> {
+        value
     }
 
     class Coordinates <<Value Object>> {
@@ -386,6 +404,9 @@ package "WeatherData Aggregate" {
     WeatherData --> WeatherProvider
     WeatherData *-- WeatherMeasurement
     WeatherMeasurement *-- Coordinates
+    WeatherProvider *-- WeatherProviderType
+    WeatherMeasurement *-- WeatherParameter
+    WeatherParameter *-- WeatherUnit
 
 }
 

@@ -23,28 +23,41 @@ hide circle
 hide methods
 
 class WeatherData <<Aggregate Root>> {
-    day
-}
+          day
+    }
 
-class WeatherMeasurement <<Value Object>> {
-    parameter
-    value
-    unit
-    altitude
-}
+    class WeatherMeasurement <<Value Object>> {
+        value
+        altitude
+    }
 
-class WeatherProvider <<Entity>> {
-    name
-    providerType
-}
+    class WeatherProvider <<Entity>> {
+        name
+    }
 
-class Coordinates <<Value Object>> {
-    latitude
-    longitude
-}
+    class WeatherProviderType <<Value Object>> {
+        value
+    }
 
-WeatherData --> WeatherProvider
-WeatherData *-- WeatherMeasurement
-WeatherMeasurement *-- Coordinates
+    class WeatherParameter <<Value Object>> {
+        name
+    }
+
+    class WeatherUnit <<Value Object>> {
+        value
+    }
+
+    class Coordinates <<Value Object>> {
+            latitude
+            longitude
+    }
+
+    WeatherData --> WeatherProvider
+    WeatherData *-- WeatherMeasurement
+    WeatherMeasurement *-- Coordinates
+    WeatherProvider *-- WeatherProviderType
+    WeatherMeasurement *-- WeatherParameter
+    WeatherParameter *-- WeatherUnit
+
 
 @enduml

@@ -53,9 +53,16 @@ class Simulation <<Aggregate Root>> {
 
     class SafetyViolation <<Value Object>> {
         timestamp
-        severity
-        type
     }
+
+    class SafetyViolationType <<Value Object>> {
+        name
+    }
+
+    class SafetyViolationSeverity <<Value Object>> {
+        value
+    }
+
 
     class AircraftPosition <<Value Object>> {
         altitude
@@ -76,5 +83,9 @@ class Simulation <<Aggregate Root>> {
     FlightExecution "1" --> "*" AircraftPosition
     AircraftPosition *-- Coordinates
     FlightExecution *-- FlightExecutionStatus
+    SafetyViolation *-- SafetyViolationType
+    SafetyViolationType *-- SafetyViolationSeverity
+
+
 
 @enduml
