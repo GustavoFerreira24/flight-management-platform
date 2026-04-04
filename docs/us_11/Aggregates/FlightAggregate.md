@@ -11,7 +11,7 @@ The system must ensure that the flight is created with a unique designator, a va
 
 ## <span style="color:#2E75B6">Sequence Diagram</span>
 
-![Flight SD](../../global-artifacts/03.design/svg/FlightAggregate-SD.svg)
+![Flight SD](../../global-artifacts/03.design/svg/FlightAggregate_SD.svg)
 
 ## <span style="color:#2E75B6">Invariants</span>
 

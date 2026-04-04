@@ -1,1 +1,77 @@
-# Documentation file
+# Documentation
+This folder contains all documentation artifacts produced during development of the project.
+
+---
+
+## Navigation
+
+### Requirements Engineering
+- [Glossary](./global-artifacts/01.requirements-engineering/glossary.md)
+- [Use Case Diagram](./global-artifacts/01.requirements-engineering/use-case-diagram.md)
+
+---
+
+### Domain Analysis
+- [Main analysis made](./global-artifacts/02.analysis/analysis.md)
+- [Full Domain Model (SVG)](./global-artifacts/02.analysis/svg/DM.svg)
+- [Reduced Domain Model (SVG)](./global-artifacts/02.analysis/svg/DM-reduced.svg)
+
+#### Aggregates (Analysis)
+- [Aggregates Diagrams](./global-artifacts/02.analysis/svg/Aggregates/)
+
+---
+
+### System Design
+- [Design Overview](./global-artifacts/03.design/design.md)
+
+#### Sequence Diagrams
+- [All Sequence Diagrams (SVG)](./global-artifacts/03.design/svg/)
+
+---
+
+### User Stories
+
+#### US11 — Domain Model (DDD)
+- [Overview](./us_11/readme.md)
+
+##### Aggregates Documentation
+- [Flight Aggregate](./us_11/Aggregates/FlightAggregate.md)
+- [Flight Route Aggregate](./us_11/Aggregates/FlightRouteAggregate.md)
+- [Flight Plan Aggregate](./us_11/Aggregates/FlightPlanAggregate.md)
+- [Aircraft Aggregate](./us_11/Aggregates/AircraftAggregate.md)
+- [Aircraft Model Aggregate](./us_11/Aggregates/AircraftModelAggregate.md)
+- [Engine Model Aggregate](./us_11/Aggregates/EngineModelAggregate.md)
+- [Manufacturer Aggregate](./us_11/Aggregates/ManufacturerAggregate.md)
+- [Airport Aggregate](./us_11/Aggregates/AirportAggregate.md)
+- [Air Control Area Aggregate](./us_11/Aggregates/AirControlAreaAggregate.md)
+- [Weather Data Aggregate](./us_11/Aggregates/WeatherDataAggregate.md)
+- [Simulation Aggregate](./us_11/Aggregates/SimulationAggregate.md)
+- [User Aggregate](./us_11/Aggregates/UserAggregate.md)
+- [Pilot Aggregate](./us_11/Aggregates/PilotAggregate.md)
+- [Air Transport Company Aggregate](./us_11/Aggregates/AirTransportCompanyAggregate.md)
+
+---
+
+## Structure
+
+```
+docs/
+ ├── global-artifacts/
+ │    ├── 01.requirements-engineering/
+ │    ├── 02.analysis/
+ │    └── 03.design/
+ │
+ └── us_11/
+      └── Aggregates/
+
+```
+
+---
+
+## Notes
+
+- All artifacts follow Domain-Driven Design principles
+
+- Diagrams are available in:
+    - SVG (visualization)
+    - PlantUML (source)
