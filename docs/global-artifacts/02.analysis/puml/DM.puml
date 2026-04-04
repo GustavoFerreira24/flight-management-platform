@@ -195,6 +195,17 @@ package "AirControlArea Aggregate" {
         maxLongitude
     }
 
+    class MinimumFuelRequirement <<Value Object>> {
+        amount
+    }
+
+    class FuelUnit <<Value Object>> {
+        value
+    }
+
+    AirControlArea *-- MinimumFuelRequirement
+    MinimumFuelRequirement *-- FuelUnit
+
     AirControlArea *-- AirControlAreaCode
     AirControlArea *-- GeographicBoundary
 

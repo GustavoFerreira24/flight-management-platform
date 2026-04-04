@@ -23,22 +23,35 @@ skinparam {
 hide circle
 hide methods
 
-class AirControlArea <<Aggregate Root>> {
-    name
-}
+    class AirControlArea <<Aggregate Root>> {
+        name
+    }
 
-class AirControlAreaCode <<Value Object>> {
-    value
-}
+    class AirControlAreaCode <<Value Object>> {
+        value
+    }
 
-class GeographicBoundary <<Value Object>> {
-    minLatitude
-    maxLatitude
-    minLongitude
-    maxLongitude
-}
+    class GeographicBoundary <<Value Object>> {
+        minLatitude
+        maxLatitude
+        minLongitude
+        maxLongitude
+    }
 
-AirControlArea *-- AirControlAreaCode
-AirControlArea *-- GeographicBoundary
+    class MinimumFuelRequirement <<Value Object>> {
+        amount
+    }
+
+    class FuelUnit <<Value Object>> {
+        value
+    }
+
+    AirControlArea *-- MinimumFuelRequirement
+    MinimumFuelRequirement *-- FuelUnit
+
+    AirControlArea *-- AirControlAreaCode
+    AirControlArea *-- GeographicBoundary
+
+
 
 @enduml
