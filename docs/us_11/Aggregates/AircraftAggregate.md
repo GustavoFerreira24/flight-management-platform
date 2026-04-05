@@ -2,10 +2,11 @@
 
 ## <span style="color:#2E75B6">Scenario</span>
 
-The Air Transport Company Collaborator registers a new aircraft in the company fleet by providing its registration, 
-country, crew size, cabin configuration, and associated aircraft model.
-The system must ensure that the aircraft registration is unique and that the cabin configuration does not exceed the 
-passenger capacity of the selected aircraft model.
+The Air Transport Company Collaborator registers a new aircraft in the company fleet by providing its registration,
+country, crew size, cabin configuration, associated aircraft model, and the specific engine model installed.
+The system must ensure that the aircraft registration is unique, that the cabin configuration does not exceed the
+passenger capacity of the selected aircraft model, and that the chosen engine model is a certified variant of the
+selected aircraft model.
 
 
 ## <span style="color:#2E75B6">Domain Model</span>
@@ -29,9 +30,16 @@ passenger capacity of the selected aircraft model.
 AircraftModel.
 
 
+- <span style="color:#70AD47">Certified Engine Model</span>
+
+  The EngineModel assigned to an Aircraft must be a certified variant of its AircraftModel. This cross-aggregate
+  invariant is enforced by a domain service prior to aircraft creation.
+
+
 - <span style="color:#70AD47">Valid Initial State</span>
 
-  An Aircraft must always be created with valid registration, country, crew size, and cabin configuration.
+  An Aircraft must always be created with valid registration, country, crew size, cabin configuration, aircraft model,
+  and engine model.
 
 
 ## <span style="color:#2E75B6">Justification</span>
@@ -60,6 +68,14 @@ it is verified through the repository before the aggregate is persisted.
   An `Aircraft` must be associated with an existing `AircraftModel`, which is another Aggregate Root in the domain model.  
 The model is retrieved through its repository before the aircraft is created, ensuring that the relationship is 
 established only with a valid aggregate.
+
+  
+- <span style="color:#70AD47">Cross-Aggregate Invariant via Domain Service</span>
+
+  The constraint that the selected `EngineModel` must be a certified variant of the selected `AircraftModel` spans two
+  aggregate boundaries. Since neither aggregate can reach inside the other, this invariant is enforced by
+  `AircraftVariantService` before the `Aircraft` is instantiated. This follows the DDD principle that cross-aggregate
+  business rules are delegated to domain services.
 
 
 - <span style="color:#70AD47">Business Invariant Control</span>
