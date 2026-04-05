@@ -11,7 +11,9 @@ actor "ATC Collaborator" as ATC
 boundary ":AddAircraftUI" as UI
 control ":AddAircraftController" as C
 participant "aircraftModelRepository\n:AircraftModelRepository" as AircraftModelRepo
+participant "engineModelRepository\n:EngineModelRepository" as EngineModelRepo
 participant "aircraftRepository\n:AircraftRepository" as AircraftRepo
+participant "aircraftVariantService\n:AircraftVariantService" as VariantService
 participant "aircraftModel\n:AircraftModel" as AircraftModel
 participant "aircraft\n:Aircraft" as Aircraft
 participant "registration\n:AircraftRegistration" as Registration
@@ -20,18 +22,24 @@ participant "country\n:Country" as Country
 participant "status\n:AircraftOperationalStatus" as Status
 
 ATC -> UI : request to add aircraft
-UI -> ATC : ask for registration, country,\ncrew size, cabin configuration,\naircraft model
+UI -> ATC : ask for registration, country,\ncrew size, cabin configuration,\naircraft model, engine model
 
 ATC -> UI : submit aircraft data
-UI -> C : addAircraft(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModelId)
+UI -> C : addAircraft(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModelId, engineModelId)
 
 C -> AircraftModelRepo : findById(aircraftModelId)
 AircraftModelRepo --> C : aircraftModel
 
+C -> EngineModelRepo : findById(engineModelId)
+EngineModelRepo --> C : engineModel
+
 C -> AircraftRepo : existsByRegistration(registration)
 AircraftRepo --> C : false
 
-C -> Aircraft ++ : create(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModel)
+C -> VariantService : isCertifiedVariant(aircraftModel, engineModel)
+VariantService --> C : true
+
+C -> Aircraft ++ : create(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModel, engineModel)
 
 Aircraft -> Registration ++ : create(registration)
 Registration --> Aircraft : registration created
