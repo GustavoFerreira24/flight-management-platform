@@ -301,10 +301,21 @@ Although nodes/junctions appear in the specification, the client said in the for
 
 For that reason, Node/Junction was not included in the Domain Model.
 
-### <span style="color:#70AD47">4.10 The Role of Aircraft Variant</span>
+### <span style="color:#70AD47">4.10 The Role of Aircraft Variant and Engine Resolution</span>
 
-The introduction of `AircraftVariant` clarifies how the domain connects aircraft models, certified engine models, and actual aircraft.
+The introduction of `AircraftVariant` clarifies the relationship between aircraft models, certified engine configurations, and actual aircraft.
 
-Although an Aircraft Model defines the general characteristics of an aircraft, the requirements make it clear that engine configuration is also domain-relevant. An aircraft model may support multiple certified engine models, and each valid combination of aircraft model and engine model constitutes a distinct aircraft variant.
+An Aircraft Model defines the general technical characteristics of a class of aircraft. However, engine configuration is also domain-relevant: an aircraft model may support multiple certified engine models, and each valid combination of aircraft model and engine model constitutes a distinct Aircraft Variant (US057). `AircraftVariant` is therefore modelled as an **Entity internal to the AircraftModel aggregate**, responsible for managing which engine models are certified for that model.
+An actual `Aircraft` is not simply "of a model" — it is equipped with a specific engine. For this reason, `Aircraft` holds references to both `AircraftModel` and `EngineModel`.
+The invariant that the chosen `EngineModel` must be a certified variant of the associated `AircraftModel` (that the combination exists as an `AircraftVariant`) is **not enforced inside the Aircraft aggregate**. Since neither aggregate can reach inside the other, this cross-aggregate consistency rule is the responsibility of a **domain service**, invoked at the moment of aircraft registration (US070).
 
-This distinction is important because an actual `Aircraft` is not only of a given model, but of a specific variant, including its engine configuration. Without `AircraftVariant`, the model would not express which certified engine configuration is actually being used by a given aircraft.
+This design also supports US058, which prohibits removing an engine model from an aircraft model's certified list if any actual aircraft is currently using it — a constraint that requires knowing which `EngineModel` each `Aircraft` references.
+
+---
+
+### <span style="color:#70AD47">4.11 Minimum Fuel Requirement as a Domain Concept</span>
+
+The requirements state that testing a flight plan involves verifying that the aircraft carries enough fuel and meets minimum altitude requirements. The minimum quantity of fuel is defined as the quantity of fuel the aircraft must have **at the end of the flight**, and this value is set by the air control area of the destination airport (Section 3.1.4).
+
+This makes `MinimumFuelRequirement` a domain concept belonging to `AirControlArea`, not a technical detail. It is modelled as a Value Object within the `AirControlArea` aggregate, composed of a numeric amount and a `FuelUnit`, consistent with how `FuelQty` is modelled elsewhere in the domain.
+

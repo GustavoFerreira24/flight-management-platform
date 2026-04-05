@@ -524,6 +524,6 @@ AircraftModel "*" --> "1" Manufacturer
 EngineModel "*" --> "1" Manufacturer
 
 Aircraft "*" --> "1" AircraftModel
-
+Aircraft "*" --> "1" EngineModel
 
 @enduml
