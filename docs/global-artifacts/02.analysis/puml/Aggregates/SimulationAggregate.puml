@@ -78,9 +78,8 @@ class Simulation <<Aggregate Root>> {
     Simulation *-- SafetyViolation
     Simulation *-- FlightExecution
     Simulation *-- SimulationStatus
-    SafetyViolation *-- AircraftPosition
     SafetyViolation "1" --> "*" FlightExecution
-    FlightExecution "1" --> "*" AircraftPosition
+    FlightExecution *-- AircraftPosition
     AircraftPosition *-- Coordinates
     FlightExecution *-- FlightExecutionStatus
     SafetyViolation *-- SafetyViolationType
