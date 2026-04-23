@@ -1,10 +1,13 @@
 package isep.aisafe.app.backoffice.console;
 
 import isep.aisafe.app.common.console.AisafeBaseApplication;
+import isep.aisafe.app.common.console.presentation.authz.LoginUI;
+import isep.aisafe.infrastructure.authz.AuthenticationCredentialHandler;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
 import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+
 
 public final class AisafeBackoffice extends AisafeBaseApplication {
 
@@ -17,8 +20,19 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
 
     @Override
     protected void doMain(final String[] args) {
-        System.out.println("Authentication infrastructure configured successfully.");
-        System.out.println("Login UI will be added in US030.2.");
+
+        AisafeBootstrapper.bootstrap();
+
+        final LoginUI loginUI = new LoginUI(new AuthenticationCredentialHandler());
+
+        final boolean success = loginUI.show();
+
+        if (!success) {
+            System.out.println("Exiting application.");
+            return;
+        }
+
+        System.out.println("Authenticated user can now access protected functionalities.");
     }
 
     @Override
