@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>isep</groupId>
-            <artifactId>aisafe.core</artifactId>
+            <artifactId>aisafe.infrastructure.application</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

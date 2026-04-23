@@ -7,6 +7,7 @@ import isep.aisafe.infrastructure.persistence.PersistenceContext;
 import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+import isep.aisafe.infrastructure.authz.ProtectedActionController;
 
 
 public final class AisafeBackoffice extends AisafeBaseApplication {
@@ -31,6 +32,9 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
             System.out.println("Exiting application.");
             return;
         }
+
+        final ProtectedActionController controller = new ProtectedActionController();
+        controller.executeAdminOnlyAction();
 
         System.out.println("Authenticated user can now access protected functionalities.");
     }

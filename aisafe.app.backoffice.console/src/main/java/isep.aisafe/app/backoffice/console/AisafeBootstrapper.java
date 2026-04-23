@@ -3,6 +3,7 @@ package isep.aisafe.app.backoffice.console;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.UserManagementService;
 import eapli.framework.infrastructure.authz.domain.model.Role;
+import isep.aisafe.usermanagement.domain.AisafeRoles;
 
 import java.util.Set;
 
@@ -22,7 +23,7 @@ public class AisafeBootstrapper {
                     "Admin",
                     "User",
                     "admin@aisafe.com",
-                    Set.of(Role.valueOf("ADMIN"))
+                    Set.of(AisafeRoles.ADMIN)
             );
 
             System.out.println("Admin user created.");
