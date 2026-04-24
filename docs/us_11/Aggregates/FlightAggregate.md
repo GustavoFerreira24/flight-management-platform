@@ -22,7 +22,7 @@ The system must ensure that the flight is created with a unique designator, a va
 
 - <span style="color:#70AD47">Valid Departure Definition</span>
 
-  A `Flight` must always have one defined `Departure`, including both departure day and departure time.
+  A `Flight` must always have `Departure`, including both departure day and departure time.
 
 
 - <span style="color:#70AD47">Association with One Route</span>

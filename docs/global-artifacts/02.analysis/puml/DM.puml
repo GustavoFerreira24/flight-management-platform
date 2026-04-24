@@ -496,9 +496,9 @@ Simulation "*" --> "1" AirControlArea
 FlightRoute "*" --> "1" Airport
 FlightRoute "*" --> "1" Airport
 FlightRoute "*" --> "1" AirTransportCompany
-FlightRoute "1" --> "0..*" Flight
+Flight "0..*" --> "1" FlightRoute
 
-Flight "1" --> "0..*" FlightPlan
+FlightPlan "0..*" --> "1" Flight
 
 FlightPlan "*" --> "1" Pilot
 FlightPlan "*" --> "1" Aircraft
