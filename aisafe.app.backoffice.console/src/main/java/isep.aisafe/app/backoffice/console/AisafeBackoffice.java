@@ -8,6 +8,7 @@ import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import isep.aisafe.application.usermanagement.ManageUsersController;
+import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
 
 public final class AisafeBackoffice extends AisafeBaseApplication {
 
@@ -32,7 +33,7 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
             return;
         }
 
-        new ManageUsersController().execute();
+        new RegisterBackofficeUserUI().show();
 
         System.out.println("Authenticated user can now access protected functionalities.");
     }
