@@ -35,14 +35,20 @@ public class RegisterBackofficeUserUI {
 
         final Set<Role> roles = askRole(scanner);
 
-        controller.registerUser(
-                username,
-                password,
-                firstName,
-                lastName,
-                email,
-                roles
-        );
+        try {
+            controller.registerUser(
+                    username,
+                    password,
+                    firstName,
+                    lastName,
+                    email,
+                    roles
+            );
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid user data: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Could not register user. The username or email may already exist.");
+        }
     }
 
     private Set<Role> askRole(final Scanner scanner) {

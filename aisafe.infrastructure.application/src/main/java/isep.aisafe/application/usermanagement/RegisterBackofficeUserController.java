@@ -12,6 +12,7 @@ public class RegisterBackofficeUserController {
 
     private final AisafeAuthorizationService authz = new AisafeAuthorizationService();
     private final UserManagementService userService = AuthzRegistry.userService();
+    private final UserRegistrationValidator validator = new UserRegistrationValidator();
 
     public void registerUser(
             final String username,
@@ -22,6 +23,8 @@ public class RegisterBackofficeUserController {
             final Set<Role> roles) {
 
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.USER_REGISTRATION);
+
+        validator.validate(username, password, firstName, lastName, email, roles);
 
         userService.registerNewUser(
                 username,
