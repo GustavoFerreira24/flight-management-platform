@@ -23,11 +23,6 @@ UI -> C : executeSimulation(simulationId)
 C -> SimRepo : findById(simulationId)
 SimRepo --> C : simulation
 
-note over C
-Retrieve domain information required
-to execute the simulation in the C module
-end note
-
 C -> FPRepo : findIncludedFlightPlans(simulation)
 FPRepo --> C : flightPlans
 
