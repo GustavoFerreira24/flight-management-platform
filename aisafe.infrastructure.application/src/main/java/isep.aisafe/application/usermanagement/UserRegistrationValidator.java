@@ -1,6 +1,7 @@
 package isep.aisafe.application.usermanagement;
 
 import eapli.framework.infrastructure.authz.domain.model.Role;
+import isep.aisafe.usermanagement.domain.AisafeRoles;
 
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -31,11 +32,27 @@ public class UserRegistrationValidator {
         if (roles == null || roles.isEmpty()) {
             throw new IllegalArgumentException("At least one role must be assigned.");
         }
+
+        for (Role role : roles) {
+            if (!isValidRole(role)) {
+                throw new IllegalArgumentException("Invalid role: " + role);
+            }
+        }
     }
 
     private void ensureNotBlank(final String value, final String message) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    private boolean isValidRole(final Role role) {
+        return role.equals(AisafeRoles.ADMIN)
+                || role.equals(AisafeRoles.BACKOFFICE_OPERATOR)
+                || role.equals(AisafeRoles.PILOT)
+                || role.equals(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
+                || role.equals(AisafeRoles.WEATHER_PERSON)
+                || role.equals(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
+                || role.equals(AisafeRoles.POWER_USER);
     }
 }
