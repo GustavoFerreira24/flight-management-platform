@@ -5,7 +5,15 @@ import isep.aisafe.infrastructure.authz.AisafePermissions;
 
 public class ManageUsersController {
 
-    private final AisafeAuthorizationService authz = new AisafeAuthorizationService();
+    private final AisafeAuthorizationService authz;
+
+    public ManageUsersController() {
+        this(new AisafeAuthorizationService());
+    }
+
+    ManageUsersController(final AisafeAuthorizationService authz) {
+        this.authz = authz;
+    }
 
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.USER_MANAGEMENT);

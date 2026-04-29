@@ -5,7 +5,15 @@ import isep.aisafe.infrastructure.authz.AisafePermissions;
 
 public class FlightControlController {
 
-    private final AisafeAuthorizationService authz = new AisafeAuthorizationService();
+    private final AisafeAuthorizationService authz;
+
+    public FlightControlController() {
+        this(new AisafeAuthorizationService());
+    }
+
+    FlightControlController(final AisafeAuthorizationService authz) {
+        this.authz = authz;
+    }
 
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_CONTROL);
