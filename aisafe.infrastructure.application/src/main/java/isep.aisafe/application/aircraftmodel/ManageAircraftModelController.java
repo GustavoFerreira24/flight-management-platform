@@ -17,12 +17,13 @@ import java.util.List;
 
 public class ManageAircraftModelController {
 
-    private final AisafeAuthorizationService authz = new AisafeAuthorizationService();
+    private final AisafeAuthorizationService authz;
     private final AircraftModelRepository aircraftModelRepository;
     private final EngineModelRepository engineModelRepository;
 
     public ManageAircraftModelController() {
         this(
+                new AisafeAuthorizationService(),
                 PersistenceContext.repositories().aircraftModels(),
                 PersistenceContext.repositories().engineModels()
         );
@@ -31,6 +32,14 @@ public class ManageAircraftModelController {
     public ManageAircraftModelController(
             final AircraftModelRepository aircraftModelRepository,
             final EngineModelRepository engineModelRepository) {
+        this(new AisafeAuthorizationService(), aircraftModelRepository, engineModelRepository);
+    }
+
+    public ManageAircraftModelController(
+            final AisafeAuthorizationService authz,
+            final AircraftModelRepository aircraftModelRepository,
+            final EngineModelRepository engineModelRepository) {
+        this.authz = authz;
         this.aircraftModelRepository = aircraftModelRepository;
         this.engineModelRepository = engineModelRepository;
     }
