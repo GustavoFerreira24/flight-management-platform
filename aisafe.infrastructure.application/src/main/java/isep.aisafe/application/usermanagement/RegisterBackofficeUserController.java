@@ -10,9 +10,22 @@ import java.util.Set;
 
 public class RegisterBackofficeUserController {
 
-    private final AisafeAuthorizationService authz = new AisafeAuthorizationService();
-    private final UserManagementService userService = AuthzRegistry.userService();
-    private final UserRegistrationValidator validator = new UserRegistrationValidator();
+    private final AisafeAuthorizationService authz;
+    private final UserManagementService userService;
+    private final UserRegistrationValidator validator;
+
+    public RegisterBackofficeUserController() {
+        this(new AisafeAuthorizationService(), null, new UserRegistrationValidator());
+    }
+
+    RegisterBackofficeUserController(
+            final AisafeAuthorizationService authz,
+            final UserManagementService userService,
+            final UserRegistrationValidator validator) {
+        this.authz = authz;
+        this.userService = userService;
+        this.validator = validator;
+    }
 
     public void registerUser(
             final String username,
@@ -26,7 +39,7 @@ public class RegisterBackofficeUserController {
 
         validator.validate(username, password, firstName, lastName, email, roles);
 
-        userService.registerNewUser(
+        userService().registerNewUser(
                 username,
                 password,
                 firstName,
@@ -36,5 +49,12 @@ public class RegisterBackofficeUserController {
         );
 
         System.out.println("User registered successfully.");
+    }
+
+    private UserManagementService userService() {
+        if (userService != null) {
+            return userService;
+        }
+        return AuthzRegistry.userService();
     }
 }
