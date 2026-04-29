@@ -11,6 +11,9 @@
         <class>eapli.framework.infrastructure.authz.domain.model.SystemUser</class>
         <class>eapli.framework.infrastructure.authz.domain.model.RoleSet</class>
         <class>eapli.framework.infrastructure.authz.domain.model.RoleAssignment</class>
+        <class>isep.aisafe.enginemodel.domain.EngineModel</class>
+        <class>isep.aisafe.aircraftmodel.domain.AircraftModel</class>
+        <class>isep.aisafe.aircraftmodel.domain.AircraftVariant</class>
 
 
         <properties>
