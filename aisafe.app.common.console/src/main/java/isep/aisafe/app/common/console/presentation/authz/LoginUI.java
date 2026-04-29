@@ -6,14 +6,18 @@ import isep.aisafe.infrastructure.authz.CredentialHandler;
 public class LoginUI {
 
     private final CredentialHandler credentialHandler;
+    private final Scanner scanner;
 
     public LoginUI(final CredentialHandler credentialHandler) {
+        this(credentialHandler, new Scanner(System.in));
+    }
+
+    public LoginUI(final CredentialHandler credentialHandler, final Scanner scanner) {
         this.credentialHandler = credentialHandler;
+        this.scanner = scanner;
     }
 
     public boolean show() {
-        final Scanner scanner = new Scanner(System.in);
-
         System.out.println("Login");
         System.out.print("Username/Email: ");
         final String identity = scanner.nextLine();

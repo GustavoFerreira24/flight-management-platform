@@ -11,10 +11,17 @@ public class RegisterBackofficeUserUI {
 
     private final RegisterBackofficeUserController controller =
             new RegisterBackofficeUserController();
+    private final Scanner scanner;
+
+    public RegisterBackofficeUserUI() {
+        this(new Scanner(System.in));
+    }
+
+    public RegisterBackofficeUserUI(final Scanner scanner) {
+        this.scanner = scanner;
+    }
 
     public void show() {
-        final Scanner scanner = new Scanner(System.in);
-
         System.out.println();
         System.out.println("Register Backoffice User");
 

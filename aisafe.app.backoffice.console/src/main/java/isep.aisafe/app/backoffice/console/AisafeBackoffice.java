@@ -7,8 +7,10 @@ import isep.aisafe.infrastructure.persistence.PersistenceContext;
 import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
-import isep.aisafe.application.usermanagement.ManageUsersController;
+import isep.aisafe.app.backoffice.console.presentation.aircraftmodel.RegisterAircraftModelUI;
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
+
+import java.util.Scanner;
 
 public final class AisafeBackoffice extends AisafeBaseApplication {
 
@@ -24,7 +26,8 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
 
         AisafeBootstrapper.bootstrap();
 
-        final LoginUI loginUI = new LoginUI(new AuthenticationCredentialHandler());
+        final Scanner scanner = new Scanner(System.in);
+        final LoginUI loginUI = new LoginUI(new AuthenticationCredentialHandler(), scanner);
 
         final boolean success = loginUI.show();
 
@@ -33,9 +36,30 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
             return;
         }
 
-        new RegisterBackofficeUserUI().show();
+        showMainOptions(scanner);
 
         System.out.println("Authenticated user can now access protected functionalities.");
+    }
+
+    private void showMainOptions(final Scanner scanner) {
+        System.out.println();
+        System.out.println("1 - Register Backoffice User");
+        System.out.println("2 - Register Aircraft Model (US55)");
+        System.out.print("Option: ");
+
+        final String option = scanner.nextLine();
+
+        if ("1".equals(option)) {
+            new RegisterBackofficeUserUI(scanner).show();
+            return;
+        }
+
+        if ("2".equals(option)) {
+            new RegisterAircraftModelUI(scanner).show();
+            return;
+        }
+
+        System.out.println("Unknown option.");
     }
 
     @Override
