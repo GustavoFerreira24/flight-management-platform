@@ -5,7 +5,15 @@ import isep.aisafe.infrastructure.authz.AisafePermissions;
 
 public class ConsultWeatherDataController {
 
-    private final AisafeAuthorizationService authz = new AisafeAuthorizationService();
+    private final AisafeAuthorizationService authz;
+
+    public ConsultWeatherDataController() {
+        this(new AisafeAuthorizationService());
+    }
+
+    ConsultWeatherDataController(final AisafeAuthorizationService authz) {
+        this.authz = authz;
+    }
 
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_CONSULTATION);

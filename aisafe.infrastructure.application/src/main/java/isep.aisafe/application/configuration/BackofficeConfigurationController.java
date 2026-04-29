@@ -5,7 +5,15 @@ import isep.aisafe.infrastructure.authz.AisafePermissions;
 
 public class BackofficeConfigurationController {
 
-    private final AisafeAuthorizationService authz = new AisafeAuthorizationService();
+    private final AisafeAuthorizationService authz;
+
+    public BackofficeConfigurationController() {
+        this(new AisafeAuthorizationService());
+    }
+
+    BackofficeConfigurationController(final AisafeAuthorizationService authz) {
+        this.authz = authz;
+    }
 
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
