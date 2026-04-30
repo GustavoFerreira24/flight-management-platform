@@ -8,6 +8,7 @@ import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
 import isep.aisafe.app.backoffice.console.presentation.aircraftmodel.RegisterAircraftModelUI;
+import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
 
 import java.util.Scanner;
@@ -45,6 +46,7 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         System.out.println();
         System.out.println("1 - Register Backoffice User");
         System.out.println("2 - Register Aircraft Model (US55)");
+        System.out.println("3 - Register Engine Model (US56)");
         System.out.print("Option: ");
 
         final String option = scanner.nextLine();
@@ -56,6 +58,11 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
 
         if ("2".equals(option)) {
             new RegisterAircraftModelUI(scanner).show();
+            return;
+        }
+
+        if ("3".equals(option)) {
+            new RegisterEngineModelUI(scanner).show();
             return;
         }
 
