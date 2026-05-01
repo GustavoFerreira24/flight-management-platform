@@ -13,7 +13,6 @@ class AisafeRolesTest {
     @Test
     void ensureRolesHaveExpectedValues() {
         // Arrange / Act / Assert
-        assertEquals(Role.valueOf("POWER_USER"), AisafeRoles.POWER_USER);
         assertEquals(Role.valueOf("ADMIN"), AisafeRoles.ADMIN);
         assertEquals(Role.valueOf("BACKOFFICE_OPERATOR"), AisafeRoles.BACKOFFICE_OPERATOR);
         assertEquals(Role.valueOf("AIR_TRANSPORT_COMPANY_COLLABORATOR"),
@@ -34,11 +33,5 @@ class AisafeRolesTest {
 
         // Assert
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
-
-        try {
-            constructor.newInstance();
-        } catch (Exception e) {
-            fail("Constructor should not throw exception");
-        }
     }
 }

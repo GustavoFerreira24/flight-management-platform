@@ -26,7 +26,6 @@ public class BackofficeConfigurationController {
      */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
-
-        System.out.println("Backoffice configuration use case authorized.");
+        // TODO implement backoffice configuration behavior when the feature is developed.
     }
 }

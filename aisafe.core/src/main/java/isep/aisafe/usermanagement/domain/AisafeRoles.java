@@ -13,7 +13,6 @@ public final class AisafeRoles {
     private AisafeRoles() {
     }
 
-    public static final Role POWER_USER = Role.valueOf("POWER_USER");
     public static final Role ADMIN = Role.valueOf("ADMIN");
     public static final Role BACKOFFICE_OPERATOR = Role.valueOf("BACKOFFICE_OPERATOR");
     public static final Role AIR_TRANSPORT_COMPANY_COLLABORATOR =

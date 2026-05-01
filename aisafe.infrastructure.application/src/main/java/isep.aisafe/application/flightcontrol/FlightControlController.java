@@ -26,7 +26,6 @@ public class FlightControlController {
      */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_CONTROL);
-
-        System.out.println("Flight control use case authorized.");
+        // TODO implement flight control behavior when the feature is developed.
     }
 }

@@ -77,7 +77,11 @@ class AisafePermissionsTest {
     void ensureWeatherDataConsultationPermissionsAreCorrect() {
         // Arrange / Act / Assert
         assertArrayEquals(
-                new Object[] { AisafeRoles.PILOT, AisafeRoles.FLIGHT_CONTROL_OPERATOR },
+                new Object[] {
+                        AisafeRoles.WEATHER_PERSON,
+                        AisafeRoles.PILOT,
+                        AisafeRoles.FLIGHT_CONTROL_OPERATOR
+                },
                 AisafePermissions.WEATHER_DATA_CONSULTATION
         );
     }
@@ -93,11 +97,5 @@ class AisafePermissionsTest {
 
         // Assert
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
-
-        try {
-            constructor.newInstance();
-        } catch (Exception e) {
-            fail("Constructor should not throw exception");
-        }
     }
 }

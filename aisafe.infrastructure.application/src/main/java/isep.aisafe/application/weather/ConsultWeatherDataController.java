@@ -26,7 +26,6 @@ public class ConsultWeatherDataController {
      */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_CONSULTATION);
-
-        System.out.println("Weather data consultation use case authorized.");
+        // TODO implement weather data consultation behavior when the feature is developed.
     }
 }

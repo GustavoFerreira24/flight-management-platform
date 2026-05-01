@@ -23,6 +23,17 @@ class AuthenticationCredentialHandlerTest {
     }
 
     /**
+     * Purpose: ensure the injectable constructor fails fast for invalid setup.
+     * Scenario: create the handler with a null authenticator.
+     * Expected output: a NullPointerException is thrown before the handler can be used.
+     */
+    @Test
+    void ensureInjectedAuthenticatorCannotBeNull() {
+        // Arrange / Act / Assert
+        assertThrows(NullPointerException.class, () -> new AuthenticationCredentialHandler(null));
+    }
+
+    /**
      * Purpose: verify that credential authentication is delegated to the framework authenticator contract.
      * Scenario: authenticate with username and password using a capturing authenticator fake.
      * Expected output: the fake receives the same credentials and the handler returns false for an empty session.

@@ -21,6 +21,17 @@ class AisafeAuthorizationServiceTest {
     }
 
     /**
+     * Purpose: ensure the injectable constructor fails fast for invalid setup.
+     * Scenario: create the service with a null framework authorization service.
+     * Expected output: a NullPointerException is thrown before the service can be used.
+     */
+    @Test
+    void ensureInjectedAuthorizationServiceCannotBeNull() {
+        // Arrange / Act / Assert
+        assertThrows(NullPointerException.class, () -> new AisafeAuthorizationService(null));
+    }
+
+    /**
      * Purpose: verify that AISafe authorization delegates role checks to the framework service.
      * Scenario: request authorization for ADMIN and BACKOFFICE_OPERATOR roles.
      * Expected output: the wrapped framework service receives exactly those roles.

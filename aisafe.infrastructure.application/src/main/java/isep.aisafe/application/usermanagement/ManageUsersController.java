@@ -26,7 +26,6 @@ public class ManageUsersController {
      */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.USER_MANAGEMENT);
-
-        System.out.println("Manage users use case authorized.");
+        // TODO implement user management behavior when the feature is developed.
     }
 }

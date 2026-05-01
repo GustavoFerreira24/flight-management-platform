@@ -23,7 +23,6 @@ public class ProtectedActionController {
      */
     public void executeAdminOnlyAction() {
         authorizationService.ensureAuthenticatedUserHasAnyOf(AisafePermissions.USER_MANAGEMENT);
-
-        System.out.println("Admin-only action executed.");
+        // TODO replace this sample protected action with real user-management behavior.
     }
 }

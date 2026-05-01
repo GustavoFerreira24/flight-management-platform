@@ -20,7 +20,7 @@ class AppSettingsTest {
 
         // Assert
         assertEquals("aisafePU", settings.persistenceUnitName());
-        assertEquals("pt.isep.aisafe.persistence.impl.jpa.JpaRepositoryFactory", settings.repositoryFactory());
+        assertEquals("isep.aisafe.persistence.impl.jpa.JpaRepositoryFactory", settings.repositoryFactory());
     }
 
     /**
