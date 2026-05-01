@@ -2,6 +2,12 @@ package isep.aisafe.usermanagement.domain;
 
 import eapli.framework.infrastructure.authz.domain.model.Role;
 
+/**
+ * Centralizes the application roles used by AISafe authorization rules.
+ *
+ * <p>Keeping the role names in one place avoids duplicated literals across controllers,
+ * validators and permission definitions.</p>
+ */
 public final class AisafeRoles {
 
     private AisafeRoles() {

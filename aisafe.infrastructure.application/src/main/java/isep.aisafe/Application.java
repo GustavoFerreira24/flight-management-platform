@@ -1,5 +1,8 @@
 package isep.aisafe;
 
+/**
+ * Application-level facade for AISafe metadata and runtime settings.
+ */
 public final class Application {
 
     public static final String VERSION = "v0.1";
@@ -10,6 +13,11 @@ public final class Application {
     private Application() {
     }
 
+    /**
+     * Returns the application settings loaded at startup.
+     *
+     * @return shared AISafe application settings
+     */
     public static AppSettings settings() {
         return SETTINGS;
     }

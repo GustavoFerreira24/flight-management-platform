@@ -3,10 +3,16 @@ package isep.aisafe.application.flightcontrol;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 
+/**
+ * Controller for flight control operations.
+ */
 public class FlightControlController {
 
     private final AisafeAuthorizationService authz;
 
+    /**
+     * Creates the controller with the default AISafe authorization service.
+     */
     public FlightControlController() {
         this(new AisafeAuthorizationService());
     }
@@ -15,6 +21,9 @@ public class FlightControlController {
         this.authz = authz;
     }
 
+    /**
+     * Authorizes access to flight control functionality.
+     */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_CONTROL);
 

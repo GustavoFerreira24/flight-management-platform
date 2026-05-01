@@ -8,12 +8,21 @@ import isep.aisafe.infrastructure.authz.AisafePermissions;
 
 import java.util.Set;
 
+/**
+ * Coordinates the backoffice user registration use case.
+ *
+ * <p>The controller enforces authorization, validates the submitted data and then
+ * delegates actual user creation to the framework user management service.</p>
+ */
 public class RegisterBackofficeUserController {
 
     private final AisafeAuthorizationService authz;
     private final UserManagementService userService;
     private final UserRegistrationValidator validator;
 
+    /**
+     * Creates the controller with production authorization, validation and user management services.
+     */
     public RegisterBackofficeUserController() {
         this(new AisafeAuthorizationService(), null, new UserRegistrationValidator());
     }
@@ -27,6 +36,16 @@ public class RegisterBackofficeUserController {
         this.validator = validator;
     }
 
+    /**
+     * Registers a new backoffice user after checking permissions and validating input.
+     *
+     * @param username unique username for the new user
+     * @param password raw password to be validated and encoded by the framework
+     * @param firstName user's first name
+     * @param lastName user's last name
+     * @param email user's email address
+     * @param roles roles assigned to the new user
+     */
     public void registerUser(
             final String username,
             final String password,

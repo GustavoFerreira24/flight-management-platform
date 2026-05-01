@@ -6,11 +6,28 @@ import isep.aisafe.usermanagement.domain.AisafeRoles;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * Validates the data required to register an AISafe user.
+ *
+ * <p>The validator checks mandatory fields, email format and whether every assigned
+ * role belongs to the set of roles supported by the application.</p>
+ */
 public class UserRegistrationValidator {
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
+    /**
+     * Validates user registration input before the user is sent to the framework service.
+     *
+     * @param username required username
+     * @param password required raw password
+     * @param firstName required first name
+     * @param lastName required last name
+     * @param email required email address with a valid format
+     * @param roles non-empty set of AISafe roles
+     * @throws IllegalArgumentException when any field or role is invalid
+     */
     public void validate(
             final String username,
             final String password,

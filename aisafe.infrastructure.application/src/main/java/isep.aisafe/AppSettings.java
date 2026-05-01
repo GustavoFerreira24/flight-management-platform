@@ -7,6 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Loads AISafe runtime configuration from application.properties.
+ *
+ * <p>If the properties resource is unavailable, default persistence settings are
+ * applied so infrastructure components can still fail in a predictable way.</p>
+ */
 public class AppSettings {
 
     private static final String PROPERTIES_RESOURCE = "application.properties";
@@ -17,6 +23,9 @@ public class AppSettings {
 
     private final Properties applicationProperties = new Properties();
 
+    /**
+     * Creates settings by loading configured properties or falling back to defaults.
+     */
     public AppSettings() {
         loadProperties();
     }
@@ -43,14 +52,29 @@ public class AppSettings {
         applicationProperties.setProperty(SCHEMA_GENERATION_KEY, "drop-and-create");
     }
 
+    /**
+     * Returns the configured JPA persistence unit name.
+     *
+     * @return persistence unit name
+     */
     public String persistenceUnitName() {
         return applicationProperties.getProperty(PERSISTENCE_UNIT_KEY);
     }
 
+    /**
+     * Returns the fully qualified repository factory class name.
+     *
+     * @return repository factory class name
+     */
     public String repositoryFactory() {
         return applicationProperties.getProperty(REPOSITORY_FACTORY_KEY);
     }
 
+    /**
+     * Returns extra properties passed to the persistence provider.
+     *
+     * @return map containing provider-specific persistence settings
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Map extendedPersistenceProperties() {
         final Map ret = new HashMap();
