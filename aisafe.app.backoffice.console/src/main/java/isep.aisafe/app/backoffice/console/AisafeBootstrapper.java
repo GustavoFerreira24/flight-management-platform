@@ -14,6 +14,11 @@ import isep.aisafe.enginemodel.domain.EngineType;
 import isep.aisafe.enginemodel.domain.FuelType;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
+import isep.aisafe.airtransportcompany.domain.Country;
+import isep.aisafe.airtransportcompany.domain.IATACode;
+import isep.aisafe.airtransportcompany.domain.ICAOCode;
 
 import java.util.List;
 import java.util.Set;
@@ -40,6 +45,7 @@ public class AisafeBootstrapper {
                 "Flight", "Control", "fco@aisafe.com",
                 Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR));
 
+        bootstrapAirTransportCompanies();
         bootstrapAircraftAndEngineModels();
     }
 
@@ -132,5 +138,79 @@ public class AisafeBootstrapper {
         } catch (Exception e) {
             System.out.println("User already exists: " + username);
         }
+    }
+
+    /**
+     * Bootstraps initial air transport companies.
+     */
+    private static void bootstrapAirTransportCompanies() {
+        final AirTransportCompanyRepository repository =
+                PersistenceContext.repositories().airTransportCompanies();
+
+        registerAirTransportCompanyIfMissing(
+                repository,
+                "TAP Air Portugal",
+                "Portugal",
+                "TP",
+                "TAP"
+        );
+
+        registerAirTransportCompanyIfMissing(
+                repository,
+                "Ryanair",
+                "Ireland",
+                "FR",
+                "RYR"
+        );
+
+        registerAirTransportCompanyIfMissing(
+                repository,
+                "Lufthansa",
+                "Germany",
+                "LH",
+                "DLH"
+        );
+    }
+
+    /**
+     * Registers an air transport company if it does not already exist.
+     *
+     * @param repository  the air transport company repository
+     * @param name        the company name
+     * @param countryName the company country
+     * @param iataCode    the company IATA code
+     * @param icaoCode    the company ICAO code
+     * @return the existing or newly created air transport company
+     */
+    private static AirTransportCompany registerAirTransportCompanyIfMissing(
+            final AirTransportCompanyRepository repository,
+            final String name,
+            final String countryName,
+            final String iataCode,
+            final String icaoCode) {
+
+        final Country country = Country.valueOf(countryName);
+        final IATACode companyIataCode = IATACode.valueOf(iataCode);
+        final ICAOCode companyIcaoCode = ICAOCode.valueOf(icaoCode);
+
+        if (repository.findByIataCode(companyIataCode).isPresent()) {
+            return repository.findByIataCode(companyIataCode).get();
+        }
+
+        if (repository.findByIcaoCode(companyIcaoCode).isPresent()) {
+            throw new IllegalArgumentException("Air transport company ICAO code already exists in bootstrap.");
+        }
+
+        final AirTransportCompany airTransportCompany = new AirTransportCompany(
+                name,
+                country,
+                companyIataCode,
+                companyIcaoCode
+        );
+
+        repository.save(airTransportCompany);
+        System.out.println("Bootstrapped air transport company: " + companyIataCode);
+
+        return airTransportCompany;
     }
 }

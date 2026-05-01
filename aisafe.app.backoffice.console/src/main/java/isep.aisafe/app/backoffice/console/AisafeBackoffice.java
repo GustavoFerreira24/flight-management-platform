@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console;
 
+import isep.aisafe.app.backoffice.console.airtransportcompany.RegisterAirTransportCompanyUI;
 import isep.aisafe.app.common.console.AisafeBaseApplication;
 import isep.aisafe.app.common.console.presentation.authz.LoginUI;
 import isep.aisafe.infrastructure.authz.AuthenticationCredentialHandler;
@@ -47,6 +48,7 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         System.out.println("1 - Register Backoffice User");
         System.out.println("2 - Register Aircraft Model (US55)");
         System.out.println("3 - Register Engine Model (US56)");
+        System.out.println("4 - Register Air Transport Company (US60)");
         System.out.print("Option: ");
 
         final String option = scanner.nextLine();
@@ -63,6 +65,11 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
 
         if ("3".equals(option)) {
             new RegisterEngineModelUI(scanner).show();
+            return;
+        }
+
+        if ("4".equals(option)) {
+            new RegisterAirTransportCompanyUI(scanner).show();
             return;
         }
 
