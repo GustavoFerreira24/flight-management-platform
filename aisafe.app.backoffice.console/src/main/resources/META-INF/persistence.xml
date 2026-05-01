@@ -15,6 +15,7 @@
         <class>isep.aisafe.aircraftmodel.domain.AircraftModel</class>
         <class>isep.aisafe.aircraftmodel.domain.AircraftVariant</class>
         <class>isep.aisafe.airtransportcompany.domain.AirTransportCompany</class>
+        <class>isep.aisafe.customercollaborator.domain.CustomerCollaborator</class>
 
 
         <properties>
