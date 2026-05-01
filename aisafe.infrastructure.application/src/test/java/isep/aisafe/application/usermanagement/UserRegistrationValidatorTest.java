@@ -193,9 +193,23 @@ class UserRegistrationValidatorTest {
                                 AisafeRoles.PILOT,
                                 AisafeRoles.FLIGHT_CONTROL_OPERATOR,
                                 AisafeRoles.WEATHER_PERSON,
-                                AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
-                                AisafeRoles.POWER_USER
+                                AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR
                         )
+                )
+        );
+    }
+
+    @Test
+    void ensurePowerUserRoleIsRejectedBecauseItIsNotAnAisafeActor() {
+        // Arrange / Act / Assert
+        assertThrows(IllegalArgumentException.class, () ->
+                validator.validate(
+                        "poweruser",
+                        "Password1",
+                        "Power",
+                        "User",
+                        "poweruser@aisafe.com",
+                        Set.of(Role.valueOf("POWER_USER"))
                 )
         );
     }
