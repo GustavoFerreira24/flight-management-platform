@@ -3,6 +3,7 @@ package isep.aisafe.infrastructure.persistence;
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
 
 /**
@@ -45,4 +46,6 @@ public interface RepositoryFactory {
      * @return engine model repository
      */
     EngineModelRepository engineModels();
+
+    AirTransportCompanyRepository airTransportCompanies();
 }

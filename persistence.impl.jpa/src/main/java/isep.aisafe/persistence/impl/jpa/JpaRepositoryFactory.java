@@ -2,6 +2,7 @@ package isep.aisafe.persistence.impl.jpa;
 
 import isep.aisafe.Application;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
 import isep.aisafe.infrastructure.persistence.RepositoryFactory;
 import eapli.framework.domain.repositories.TransactionalContext;
@@ -40,5 +41,10 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public EngineModelRepository engineModels() {
         return new JpaEngineModelRepository(Application.settings().persistenceUnitName());
+    }
+
+    @Override
+    public AirTransportCompanyRepository airTransportCompanies() {
+        return new JpaAirTransportCompanyRepository(Application.settings().persistenceUnitName());
     }
 }
