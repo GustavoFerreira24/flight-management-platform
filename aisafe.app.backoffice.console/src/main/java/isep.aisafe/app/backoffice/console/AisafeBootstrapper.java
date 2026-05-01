@@ -111,9 +111,9 @@ public class AisafeBootstrapper {
                     tsfc
             );
 
-            repository.save(engineModel);
+            final EngineModel savedEngineModel = repository.save(engineModel);
             System.out.println("Bootstrapped engine model: " + designator);
-            return engineModel;
+            return savedEngineModel;
         });
     }
 
