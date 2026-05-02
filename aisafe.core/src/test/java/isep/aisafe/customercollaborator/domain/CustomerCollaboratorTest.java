@@ -8,25 +8,28 @@ class CustomerCollaboratorTest {
 
     /**
      * Purpose: verify successful collaborator creation.
-     * Scenario: provide valid first name, last name and email.
+     * Scenario: provide valid first name, last name, email and customer reference.
      * Expected output: the collaborator stores all values and uses email as identity.
      */
     @Test
     void ensureValidCollaboratorIsCreated() {
         // Arrange
         final CollaboratorEmail email = CollaboratorEmail.valueOf("collaborator@aisafe.com");
+        final CustomerReference customerReference = CustomerReference.airTransportCompany("TP");
 
         // Act
         final CustomerCollaborator collaborator = new CustomerCollaborator(
                 "Customer",
                 "Collaborator",
-                email
+                email,
+                customerReference
         );
 
         // Assert
         assertEquals("Customer", collaborator.firstName());
         assertEquals("Collaborator", collaborator.lastName());
         assertEquals(email, collaborator.email());
+        assertEquals(customerReference, collaborator.customerReference());
         assertEquals(email, collaborator.identity());
     }
 
@@ -42,7 +45,8 @@ class CustomerCollaboratorTest {
                 new CustomerCollaborator(
                         " ",
                         "Collaborator",
-                        CollaboratorEmail.valueOf("collaborator@aisafe.com")
+                        CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                        CustomerReference.airTransportCompany("TP")
                 )
         );
     }
@@ -59,7 +63,8 @@ class CustomerCollaboratorTest {
                 new CustomerCollaborator(
                         "Customer",
                         " ",
-                        CollaboratorEmail.valueOf("collaborator@aisafe.com")
+                        CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                        CustomerReference.airTransportCompany("TP")
                 )
         );
     }
@@ -73,7 +78,30 @@ class CustomerCollaboratorTest {
     void ensureNullEmailIsRejected() {
         // Arrange / Act / Assert
         assertThrows(IllegalArgumentException.class, () ->
-                new CustomerCollaborator("Customer", "Collaborator", null)
+                new CustomerCollaborator(
+                        "Customer",
+                        "Collaborator",
+                        null,
+                        CustomerReference.airTransportCompany("TP")
+                )
+        );
+    }
+
+    /**
+     * Purpose: verify that customer association is mandatory.
+     * Scenario: create a collaborator without a customer reference.
+     * Expected output: an IllegalArgumentException is thrown.
+     */
+    @Test
+    void ensureNullCustomerReferenceIsRejected() {
+        // Arrange / Act / Assert
+        assertThrows(IllegalArgumentException.class, () ->
+                new CustomerCollaborator(
+                        "Customer",
+                        "Collaborator",
+                        CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                        null
+                )
         );
     }
 
@@ -88,12 +116,14 @@ class CustomerCollaboratorTest {
         final CustomerCollaborator first = new CustomerCollaborator(
                 "Customer",
                 "Collaborator",
-                CollaboratorEmail.valueOf("collaborator@aisafe.com")
+                CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                CustomerReference.airTransportCompany("TP")
         );
         final CustomerCollaborator second = new CustomerCollaborator(
                 "Other",
                 "Name",
-                CollaboratorEmail.valueOf("collaborator@aisafe.com")
+                CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                CustomerReference.airControlArea("LISACC")
         );
 
         // Act / Assert

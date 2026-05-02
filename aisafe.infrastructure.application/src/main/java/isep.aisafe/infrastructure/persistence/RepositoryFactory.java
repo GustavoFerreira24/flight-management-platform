@@ -5,6 +5,7 @@ import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
+import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
 
 /**
@@ -51,5 +52,7 @@ public interface RepositoryFactory {
     AirTransportCompanyRepository airTransportCompanies();
 
     AirControlAreaRepository airControlAreas();
+
+    CustomerCollaboratorRepository customerCollaborators();
 
 }

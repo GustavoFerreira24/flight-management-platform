@@ -14,8 +14,8 @@ import java.io.Serializable;
 /**
  * Represents a collaborator registered for a customer.
  *
- * <p>At this stage the aggregate captures the collaborator's identity data. Customer
- * association and system-user creation are added by the following US061 sub-issues.</p>
+ * <p>The collaborator is always associated with exactly one customer. System-user
+ * creation is added by the following US061 sub-issue.</p>
  */
 @Entity
 public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, Serializable {
@@ -39,6 +39,9 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
     @AttributeOverride(name = "value", column = @Column(name = "EMAIL", nullable = false, unique = true))
     private CollaboratorEmail email;
 
+    @Embedded
+    private CustomerReference customerReference;
+
     protected CustomerCollaborator() {
     }
 
@@ -48,11 +51,13 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
      * @param firstName collaborator first name
      * @param lastName collaborator last name
      * @param email collaborator email
+     * @param customerReference customer associated with the collaborator
      */
     public CustomerCollaborator(
             final String firstName,
             final String lastName,
-            final CollaboratorEmail email) {
+            final CollaboratorEmail email,
+            final CustomerReference customerReference) {
 
         ensureNotBlank(firstName, "Collaborator first name is required.");
         ensureNotBlank(lastName, "Collaborator last name is required.");
@@ -61,9 +66,14 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
             throw new IllegalArgumentException("Collaborator email is required.");
         }
 
+        if (customerReference == null) {
+            throw new IllegalArgumentException("Customer collaborator must be associated with a customer.");
+        }
+
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.email = email;
+        this.customerReference = customerReference;
     }
 
     private void ensureNotBlank(final String value, final String message) {
@@ -97,5 +107,9 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
 
     public CollaboratorEmail email() {
         return email;
+    }
+
+    public CustomerReference customerReference() {
+        return customerReference;
     }
 }

@@ -20,7 +20,8 @@ class InMemoryCustomerCollaboratorRepositoryTest {
         final CustomerCollaborator collaborator = new CustomerCollaborator(
                 "Customer",
                 "Collaborator",
-                email
+                email,
+                CustomerReference.airTransportCompany("TP")
         );
 
         // Act
