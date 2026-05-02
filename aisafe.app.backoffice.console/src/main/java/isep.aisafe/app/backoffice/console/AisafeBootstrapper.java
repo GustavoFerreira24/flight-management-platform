@@ -27,6 +27,7 @@ import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.CustomerReference;
+import isep.aisafe.customercollaborator.domain.SystemUsername;
 
 import java.util.List;
 import java.util.Set;
@@ -224,7 +225,7 @@ public class AisafeBootstrapper {
                 "lisacc.collaborator@aisafe.com",
                 "Password1",
                 CustomerReference.airControlArea("LISACC"),
-                Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR)
+                Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
     }
 
@@ -252,10 +253,21 @@ public class AisafeBootstrapper {
             final Set<Role> roles) {
 
         final CollaboratorEmail collaboratorEmail = CollaboratorEmail.valueOf(email);
+        final SystemUsername systemUsername = SystemUsername.valueOf(collaboratorEmail.toString());
 
         if (repository.findByEmail(collaboratorEmail).isPresent()) {
             return repository.findByEmail(collaboratorEmail).get();
         }
+
+        final CustomerCollaborator collaborator = new CustomerCollaborator(
+                firstName,
+                lastName,
+                collaboratorEmail,
+                customerReference,
+                systemUsername
+        );
+
+        final CustomerCollaborator savedCollaborator = repository.save(collaborator);
 
         register(
                 userService,
@@ -267,15 +279,6 @@ public class AisafeBootstrapper {
                 roles
         );
 
-        final CustomerCollaborator collaborator = new CustomerCollaborator(
-                firstName,
-                lastName,
-                collaboratorEmail,
-                customerReference,
-                collaboratorEmail.toString()
-        );
-
-        final CustomerCollaborator savedCollaborator = repository.save(collaborator);
         System.out.println("Bootstrapped customer collaborator: " + collaboratorEmail);
 
         return savedCollaborator;

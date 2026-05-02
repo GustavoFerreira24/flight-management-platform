@@ -22,7 +22,7 @@ class InMemoryCustomerCollaboratorRepositoryTest {
                 "Collaborator",
                 email,
                 CustomerReference.airTransportCompany("TP"),
-                "collaborator@aisafe.com"
+                SystemUsername.valueOf("collaborator@aisafe.com")
         );
 
         // Act

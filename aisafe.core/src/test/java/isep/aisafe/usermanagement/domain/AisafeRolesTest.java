@@ -17,8 +17,6 @@ class AisafeRolesTest {
         assertEquals(Role.valueOf("BACKOFFICE_OPERATOR"), AisafeRoles.BACKOFFICE_OPERATOR);
         assertEquals(Role.valueOf("AIR_TRANSPORT_COMPANY_COLLABORATOR"),
                 AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
-        assertEquals(Role.valueOf("AIR_CONTROL_AREA_COLLABORATOR"),
-                AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR);
         assertEquals(Role.valueOf("PILOT"), AisafeRoles.PILOT);
         assertEquals(Role.valueOf("FLIGHT_CONTROL_OPERATOR"), AisafeRoles.FLIGHT_CONTROL_OPERATOR);
         assertEquals(Role.valueOf("WEATHER_PERSON"), AisafeRoles.WEATHER_PERSON);

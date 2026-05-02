@@ -14,8 +14,8 @@ import java.io.Serializable;
 /**
  * Represents a collaborator registered for a customer.
  *
- * <p>The collaborator is always associated with exactly one customer. System-user
- * creation is added by the following US061 sub-issue.</p>
+ * <p>The collaborator is always associated with exactly one customer and one distinct
+ * system user. The system username is currently the collaborator email.</p>
  */
 @Entity
 public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, Serializable {
@@ -42,8 +42,9 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
     @Embedded
     private CustomerReference customerReference;
 
-    @Column(nullable = false, unique = true)
-    private String systemUsername;
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "SYSTEM_USERNAME", nullable = false, unique = true))
+    private SystemUsername systemUsername;
 
     protected CustomerCollaborator() {
     }
@@ -62,7 +63,7 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
             final String lastName,
             final CollaboratorEmail email,
             final CustomerReference customerReference,
-            final String systemUsername) {
+            final SystemUsername systemUsername) {
 
         ensureNotBlank(firstName, "Collaborator first name is required.");
         ensureNotBlank(lastName, "Collaborator last name is required.");
@@ -75,13 +76,15 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
             throw new IllegalArgumentException("Customer collaborator must be associated with a customer.");
         }
 
-        ensureNotBlank(systemUsername, "Collaborator system username is required.");
+        if (systemUsername == null) {
+            throw new IllegalArgumentException("Collaborator system username is required.");
+        }
 
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.email = email;
         this.customerReference = customerReference;
-        this.systemUsername = systemUsername.trim();
+        this.systemUsername = systemUsername;
     }
 
     private void ensureNotBlank(final String value, final String message) {
@@ -121,7 +124,7 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
         return customerReference;
     }
 
-    public String systemUsername() {
+    public SystemUsername systemUsername() {
         return systemUsername;
     }
 }

@@ -23,7 +23,7 @@ class CustomerCollaboratorTest {
                 "Collaborator",
                 email,
                 customerReference,
-                "registered.company.collaborator@aisafe.com"
+                SystemUsername.valueOf("registered.company.collaborator@aisafe.com")
         );
 
         // Assert
@@ -48,7 +48,7 @@ class CustomerCollaboratorTest {
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
                         CustomerReference.airTransportCompany("TP"),
-                        "collaborator@aisafe.com"
+                        SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
     }
@@ -67,7 +67,7 @@ class CustomerCollaboratorTest {
                         " ",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
                         CustomerReference.airTransportCompany("TP"),
-                        "collaborator@aisafe.com"
+                        SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
     }
@@ -86,7 +86,7 @@ class CustomerCollaboratorTest {
                         "Collaborator",
                         null,
                         CustomerReference.airTransportCompany("TP"),
-                        "collaborator@aisafe.com"
+                        SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
     }
@@ -105,18 +105,18 @@ class CustomerCollaboratorTest {
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
                         null,
-                        "collaborator@aisafe.com"
+                        SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
     }
 
     /**
-     * Purpose: verify that the associated system username is mandatory.
-     * Scenario: create a collaborator without a system username.
+     * Purpose: verify that the associated system username value object is mandatory.
+     * Scenario: create a collaborator without a system username value object.
      * Expected output: an IllegalArgumentException is thrown.
      */
     @Test
-    void ensureBlankSystemUsernameIsRejected() {
+    void ensureNullSystemUsernameIsRejected() {
         // Arrange / Act / Assert
         assertThrows(IllegalArgumentException.class, () ->
                 new CustomerCollaborator(
@@ -124,14 +124,14 @@ class CustomerCollaboratorTest {
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
                         CustomerReference.airTransportCompany("TP"),
-                        " "
+                        null
                 )
         );
     }
 
     /**
      * Purpose: verify aggregate identity comparison.
-     * Scenario: compare two collaborators with the same email and different names.
+     * Scenario: compare collaborators by aggregate identity.
      * Expected output: sameAs returns true only for another collaborator with the same identity.
      */
     @Test
@@ -142,18 +142,26 @@ class CustomerCollaboratorTest {
                 "Collaborator",
                 CollaboratorEmail.valueOf("collaborator@aisafe.com"),
                 CustomerReference.airTransportCompany("TP"),
-                "collaborator@aisafe.com"
+                SystemUsername.valueOf("collaborator@aisafe.com")
         );
         final CustomerCollaborator second = new CustomerCollaborator(
                 "Other",
                 "Name",
                 CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                CustomerReference.airTransportCompany("TP"),
+                SystemUsername.valueOf("collaborator@aisafe.com")
+        );
+        final CustomerCollaborator third = new CustomerCollaborator(
+                "Other",
+                "Name",
+                CollaboratorEmail.valueOf("other.collaborator@aisafe.com"),
                 CustomerReference.airControlArea("LISACC"),
-                "other.collaborator@aisafe.com"
+                SystemUsername.valueOf("other.collaborator@aisafe.com")
         );
 
         // Act / Assert
         assertTrue(first.sameAs(second));
+        assertFalse(first.sameAs(third));
         assertFalse(first.sameAs("not a collaborator"));
     }
 }

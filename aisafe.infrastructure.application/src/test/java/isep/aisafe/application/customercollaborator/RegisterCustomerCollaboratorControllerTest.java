@@ -81,7 +81,7 @@ class RegisterCustomerCollaboratorControllerTest {
         assertEquals("Customer", collaborator.firstName());
         assertEquals("Collaborator", collaborator.lastName());
         assertEquals("registered.company.collaborator@aisafe.com", collaborator.email().toString());
-        assertEquals("registered.company.collaborator@aisafe.com", collaborator.systemUsername());
+        assertEquals("registered.company.collaborator@aisafe.com", collaborator.systemUsername().toString());
         assertEquals(CustomerType.AIR_TRANSPORT_COMPANY, collaborator.customerReference().customerType());
         assertEquals("TP", collaborator.customerReference().customerIdentity());
         assertEquals("registered.company.collaborator@aisafe.com", userService.username);
@@ -123,7 +123,7 @@ class RegisterCustomerCollaboratorControllerTest {
 
         // Assert
         assertEquals(CustomerReference.airControlArea("LISACC"), collaborator.customerReference());
-        assertEquals(Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR), userService.roles);
+        assertEquals(Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR), userService.roles);
         assertTrue(repository.findByEmail(
                 CollaboratorEmail.valueOf("registered.area.collaborator@aisafe.com")
         ).isPresent());

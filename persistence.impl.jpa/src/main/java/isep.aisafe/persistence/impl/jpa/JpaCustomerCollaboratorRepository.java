@@ -8,7 +8,6 @@ import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,13 +31,6 @@ class JpaCustomerCollaboratorRepository
         final Map<String, Object> params = new HashMap<>();
         params.put("email", email);
 
-        final Iterator<CustomerCollaborator> matches =
-                match("e.email=:email", params).iterator();
-
-        if (matches.hasNext()) {
-            return Optional.of(matches.next());
-        }
-
-        return Optional.empty();
+        return matchOne("e.email=:email", params);
     }
 }

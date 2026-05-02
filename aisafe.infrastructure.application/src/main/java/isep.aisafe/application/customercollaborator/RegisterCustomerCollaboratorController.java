@@ -11,6 +11,7 @@ import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.CustomerReference;
+import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
@@ -36,22 +37,6 @@ public class RegisterCustomerCollaboratorController {
         this(
                 new AisafeAuthorizationService(),
                 PersistenceContext.repositories().customerCollaborators(),
-                PersistenceContext.repositories().airTransportCompanies(),
-                PersistenceContext.repositories().airControlAreas(),
-                null
-        );
-    }
-
-    /**
-     * Creates the controller with a custom collaborator repository.
-     *
-     * @param collaboratorRepository repository used to persist collaborators
-     */
-    public RegisterCustomerCollaboratorController(
-            final CustomerCollaboratorRepository collaboratorRepository) {
-        this(
-                new AisafeAuthorizationService(),
-                collaboratorRepository,
                 PersistenceContext.repositories().airTransportCompanies(),
                 PersistenceContext.repositories().airControlAreas(),
                 null
@@ -148,7 +133,7 @@ public class RegisterCustomerCollaboratorController {
                 email,
                 CustomerReference.airControlArea(customerAreaCode.toString()),
                 initialPassword,
-                Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR)
+                Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
     }
 
@@ -162,6 +147,9 @@ public class RegisterCustomerCollaboratorController {
 
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
 
+        ensureNotBlank(firstName, "Collaborator first name is required.");
+        ensureNotBlank(lastName, "Collaborator last name is required.");
+
         final CollaboratorEmail collaboratorEmail = CollaboratorEmail.valueOf(email);
 
         if (collaboratorRepository.findByEmail(collaboratorEmail).isPresent()) {
@@ -170,7 +158,7 @@ public class RegisterCustomerCollaboratorController {
 
         ensureNotBlank(initialPassword, "Collaborator initial password is required.");
 
-        final String systemUsername = collaboratorEmail.toString();
+        final SystemUsername systemUsername = SystemUsername.valueOf(collaboratorEmail.toString());
 
         final CustomerCollaborator collaborator = new CustomerCollaborator(
                 firstName,
@@ -180,8 +168,10 @@ public class RegisterCustomerCollaboratorController {
                 systemUsername
         );
 
+        final CustomerCollaborator savedCollaborator = collaboratorRepository.save(collaborator);
+
         userService().registerNewUser(
-                systemUsername,
+                systemUsername.toString(),
                 initialPassword,
                 firstName,
                 lastName,
@@ -189,7 +179,7 @@ public class RegisterCustomerCollaboratorController {
                 systemUserRoles
         );
 
-        return collaboratorRepository.save(collaborator);
+        return savedCollaborator;
     }
 
     private void ensureNotBlank(final String value, final String message) {

@@ -49,10 +49,25 @@ public interface RepositoryFactory {
      */
     EngineModelRepository engineModels();
 
+    /**
+     * Returns the repository for air transport company aggregates.
+     *
+     * @return air transport company repository
+     */
     AirTransportCompanyRepository airTransportCompanies();
 
+    /**
+     * Returns the repository for air control area aggregates.
+     *
+     * @return air control area repository
+     */
     AirControlAreaRepository airControlAreas();
 
+    /**
+     * Returns the repository for customer collaborator aggregates.
+     *
+     * @return customer collaborator repository
+     */
     CustomerCollaboratorRepository customerCollaborators();
 
 }

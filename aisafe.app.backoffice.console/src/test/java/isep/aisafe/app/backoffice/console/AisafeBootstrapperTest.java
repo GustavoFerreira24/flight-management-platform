@@ -45,7 +45,7 @@ class AisafeBootstrapperTest {
         assertEquals("TAP", collaborator.firstName());
         assertEquals("Collaborator", collaborator.lastName());
         assertEquals(customerReference, collaborator.customerReference());
-        assertEquals("tap.collaborator@aisafe.com", collaborator.systemUsername());
+        assertEquals("tap.collaborator@aisafe.com", collaborator.systemUsername().toString());
         assertTrue(repository.findByEmail(
                 CollaboratorEmail.valueOf("tap.collaborator@aisafe.com")
         ).isPresent());
@@ -76,7 +76,7 @@ class AisafeBootstrapperTest {
                 "lisacc.collaborator@aisafe.com",
                 "Password1",
                 customerReference,
-                Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR)
+                Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
 
         // Act
@@ -88,7 +88,7 @@ class AisafeBootstrapperTest {
                 "lisacc.collaborator@aisafe.com",
                 "Password1",
                 customerReference,
-                Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR)
+                Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
 
         // Assert
