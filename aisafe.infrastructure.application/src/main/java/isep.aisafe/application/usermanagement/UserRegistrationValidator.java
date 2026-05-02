@@ -70,6 +70,7 @@ public class UserRegistrationValidator {
                 || role.equals(AisafeRoles.PILOT)
                 || role.equals(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
                 || role.equals(AisafeRoles.WEATHER_PERSON)
-                || role.equals(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
+                || role.equals(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
+                || role.equals(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR);
     }
 }

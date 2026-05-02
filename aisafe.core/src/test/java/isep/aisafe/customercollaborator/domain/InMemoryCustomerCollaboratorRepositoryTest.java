@@ -21,7 +21,8 @@ class InMemoryCustomerCollaboratorRepositoryTest {
                 "Customer",
                 "Collaborator",
                 email,
-                CustomerReference.airTransportCompany("TP")
+                CustomerReference.airTransportCompany("TP"),
+                "collaborator@aisafe.com"
         );
 
         // Act

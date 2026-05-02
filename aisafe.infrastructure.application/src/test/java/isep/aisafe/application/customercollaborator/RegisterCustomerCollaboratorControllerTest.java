@@ -1,5 +1,8 @@
 package isep.aisafe.application.customercollaborator;
 
+import eapli.framework.infrastructure.authz.application.UserManagementService;
+import eapli.framework.infrastructure.authz.domain.model.Role;
+import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.InMemoryAirControlAreaRepository;
@@ -15,7 +18,10 @@ import isep.aisafe.customercollaborator.domain.CustomerType;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.support.CapturingAuthorizationService;
+import isep.aisafe.usermanagement.domain.AisafeRoles;
 import org.junit.jupiter.api.Test;
+
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,7 +42,8 @@ class RegisterCustomerCollaboratorControllerTest {
                 new CapturingAuthorizationService(),
                 new InMemoryCustomerCollaboratorRepository(),
                 customerRepositories.airTransportCompanies,
-                customerRepositories.airControlAreas
+                customerRepositories.airControlAreas,
+                new FakeUserManagementService()
         ));
     }
 
@@ -52,10 +59,12 @@ class RegisterCustomerCollaboratorControllerTest {
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
         final CustomerRepositories customerRepositories = customerRepositories();
+        final FakeUserManagementService userService = new FakeUserManagementService();
         final RegisterCustomerCollaboratorController controller = controller(
                 authz,
                 repository,
-                customerRepositories
+                customerRepositories,
+                userService
         );
 
         // Act
@@ -63,7 +72,8 @@ class RegisterCustomerCollaboratorControllerTest {
                 "Customer",
                 "Collaborator",
                 "registered.company.collaborator@aisafe.com",
-                "TP"
+                "TP",
+                "Password1"
         );
 
         // Assert
@@ -71,8 +81,13 @@ class RegisterCustomerCollaboratorControllerTest {
         assertEquals("Customer", collaborator.firstName());
         assertEquals("Collaborator", collaborator.lastName());
         assertEquals("registered.company.collaborator@aisafe.com", collaborator.email().toString());
+        assertEquals("registered.company.collaborator@aisafe.com", collaborator.systemUsername());
         assertEquals(CustomerType.AIR_TRANSPORT_COMPANY, collaborator.customerReference().customerType());
         assertEquals("TP", collaborator.customerReference().customerIdentity());
+        assertEquals("registered.company.collaborator@aisafe.com", userService.username);
+        assertEquals("Password1", userService.password);
+        assertEquals(Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR), userService.roles);
+        assertEquals(1, userService.calls);
         assertTrue(repository.findByEmail(
                 CollaboratorEmail.valueOf("registered.company.collaborator@aisafe.com")
         ).isPresent());
@@ -89,10 +104,12 @@ class RegisterCustomerCollaboratorControllerTest {
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
         final CustomerRepositories customerRepositories = customerRepositories();
+        final FakeUserManagementService userService = new FakeUserManagementService();
         final RegisterCustomerCollaboratorController controller = controller(
                 new CapturingAuthorizationService(),
                 repository,
-                customerRepositories
+                customerRepositories,
+                userService
         );
 
         // Act
@@ -100,11 +117,13 @@ class RegisterCustomerCollaboratorControllerTest {
                 "Customer",
                 "Collaborator",
                 "registered.area.collaborator@aisafe.com",
-                "LISACC"
+                "LISACC",
+                "Password1"
         );
 
         // Assert
         assertEquals(CustomerReference.airControlArea("LISACC"), collaborator.customerReference());
+        assertEquals(Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR), userService.roles);
         assertTrue(repository.findByEmail(
                 CollaboratorEmail.valueOf("registered.area.collaborator@aisafe.com")
         ).isPresent());
@@ -121,17 +140,20 @@ class RegisterCustomerCollaboratorControllerTest {
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
         final CustomerRepositories customerRepositories = customerRepositories();
+        final FakeUserManagementService userService = new FakeUserManagementService();
         final RegisterCustomerCollaboratorController controller = controller(
                 new CapturingAuthorizationService(),
                 repository,
-                customerRepositories
+                customerRepositories,
+                userService
         );
 
         controller.registerCollaboratorForAirTransportCompany(
                 "Customer",
                 "Collaborator",
                 "duplicate.collaborator@aisafe.com",
-                "TP"
+                "TP",
+                "Password1"
         );
 
         // Act / Assert
@@ -140,9 +162,11 @@ class RegisterCustomerCollaboratorControllerTest {
                         "Other",
                         "Collaborator",
                         "duplicate.collaborator@aisafe.com",
-                        "LISACC"
+                        "LISACC",
+                        "Password1"
                 )
         );
+        assertEquals(1, userService.calls);
     }
 
     /**
@@ -154,10 +178,12 @@ class RegisterCustomerCollaboratorControllerTest {
     void ensureUnknownAirTransportCompanyIsRejected() {
         // Arrange
         final CustomerRepositories customerRepositories = customerRepositories();
+        final FakeUserManagementService userService = new FakeUserManagementService();
         final RegisterCustomerCollaboratorController controller = controller(
                 new CapturingAuthorizationService(),
                 new InMemoryCustomerCollaboratorRepository(),
-                customerRepositories
+                customerRepositories,
+                userService
         );
 
         // Act / Assert
@@ -166,9 +192,11 @@ class RegisterCustomerCollaboratorControllerTest {
                         "Customer",
                         "Collaborator",
                         "unknown.company.collaborator@aisafe.com",
-                        "XX"
+                        "XX",
+                        "Password1"
                 )
         );
+        assertEquals(0, userService.calls);
     }
 
     /**
@@ -180,10 +208,12 @@ class RegisterCustomerCollaboratorControllerTest {
     void ensureUnknownAirControlAreaIsRejected() {
         // Arrange
         final CustomerRepositories customerRepositories = customerRepositories();
+        final FakeUserManagementService userService = new FakeUserManagementService();
         final RegisterCustomerCollaboratorController controller = controller(
                 new CapturingAuthorizationService(),
                 new InMemoryCustomerCollaboratorRepository(),
-                customerRepositories
+                customerRepositories,
+                userService
         );
 
         // Act / Assert
@@ -192,9 +222,11 @@ class RegisterCustomerCollaboratorControllerTest {
                         "Customer",
                         "Collaborator",
                         "unknown.area.collaborator@aisafe.com",
-                        "UNKNOWN"
+                        "UNKNOWN",
+                        "Password1"
                 )
         );
+        assertEquals(0, userService.calls);
     }
 
     /**
@@ -206,10 +238,12 @@ class RegisterCustomerCollaboratorControllerTest {
     void ensureInvalidCollaboratorDataIsRejected() {
         // Arrange
         final CustomerRepositories customerRepositories = customerRepositories();
+        final FakeUserManagementService userService = new FakeUserManagementService();
         final RegisterCustomerCollaboratorController controller = controller(
                 new CapturingAuthorizationService(),
                 new InMemoryCustomerCollaboratorRepository(),
-                customerRepositories
+                customerRepositories,
+                userService
         );
 
         // Act / Assert
@@ -218,20 +252,54 @@ class RegisterCustomerCollaboratorControllerTest {
                         "",
                         "Collaborator",
                         "invalid.data.collaborator@aisafe.com",
-                        "TP"
+                        "TP",
+                        "Password1"
                 )
         );
+        assertEquals(0, userService.calls);
+    }
+
+    /**
+     * Purpose: verify that the initial password is mandatory for system-user creation.
+     * Scenario: register a collaborator with a blank initial password.
+     * Expected output: an IllegalArgumentException is thrown and no system user is created.
+     */
+    @Test
+    void ensureBlankInitialPasswordIsRejected() {
+        // Arrange
+        final CustomerRepositories customerRepositories = customerRepositories();
+        final FakeUserManagementService userService = new FakeUserManagementService();
+        final RegisterCustomerCollaboratorController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryCustomerCollaboratorRepository(),
+                customerRepositories,
+                userService
+        );
+
+        // Act / Assert
+        assertThrows(IllegalArgumentException.class, () ->
+                controller.registerCollaboratorForAirTransportCompany(
+                        "Customer",
+                        "Collaborator",
+                        "blank.password.collaborator@aisafe.com",
+                        "TP",
+                        " "
+                )
+        );
+        assertEquals(0, userService.calls);
     }
 
     private RegisterCustomerCollaboratorController controller(
             final CapturingAuthorizationService authz,
             final InMemoryCustomerCollaboratorRepository collaboratorRepository,
-            final CustomerRepositories customerRepositories) {
+            final CustomerRepositories customerRepositories,
+            final FakeUserManagementService userService) {
         return new RegisterCustomerCollaboratorController(
                 authz,
                 collaboratorRepository,
                 customerRepositories.airTransportCompanies,
-                customerRepositories.airControlAreas
+                customerRepositories.airControlAreas,
+                userService
         );
     }
 
@@ -265,6 +333,33 @@ class RegisterCustomerCollaboratorControllerTest {
                 final InMemoryAirControlAreaRepository airControlAreas) {
             this.airTransportCompanies = airTransportCompanies;
             this.airControlAreas = airControlAreas;
+        }
+    }
+
+    private static final class FakeUserManagementService extends UserManagementService {
+
+        private String username;
+        private String password;
+        private Set<Role> roles;
+        private int calls;
+
+        private FakeUserManagementService() {
+            super(null, null, null);
+        }
+
+        @Override
+        public SystemUser registerNewUser(
+                final String username,
+                final String rawPassword,
+                final String firstName,
+                final String lastName,
+                final String email,
+                final Set<Role> roles) {
+            calls++;
+            this.username = username;
+            password = rawPassword;
+            this.roles = roles;
+            return null;
         }
     }
 }

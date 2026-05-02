@@ -42,6 +42,9 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
     @Embedded
     private CustomerReference customerReference;
 
+    @Column(nullable = false, unique = true)
+    private String systemUsername;
+
     protected CustomerCollaborator() {
     }
 
@@ -52,12 +55,14 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
      * @param lastName collaborator last name
      * @param email collaborator email
      * @param customerReference customer associated with the collaborator
+     * @param systemUsername username of the system user associated with the collaborator
      */
     public CustomerCollaborator(
             final String firstName,
             final String lastName,
             final CollaboratorEmail email,
-            final CustomerReference customerReference) {
+            final CustomerReference customerReference,
+            final String systemUsername) {
 
         ensureNotBlank(firstName, "Collaborator first name is required.");
         ensureNotBlank(lastName, "Collaborator last name is required.");
@@ -70,10 +75,13 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
             throw new IllegalArgumentException("Customer collaborator must be associated with a customer.");
         }
 
+        ensureNotBlank(systemUsername, "Collaborator system username is required.");
+
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.email = email;
         this.customerReference = customerReference;
+        this.systemUsername = systemUsername.trim();
     }
 
     private void ensureNotBlank(final String value, final String message) {
@@ -111,5 +119,9 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
 
     public CustomerReference customerReference() {
         return customerReference;
+    }
+
+    public String systemUsername() {
+        return systemUsername;
     }
 }

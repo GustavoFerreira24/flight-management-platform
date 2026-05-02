@@ -22,7 +22,8 @@ class CustomerCollaboratorTest {
                 "Customer",
                 "Collaborator",
                 email,
-                customerReference
+                customerReference,
+                "registered.company.collaborator@aisafe.com"
         );
 
         // Assert
@@ -46,7 +47,8 @@ class CustomerCollaboratorTest {
                         " ",
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                        CustomerReference.airTransportCompany("TP")
+                        CustomerReference.airTransportCompany("TP"),
+                        "collaborator@aisafe.com"
                 )
         );
     }
@@ -64,7 +66,8 @@ class CustomerCollaboratorTest {
                         "Customer",
                         " ",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                        CustomerReference.airTransportCompany("TP")
+                        CustomerReference.airTransportCompany("TP"),
+                        "collaborator@aisafe.com"
                 )
         );
     }
@@ -82,7 +85,8 @@ class CustomerCollaboratorTest {
                         "Customer",
                         "Collaborator",
                         null,
-                        CustomerReference.airTransportCompany("TP")
+                        CustomerReference.airTransportCompany("TP"),
+                        "collaborator@aisafe.com"
                 )
         );
     }
@@ -100,7 +104,27 @@ class CustomerCollaboratorTest {
                         "Customer",
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                        null
+                        null,
+                        "collaborator@aisafe.com"
+                )
+        );
+    }
+
+    /**
+     * Purpose: verify that the associated system username is mandatory.
+     * Scenario: create a collaborator without a system username.
+     * Expected output: an IllegalArgumentException is thrown.
+     */
+    @Test
+    void ensureBlankSystemUsernameIsRejected() {
+        // Arrange / Act / Assert
+        assertThrows(IllegalArgumentException.class, () ->
+                new CustomerCollaborator(
+                        "Customer",
+                        "Collaborator",
+                        CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                        CustomerReference.airTransportCompany("TP"),
+                        " "
                 )
         );
     }
@@ -117,13 +141,15 @@ class CustomerCollaboratorTest {
                 "Customer",
                 "Collaborator",
                 CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                CustomerReference.airTransportCompany("TP")
+                CustomerReference.airTransportCompany("TP"),
+                "collaborator@aisafe.com"
         );
         final CustomerCollaborator second = new CustomerCollaborator(
                 "Other",
                 "Name",
                 CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                CustomerReference.airControlArea("LISACC")
+                CustomerReference.airControlArea("LISACC"),
+                "other.collaborator@aisafe.com"
         );
 
         // Act / Assert

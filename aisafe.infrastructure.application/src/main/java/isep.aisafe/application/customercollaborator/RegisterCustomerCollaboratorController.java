@@ -1,5 +1,8 @@
 package isep.aisafe.application.customercollaborator;
 
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import eapli.framework.infrastructure.authz.application.UserManagementService;
+import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
@@ -11,6 +14,9 @@ import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.usermanagement.domain.AisafeRoles;
+
+import java.util.Set;
 
 /**
  * Coordinates the registration of customer collaborators.
@@ -21,6 +27,7 @@ public class RegisterCustomerCollaboratorController {
     private final CustomerCollaboratorRepository collaboratorRepository;
     private final AirTransportCompanyRepository airTransportCompanyRepository;
     private final AirControlAreaRepository airControlAreaRepository;
+    private final UserManagementService userManagementService;
 
     /**
      * Creates the controller with production authorization and persistence services.
@@ -30,7 +37,8 @@ public class RegisterCustomerCollaboratorController {
                 new AisafeAuthorizationService(),
                 PersistenceContext.repositories().customerCollaborators(),
                 PersistenceContext.repositories().airTransportCompanies(),
-                PersistenceContext.repositories().airControlAreas()
+                PersistenceContext.repositories().airControlAreas(),
+                null
         );
     }
 
@@ -45,7 +53,8 @@ public class RegisterCustomerCollaboratorController {
                 new AisafeAuthorizationService(),
                 collaboratorRepository,
                 PersistenceContext.repositories().airTransportCompanies(),
-                PersistenceContext.repositories().airControlAreas()
+                PersistenceContext.repositories().airControlAreas(),
+                null
         );
     }
 
@@ -53,7 +62,8 @@ public class RegisterCustomerCollaboratorController {
             final AisafeAuthorizationService authz,
             final CustomerCollaboratorRepository collaboratorRepository,
             final AirTransportCompanyRepository airTransportCompanyRepository,
-            final AirControlAreaRepository airControlAreaRepository) {
+            final AirControlAreaRepository airControlAreaRepository,
+            final UserManagementService userManagementService) {
 
         if (authz == null) {
             throw new IllegalArgumentException("Authorization service cannot be null.");
@@ -75,6 +85,7 @@ public class RegisterCustomerCollaboratorController {
         this.collaboratorRepository = collaboratorRepository;
         this.airTransportCompanyRepository = airTransportCompanyRepository;
         this.airControlAreaRepository = airControlAreaRepository;
+        this.userManagementService = userManagementService;
     }
 
     /**
@@ -83,13 +94,16 @@ public class RegisterCustomerCollaboratorController {
      * @param firstName collaborator first name
      * @param lastName collaborator last name
      * @param email collaborator email
+     * @param iataCode air transport company IATA code
+     * @param initialPassword initial password for the collaborator system user
      * @return registered collaborator
      */
     public CustomerCollaborator registerCollaboratorForAirTransportCompany(
             final String firstName,
             final String lastName,
             final String email,
-            final String iataCode) {
+            final String iataCode,
+            final String initialPassword) {
 
         final IATACode customerIataCode = IATACode.valueOf(iataCode);
 
@@ -100,7 +114,9 @@ public class RegisterCustomerCollaboratorController {
                 firstName,
                 lastName,
                 email,
-                CustomerReference.airTransportCompany(customerIataCode.toString())
+                CustomerReference.airTransportCompany(customerIataCode.toString()),
+                initialPassword,
+                Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
         );
     }
 
@@ -111,13 +127,15 @@ public class RegisterCustomerCollaboratorController {
      * @param lastName collaborator last name
      * @param email collaborator email
      * @param areaCode air control area code
+     * @param initialPassword initial password for the collaborator system user
      * @return registered collaborator
      */
     public CustomerCollaborator registerCollaboratorForAirControlArea(
             final String firstName,
             final String lastName,
             final String email,
-            final String areaCode) {
+            final String areaCode,
+            final String initialPassword) {
 
         final AirControlAreaCode customerAreaCode = AirControlAreaCode.valueOf(areaCode);
 
@@ -128,7 +146,9 @@ public class RegisterCustomerCollaboratorController {
                 firstName,
                 lastName,
                 email,
-                CustomerReference.airControlArea(customerAreaCode.toString())
+                CustomerReference.airControlArea(customerAreaCode.toString()),
+                initialPassword,
+                Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR)
         );
     }
 
@@ -136,7 +156,9 @@ public class RegisterCustomerCollaboratorController {
             final String firstName,
             final String lastName,
             final String email,
-            final CustomerReference customerReference) {
+            final CustomerReference customerReference,
+            final String initialPassword,
+            final Set<Role> systemUserRoles) {
 
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
 
@@ -146,13 +168,40 @@ public class RegisterCustomerCollaboratorController {
             throw new IllegalArgumentException("Customer collaborator email already exists.");
         }
 
+        ensureNotBlank(initialPassword, "Collaborator initial password is required.");
+
+        final String systemUsername = collaboratorEmail.toString();
+
         final CustomerCollaborator collaborator = new CustomerCollaborator(
                 firstName,
                 lastName,
                 collaboratorEmail,
-                customerReference
+                customerReference,
+                systemUsername
+        );
+
+        userService().registerNewUser(
+                systemUsername,
+                initialPassword,
+                firstName,
+                lastName,
+                collaboratorEmail.toString(),
+                systemUserRoles
         );
 
         return collaboratorRepository.save(collaborator);
+    }
+
+    private void ensureNotBlank(final String value, final String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private UserManagementService userService() {
+        if (userManagementService != null) {
+            return userManagementService;
+        }
+        return AuthzRegistry.userService();
     }
 }

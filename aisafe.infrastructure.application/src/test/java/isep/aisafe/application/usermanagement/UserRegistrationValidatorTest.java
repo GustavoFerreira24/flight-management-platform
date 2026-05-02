@@ -193,7 +193,8 @@ class UserRegistrationValidatorTest {
                                 AisafeRoles.PILOT,
                                 AisafeRoles.FLIGHT_CONTROL_OPERATOR,
                                 AisafeRoles.WEATHER_PERSON,
-                                AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR
+                                AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR,
+                                AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR
                         )
                 )
         );
