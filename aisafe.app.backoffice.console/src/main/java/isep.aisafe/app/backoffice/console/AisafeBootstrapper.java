@@ -3,6 +3,9 @@ package isep.aisafe.app.backoffice.console;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.UserManagementService;
 import eapli.framework.infrastructure.authz.domain.model.Role;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
@@ -20,6 +23,10 @@ import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.airtransportcompany.domain.Country;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import isep.aisafe.airtransportcompany.domain.ICAOCode;
+import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
+import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
+import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
+import isep.aisafe.customercollaborator.domain.CustomerReference;
 
 import java.util.List;
 import java.util.Set;
@@ -47,6 +54,8 @@ public class AisafeBootstrapper {
                 Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR));
 
         bootstrapAirTransportCompanies();
+        bootstrapAirControlAreas();
+        bootstrapCustomerCollaborators(userService);
         bootstrapAircraftAndEngineModels();
     }
 
@@ -171,6 +180,131 @@ public class AisafeBootstrapper {
                 "LH",
                 "DLH"
         );
+    }
+
+    /**
+     * Bootstraps initial air control areas used by customer collaborators.
+     */
+    private static void bootstrapAirControlAreas() {
+        final AirControlAreaRepository repository =
+                PersistenceContext.repositories().airControlAreas();
+
+        registerAirControlAreaIfMissing(
+                repository,
+                "LISACC",
+                "Lisbon Area Control Centre"
+        );
+    }
+
+    /**
+     * Bootstraps initial customer collaborators associated with existing customers.
+     *
+     * @param userService user service used to create matching system users
+     */
+    private static void bootstrapCustomerCollaborators(final UserManagementService userService) {
+        final CustomerCollaboratorRepository collaboratorRepository =
+                PersistenceContext.repositories().customerCollaborators();
+
+        registerCustomerCollaboratorIfMissing(
+                userService,
+                collaboratorRepository,
+                "TAP",
+                "Collaborator",
+                "tap.collaborator@aisafe.com",
+                "Password1",
+                CustomerReference.airTransportCompany("TP"),
+                Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
+        );
+
+        registerCustomerCollaboratorIfMissing(
+                userService,
+                collaboratorRepository,
+                "Lisbon",
+                "Controller",
+                "lisacc.collaborator@aisafe.com",
+                "Password1",
+                CustomerReference.airControlArea("LISACC"),
+                Set.of(AisafeRoles.AIR_CONTROL_AREA_COLLABORATOR)
+        );
+    }
+
+    /**
+     * Registers a customer collaborator and its system user if the collaborator does not exist yet.
+     *
+     * @param userService user service used to create the system user
+     * @param repository customer collaborator repository
+     * @param firstName collaborator first name
+     * @param lastName collaborator last name
+     * @param email collaborator email and system username
+     * @param password initial system-user password
+     * @param customerReference existing customer associated with the collaborator
+     * @param roles system-user roles
+     * @return existing or newly created customer collaborator
+     */
+    static CustomerCollaborator registerCustomerCollaboratorIfMissing(
+            final UserManagementService userService,
+            final CustomerCollaboratorRepository repository,
+            final String firstName,
+            final String lastName,
+            final String email,
+            final String password,
+            final CustomerReference customerReference,
+            final Set<Role> roles) {
+
+        final CollaboratorEmail collaboratorEmail = CollaboratorEmail.valueOf(email);
+
+        if (repository.findByEmail(collaboratorEmail).isPresent()) {
+            return repository.findByEmail(collaboratorEmail).get();
+        }
+
+        register(
+                userService,
+                collaboratorEmail.toString(),
+                password,
+                firstName,
+                lastName,
+                collaboratorEmail.toString(),
+                roles
+        );
+
+        final CustomerCollaborator collaborator = new CustomerCollaborator(
+                firstName,
+                lastName,
+                collaboratorEmail,
+                customerReference,
+                collaboratorEmail.toString()
+        );
+
+        final CustomerCollaborator savedCollaborator = repository.save(collaborator);
+        System.out.println("Bootstrapped customer collaborator: " + collaboratorEmail);
+
+        return savedCollaborator;
+    }
+
+    /**
+     * Registers an air control area if it does not already exist.
+     *
+     * @param repository air control area repository
+     * @param areaCode air control area code
+     * @param name air control area name
+     * @return existing or newly created air control area
+     */
+    private static AirControlArea registerAirControlAreaIfMissing(
+            final AirControlAreaRepository repository,
+            final String areaCode,
+            final String name) {
+
+        final AirControlAreaCode code = AirControlAreaCode.valueOf(areaCode);
+
+        if (repository.findByCode(code).isPresent()) {
+            return repository.findByCode(code).get();
+        }
+
+        final AirControlArea airControlArea = new AirControlArea(code, name);
+        final AirControlArea savedAirControlArea = repository.save(airControlArea);
+        System.out.println("Bootstrapped air control area: " + code);
+
+        return savedAirControlArea;
     }
 
     /**
