@@ -14,6 +14,8 @@
         <class>isep.aisafe.enginemodel.domain.EngineModel</class>
         <class>isep.aisafe.aircraftmodel.domain.AircraftModel</class>
         <class>isep.aisafe.aircraftmodel.domain.AircraftVariant</class>
+        <class>isep.aisafe.airtransportcompany.domain.AirTransportCompany</class>
+        <class>isep.aisafe.aircontrolarea.domain.AirControlArea</class>
 
 
         <properties>
