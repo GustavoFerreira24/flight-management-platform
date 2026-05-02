@@ -3,6 +3,8 @@ package isep.aisafe.infrastructure.authz;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.Authenticator;
 
+import java.util.Objects;
+
 /**
  * Credential handler that authenticates users through the EAPLI authorization framework.
  */
@@ -18,7 +20,7 @@ public class AuthenticationCredentialHandler implements CredentialHandler {
     }
 
     AuthenticationCredentialHandler(final Authenticator authenticator) {
-        this.authenticator = authenticator;
+        this.authenticator = Objects.requireNonNull(authenticator, "authenticator must not be null");
     }
 
     /**

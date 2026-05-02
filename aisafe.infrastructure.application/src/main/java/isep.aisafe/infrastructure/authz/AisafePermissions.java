@@ -33,7 +33,7 @@ public final class AisafePermissions {
             { AisafeRoles.WEATHER_PERSON };
 
     public static final Role[] WEATHER_DATA_CONSULTATION =
-            { AisafeRoles.PILOT, AisafeRoles.FLIGHT_CONTROL_OPERATOR };
+            { AisafeRoles.WEATHER_PERSON, AisafeRoles.PILOT, AisafeRoles.FLIGHT_CONTROL_OPERATOR };
 
     public static final Role[] USER_REGISTRATION =
             { AisafeRoles.ADMIN };

@@ -4,6 +4,8 @@ import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 
+import java.util.Objects;
+
 /**
  * AISafe facade over the framework authorization service.
  *
@@ -27,7 +29,10 @@ public class AisafeAuthorizationService {
      * @param authorizationService authorization service to delegate to
      */
     protected AisafeAuthorizationService(final AuthorizationService authorizationService) {
-        this.authorizationService = authorizationService;
+        this.authorizationService = Objects.requireNonNull(
+                authorizationService,
+                "authorizationService must not be null"
+        );
     }
 
     /**

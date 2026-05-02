@@ -26,7 +26,6 @@ public class ManageWeatherDataController {
      */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT);
-
-        System.out.println("Weather data management use case authorized.");
+        // TODO implement weather data management behavior when the feature is developed.
     }
 }

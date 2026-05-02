@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
  * Validates the data required to register an AISafe user.
  *
  * <p>The validator checks mandatory fields, email format and whether every assigned
- * role belongs to the set of roles supported by the application.</p>
+ * role belongs to the set of roles supported by the application. Email domain validation
+ * is intentionally not enforced here because the valid domain catalogue is not yet modeled.</p>
  */
 public class UserRegistrationValidator {
 
@@ -69,7 +70,6 @@ public class UserRegistrationValidator {
                 || role.equals(AisafeRoles.PILOT)
                 || role.equals(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
                 || role.equals(AisafeRoles.WEATHER_PERSON)
-                || role.equals(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
-                || role.equals(AisafeRoles.POWER_USER);
+                || role.equals(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR);
     }
 }

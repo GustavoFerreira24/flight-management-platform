@@ -26,7 +26,6 @@ public class FlightPlanManagementController {
      */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_MANAGEMENT);
-
-        System.out.println("Flight plan management use case authorized.");
+        // TODO implement flight plan management behavior when the feature is developed.
     }
 }

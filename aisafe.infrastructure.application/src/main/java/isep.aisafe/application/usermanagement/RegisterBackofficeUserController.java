@@ -11,8 +11,9 @@ import java.util.Set;
 /**
  * Coordinates the backoffice user registration use case.
  *
- * <p>The controller enforces authorization, validates the submitted data and then
- * delegates actual user creation to the framework user management service.</p>
+ * <p>The controller enforces authorization, validates the submitted account data and then
+ * delegates actual user creation to the framework user management service. Domain-specific
+ * user details that are not yet modeled in code should be added here when that aggregate exists.</p>
  */
 public class RegisterBackofficeUserController {
 

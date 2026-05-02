@@ -47,7 +47,7 @@ public class AppSettings {
 
     private void setDefaultProperties() {
         applicationProperties.setProperty(REPOSITORY_FACTORY_KEY,
-                "pt.isep.aisafe.persistence.impl.jpa.JpaRepositoryFactory");
+                "isep.aisafe.persistence.impl.jpa.JpaRepositoryFactory");
         applicationProperties.setProperty(PERSISTENCE_UNIT_KEY, "aisafePU");
         applicationProperties.setProperty(SCHEMA_GENERATION_KEY, "drop-and-create");
     }

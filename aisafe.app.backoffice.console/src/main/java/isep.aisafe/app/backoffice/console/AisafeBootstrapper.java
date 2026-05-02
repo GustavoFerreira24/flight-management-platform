@@ -2,6 +2,7 @@ package isep.aisafe.app.backoffice.console;
 
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.UserManagementService;
+import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
@@ -110,9 +111,9 @@ public class AisafeBootstrapper {
                     tsfc
             );
 
-            repository.save(engineModel);
+            final EngineModel savedEngineModel = repository.save(engineModel);
             System.out.println("Bootstrapped engine model: " + designator);
-            return engineModel;
+            return savedEngineModel;
         });
     }
 
@@ -123,7 +124,7 @@ public class AisafeBootstrapper {
             final String firstName,
             final String lastName,
             final String email,
-            final Set<?> roles) {
+            final Set<Role> roles) {
 
         try {
             userService.registerNewUser(
@@ -132,7 +133,7 @@ public class AisafeBootstrapper {
                     firstName,
                     lastName,
                     email,
-                    (Set) roles
+                    roles
             );
             System.out.println("User created: " + username);
         } catch (Exception e) {

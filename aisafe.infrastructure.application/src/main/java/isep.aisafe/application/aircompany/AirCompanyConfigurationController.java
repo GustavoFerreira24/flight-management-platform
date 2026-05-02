@@ -56,8 +56,7 @@ public class AirCompanyConfigurationController {
      */
     public void execute() {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
-
-        System.out.println("Air company configuration use case authorized.");
+        // TODO implement air company configuration behavior when the feature is developed.
     }
 
     /**
