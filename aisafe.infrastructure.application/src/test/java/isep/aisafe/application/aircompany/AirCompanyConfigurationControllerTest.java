@@ -1,7 +1,7 @@
 package isep.aisafe.application.aircompany;
 
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
-import isep.aisafe.airtransportcompany.domain.IATACode;
+import isep.aisafe.IATACode;
 import isep.aisafe.airtransportcompany.domain.InMemoryAirTransportCompanyRepository;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.support.CapturingAuthorizationService;

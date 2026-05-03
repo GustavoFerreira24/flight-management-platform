@@ -1,4 +1,4 @@
-package isep.aisafe.airtransportcompany.domain;
+package isep.aisafe;
 
 import eapli.framework.domain.model.ValueObject;
 
@@ -12,26 +12,39 @@ import java.util.Objects;
  * A company ICAO code must have two or three letters.
  */
 @Embeddable
-public class ICAOCode implements ValueObject, Serializable {
+public class ICAOCode implements ValueObject, Serializable, Comparable<ICAOCode> {
 
     private String value;
 
-    
-    protected ICAOCode() {
-    }
+    protected ICAOCode() {    }
 
-    private ICAOCode(final String value) {
+    /**
+     * Public constructor to allow usage in Airport and Company contexts.
+     * Supports 2-3 letters for companies and 4 letters for airports.
+     */
+    public ICAOCode(final String value) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException("ICAO code cannot be empty.");
         }
 
         final String normalizedValue = value.trim().toUpperCase();
 
-        if (!normalizedValue.matches("[A-Z]{2,3}")) {
-            throw new IllegalArgumentException("ICAO code must have 2 or 3 letters.");
+        if (!normalizedValue.matches("[A-Z]{2,4}")) {
+            throw new IllegalArgumentException("ICAO code must have between 2 and 4 letters.");
         }
 
         this.value = normalizedValue;
+    }
+
+     /**
+     * Compares this ICAO code with another one.
+     *
+     * @param other the other ICAO code
+     * @return comparison result
+     */
+    @Override
+    public int compareTo(final ICAOCode other) {
+        return this.value.compareTo(other.value);
     }
 
     /**

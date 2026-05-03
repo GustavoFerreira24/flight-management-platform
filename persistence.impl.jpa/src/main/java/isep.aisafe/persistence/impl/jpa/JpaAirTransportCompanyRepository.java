@@ -5,8 +5,8 @@ import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
 import isep.aisafe.Application;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
-import isep.aisafe.airtransportcompany.domain.IATACode;
-import isep.aisafe.airtransportcompany.domain.ICAOCode;
+import isep.aisafe.IATACode;
+import isep.aisafe.ICAOCode;
 
 import java.util.HashMap;
 import java.util.Iterator;

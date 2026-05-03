@@ -1,4 +1,4 @@
-package isep.aisafe.airtransportcompany.domain;
+package isep.aisafe;
 
 import org.junit.jupiter.api.Test;
 

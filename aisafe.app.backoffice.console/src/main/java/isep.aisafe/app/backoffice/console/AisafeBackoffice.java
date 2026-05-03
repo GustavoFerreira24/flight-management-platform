@@ -44,11 +44,16 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
     }
 
     private void showMainOptions(final Scanner scanner) {
-        System.out.println();
-        System.out.println("1 - Register Backoffice User");
-        System.out.println("2 - Register Aircraft Model (US55)");
-        System.out.println("3 - Register Engine Model (US56)");
-        System.out.println("4 - Register Air Transport Company (US60)");
+        System.out.println("╔════════════════════════════════════════════════════════════╗");
+        System.out.println("║               Backoffice Management Console                ║");
+        System.out.println("╠════════════════════════════════════════════════════════════╣");
+        System.out.println("║ 1 - Register Backoffice User                               ║ ");
+        System.out.println("║ 2- Register Aircraft Model                         (US55)  ║ ");
+        System.out.println("║ 3 - Register Engine Model                          (US56)  ║ ");
+        System.out.println("║ 4 - Register Air Transport Company                 (US60)  ║ ");
+        System.out.println("║ 5 - Register Airport                               (US52)  ║ ");
+        System.out.println("║ 6 - Exit                                                   ║ ");
+        System.out.println("╚════════════════════════════════════════════════════════════╝ ");
         System.out.print("Option: ");
 
         final String option = scanner.nextLine();

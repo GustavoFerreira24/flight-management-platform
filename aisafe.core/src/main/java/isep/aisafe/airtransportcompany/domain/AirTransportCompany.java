@@ -2,6 +2,8 @@ package isep.aisafe.airtransportcompany.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
 
+import isep.aisafe.IATACode;
+import isep.aisafe.ICAOCode;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
