@@ -28,7 +28,7 @@ class AirportTest {
         );
 
         assertNotNull(airport);
-        assertEquals(ICAOCode.valueOf("LPPT"), airport.identity());
+        assertEquals(new ICAOCode("LPPT"), airport.identity());
     }
 
     @Test

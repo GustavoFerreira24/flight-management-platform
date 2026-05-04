@@ -48,13 +48,19 @@ public class ICAOCode implements ValueObject, Serializable, Comparable<ICAOCode>
     }
 
     /**
-     * Creates an ICAO code from a text value.
+     * Creates an air transport company ICAO code from a text value.
      *
      * @param value the ICAO code text
      * @return a new ICAO code value object
      */
     public static ICAOCode valueOf(final String value) {
-        return new ICAOCode(value);
+        final ICAOCode code = new ICAOCode(value);
+
+        if (code.toString().length() > 3) {
+            throw new IllegalArgumentException("ICAO code must have 2 or 3 letters.");
+        }
+
+        return code;
     }
 
     /**

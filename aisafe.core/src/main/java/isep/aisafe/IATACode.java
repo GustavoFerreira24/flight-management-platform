@@ -37,13 +37,19 @@ public class IATACode implements ValueObject, Comparable<IATACode>, Serializable
     }
 
     /**
-     * Creates an IATA code from a text value.
+     * Creates an air transport company IATA code from a text value.
      *
      * @param value the IATA code text
      * @return a new IATA code value object
      */
     public static IATACode valueOf(final String value) {
-        return new IATACode(value);
+        final IATACode code = new IATACode(value);
+
+        if (code.toString().length() != 2) {
+            throw new IllegalArgumentException("IATA code must have exactly 2 letters.");
+        }
+
+        return code;
     }
 
     /**
