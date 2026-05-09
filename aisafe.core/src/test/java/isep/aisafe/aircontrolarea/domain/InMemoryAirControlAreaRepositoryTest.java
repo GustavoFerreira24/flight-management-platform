@@ -6,31 +6,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryAirControlAreaRepositoryTest {
 
-    /**
-     * Purpose: verify the in-memory repository lookup needed by application tests.
-     * Scenario: save an air control area and search by the same code.
-     * Expected output: the air control area is found.
-     */
     @Test
-    void ensureAirControlAreaCanBeFoundByCode() {
+    void ensureFindByCodeReturnsSavedArea() {
         final InMemoryAirControlAreaRepository repository = new InMemoryAirControlAreaRepository();
-        final AirControlAreaCode code = AirControlAreaCode.valueOf("LISACC");
-        final AirControlArea area = new AirControlArea(code, "Lisbon Area Control Centre");
+
+        final AirControlArea area = new AirControlArea(
+                AirControlAreaCode.valueOf("LPPTFIR"),
+                "Lisbon FIR",
+                GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
+                MinimumFuelRequirement.valueOf(5000.0, FuelUnit.valueOf("KG"))
+        );
 
         repository.save(area);
 
-        assertTrue(repository.findByCode(code).isPresent());
+        assertTrue(repository.findByCode(AirControlAreaCode.valueOf("LPPTFIR")).isPresent());
+        assertEquals(area, repository.findByCode(AirControlAreaCode.valueOf("LPPTFIR")).get());
     }
 
-    /**
-     * Purpose: verify lookup behavior when no air control area exists.
-     * Scenario: search an empty repository by code.
-     * Expected output: no air control area is found.
-     */
     @Test
-    void ensureUnknownAirControlAreaIsNotFound() {
+    void ensureFindByCodeReturnsEmptyWhenAreaDoesNotExist() {
         final InMemoryAirControlAreaRepository repository = new InMemoryAirControlAreaRepository();
 
-        assertTrue(repository.findByCode(AirControlAreaCode.valueOf("LISACC")).isEmpty());
+        assertTrue(repository.findByCode(AirControlAreaCode.valueOf("LPPTFIR")).isEmpty());
     }
 }

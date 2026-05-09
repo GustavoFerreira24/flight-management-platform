@@ -6,83 +6,104 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AirControlAreaCodeTest {
 
-    /**
-     * Purpose: verify successful air control area code creation.
-     * Scenario: provide a valid code with lowercase letters and surrounding spaces.
-     * Expected output: the code is normalized to uppercase text.
-     */
     @Test
-    void ensureValidCodeIsCreatedAndNormalized() {
-        final AirControlAreaCode code = AirControlAreaCode.valueOf(" lisacc ");
+    void ensureProtectedConstructorExistsForOrm() {
+        final AirControlAreaCode code = new AirControlAreaCode();
 
-        assertEquals("LISACC", code.toString());
+        assertNotNull(code);
     }
 
-    /**
-     * Purpose: verify that an air control area code is mandatory.
-     * Scenario: create a code with a blank value.
-     * Expected output: an IllegalArgumentException is thrown.
-     */
     @Test
-    void ensureBlankCodeIsRejected() {
-        assertThrows(IllegalArgumentException.class, () -> AirControlAreaCode.valueOf(" "));
+    void ensureValidCodeIsAccepted() {
+        final AirControlAreaCode code = AirControlAreaCode.valueOf("LPPTFIR");
+
+        assertEquals("LPPTFIR", code.toString());
     }
 
-    /**
-     * Purpose: verify that short codes are rejected.
-     * Scenario: create a code with only one character.
-     * Expected output: an IllegalArgumentException is thrown.
-     */
     @Test
-    void ensureTooShortCodeIsRejected() {
+    void ensureCodeIsNormalizedToUppercase() {
+        final AirControlAreaCode code = AirControlAreaCode.valueOf("lpptfir");
+
+        assertEquals("LPPTFIR", code.toString());
+    }
+
+    @Test
+    void ensureCodeTrimsSpaces() {
+        final AirControlAreaCode code = AirControlAreaCode.valueOf(" lpptfir ");
+
+        assertEquals("LPPTFIR", code.toString());
+    }
+
+    @Test
+    void ensureNullCodeIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> AirControlAreaCode.valueOf(null));
+    }
+
+    @Test
+    void ensureEmptyCodeIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> AirControlAreaCode.valueOf("   "));
+    }
+
+    @Test
+    void ensureCodeWithOneCharacterIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> AirControlAreaCode.valueOf("A"));
     }
 
-    /**
-     * Purpose: verify that long codes are rejected.
-     * Scenario: create a code with more than ten characters.
-     * Expected output: an IllegalArgumentException is thrown.
-     */
     @Test
-    void ensureTooLongCodeIsRejected() {
+    void ensureCodeWithMoreThanTenCharactersIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> AirControlAreaCode.valueOf("ABCDEFGHIJK"));
     }
 
-    /**
-     * Purpose: verify that invalid characters are rejected.
-     * Scenario: create a code containing a hyphen.
-     * Expected output: an IllegalArgumentException is thrown.
-     */
     @Test
-    void ensureInvalidCharactersAreRejected() {
-        assertThrows(IllegalArgumentException.class, () -> AirControlAreaCode.valueOf("LIS-ACC"));
+    void ensureCodeWithSymbolsIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> AirControlAreaCode.valueOf("LPPT-FIR"));
     }
 
-    /**
-     * Purpose: verify value equality.
-     * Scenario: compare two equivalent codes created with different casing.
-     * Expected output: both codes are equal and have the same hash code.
-     */
     @Test
-    void ensureEqualityUsesNormalizedValue() {
-        final AirControlAreaCode first = AirControlAreaCode.valueOf("lisacc");
-        final AirControlAreaCode second = AirControlAreaCode.valueOf("LISACC");
+    void ensureSameCodeInstanceIsEqual() {
+        final AirControlAreaCode code = AirControlAreaCode.valueOf("LPPTFIR");
+
+        assertEquals(code, code);
+    }
+
+    @Test
+    void ensureCodesWithSameValueAreEqual() {
+        final AirControlAreaCode first = AirControlAreaCode.valueOf("LPPTFIR");
+        final AirControlAreaCode second = AirControlAreaCode.valueOf("lpptfir");
 
         assertEquals(first, second);
         assertEquals(first.hashCode(), second.hashCode());
     }
 
-    /**
-     * Purpose: verify natural ordering.
-     * Scenario: compare two different area codes.
-     * Expected output: comparison follows normalized text ordering.
-     */
     @Test
-    void ensureCompareToUsesCodeValue() {
-        final AirControlAreaCode first = AirControlAreaCode.valueOf("AAA");
-        final AirControlAreaCode second = AirControlAreaCode.valueOf("BBB");
+    void ensureCodesWithDifferentValuesAreNotEqual() {
+        final AirControlAreaCode first = AirControlAreaCode.valueOf("LPPTFIR");
+        final AirControlAreaCode second = AirControlAreaCode.valueOf("LPPRFIR");
+
+        assertNotEquals(first, second);
+    }
+
+    @Test
+    void ensureCodeIsNotEqualToDifferentObjectType() {
+        final AirControlAreaCode code = AirControlAreaCode.valueOf("LPPTFIR");
+
+        assertNotEquals(code, "LPPTFIR");
+    }
+
+    @Test
+    void ensureCodeIsNotEqualToNull() {
+        final AirControlAreaCode code = AirControlAreaCode.valueOf("LPPTFIR");
+
+        assertNotEquals(null, code);
+    }
+
+    @Test
+    void ensureCodesCanBeCompared() {
+        final AirControlAreaCode first = AirControlAreaCode.valueOf("AAAA");
+        final AirControlAreaCode second = AirControlAreaCode.valueOf("BBBB");
 
         assertTrue(first.compareTo(second) < 0);
         assertTrue(second.compareTo(first) > 0);
+        assertEquals(0, first.compareTo(AirControlAreaCode.valueOf("AAAA")));
     }
 }
