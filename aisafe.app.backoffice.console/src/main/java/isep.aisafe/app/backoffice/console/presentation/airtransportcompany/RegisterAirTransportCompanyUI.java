@@ -1,4 +1,4 @@
-package isep.aisafe.app.backoffice.console.airtransportcompany;
+package isep.aisafe.app.backoffice.console.presentation.airtransportcompany;
 
 import isep.aisafe.application.aircompany.AirCompanyConfigurationController;
 
