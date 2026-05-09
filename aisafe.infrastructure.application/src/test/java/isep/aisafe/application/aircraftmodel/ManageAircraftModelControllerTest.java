@@ -152,4 +152,25 @@ class ManageAircraftModelControllerTest {
                 List.of(engineModel.designator().toString())
         ));
     }
+
+    @Test
+    void ensureCompatibleEngineModelsCanBeListedByMotorization() {
+        // Arrange
+        final InMemoryEngineModelRepository engineModelRepository = new InMemoryEngineModelRepository();
+        final EngineModel compatibleEngineModel = engineModel("LEAP-1A", "TURBOFAN");
+        final EngineModel incompatibleEngineModel = engineModel("TJ-1", "TURBOJET");
+        engineModelRepository.save(compatibleEngineModel);
+        engineModelRepository.save(incompatibleEngineModel);
+        final ManageAircraftModelController controller = controller(
+                new InMemoryAircraftModelRepository(),
+                engineModelRepository
+        );
+
+        // Act
+        final List<String> result = controller.compatibleEngineModelDesignators("TURBOFAN");
+
+        // Assert
+        assertTrue(result.contains(compatibleEngineModel.designator().toString()));
+        assertFalse(result.contains(incompatibleEngineModel.designator().toString()));
+    }
 }
