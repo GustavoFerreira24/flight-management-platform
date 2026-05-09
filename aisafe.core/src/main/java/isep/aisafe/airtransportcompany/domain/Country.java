@@ -15,6 +15,7 @@ public class Country implements ValueObject, Serializable {
     private String value;
 
 
+    
     protected Country() {
     }
 

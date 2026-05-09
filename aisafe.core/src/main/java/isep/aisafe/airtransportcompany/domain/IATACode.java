@@ -1,4 +1,4 @@
-package isep.aisafe;
+package isep.aisafe.airtransportcompany.domain;
 
 import eapli.framework.domain.model.ValueObject;
 
@@ -16,21 +16,18 @@ public class IATACode implements ValueObject, Comparable<IATACode>, Serializable
 
     private String value;
 
-    protected IATACode() {}
+    protected IATACode() {
+    }
 
-    /**
-     * Public constructor. Supports 2 letters for companies and 3 letters for airports.
-     */
-    public IATACode(final String value) {
+    private IATACode(final String value) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException("IATA code cannot be empty.");
         }
 
         final String normalizedValue = value.trim().toUpperCase();
 
-        // Updated to support 2 or 3 letters
-        if (!normalizedValue.matches("[A-Z]{2,3}")) {
-            throw new IllegalArgumentException("IATA code must have 2 or 3 letters.");
+        if (!normalizedValue.matches("[A-Z]{2}")) {
+            throw new IllegalArgumentException("IATA code must have exactly 2 letters.");
         }
 
         this.value = normalizedValue;
@@ -43,13 +40,7 @@ public class IATACode implements ValueObject, Comparable<IATACode>, Serializable
      * @return a new IATA code value object
      */
     public static IATACode valueOf(final String value) {
-        final IATACode code = new IATACode(value);
-
-        if (code.toString().length() != 2) {
-            throw new IllegalArgumentException("IATA code must have exactly 2 letters.");
-        }
-
-        return code;
+        return new IATACode(value);
     }
 
     /**
