@@ -1,7 +1,5 @@
 package isep.aisafe.airtransportcompany.domain;
 
-import isep.aisafe.IATACode;
-import isep.aisafe.ICAOCode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

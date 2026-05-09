@@ -1,17 +1,16 @@
 package isep.aisafe.airport.domain;
 
-import isep.aisafe.aircontrolarea.domain.AirControlArea;
-import isep.aisafe.IATACode;
-import isep.aisafe.ICAOCode;
 import eapli.framework.domain.model.DomainFactory;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
 
 /**
- * Builder/Factory to create Airport instances without exposing
- * construction complexity to the Controller.
+ * Builder/factory to create Airport instances without exposing
+ * construction complexity to the controller.
  */
 public class AirportBuilder implements DomainFactory<Airport> {
-    private ICAOCode icao;
-    private IATACode iata;
+
+    private AirportICAOCode icao;
+    private AirportIATACode iata;
     private String name;
     private String town;
     private GpsCoordinates coords;
@@ -19,35 +18,60 @@ public class AirportBuilder implements DomainFactory<Airport> {
     private AirControlArea area;
 
     /**
-     * Sets the main textual identity data.
+     * Sets the airport identification data.
+     *
+     * @param icao the airport ICAO code
+     * @param iata the airport IATA code
+     * @param name the airport name
+     * @param town the airport town
+     * @return this builder
      */
-    public AirportBuilder withData(String icao, String iata, String name, String town) {
-        this.icao = new ICAOCode(icao);
-        this.iata = new IATACode(iata);
+    public AirportBuilder withData(
+            final String icao,
+            final String iata,
+            final String name,
+            final String town) {
+
+        this.icao = AirportICAOCode.valueOf(icao);
+        this.iata = AirportIATACode.valueOf(iata);
         this.name = name;
         this.town = town;
         return this;
     }
 
     /**
-     * Sets geographic data.
+     * Sets the airport location data.
+     *
+     * @param lat the latitude
+     * @param lon the longitude
+     * @param elevation the elevation in meters
+     * @return this builder
      */
-    public AirportBuilder withLocation(double lat, double lon, double elevation) {
+    public AirportBuilder withLocation(
+            final double lat,
+            final double lon,
+            final double elevation) {
+
         this.coords = new GpsCoordinates(lat, lon);
         this.elev = new Elevation(elevation);
         return this;
     }
 
     /**
-     * Assigns the required Air Control Area.
+     * Assigns the airport to an air control area.
+     *
+     * @param area the air control area
+     * @return this builder
      */
-    public AirportBuilder inArea(AirControlArea area) {
+    public AirportBuilder inArea(final AirControlArea area) {
         this.area = area;
         return this;
     }
 
     /**
-     * Finalizes the creation of the Airport entity.
+     * Creates the airport.
+     *
+     * @return the new airport
      */
     @Override
     public Airport build() {

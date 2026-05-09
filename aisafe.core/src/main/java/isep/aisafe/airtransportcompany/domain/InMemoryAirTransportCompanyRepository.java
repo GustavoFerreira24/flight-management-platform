@@ -1,8 +1,6 @@
 package isep.aisafe.airtransportcompany.domain;
 
 import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
-import isep.aisafe.IATACode;
-import isep.aisafe.ICAOCode;
 
 import java.util.Optional;
 

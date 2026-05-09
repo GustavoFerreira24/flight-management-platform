@@ -1,49 +1,98 @@
 package isep.aisafe.airport.domain;
 
-import isep.aisafe.IATACode;
-import isep.aisafe.ICAOCode;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for the Airport aggregate.
- */
 class AirportTest {
 
     @Test
     void ensureAirportWithCorrectDataIsCreated() {
-        // Código sem hífens para respeitar a Regex [A-Z0-9]{2,10}
-        AirControlAreaCode areaCode = AirControlAreaCode.valueOf("LPPTFIR");
-        AirControlArea area = new AirControlArea(areaCode, "Lisbon Control");
+        final AirControlAreaCode areaCode = AirControlAreaCode.valueOf("LPPTFIR");
+        final AirControlArea area = new AirControlArea(areaCode, "Lisbon Control");
 
-        Airport airport = new Airport(
-                new ICAOCode("LPPT"),
-                new IATACode("LIS"),
-                "Lisbon Airport", "Lisbon",
+        final Airport airport = new Airport(
+                AirportICAOCode.valueOf("LPPT"),
+                AirportIATACode.valueOf("LIS"),
+                "Lisbon Airport",
+                "Lisbon",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
                 area
         );
 
         assertNotNull(airport);
-        assertEquals(new ICAOCode("LPPT"), airport.identity());
+        assertEquals(AirportICAOCode.valueOf("LPPT"), airport.identity());
+        assertEquals("LPPT", airport.icaoCode().toString());
+        assertEquals("LIS", airport.iataCode().toString());
+        assertEquals("Lisbon Airport", airport.name());
+        assertEquals("Lisbon", airport.town());
     }
 
     @Test
-    void ensureAirportFailsWithShortICAO() {
-        // Airports MUST have 4 letters, even if the ValueObject allows 2-4
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Airport(new ICAOCode("TAP"), new IATACode("LIS"), "Name", "Town", null, null, null);
-        });
+    void ensureAirportFailsWithShortIcaoCode() {
+        assertThrows(IllegalArgumentException.class, () -> new Airport(
+                AirportICAOCode.valueOf("TAP"),
+                AirportIATACode.valueOf("LIS"),
+                "Name",
+                "Town",
+                new GpsCoordinates(38.7, -9.1),
+                new Elevation(114.0),
+                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+        ));
     }
 
     @Test
-    void ensureAirportFailsWithShortIATA() {
-        // Airports MUST have 3 letters
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Airport(new ICAOCode("LPPT"), new IATACode("TP"), "Name", "Town", null, null, null);
-        });
+    void ensureAirportFailsWithShortIataCode() {
+        assertThrows(IllegalArgumentException.class, () -> new Airport(
+                AirportICAOCode.valueOf("LPPT"),
+                AirportIATACode.valueOf("TP"),
+                "Name",
+                "Town",
+                new GpsCoordinates(38.7, -9.1),
+                new Elevation(114.0),
+                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+        ));
+    }
+
+    @Test
+    void ensureAirportFailsWithNullIcaoCode() {
+        assertThrows(IllegalArgumentException.class, () -> new Airport(
+                null,
+                AirportIATACode.valueOf("LIS"),
+                "Name",
+                "Town",
+                new GpsCoordinates(38.7, -9.1),
+                new Elevation(114.0),
+                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+        ));
+    }
+
+    @Test
+    void ensureAirportFailsWithNullIataCode() {
+        assertThrows(IllegalArgumentException.class, () -> new Airport(
+                AirportICAOCode.valueOf("LPPT"),
+                null,
+                "Name",
+                "Town",
+                new GpsCoordinates(38.7, -9.1),
+                new Elevation(114.0),
+                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+        ));
+    }
+
+    @Test
+    void ensureAirportFailsWithNullAirControlArea() {
+        assertThrows(IllegalArgumentException.class, () -> new Airport(
+                AirportICAOCode.valueOf("LPPT"),
+                AirportIATACode.valueOf("LIS"),
+                "Name",
+                "Town",
+                new GpsCoordinates(38.7, -9.1),
+                new Elevation(114.0),
+                null
+        ));
     }
 }
