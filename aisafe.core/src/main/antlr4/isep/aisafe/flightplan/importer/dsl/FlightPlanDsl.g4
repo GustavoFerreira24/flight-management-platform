@@ -1,9 +1,5 @@
 grammar FlightPlanDsl;
 
-@header {
-package isep.aisafe.flightplan.importer.dsl;
-}
-
 flightPlanFile
     : flightBlock EOF
     ;
