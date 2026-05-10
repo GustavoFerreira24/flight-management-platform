@@ -6,6 +6,7 @@ import isep.aisafe.Application;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
+import isep.aisafe.customercollaborator.domain.SystemUsername;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,5 +33,13 @@ class JpaCustomerCollaboratorRepository
         params.put("email", email);
 
         return matchOne("e.email=:email", params);
+    }
+
+    @Override
+    public Optional<CustomerCollaborator> findBySystemUsername(final SystemUsername systemUsername) {
+        final Map<String, Object> params = new HashMap<>();
+        params.put("systemUsername", systemUsername);
+
+        return matchOne("e.systemUsername=:systemUsername", params);
     }
 }
