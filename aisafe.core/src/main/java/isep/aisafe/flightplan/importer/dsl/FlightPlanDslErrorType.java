@@ -5,5 +5,6 @@ package isep.aisafe.flightplan.importer.dsl;
  */
 public enum FlightPlanDslErrorType {
     LEXICAL,
-    SYNTACTIC
+    SYNTACTIC,
+    SEMANTIC
 }

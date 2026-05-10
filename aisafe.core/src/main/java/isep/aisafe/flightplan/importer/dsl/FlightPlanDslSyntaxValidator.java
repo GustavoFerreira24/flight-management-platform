@@ -3,7 +3,7 @@ package isep.aisafe.flightplan.importer.dsl;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -53,12 +53,21 @@ public class FlightPlanDslSyntaxValidator {
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
 
-        final ParseTree tree = parser.flightPlanFile();
+        final FlightPlanDslParser.FlightPlanFileContext tree = parser.flightPlanFile();
 
         if (errorListener.hasErrors()) {
             return FlightPlanParseResult.failure(errorListener.errors());
         }
 
-        return FlightPlanParseResult.success(tree.toStringTree(parser));
+        final FlightPlanSemanticValidator semanticValidator = new FlightPlanSemanticValidator();
+        ParseTreeWalker.DEFAULT.walk(semanticValidator, tree);
+
+        if (semanticValidator.hasErrors()) {
+            return FlightPlanParseResult.failure(semanticValidator.errors());
+        }
+
+        final DslFlightPlan flightPlan = new FlightPlanAstBuilder().build(tree);
+
+        return FlightPlanParseResult.success(tree.toStringTree(parser), flightPlan);
     }
 }
