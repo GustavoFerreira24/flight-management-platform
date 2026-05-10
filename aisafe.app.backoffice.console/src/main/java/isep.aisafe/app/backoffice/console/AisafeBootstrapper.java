@@ -6,6 +6,9 @@ import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
@@ -193,7 +196,13 @@ public class AisafeBootstrapper {
         registerAirControlAreaIfMissing(
                 repository,
                 "LISACC",
-                "Lisbon Area Control Centre"
+                "Lisbon Area Control Centre",
+                30.0,
+                45.0,
+                -15.0,
+                5.0,
+                5000.0,
+                "KG"
         );
     }
 
@@ -290,12 +299,24 @@ public class AisafeBootstrapper {
      * @param repository air control area repository
      * @param areaCode air control area code
      * @param name air control area name
+     * @param minLatitude minimum latitude
+     * @param maxLatitude maximum latitude
+     * @param minLongitude minimum longitude
+     * @param maxLongitude maximum longitude
+     * @param minimumFuelAmount minimum fuel amount
+     * @param fuelUnit fuel unit
      * @return existing or newly created air control area
      */
     private static AirControlArea registerAirControlAreaIfMissing(
             final AirControlAreaRepository repository,
             final String areaCode,
-            final String name) {
+            final String name,
+            final double minLatitude,
+            final double maxLatitude,
+            final double minLongitude,
+            final double maxLongitude,
+            final double minimumFuelAmount,
+            final String fuelUnit) {
 
         final AirControlAreaCode code = AirControlAreaCode.valueOf(areaCode);
 
@@ -303,7 +324,25 @@ public class AisafeBootstrapper {
             return repository.findByCode(code).get();
         }
 
-        final AirControlArea airControlArea = new AirControlArea(code, name);
+        final GeographicBoundary geographicBoundary = GeographicBoundary.valueOf(
+                minLatitude,
+                maxLatitude,
+                minLongitude,
+                maxLongitude
+        );
+
+        final MinimumFuelRequirement minimumFuelRequirement = MinimumFuelRequirement.valueOf(
+                minimumFuelAmount,
+                FuelUnit.valueOf(fuelUnit)
+        );
+
+        final AirControlArea airControlArea = new AirControlArea(
+                code,
+                name,
+                geographicBoundary,
+                minimumFuelRequirement
+        );
+
         final AirControlArea savedAirControlArea = repository.save(airControlArea);
         System.out.println("Bootstrapped air control area: " + code);
 

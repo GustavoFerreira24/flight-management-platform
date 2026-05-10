@@ -1,6 +1,7 @@
 package isep.aisafe.aircontrolarea.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -8,11 +9,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
-
 import java.io.Serializable;
 
 /**
- * Represents an air control area that can own customer collaborators.
+ * Represents an air control area.
  */
 @Entity
 public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serializable {
@@ -33,10 +33,46 @@ public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serial
     @Column(nullable = false)
     private String name;
 
+    @Embedded
+    private GeographicBoundary geographicBoundary;
+
+    @Embedded
+    private MinimumFuelRequirement minimumFuelRequirement;
+
     protected AirControlArea() {
     }
 
+    /**
+     * Creates an air control area with only code and name.
+     *
+     * This constructor is kept for compatibility with existing code.
+     *
+     * @param code the air control area code
+     * @param name the air control area name
+     */
     public AirControlArea(final AirControlAreaCode code, final String name) {
+        this(
+                code,
+                name,
+                GeographicBoundary.valueOf(-90, 90, -180, 180),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
+        );
+    }
+
+    /**
+     * Creates an air control area.
+     *
+     * @param code the air control area code
+     * @param name the air control area name
+     * @param geographicBoundary the geographic boundary
+     * @param minimumFuelRequirement the minimum fuel requirement
+     */
+    public AirControlArea(
+            final AirControlAreaCode code,
+            final String name,
+            final GeographicBoundary geographicBoundary,
+            final MinimumFuelRequirement minimumFuelRequirement) {
+
         if (code == null) {
             throw new IllegalArgumentException("Air control area code is required.");
         }
@@ -45,8 +81,18 @@ public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serial
             throw new IllegalArgumentException("Air control area name is required.");
         }
 
+        if (geographicBoundary == null) {
+            throw new IllegalArgumentException("Geographic boundary is required.");
+        }
+
+        if (minimumFuelRequirement == null) {
+            throw new IllegalArgumentException("Minimum fuel requirement is required.");
+        }
+
         this.code = code;
-        this.name = name.trim();
+        this.name = name.trim().replaceAll("\\s+", " ");
+        this.geographicBoundary = geographicBoundary;
+        this.minimumFuelRequirement = minimumFuelRequirement;
     }
 
     @Override
@@ -59,6 +105,7 @@ public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serial
         if (!(other instanceof AirControlArea)) {
             return false;
         }
+
         final AirControlArea that = (AirControlArea) other;
         return identity().equals(that.identity());
     }
@@ -69,5 +116,13 @@ public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serial
 
     public String name() {
         return name;
+    }
+
+    public GeographicBoundary geographicBoundary() {
+        return geographicBoundary;
+    }
+
+    public MinimumFuelRequirement minimumFuelRequirement() {
+        return minimumFuelRequirement;
     }
 }

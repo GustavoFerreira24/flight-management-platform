@@ -2,11 +2,17 @@ package isep.aisafe.app.backoffice.console.presentation.aircraftmodel;
 
 import isep.aisafe.application.aircraftmodel.ManageAircraftModelController;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class RegisterAircraftModelUI {
+
+    private static final List<String> MANUFACTURERS = List.of("AIRBUS", "BOEING", "EMBRAER", "ATR", "BOMBARDIER", "OTHER");
+    private static final List<String> AIRCRAFT_TYPES = List.of("PASSENGER", "CARGO", "MIXED");
+    private static final List<String> MOTORIZATIONS = List.of("TURBOFAN", "TURBOPROP", "TURBOJET", "PISTON");
 
     private final ManageAircraftModelController controller = new ManageAircraftModelController();
     private final Scanner scanner;
@@ -27,14 +33,11 @@ public class RegisterAircraftModelUI {
             System.out.print("Model name: ");
             final String modelName = scanner.nextLine();
 
-            System.out.print("Manufacturer: ");
-            final String manufacturer = scanner.nextLine();
+            final String manufacturer = selectOption("Manufacturer", MANUFACTURERS);
 
-            System.out.print("Type (PASSENGER/CARGO/MIXED): ");
-            final String type = scanner.nextLine();
+            final String type = selectOption("Type", AIRCRAFT_TYPES);
 
-            System.out.print("Motorization (e.g. TURBOFAN): ");
-            final String motorization = scanner.nextLine();
+            final String motorization = selectOption("Motorization", MOTORIZATIONS);
 
             final double maxRange = readDouble(scanner, "Maximum range: ");
             final double emptyWeight = readDouble(scanner, "Empty weight: ");
@@ -48,12 +51,7 @@ public class RegisterAircraftModelUI {
             final double liftCoefficient = readDouble(scanner, "Lift coefficient: ");
             final int passengerCapacity = readInt(scanner, "Passenger capacity: ");
 
-            System.out.println("Format for each engine designator: MODEL | MANUFACTURER");
-            System.out.print("Certified engine designators (comma-separated): ");
-            final List<String> certifiedEngineDesignators = Arrays.stream(scanner.nextLine().split(","))
-                    .map(String::trim)
-                    .filter(value -> !value.isEmpty())
-                    .toList();
+            final List<String> certifiedEngineDesignators = selectCertifiedEngineModels(motorization);
 
             controller.registerAircraftModel(
                     modelName,
@@ -88,5 +86,81 @@ public class RegisterAircraftModelUI {
     private static int readInt(final Scanner scanner, final String prompt) {
         System.out.print(prompt);
         return Integer.parseInt(scanner.nextLine());
+    }
+
+    private String selectOption(final String label, final List<String> options) {
+        System.out.println(label + ":");
+
+        for (int i = 0; i < options.size(); i++) {
+            System.out.printf("%d - %s%n", i + 1, options.get(i));
+        }
+
+        while (true) {
+            System.out.print("Option: ");
+            final String input = scanner.nextLine().trim();
+
+            try {
+                final int selected = Integer.parseInt(input);
+                if (selected >= 1 && selected <= options.size()) {
+                    final String value = options.get(selected - 1);
+                    if ("OTHER".equals(value)) {
+                        System.out.print("Enter " + label.toLowerCase() + ": ");
+                        return scanner.nextLine();
+                    }
+
+                    return value;
+                }
+            } catch (NumberFormatException ignored) {
+                // Fall through to the validation message below.
+            }
+
+            System.out.println("Invalid option. Please choose a listed number.");
+        }
+    }
+
+    private List<String> selectCertifiedEngineModels(final String motorization) {
+        final List<String> compatibleEngineDesignators = controller.compatibleEngineModelDesignators(motorization);
+
+        if (compatibleEngineDesignators.isEmpty()) {
+            throw new IllegalStateException("No compatible engine models are registered for motorization " + motorization + ".");
+        }
+
+        System.out.println("Certified engine models:");
+
+        for (int i = 0; i < compatibleEngineDesignators.size(); i++) {
+            System.out.printf("%d - %s%n", i + 1, compatibleEngineDesignators.get(i));
+        }
+
+        while (true) {
+            System.out.print("Options (comma-separated): ");
+            final String input = scanner.nextLine().trim();
+            final Set<String> selectedEngineDesignators = new LinkedHashSet<>();
+            boolean invalidOption = false;
+
+            for (String rawOption : input.split(",")) {
+                final String option = rawOption.trim();
+                if (option.isEmpty()) {
+                    invalidOption = true;
+                    continue;
+                }
+
+                try {
+                    final int selected = Integer.parseInt(option);
+                    if (selected >= 1 && selected <= compatibleEngineDesignators.size()) {
+                        selectedEngineDesignators.add(compatibleEngineDesignators.get(selected - 1));
+                    } else {
+                        invalidOption = true;
+                    }
+                } catch (NumberFormatException ignored) {
+                    invalidOption = true;
+                }
+            }
+
+            if (!invalidOption && !selectedEngineDesignators.isEmpty()) {
+                return new ArrayList<>(selectedEngineDesignators);
+            }
+
+            System.out.println("Invalid option. Please choose at least one listed number.");
+        }
     }
 }

@@ -107,4 +107,20 @@ public class ManageAircraftModelController {
 
         return aircraftModelRepository.save(aircraftModel);
     }
+
+    public List<String> compatibleEngineModelDesignators(final String motorization) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
+
+        final AircraftModelMotorization aircraftMotorization = AircraftModelMotorization.valueOf(motorization);
+        final List<String> compatibleEngineDesignators = new ArrayList<>();
+
+        for (EngineModel engineModel : engineModelRepository.findAll()) {
+            if (aircraftMotorization.isCompatibleWith(engineModel.engineType().toString())) {
+                compatibleEngineDesignators.add(engineModel.designator().toString());
+            }
+        }
+
+        compatibleEngineDesignators.sort(String::compareTo);
+        return compatibleEngineDesignators;
+    }
 }
