@@ -34,6 +34,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US11 — Domain Model (DDD)
 - [Overview](./us_11/readme.md)
 
+#### US83 — Flight DSL Specification and Validation
+- [Flight DSL Specification](./us_83/flight-dsl.md)
+
 ##### Aggregates Documentation
 - [Flight Aggregate](./us_11/Aggregates/FlightAggregate.md)
 - [Flight Route Aggregate](./us_11/Aggregates/FlightRouteAggregate.md)
