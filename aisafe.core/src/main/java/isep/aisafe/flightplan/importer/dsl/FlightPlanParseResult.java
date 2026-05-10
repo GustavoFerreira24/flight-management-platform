@@ -10,10 +10,15 @@ public final class FlightPlanParseResult {
 
     private final List<FlightPlanDslError> errors;
     private final String parseTree;
+    private final DslFlightPlan flightPlan;
 
-    private FlightPlanParseResult(final List<FlightPlanDslError> errors, final String parseTree) {
+    private FlightPlanParseResult(
+            final List<FlightPlanDslError> errors,
+            final String parseTree,
+            final DslFlightPlan flightPlan) {
         this.errors = List.copyOf(Objects.requireNonNull(errors, "errors cannot be null"));
         this.parseTree = parseTree;
+        this.flightPlan = flightPlan;
     }
 
     /**
@@ -23,7 +28,22 @@ public final class FlightPlanParseResult {
      * @return a successful result
      */
     public static FlightPlanParseResult success(final String parseTree) {
-        return new FlightPlanParseResult(List.of(), Objects.requireNonNull(parseTree, "parseTree cannot be null"));
+        return success(parseTree, null);
+    }
+
+    /**
+     * Creates a successful parsing result with an internal DSL representation.
+     *
+     * @param parseTree the generated parse tree as text
+     * @param flightPlan the internal flight plan representation
+     * @return a successful result
+     */
+    public static FlightPlanParseResult success(final String parseTree, final DslFlightPlan flightPlan) {
+        return new FlightPlanParseResult(
+                List.of(),
+                Objects.requireNonNull(parseTree, "parseTree cannot be null"),
+                flightPlan
+        );
     }
 
     /**
@@ -37,7 +57,7 @@ public final class FlightPlanParseResult {
             throw new IllegalArgumentException("errors cannot be empty for a failed result");
         }
 
-        return new FlightPlanParseResult(errors, null);
+        return new FlightPlanParseResult(errors, null, null);
     }
 
     /**
@@ -65,5 +85,14 @@ public final class FlightPlanParseResult {
      */
     public String parseTree() {
         return parseTree;
+    }
+
+    /**
+     * Returns the internal DSL representation when validation succeeds.
+     *
+     * @return the parsed flight plan, or null when validation failed
+     */
+    public DslFlightPlan flightPlan() {
+        return flightPlan;
     }
 }
