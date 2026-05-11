@@ -17,4 +17,12 @@ public interface CustomerCollaboratorRepository
      * @return matching collaborator, if one exists
      */
     Optional<CustomerCollaborator> findByEmail(CollaboratorEmail email);
+
+    /**
+     * Finds a collaborator by the username of the associated system user.
+     *
+     * @param systemUsername system username associated with the collaborator
+     * @return matching collaborator, if one exists
+     */
+    Optional<CustomerCollaborator> findBySystemUsername(SystemUsername systemUsername);
 }

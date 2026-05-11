@@ -177,4 +177,27 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
     public int passengerCapacity() {
         return passengerCapacity;
     }
+
+
+    /**
+     * Checks if an engine model is certified for this aircraft model.
+     *
+     * @param engineModel the engine model to check
+     * @return true if the engine model is certified for this aircraft model
+     */
+    public boolean hasCertifiedEngineModel(final EngineModel engineModel) {
+        if (engineModel == null) {
+            return false;
+        }
+
+        final EngineModelDesignator engineDesignator = engineModel.identity();
+
+        for (final AircraftVariant variant : certifiedVariants) {
+            if (variant.hasEngineModel(engineDesignator)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

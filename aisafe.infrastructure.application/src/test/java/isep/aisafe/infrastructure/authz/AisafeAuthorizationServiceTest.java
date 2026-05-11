@@ -1,9 +1,16 @@
 package isep.aisafe.infrastructure.authz;
 
 import eapli.framework.infrastructure.authz.application.AuthorizationService;
+import eapli.framework.infrastructure.authz.application.UserSession;
 import eapli.framework.infrastructure.authz.domain.model.Role;
+import eapli.framework.infrastructure.authz.domain.model.SystemUser;
+import eapli.framework.infrastructure.authz.domain.model.SystemUserBuilder;
+import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -71,9 +78,41 @@ class AisafeAuthorizationServiceTest {
         assertEquals(0, frameworkAuthz.requestedRoles.length);
     }
 
+    /**
+     * Purpose: verify that the authenticated username is exposed to application controllers.
+     * Scenario: the framework authorization service has an authenticated user session.
+     * Expected output: the AISafe service returns the session user's username.
+     */
+    @Test
+    void ensureAuthenticatedUsernameIsReturnedFromCurrentSession() {
+        // Arrange
+        final CapturingFrameworkAuthorizationService frameworkAuthz = new CapturingFrameworkAuthorizationService();
+        frameworkAuthz.session = Optional.of(new UserSession(systemUser("collaborator@aisafe.com")));
+        final AisafeAuthorizationService service = new AisafeAuthorizationService(frameworkAuthz);
+
+        // Act / Assert
+        assertEquals("collaborator@aisafe.com", service.authenticatedUsername());
+    }
+
+    /**
+     * Purpose: verify fail-fast behavior when no user is authenticated.
+     * Scenario: the framework authorization service has no session.
+     * Expected output: an IllegalStateException is thrown.
+     */
+    @Test
+    void ensureAuthenticatedUsernameRequiresCurrentSession() {
+        // Arrange
+        final CapturingFrameworkAuthorizationService frameworkAuthz = new CapturingFrameworkAuthorizationService();
+        final AisafeAuthorizationService service = new AisafeAuthorizationService(frameworkAuthz);
+
+        // Act / Assert
+        assertThrows(IllegalStateException.class, service::authenticatedUsername);
+    }
+
     private static final class CapturingFrameworkAuthorizationService extends AuthorizationService {
 
         private Role[] requestedRoles;
+        private Optional<UserSession> session = Optional.empty();
 
         private CapturingFrameworkAuthorizationService() {
             super();
@@ -83,5 +122,17 @@ class AisafeAuthorizationServiceTest {
         public void ensureAuthenticatedUserHasAnyOf(final Role... actions) {
             requestedRoles = actions;
         }
+
+        @Override
+        public Optional<UserSession> session() {
+            return session;
+        }
+    }
+
+    private SystemUser systemUser(final String username) {
+        return new SystemUserBuilder(new AisafePasswordPolicy(), NoOpPasswordEncoder.getInstance())
+                .with(username, "Password1", "Customer", "Collaborator", username)
+                .withRoles(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
+                .build();
     }
 }

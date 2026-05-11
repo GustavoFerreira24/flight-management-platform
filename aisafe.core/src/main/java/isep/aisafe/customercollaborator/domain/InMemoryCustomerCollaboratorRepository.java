@@ -15,4 +15,9 @@ public class InMemoryCustomerCollaboratorRepository
     public Optional<CustomerCollaborator> findByEmail(final CollaboratorEmail email) {
         return matchOne(collaborator -> collaborator.email().equals(email));
     }
+
+    @Override
+    public Optional<CustomerCollaborator> findBySystemUsername(final SystemUsername systemUsername) {
+        return matchOne(collaborator -> collaborator.systemUsername().equals(systemUsername));
+    }
 }

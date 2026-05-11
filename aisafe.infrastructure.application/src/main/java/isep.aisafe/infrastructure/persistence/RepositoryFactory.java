@@ -2,6 +2,7 @@ package isep.aisafe.infrastructure.persistence;
 
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
+import isep.aisafe.aircraft.domain.AircraftRepository;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
@@ -69,5 +70,12 @@ public interface RepositoryFactory {
      * @return customer collaborator repository
      */
     CustomerCollaboratorRepository customerCollaborators();
+
+    /**
+     * Returns the repository for aircraft aggregates.
+     *
+     * @return aircraft repository
+     */
+    AircraftRepository aircraft();
 
 }

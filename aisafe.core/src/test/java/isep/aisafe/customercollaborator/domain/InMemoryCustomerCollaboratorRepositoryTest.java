@@ -31,4 +31,30 @@ class InMemoryCustomerCollaboratorRepositoryTest {
         // Assert
         assertTrue(repository.findByEmail(email).isPresent());
     }
+
+    /**
+     * Purpose: verify lookup by associated system username.
+     * Scenario: save a collaborator and search by the same system username.
+     * Expected output: the collaborator is found.
+     */
+    @Test
+    void ensureCollaboratorCanBeFoundBySystemUsername() {
+        // Arrange
+        final InMemoryCustomerCollaboratorRepository repository =
+                new InMemoryCustomerCollaboratorRepository();
+        final SystemUsername systemUsername = SystemUsername.valueOf("collaborator@aisafe.com");
+        final CustomerCollaborator collaborator = new CustomerCollaborator(
+                "Customer",
+                "Collaborator",
+                CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                CustomerReference.airTransportCompany("TP"),
+                systemUsername
+        );
+
+        // Act
+        repository.save(collaborator);
+
+        // Assert
+        assertTrue(repository.findBySystemUsername(systemUsername).isPresent());
+    }
 }

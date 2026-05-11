@@ -158,4 +158,110 @@ class AircraftModelTest {
         // Act / Assert
         assertTrue(first.sameAs(second));
     }
+
+    @Test
+    void ensureCertifiedEngineModelIsRecognized() {
+        final EngineModel engineModel = new EngineModel(
+                EngineModelDesignator.valueOf("LEAP-1A", "CFM International"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                120.0,
+                140.0,
+                0.60
+        );
+
+        final AircraftModel aircraftModel = new AircraftModel(
+                AircraftModelDesignator.valueOf("A320neo", "Airbus"),
+                AircraftModelType.valueOf("PASSENGER"),
+                AircraftModelMotorization.valueOf("TURBOFAN"),
+                6300,
+                44500,
+                79000,
+                64500,
+                27200,
+                12000,
+                833,
+                122.6,
+                0.024,
+                0.62,
+                186,
+                List.of(engineModel)
+        );
+
+        assertTrue(aircraftModel.hasCertifiedEngineModel(engineModel));
+    }
+
+    @Test
+    void ensureNonCertifiedEngineModelIsNotRecognized() {
+        final EngineModel certifiedEngineModel = new EngineModel(
+                EngineModelDesignator.valueOf("LEAP-1A", "CFM International"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                120.0,
+                140.0,
+                0.60
+        );
+
+        final EngineModel nonCertifiedEngineModel = new EngineModel(
+                EngineModelDesignator.valueOf("PW1100G-JM", "Pratt Whitney"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                110.0,
+                130.0,
+                0.58
+        );
+
+        final AircraftModel aircraftModel = new AircraftModel(
+                AircraftModelDesignator.valueOf("A320neo", "Airbus"),
+                AircraftModelType.valueOf("PASSENGER"),
+                AircraftModelMotorization.valueOf("TURBOFAN"),
+                6300,
+                44500,
+                79000,
+                64500,
+                27200,
+                12000,
+                833,
+                122.6,
+                0.024,
+                0.62,
+                186,
+                List.of(certifiedEngineModel)
+        );
+
+        assertFalse(aircraftModel.hasCertifiedEngineModel(nonCertifiedEngineModel));
+    }
+
+    @Test
+    void ensureNullEngineModelIsNotRecognizedAsCertified() {
+        final EngineModel engineModel = new EngineModel(
+                EngineModelDesignator.valueOf("LEAP-1A", "CFM International"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                120.0,
+                140.0,
+                0.60
+        );
+
+        final AircraftModel aircraftModel = new AircraftModel(
+                AircraftModelDesignator.valueOf("A320neo", "Airbus"),
+                AircraftModelType.valueOf("PASSENGER"),
+                AircraftModelMotorization.valueOf("TURBOFAN"),
+                6300,
+                44500,
+                79000,
+                64500,
+                27200,
+                12000,
+                833,
+                122.6,
+                0.024,
+                0.62,
+                186,
+                List.of(engineModel)
+        );
+
+        assertFalse(aircraftModel.hasCertifiedEngineModel(null));
+    }
+
 }

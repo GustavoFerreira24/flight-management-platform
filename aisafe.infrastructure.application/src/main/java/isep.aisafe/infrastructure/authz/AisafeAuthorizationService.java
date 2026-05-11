@@ -51,6 +51,20 @@ public class AisafeAuthorizationService {
         authorizationService().ensureAuthenticatedUserHasAnyOf();
     }
 
+    /**
+     * Returns the username of the authenticated system user.
+     *
+     * @return authenticated user's username
+     * @throws IllegalStateException when no user is authenticated
+     */
+    public String authenticatedUsername() {
+        return authorizationService().session()
+                .orElseThrow(() -> new IllegalStateException("No authenticated user."))
+                .authenticatedUser()
+                .username()
+                .toString();
+    }
+
     private AuthorizationService authorizationService() {
         if (authorizationService != null) {
             return authorizationService;
