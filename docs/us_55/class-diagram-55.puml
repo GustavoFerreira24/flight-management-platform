@@ -1,0 +1,54 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterAircraftModelUI <<UI>> {
+    + show() : void
+}
+
+class ManageAircraftModelController <<Controller>> {
+    + registerAircraftModel(...) : AircraftModel
+    + compatibleEngineModelDesignators(motorization : String) : List<String>
+}
+
+class AircraftModel <<Aggregate Root>> {
+    - designator : AircraftModelDesignator
+    - type : AircraftModelType
+    - motorization : AircraftModelMotorization
+    - passengerCapacity : int
+    - certifiedVariants : Set<AircraftVariant>
+    + addCertifiedVariant(engineModel : EngineModel) : void
+    + identity() : AircraftModelDesignator
+}
+
+class AircraftVariant <<Entity>> {
+    - variantId : String
+    - engineModel : EngineModel
+    + createFrom(engineModel : EngineModel) : AircraftVariant
+}
+
+class AircraftModelDesignator <<Value Object>>
+class AircraftModelType <<Value Object>>
+class AircraftModelMotorization <<Value Object>> {
+    + isCompatibleWith(engineTypeValue : String) : boolean
+}
+
+class EngineModel <<Aggregate Root>>
+class EngineModelDesignator <<Value Object>>
+
+interface AircraftModelRepository
+interface EngineModelRepository
+
+RegisterAircraftModelUI --> ManageAircraftModelController
+ManageAircraftModelController --> AircraftModelRepository
+ManageAircraftModelController --> EngineModelRepository
+ManageAircraftModelController --> AircraftModel
+
+AircraftModel *-- AircraftModelDesignator
+AircraftModel *-- AircraftModelType
+AircraftModel *-- AircraftModelMotorization
+AircraftModel *-- "1..*" AircraftVariant
+AircraftVariant --> EngineModel
+EngineModel *-- EngineModelDesignator
+
+@enduml
