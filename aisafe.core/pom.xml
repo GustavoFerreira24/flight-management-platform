@@ -20,7 +20,13 @@
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>4.13.2</version>
                 <configuration>
+                    <sourceDirectory>${basedir}/src/main/antlr4/isep/aisafe/flightplan/importer/dsl</sourceDirectory>
                     <visitor>true</visitor>
+                    <arguments>
+                        <argument>-visitor</argument>
+                        <argument>-package</argument>
+                        <argument>isep.aisafe.flightplan.importer.dsl</argument>
+                    </arguments>
                 </configuration>
                 <executions>
                     <execution>
