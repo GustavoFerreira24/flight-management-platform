@@ -56,6 +56,21 @@ class AircraftOperationalStatusTest {
     }
 
     @Test
+    void ensureDecommissionedFactoryCreatesDecommissionedStatus() {
+        final AircraftOperationalStatus status = AircraftOperationalStatus.decommissioned();
+
+        assertEquals("DECOMMISSIONED", status.toString());
+        assertTrue(status.isDecommissioned());
+    }
+
+    @Test
+    void ensureActiveStatusIsNotDecommissioned() {
+        final AircraftOperationalStatus status = AircraftOperationalStatus.active();
+
+        assertFalse(status.isDecommissioned());
+    }
+
+    @Test
     void ensureNullStatusIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> AircraftOperationalStatus.valueOf(null));
     }

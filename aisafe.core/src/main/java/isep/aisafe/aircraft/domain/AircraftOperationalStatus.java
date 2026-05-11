@@ -61,6 +61,24 @@ public class AircraftOperationalStatus implements ValueObject, Serializable {
         return new AircraftOperationalStatus(ACTIVE);
     }
 
+    /**
+     * Creates a decommissioned operational status.
+     *
+     * @return decommissioned operational status
+     */
+    public static AircraftOperationalStatus decommissioned() {
+        return new AircraftOperationalStatus(DECOMMISSIONED);
+    }
+
+    /**
+     * Checks whether the status represents a retired aircraft.
+     *
+     * @return true if the aircraft is decommissioned
+     */
+    public boolean isDecommissioned() {
+        return DECOMMISSIONED.equals(value);
+    }
+
     @Override
     public boolean equals(final Object other) {
         if (this == other) {

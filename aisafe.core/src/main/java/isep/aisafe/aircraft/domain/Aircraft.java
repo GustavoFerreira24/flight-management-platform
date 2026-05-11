@@ -168,6 +168,35 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
         return operationalStatus;
     }
 
+    /**
+     * Retires this aircraft from operational use.
+     */
+    public void decommission() {
+        if (isDecommissioned()) {
+            throw new IllegalStateException("Aircraft is already decommissioned.");
+        }
+
+        operationalStatus = AircraftOperationalStatus.decommissioned();
+    }
+
+    /**
+     * Checks whether this aircraft has been retired.
+     *
+     * @return true if the aircraft is decommissioned
+     */
+    public boolean isDecommissioned() {
+        return operationalStatus.isDecommissioned();
+    }
+
+    /**
+     * Checks whether this aircraft can be assigned to new flights.
+     *
+     * @return true if the aircraft is available for flight assignment
+     */
+    public boolean canBeUsedForFlights() {
+        return !isDecommissioned();
+    }
+
     public int crewSize() {
         return crewSize;
     }

@@ -311,6 +311,44 @@ class AircraftTest {
         assertFalse(aircraft.sameAs(null));
     }
 
+    @Test
+    void ensureAircraftCanBeDecommissioned() {
+        final EngineModel engineModel = engineModel("LEAP-X8", "CFM International");
+        final AircraftModel aircraftModel = aircraftModel("A320-RET", "Airbus", 180, engineModel);
+
+        final Aircraft aircraft = aircraft(
+                "CS-TVR",
+                company("TAP Air Portugal", "Portugal", "TP", "TAP"),
+                aircraftModel,
+                engineModel
+        );
+
+        aircraft.decommission();
+
+        assertEquals(AircraftOperationalStatus.decommissioned(), aircraft.operationalStatus());
+        assertTrue(aircraft.isDecommissioned());
+        assertFalse(aircraft.canBeUsedForFlights());
+    }
+
+    @Test
+    void ensureAlreadyDecommissionedAircraftCannotBeDecommissionedAgain() {
+        final EngineModel engineModel = engineModel("LEAP-X9", "CFM International");
+        final AircraftModel aircraftModel = aircraftModel("A321-RET", "Airbus", 190, engineModel);
+
+        final Aircraft aircraft = aircraft(
+                "CS-TVS",
+                company("TAP Air Portugal", "Portugal", "TP", "TAP"),
+                aircraftModel,
+                engineModel
+        );
+
+        aircraft.decommission();
+
+        final IllegalStateException result = assertThrows(IllegalStateException.class, aircraft::decommission);
+
+        assertEquals("Aircraft is already decommissioned.", result.getMessage());
+    }
+
     private Aircraft aircraft(
             final String registration,
             final AirTransportCompany company,
