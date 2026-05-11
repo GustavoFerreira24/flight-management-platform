@@ -1,0 +1,39 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterEngineModelUI <<UI>> {
+    + show() : void
+}
+
+class RegisterEngineModelController <<Controller>> {
+    + registerEngineModel(...) : EngineModel
+}
+
+class EngineModel <<Aggregate Root>> {
+    - designator : EngineModelDesignator
+    - engineType : EngineType
+    - fuelType : FuelType
+    - power : double
+    - thrust : double
+    - tsfc : double
+    + identity() : EngineModelDesignator
+}
+
+class EngineModelDesignator <<Value Object>> {
+    + valueOf(modelName : String, manufacturer : String) : EngineModelDesignator
+}
+
+class EngineType <<Value Object>>
+class FuelType <<Value Object>>
+interface EngineModelRepository
+
+RegisterEngineModelUI --> RegisterEngineModelController
+RegisterEngineModelController --> EngineModelRepository
+RegisterEngineModelController --> EngineModel
+
+EngineModel *-- EngineModelDesignator
+EngineModel *-- EngineType
+EngineModel *-- FuelType
+
+@enduml

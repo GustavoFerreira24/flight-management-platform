@@ -34,6 +34,12 @@ This folder contains all documentation artifacts produced during development of 
 #### US11 — Domain Model (DDD)
 - [Overview](./us_11/readme.md)
 
+#### US55 — Create an Aircraft Model
+- [Aircraft Model Registration](./us_55/readme.md)
+
+#### US56 — Create an Aircraft Engine Model
+- [Engine Model Registration](./us_56/readme.md)
+
 #### US83 — Flight DSL Specification and Validation
 - [Flight DSL Specification](./us_83/flight-dsl.md)
 
