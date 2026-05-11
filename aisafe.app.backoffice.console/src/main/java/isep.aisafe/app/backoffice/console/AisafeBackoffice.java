@@ -1,7 +1,11 @@
 package isep.aisafe.app.backoffice.console;
 
 import isep.aisafe.app.backoffice.console.presentation.aircontrolarea.RegisterAirControlAreaUI;
+import isep.aisafe.app.backoffice.console.presentation.aircraft.RegisterAircraftUI;
+import isep.aisafe.app.backoffice.console.presentation.aircraftmodel.RegisterAircraftModelUI;
 import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
+import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
+import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
 import isep.aisafe.app.common.console.AisafeBaseApplication;
 import isep.aisafe.app.common.console.presentation.authz.LoginUI;
 import isep.aisafe.infrastructure.authz.AuthenticationCredentialHandler;
@@ -9,9 +13,6 @@ import isep.aisafe.infrastructure.persistence.PersistenceContext;
 import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
-import isep.aisafe.app.backoffice.console.presentation.aircraftmodel.RegisterAircraftModelUI;
-import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
-import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
 
 import java.util.Scanner;
 
@@ -53,8 +54,9 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         System.out.println("║ 3 - Register Engine Model                          (US56)  ║");
         System.out.println("║ 4 - Register Air Transport Company                 (US60)  ║");
         System.out.println("║ 5 - Register Air Control Area                      (US50)  ║");
-        System.out.println("║ 6 - Register Airport                               (US52)  ║");
-        System.out.println("║ 7 - Exit                                                  ║");
+        System.out.println("║ 6 - Register Aircraft                              (US70)  ║");
+        System.out.println("║ 7 - Register Airport                               (US52)  ║");
+        System.out.println("║ 8 - Exit                                                  ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.print("Option: ");
 
@@ -86,11 +88,16 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("6".equals(option)) {
-            System.out.println("Register Airport option is not connected yet.");
+            new RegisterAircraftUI(scanner).show();
             return;
         }
 
         if ("7".equals(option)) {
+            System.out.println("Register Airport option is not connected yet.");
+            return;
+        }
+
+        if ("8".equals(option)) {
             System.out.println("Exiting application.");
             return;
         }
