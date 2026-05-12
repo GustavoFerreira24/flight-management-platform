@@ -9,6 +9,10 @@ import java.util.Set;
 
 final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
 
+    private static final String FLIGHT_DESIGNATOR_PATTERN = "[A-Z]{2}[0-9]{1,4}[A-Z]?";
+    private static final String AIRCRAFT_REGISTRATION_PATTERN = "[A-Z0-9][A-Z0-9-]{1,9}";
+    private static final String PILOT_IDENTIFIER_PATTERN = "[A-Za-z][A-Za-z0-9._-]{2,49}";
+
     private final List<FlightPlanDslError> errors = new ArrayList<>();
     private final List<LegSummary> legs = new ArrayList<>();
 
@@ -46,6 +50,8 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
 
     @Override
     public void exitFlightBlock(final FlightPlanDslParser.FlightBlockContext ctx) {
+        validateFlightDesignator(ctx.flightIdentifier());
+        validateFlightMetadata(ctx);
         validateLegSequence();
         validateAirportRevisits();
     }
@@ -117,6 +123,62 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
 
     List<FlightPlanDslError> errors() {
         return List.copyOf(errors);
+    }
+
+    private void validateFlightDesignator(final FlightPlanDslParser.FlightIdentifierContext context) {
+        final String identifier = context.getText();
+
+        if (!identifier.matches(FLIGHT_DESIGNATOR_PATTERN)) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
+                    "Flight designator must match format xxn(n)(n)(n)(a), for example TP123 or TP123A.");
+        }
+    }
+
+    private void validateFlightMetadata(final FlightPlanDslParser.FlightBlockContext context) {
+        int aircraftCount = 0;
+        int pilotCount = 0;
+
+        for (FlightPlanDslParser.FlightMetadataContext metadata : context.flightMetadata()) {
+            if (metadata.aircraftStatement() != null) {
+                aircraftCount++;
+                validateAircraftRegistration(metadata.aircraftStatement());
+            }
+
+            if (metadata.pilotStatement() != null) {
+                pilotCount++;
+                validatePilotIdentifier(metadata.pilotStatement());
+            }
+        }
+
+        if (aircraftCount > 1) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
+                    "Flight plan can declare at most one aircraft.");
+        }
+
+        if (pilotCount > 1) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
+                    "Flight plan can declare at most one pilot.");
+        }
+    }
+
+    private void validateAircraftRegistration(final FlightPlanDslParser.AircraftStatementContext context) {
+        final String registration = context.aircraftRegistration().getText().toUpperCase();
+
+        if (!registration.matches(AIRCRAFT_REGISTRATION_PATTERN)) {
+            addError(context.aircraftRegistration().getStart().getLine(),
+                    context.aircraftRegistration().getStart().getCharPositionInLine(),
+                    "Aircraft registration must have 2 to 10 letters, digits or hyphens.");
+        }
+    }
+
+    private void validatePilotIdentifier(final FlightPlanDslParser.PilotStatementContext context) {
+        final String pilotIdentifier = context.pilotIdentifier().getText();
+
+        if (!pilotIdentifier.matches(PILOT_IDENTIFIER_PATTERN)) {
+            addError(context.pilotIdentifier().getStart().getLine(),
+                    context.pilotIdentifier().getStart().getCharPositionInLine(),
+                    "Pilot identifier must start with a letter and contain 3 to 50 letters, digits, dots, underscores or hyphens.");
+        }
     }
 
     private void validateLegSequence() {

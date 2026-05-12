@@ -22,6 +22,8 @@ final class FlightPlanAstBuilder extends FlightPlanDslBaseVisitor<Object> {
         return new DslFlightPlan(
                 ctx.flightIdentifier().getText(),
                 ctx.flightType().getText(),
+                aircraftRegistration(ctx),
+                pilotIdentifier(ctx),
                 legs,
                 location(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine())
         );
@@ -153,5 +155,25 @@ final class FlightPlanAstBuilder extends FlightPlanDslBaseVisitor<Object> {
 
     private DslSourceLocation location(final int line, final int column) {
         return new DslSourceLocation(line, column);
+    }
+
+    private String aircraftRegistration(final FlightPlanDslParser.FlightBlockContext context) {
+        for (FlightPlanDslParser.FlightMetadataContext metadata : context.flightMetadata()) {
+            if (metadata.aircraftStatement() != null) {
+                return metadata.aircraftStatement().aircraftRegistration().getText();
+            }
+        }
+
+        return null;
+    }
+
+    private String pilotIdentifier(final FlightPlanDslParser.FlightBlockContext context) {
+        for (FlightPlanDslParser.FlightMetadataContext metadata : context.flightMetadata()) {
+            if (metadata.pilotStatement() != null) {
+                return metadata.pilotStatement().pilotIdentifier().getText();
+            }
+        }
+
+        return null;
     }
 }

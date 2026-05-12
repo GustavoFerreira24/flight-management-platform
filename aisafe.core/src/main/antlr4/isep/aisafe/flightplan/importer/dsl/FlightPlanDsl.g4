@@ -5,7 +5,7 @@ flightPlanFile
     ;
 
 flightBlock
-    : FLIGHT flightIdentifier flightType LBRACE legBlock+ RBRACE
+    : FLIGHT flightIdentifier flightType LBRACE flightMetadata* legBlock+ RBRACE
     ;
 
 flightIdentifier
@@ -16,6 +16,27 @@ flightIdentifier
 flightType
     : REGULAR
     | CHARTER
+    ;
+
+flightMetadata
+    : aircraftStatement
+    | pilotStatement
+    ;
+
+aircraftStatement
+    : AIRCRAFT aircraftRegistration SEMI
+    ;
+
+pilotStatement
+    : PILOT pilotIdentifier SEMI
+    ;
+
+aircraftRegistration
+    : IDENTIFIER
+    ;
+
+pilotIdentifier
+    : IDENTIFIER
     ;
 
 legBlock
@@ -73,13 +94,11 @@ number
 
 unit
     : UNIT
-    | IDENTIFIER
     ;
 
 windUnit
     : WIND_UNIT
     | UNIT
-    | IDENTIFIER
     ;
 
 FLIGHT      : F L I G H T;
@@ -89,6 +108,8 @@ ARRIVAL     : A R R I V A L;
 ROUTE       : R O U T E;
 SEGMENT     : S E G M E N T;
 FUEL        : F U E L;
+AIRCRAFT    : A I R C R A F T;
+PILOT       : P I L O T;
 AT          : A T;
 REGULAR     : R E G U L A R;
 CHARTER     : C H A R T E R;
