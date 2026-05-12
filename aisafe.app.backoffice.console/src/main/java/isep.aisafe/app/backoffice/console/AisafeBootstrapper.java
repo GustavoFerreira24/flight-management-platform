@@ -14,6 +14,9 @@ import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
 import isep.aisafe.aircraftmodel.domain.AircraftModelType;
+import isep.aisafe.airport.domain.Airport;
+import isep.aisafe.airport.domain.AirportBuilder;
+import isep.aisafe.airport.domain.AirportICAOCode;
 import isep.aisafe.enginemodel.domain.EngineModel;
 import isep.aisafe.enginemodel.domain.EngineModelDesignator;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
@@ -31,6 +34,7 @@ import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
+import isep.aisafe.airport.domain.AirportRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -59,6 +63,11 @@ public class AisafeBootstrapper {
 
         bootstrapAirTransportCompanies();
         bootstrapAirControlAreas();
+        bootstrapCustomerCollaborators(userService);
+        bootstrapAircraftAndEngineModels();
+        bootstrapAirTransportCompanies();
+        bootstrapAirControlAreas(); // Os aeroportos vêm depois das áreas!
+        bootstrapAirports();        // <--- ADICIONA ISTO
         bootstrapCustomerCollaborators(userService);
         bootstrapAircraftAndEngineModels();
     }
@@ -389,5 +398,58 @@ public class AisafeBootstrapper {
         System.out.println("Bootstrapped air transport company: " + companyIataCode);
 
         return airTransportCompany;
+    }
+
+    private static void bootstrapAirports() {
+        final AirportRepository repository = PersistenceContext.repositories().airports();
+        final AirControlAreaRepository areaRepo = PersistenceContext.repositories().airControlAreas();
+
+        // Precisamos de uma área real que já exista no bootstrap
+        final AirControlArea lisbonArea = areaRepo.ofIdentity(AirControlAreaCode.valueOf("LISACC"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: LISACC area not found"));
+
+        registerAirportIfMissing(
+                repository,
+                "LPPR", "OPO", "Francisco Sá Carneiro", "Porto",
+                41.2355, -8.6703, 69.0,
+                lisbonArea
+        );
+
+        registerAirportIfMissing(
+                repository,
+                "LPPT", "LIS", "Humberto Delgado", "Lisboa",
+                38.7742, -9.1342, 114.0,
+                lisbonArea
+        );
+    }
+
+    private static void registerAirportIfMissing(
+            final AirportRepository repository,
+            final String icao,
+            final String iata,
+            final String name,
+            final String town,
+            final double lat,
+            final double lon,
+            final double elev,
+            final AirControlArea area) {
+
+        final AirportICAOCode icaoCode = AirportICAOCode.valueOf(icao);
+
+        // Verifica se já existe para não duplicar
+        if (repository.ofIdentity(icaoCode).isPresent()) {
+            return;
+        }
+
+        // Usamos o Builder que criaste para garantir que as validações de domínio são feitas
+        final AirportBuilder builder = new AirportBuilder();
+        final Airport airport = builder
+                .withData(icao, iata, name, town)
+                .withLocation(lat, lon, elev)
+                .inArea(area)
+                .build();
+
+        repository.save(airport);
+        System.out.println("Bootstrapped airport: " + icaoCode);
     }
 }

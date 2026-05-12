@@ -6,6 +6,7 @@ skinparam {
     Handwritten false
     ClassAttributeIconSize 0
     PackageStyle frame
+    linetype ortho
 
     PackageBackgroundColor #F8F9FA
     PackageBorderColor #ADB5BD
