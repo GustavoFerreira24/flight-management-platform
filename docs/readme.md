@@ -40,6 +40,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US56 — Create an Aircraft Engine Model
 - [Engine Model Registration](./us_56/readme.md)
 
+#### US71 — Decommission an Aircraft
+- [Aircraft Decommissioning](./us_71/readme.md)
+
 #### US83 — Flight DSL Specification and Validation
 - [Flight DSL Specification](./us_83/flight-dsl.md)
 
