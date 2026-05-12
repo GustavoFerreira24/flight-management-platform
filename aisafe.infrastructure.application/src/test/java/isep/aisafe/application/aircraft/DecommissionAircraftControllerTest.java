@@ -107,6 +107,35 @@ class DecommissionAircraftControllerTest {
     }
 
     @Test
+    void ensureDecommissionableAircraftListsOnlyActiveCompanyAircraftWithoutPendingFlights() {
+        final Fixture fixture = new Fixture("tap.list@aisafe.com");
+
+        fixture.company = company("List Air", "Portugal", "QZ", "QZA");
+        fixture.companyRepository.save(fixture.company);
+        fixture.collaboratorRepository.save(companyCollaborator(fixture.authz.username(), "QZ"));
+
+        final Aircraft activeAircraft = aircraft("CS-LA1", fixture.company);
+        final Aircraft pendingAircraft = aircraft("CS-LA2", fixture.company);
+        final Aircraft decommissionedAircraft = aircraft("CS-LA3", fixture.company);
+        decommissionedAircraft.decommission();
+
+        final AirTransportCompany otherCompany = company("Ryanair", "Ireland", "FR", "RYR");
+        fixture.companyRepository.save(otherCompany);
+
+        fixture.aircraftRepository.save(activeAircraft);
+        fixture.aircraftRepository.save(pendingAircraft);
+        fixture.aircraftRepository.save(decommissionedAircraft);
+        fixture.aircraftRepository.save(aircraft("EI-LA1", otherCompany));
+        fixture.pendingFlightsService.pendingRegistration = AircraftRegistration.valueOf("CS-LA2");
+
+        final List<Aircraft> result = fixture.controller().decommissionableAircraft();
+
+        assertArrayEquals(AisafePermissions.AIR_COMPANY_CONFIGURATION, fixture.authz.requestedRoles());
+        assertEquals(1, result.size());
+        assertEquals(AircraftRegistration.valueOf("CS-LA1"), result.get(0).registration());
+    }
+
+    @Test
     void ensureAuthenticatedUserMustBeCustomerCollaborator() {
         final Fixture fixture = new Fixture("unknown@aisafe.com");
         fixture.aircraftRepository.save(aircraft("CS-X71", company("TAP Air Portugal", "Portugal", "TP", "TAP")));
@@ -326,10 +355,11 @@ class DecommissionAircraftControllerTest {
     private static class TestPendingAircraftFlightsService implements PendingAircraftFlightsService {
 
         private boolean hasPendingFlights;
+        private AircraftRegistration pendingRegistration;
 
         @Override
         public boolean hasPendingFlights(final Aircraft aircraft) {
-            return hasPendingFlights;
+            return hasPendingFlights || aircraft.registration().equals(pendingRegistration);
         }
     }
 

@@ -4,6 +4,7 @@ import isep.aisafe.Application;
 import isep.aisafe.aircraft.domain.AircraftRepository;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
+import isep.aisafe.airport.domain.AirportRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
@@ -54,6 +55,11 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public AirControlAreaRepository airControlAreas() {
         return new JpaAirControlAreaRepository(Application.settings().persistenceUnitName());
+    }
+
+    @Override
+    public AirportRepository airports() {
+        return new JpaAirportRepository(Application.settings().persistenceUnitName());
     }
 
     @Override

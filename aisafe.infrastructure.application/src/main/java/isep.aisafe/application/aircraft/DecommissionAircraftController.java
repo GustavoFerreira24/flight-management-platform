@@ -15,6 +15,9 @@ import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Controller for retiring an aircraft from an air transport company's fleet.
  */
@@ -100,6 +103,26 @@ public class DecommissionAircraftController {
         aircraft.decommission();
 
         return aircraftRepository.save(aircraft);
+    }
+
+    /**
+     * Lists aircraft from the authenticated collaborator's company that can be decommissioned.
+     *
+     * @return aircraft candidates for decommissioning
+     */
+    public List<Aircraft> decommissionableAircraft() {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        final AirTransportCompany company = authenticatedCollaboratorCompany();
+        final List<Aircraft> candidates = new ArrayList<>();
+
+        for (Aircraft aircraft : aircraftRepository.findByCompany(company)) {
+            if (!aircraft.isDecommissioned() && !pendingFlightsService.hasPendingFlights(aircraft)) {
+                candidates.add(aircraft);
+            }
+        }
+
+        return candidates;
     }
 
     private AirTransportCompany authenticatedCollaboratorCompany() {
