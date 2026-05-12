@@ -1,0 +1,27 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class BackofficeConfigurationController <<Controller>> {
+    + execute() : void
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AuthorizationService <<Framework Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AisafePermissions <<Permissions>>
+class AisafeRoles <<Roles>>
+class Role <<Value Object>>
+
+BackofficeConfigurationController --> AisafeAuthorizationService
+AisafeAuthorizationService --> AuthorizationService
+BackofficeConfigurationController --> AisafePermissions
+AisafePermissions --> AisafeRoles
+AisafeRoles --> Role
+
+@enduml
