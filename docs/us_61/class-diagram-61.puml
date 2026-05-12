@@ -1,0 +1,65 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterCustomerCollaboratorController <<Controller>> {
+    + registerCollaboratorForAirTransportCompany(...) : CustomerCollaborator
+    + registerCollaboratorForAirControlArea(...) : CustomerCollaborator
+}
+
+class CustomerCollaborator <<Aggregate Root>> {
+    - firstName : String
+    - lastName : String
+    - email : CollaboratorEmail
+    - customerReference : CustomerReference
+    - systemUsername : SystemUsername
+    + identity() : CollaboratorEmail
+}
+
+class CustomerReference <<Value Object>> {
+    - customerType : CustomerType
+    - customerIdentity : String
+    + airTransportCompany(iataCode : String) : CustomerReference
+    + airControlArea(areaCode : String) : CustomerReference
+}
+
+enum CustomerType {
+    AIR_TRANSPORT_COMPANY
+    AIR_CONTROL_AREA
+}
+
+class CollaboratorEmail <<Value Object>>
+class SystemUsername <<Value Object>>
+class AisafeAuthorizationService <<Service>>
+class UserManagementService <<Framework Service>>
+class AisafeRoles <<Roles>>
+class AisafePermissions <<Permissions>>
+
+interface CustomerCollaboratorRepository {
+    + findByEmail(email : CollaboratorEmail) : Optional<CustomerCollaborator>
+    + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
+}
+
+interface AirTransportCompanyRepository
+interface AirControlAreaRepository
+
+class AirTransportCompany <<Aggregate Root>>
+class AirControlArea <<Aggregate Root>>
+
+RegisterCustomerCollaboratorController --> AisafeAuthorizationService
+RegisterCustomerCollaboratorController --> CustomerCollaboratorRepository
+RegisterCustomerCollaboratorController --> AirTransportCompanyRepository
+RegisterCustomerCollaboratorController --> AirControlAreaRepository
+RegisterCustomerCollaboratorController --> UserManagementService
+RegisterCustomerCollaboratorController --> CustomerCollaborator
+RegisterCustomerCollaboratorController --> AisafeRoles
+RegisterCustomerCollaboratorController --> AisafePermissions
+
+CustomerCollaborator *-- CollaboratorEmail
+CustomerCollaborator *-- CustomerReference
+CustomerCollaborator *-- SystemUsername
+CustomerReference *-- CustomerType
+AirTransportCompanyRepository --> AirTransportCompany
+AirControlAreaRepository --> AirControlArea
+
+@enduml

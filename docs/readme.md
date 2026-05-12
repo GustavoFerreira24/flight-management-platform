@@ -34,6 +34,15 @@ This folder contains all documentation artifacts produced during development of 
 #### US11 — Domain Model (DDD)
 - [Overview](./us_11/readme.md)
 
+#### US30 — Register Backoffice Users
+- [Backoffice User Registration](./us_30/readme.md)
+
+#### US31 — Backoffice Configuration Access
+- [Backoffice Configuration Access](./us_31/readme.md)
+
+#### US61 — Register Customer Collaborators
+- [Customer Collaborator Registration](./us_61/readme.md)
+
 #### US55 — Create an Aircraft Model
 - [Aircraft Model Registration](./us_55/readme.md)
 
