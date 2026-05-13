@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <flightPlan.dsl.file>${maven.multiModuleProjectDirectory}/docs/us_83/valid-flight-plan.fpl</flightPlan.dsl.file>
+        <flightPlan.dsl.file>${project.parent.basedir}/docs/us_83/valid-flight-plan.fpl</flightPlan.dsl.file>
     </properties>
 
     <build>
@@ -73,4 +73,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>flight-dsl</id>
+            <build>
+                <defaultGoal>compile exec:java</defaultGoal>
+            </build>
+        </profile>
+    </profiles>
 </project>

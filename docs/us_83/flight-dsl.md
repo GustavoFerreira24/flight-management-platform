@@ -132,11 +132,17 @@ The DSL can be tested from the command line with `FlightPlanDslCli`, which valid
 From the repository root:
 
 ```bash
-mvn -pl aisafe.core exec:java
+mvn -pl aisafe.core -Pflight-dsl
+```
+
+From inside `aisafe.core`:
+
+```bash
+mvn -Pflight-dsl
 ```
 
 To validate another file:
 
 ```bash
-mvn -pl aisafe.core exec:java -DflightPlan.dsl.file="/path/to/flight-plan.fpl"
+mvn -pl aisafe.core -Pflight-dsl -DflightPlan.dsl.file="/path/to/flight-plan.fpl"
 ```
