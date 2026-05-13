@@ -36,37 +36,32 @@ public class RegisterAircraftUI {
             System.out.println();
             System.out.println("Register Aircraft");
 
-            System.out.print("Aircraft registration number: ");
-            final String registration = scanner.nextLine();
+            final String registration = readAircraftRegistration();
+            final String registrationCountry = readCountry();
+            final String operationalStatus = readOperationalStatus();
 
-            System.out.print("Registration country: ");
-            final String registrationCountry = scanner.nextLine();
+            final int crewSize = readPositiveInt("Crew size: ");
+            final int[] cabinConfiguration = readCabinConfiguration();
 
-            final int crewSize = readInt("Crew size: ");
-
-            final int economySeats = readInt("Economy seats: ");
-            final int businessSeats = readInt("Business seats: ");
-            final int firstClassSeats = readInt("First class seats: ");
-
-            System.out.print("Aircraft model name: ");
-            final String aircraftModelName = scanner.nextLine();
-
-            System.out.print("Aircraft model manufacturer: ");
-            final String aircraftModelManufacturer = scanner.nextLine();
-
-            System.out.print("Engine model name: ");
-            final String engineModelName = scanner.nextLine();
-
-            System.out.print("Engine model manufacturer: ");
-            final String engineModelManufacturer = scanner.nextLine();
+            final String aircraftModelName = readRequiredText("Aircraft model name: ", "Aircraft model name is required.");
+            final String aircraftModelManufacturer = readRequiredText(
+                    "Aircraft model manufacturer: ",
+                    "Aircraft model manufacturer is required."
+            );
+            final String engineModelName = readRequiredText("Engine model name: ", "Engine model name is required.");
+            final String engineModelManufacturer = readRequiredText(
+                    "Engine model manufacturer: ",
+                    "Engine model manufacturer is required."
+            );
 
             controller.registerAircraft(
                     registration,
                     registrationCountry,
+                    operationalStatus,
                     crewSize,
-                    economySeats,
-                    businessSeats,
-                    firstClassSeats,
+                    cabinConfiguration[0],
+                    cabinConfiguration[1],
+                    cabinConfiguration[2],
                     aircraftModelName,
                     aircraftModelManufacturer,
                     engineModelName,
@@ -79,8 +74,153 @@ public class RegisterAircraftUI {
         }
     }
 
+    private String readAircraftRegistration() {
+        while (true) {
+            final String registration = readRequiredText(
+                    "Aircraft registration number: ",
+                    "Aircraft registration number is required."
+            ).trim().toUpperCase();
+
+            if (registration.matches("[A-Z0-9][A-Z0-9-]{1,9}")) {
+                return registration;
+            }
+
+            System.out.println("Invalid aircraft registration. Use 2 to 10 letters, digits or hyphens.");
+        }
+    }
+
+    private String readRequiredText(final String prompt, final String errorMessage) {
+        while (true) {
+            System.out.print(prompt);
+            final String value = scanner.nextLine().trim();
+
+            if (!value.isBlank()) {
+                return value;
+            }
+
+            System.out.println(errorMessage);
+        }
+    }
+
+    private String readCountry() {
+        while (true) {
+            System.out.println("Registration country:");
+            System.out.println("1 - Portugal");
+            System.out.println("2 - Spain");
+            System.out.println("3 - France");
+            System.out.println("4 - Germany");
+            System.out.println("5 - Ireland");
+            System.out.println("6 - United Kingdom");
+            System.out.println("7 - United States");
+            System.out.println("8 - Brazil");
+            System.out.println("9 - Other");
+            System.out.print("Option: ");
+
+            final String option = scanner.nextLine().trim();
+
+            if ("1".equals(option)) {
+                return "Portugal";
+            }
+            if ("2".equals(option)) {
+                return "Spain";
+            }
+            if ("3".equals(option)) {
+                return "France";
+            }
+            if ("4".equals(option)) {
+                return "Germany";
+            }
+            if ("5".equals(option)) {
+                return "Ireland";
+            }
+            if ("6".equals(option)) {
+                return "United Kingdom";
+            }
+            if ("7".equals(option)) {
+                return "United States";
+            }
+            if ("8".equals(option)) {
+                return "Brazil";
+            }
+            if ("9".equals(option)) {
+                return readRequiredText("Other country: ", "Country is required.");
+            }
+
+            System.out.println("Invalid option. Choose a number between 1 and 9.");
+        }
+    }
+
+    private String readOperationalStatus() {
+        while (true) {
+            System.out.println("Operational status:");
+            System.out.println("1 - ACTIVE");
+            System.out.println("2 - IN_MAINTENANCE");
+            System.out.println("3 - DECOMMISSIONED");
+            System.out.print("Option: ");
+
+            final String option = scanner.nextLine().trim();
+
+            if ("1".equals(option)) {
+                return "ACTIVE";
+            }
+            if ("2".equals(option)) {
+                return "IN_MAINTENANCE";
+            }
+            if ("3".equals(option)) {
+                return "DECOMMISSIONED";
+            }
+
+            System.out.println("Invalid option. Choose 1, 2 or 3.");
+        }
+    }
+
+    private int readPositiveInt(final String prompt) {
+        while (true) {
+            final int value = readInt(prompt);
+
+            if (value > 0) {
+                return value;
+            }
+
+            System.out.println("Invalid value. It must be greater than zero.");
+        }
+    }
+
+    private int[] readCabinConfiguration() {
+        while (true) {
+            final int economySeats = readNonNegativeInt("Economy seats: ");
+            final int businessSeats = readNonNegativeInt("Business seats: ");
+            final int firstClassSeats = readNonNegativeInt("First class seats: ");
+
+            if (economySeats + businessSeats + firstClassSeats > 0) {
+                return new int[] { economySeats, businessSeats, firstClassSeats };
+            }
+
+            System.out.println("Cabin configuration must have at least one seat. Please enter the seats again.");
+        }
+    }
+
+    private int readNonNegativeInt(final String prompt) {
+        while (true) {
+            final int value = readInt(prompt);
+
+            if (value >= 0) {
+                return value;
+            }
+
+            System.out.println("Invalid number of seats. Value cannot be negative.");
+        }
+    }
+
     private int readInt(final String prompt) {
-        System.out.print(prompt);
-        return Integer.parseInt(scanner.nextLine());
+        while (true) {
+            System.out.print(prompt);
+
+            try {
+                return Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number. Please enter an integer value.");
+            }
+        }
     }
 }

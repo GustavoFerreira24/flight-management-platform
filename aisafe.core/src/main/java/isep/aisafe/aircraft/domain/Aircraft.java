@@ -1,6 +1,7 @@
 package isep.aisafe.aircraft.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.enginemodel.domain.EngineModel;
@@ -84,6 +85,7 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
             final AirTransportCompany company,
             final AircraftModel aircraftModel,
             final EngineModel engineModel) {
+
 
         if (registration == null) {
             throw new IllegalArgumentException("Aircraft registration cannot be null.");
