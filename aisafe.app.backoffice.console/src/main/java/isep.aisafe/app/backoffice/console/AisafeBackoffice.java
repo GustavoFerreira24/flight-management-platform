@@ -4,6 +4,7 @@ import isep.aisafe.app.backoffice.console.presentation.aircontrolarea.RegisterAi
 import isep.aisafe.app.backoffice.console.presentation.aircraft.DecommissionAircraftUI;
 import isep.aisafe.app.backoffice.console.presentation.aircraft.RegisterAircraftUI;
 import isep.aisafe.app.backoffice.console.presentation.aircraftmodel.RegisterAircraftModelUI;
+import isep.aisafe.app.backoffice.console.presentation.airport.RegisterAirportUI;
 import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
@@ -102,7 +103,7 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("8".equals(option)) {
-            System.out.println("Register Airport option is not connected yet.");
+            new RegisterAirportUI(scanner).show();
             return true;
         }
 

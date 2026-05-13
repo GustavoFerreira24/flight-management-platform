@@ -71,6 +71,7 @@ public class RegisterAirportController {
             final String icao,
             final String iata,
             final String name,
+            final String countryName,
             final String town,
             final double lat,
             final double lon,
@@ -98,7 +99,7 @@ public class RegisterAirportController {
 
         // Utilizar o Builder para garantir a integridade do domínio
         final AirportBuilder builder = new AirportBuilder();
-        builder.withData(icao, iata, name, town)
+        builder.withData(icao, iata, name, countryName, town)
                 .withLocation(lat, lon, elev)
                 .inArea(area);
 

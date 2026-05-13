@@ -17,7 +17,7 @@ class AirportBuilderTest {
         );
 
         final Airport airport = builder
-                .withData("LPPT", "LIS", "Lisbon Airport", "Lisbon")
+                .withData("LPPT", "LIS", "Lisbon Airport", "Portugal","Lisbon")
                 .withLocation(38.7, -9.1, 114.0)
                 .inArea(area)
                 .build();
@@ -40,7 +40,7 @@ class AirportBuilderTest {
         final AirportBuilder builder = new AirportBuilder();
 
         assertThrows(IllegalArgumentException.class, () ->
-                builder.withData("INVALIDICAO", "LIS", "Name", "Town"));
+                builder.withData("INVALIDICAO", "LIS", "Aeroporto 3", "Portugal","Vila Nova de Cerveira"));
     }
 
     @Test
@@ -48,6 +48,6 @@ class AirportBuilderTest {
         final AirportBuilder builder = new AirportBuilder();
 
         assertThrows(IllegalArgumentException.class, () ->
-                builder.withData("LPPT", "LI", "Name", "Town"));
+                builder.withData("LPPT", "LI", "Aeroporto 2", "Portugal","Vila Nova de Cerveira"));
     }
 }

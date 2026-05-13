@@ -2,6 +2,7 @@ package isep.aisafe.airport.domain;
 
 import eapli.framework.domain.model.DomainFactory;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.airtransportcompany.domain.Country;
 
 /**
  * Builder/factory to create Airport instances without exposing
@@ -12,6 +13,7 @@ public class AirportBuilder implements DomainFactory<Airport> {
     private AirportICAOCode icao;
     private AirportIATACode iata;
     private String name;
+    private Country country;
     private String town;
     private GpsCoordinates coords;
     private Elevation elev;
@@ -30,11 +32,13 @@ public class AirportBuilder implements DomainFactory<Airport> {
             final String icao,
             final String iata,
             final String name,
+            final String countryName,
             final String town) {
 
         this.icao = AirportICAOCode.valueOf(icao);
         this.iata = AirportIATACode.valueOf(iata);
         this.name = name;
+        this.country = Country.valueOf(countryName);
         this.town = town;
         return this;
     }

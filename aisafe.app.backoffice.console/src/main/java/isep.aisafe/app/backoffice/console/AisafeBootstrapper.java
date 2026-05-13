@@ -410,14 +410,14 @@ public class AisafeBootstrapper {
 
         registerAirportIfMissing(
                 repository,
-                "LPPR", "OPO", "Francisco Sá Carneiro", "Porto",
+                "LPPR", "OPO", "Francisco Sá Carneiro", "Portugal","Porto",
                 41.2355, -8.6703, 69.0,
                 lisbonArea
         );
 
         registerAirportIfMissing(
                 repository,
-                "LPPT", "LIS", "Humberto Delgado", "Lisboa",
+                "LPPT", "LIS", "Humberto Delgado", "Portugal", "Lisboa",
                 38.7742, -9.1342, 114.0,
                 lisbonArea
         );
@@ -428,6 +428,7 @@ public class AisafeBootstrapper {
             final String icao,
             final String iata,
             final String name,
+            final String countryName,
             final String town,
             final double lat,
             final double lon,
@@ -444,7 +445,7 @@ public class AisafeBootstrapper {
         // Usamos o Builder que criaste para garantir que as validações de domínio são feitas
         final AirportBuilder builder = new AirportBuilder();
         final Airport airport = builder
-                .withData(icao, iata, name, town)
+                .withData(icao, iata, name, countryName,town)
                 .withLocation(lat, lon, elev)
                 .inArea(area)
                 .build();

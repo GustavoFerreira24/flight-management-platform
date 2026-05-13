@@ -2,6 +2,7 @@ package isep.aisafe.app.backoffice.console.presentation.airport;
 
 import isep.aisafe.application.airport.RegisterAirportController;
 import java.util.Scanner;
+import isep.aisafe.airport.domain.*;
 
 /**
  * User interface for registering a new airport in the backoffice application.
@@ -41,6 +42,9 @@ public class RegisterAirportUI {
         try {
             System.out.println("\nRegister Airport");
 
+            System.out.print("Country to add the airport: ");
+            final String country = scanner.nextLine();
+
             System.out.print("Town to add the airport: ");
             final String town = scanner.nextLine();
 
@@ -61,8 +65,10 @@ public class RegisterAirportUI {
             final String areaCode = scanner.nextLine();
 
             controller.registerAirport(
-                    icao, iata, name, town, lat, lon, elev, areaCode
+                    icao, iata, name, country, town, lat, lon, elev, areaCode
             );
+
+            System.out.println("Bootstrapped airport: " + icao);
 
             System.out.println("\nAirport registered successfully.");
 

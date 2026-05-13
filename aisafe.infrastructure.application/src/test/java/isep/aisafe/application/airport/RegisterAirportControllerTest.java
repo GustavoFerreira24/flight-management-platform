@@ -20,7 +20,7 @@ class RegisterAirportControllerTest {
         fixture.bootstrapAirControlArea("LISACC");
 
         final Airport result = fixture.controller().registerAirport(
-                "LPPR", "OPO", "Sá Carneiro", "Porto", 41.2, -8.6, 69.0, "LISACC"
+                "LPPR", "OPO", "Sá Carneiro", "Portugal","Porto", 41.2, -8.6, 69.0, "LISACC"
         );
 
         // Verifica se a permissão solicitada foi a de configuração de backoffice
@@ -46,7 +46,7 @@ class RegisterAirportControllerTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 fixture.controller().registerAirport(
-                        "LPPR", "OPO", "Name", "Town", 41.0, -8.0, 50.0, "UNKNOWN"
+                        "LPPR", "OPO", "Aeroporto Duro", "Portugal","Douro", 41.0, -8.0, 50.0, "UNKNOWN"
                 ));
     }
 
@@ -77,7 +77,7 @@ class RegisterAirportControllerTest {
 
         Airport registerValidAirport(final String icao, final String iata) {
             return controller().registerAirport(
-                    icao, iata, "Test", "Test", 40.0, -9.0, 100.0, "LISACC"
+                    icao, iata, "Test", "Portugal","Test", 40.0, -9.0, 100.0, "LISACC"
             );
         }
     }
