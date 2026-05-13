@@ -1,0 +1,172 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterAircraftUI <<UI>> {
+    - controller : RegisterAircraftController
+    - scanner : Scanner
+    + show() : void
+}
+
+class RegisterAircraftController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - aircraftRepository : AircraftRepository
+    - aircraftModelRepository : AircraftModelRepository
+    - engineModelRepository : EngineModelRepository
+    - airTransportCompanyRepository : AirTransportCompanyRepository
+    - customerCollaboratorRepository : CustomerCollaboratorRepository
+    + registerAircraft(...) : Aircraft
+    - authenticatedCollaboratorCompany() : AirTransportCompany
+}
+
+class Aircraft <<Aggregate Root>> {
+    - registration : AircraftRegistration
+    - registrationCountry : AircraftRegistrationCountry
+    - cabinConfiguration : CabinConfiguration
+    - operationalStatus : AircraftOperationalStatus
+    - crewSize : int
+    - company : AirTransportCompany
+    - aircraftModel : AircraftModel
+    - engineModel : EngineModel
+    + identity() : AircraftRegistration
+    + registration() : AircraftRegistration
+    + registrationCountry() : AircraftRegistrationCountry
+    + cabinConfiguration() : CabinConfiguration
+    + operationalStatus() : AircraftOperationalStatus
+    + crewSize() : int
+    + company() : AirTransportCompany
+    + aircraftModel() : AircraftModel
+    + engineModel() : EngineModel
+}
+
+class AircraftRegistration <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AircraftRegistration
+    + compareTo(other : AircraftRegistration) : int
+}
+
+class AircraftRegistrationCountry <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AircraftRegistrationCountry
+}
+
+class CabinConfiguration <<Value Object>> {
+    - economySeats : int
+    - businessSeats : int
+    - firstClassSeats : int
+    + valueOf(economySeats : int, businessSeats : int, firstClassSeats : int) : CabinConfiguration
+    + economySeats() : int
+    + businessSeats() : int
+    + firstClassSeats() : int
+    + totalSeats() : int
+}
+
+class AircraftOperationalStatus <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AircraftOperationalStatus
+    + active() : AircraftOperationalStatus
+    + decommissioned() : AircraftOperationalStatus
+    + isDecommissioned() : boolean
+}
+
+class AirTransportCompany <<Aggregate Root>> {
+    - name : String
+    - iataCode : IATACode
+    - icaoCode : ICAOCode
+    + identity() : IATACode
+}
+
+class AircraftModel <<Aggregate Root>> {
+    - designator : AircraftModelDesignator
+    - passengerCapacity : int
+    - certifiedVariants : Set<AircraftVariant>
+    + identity() : AircraftModelDesignator
+    + passengerCapacity() : int
+    + hasCertifiedEngineModel(engineModel : EngineModel) : boolean
+}
+
+class EngineModel <<Aggregate Root>> {
+    - designator : EngineModelDesignator
+    + identity() : EngineModelDesignator
+}
+
+class CustomerCollaborator <<Aggregate Root>> {
+    - email : CollaboratorEmail
+    - customerReference : CustomerReference
+    - systemUsername : SystemUsername
+    + identity() : CollaboratorEmail
+    + customerReference() : CustomerReference
+}
+
+class CustomerReference <<Value Object>> {
+    - customerType : CustomerType
+    - customerIdentity : String
+    + airTransportCompany(customerIdentity : String) : CustomerReference
+    + customerType() : CustomerType
+    + customerIdentity() : String
+}
+
+class IATACode <<Value Object>>
+class ICAOCode <<Value Object>>
+class AircraftModelDesignator <<Value Object>>
+class EngineModelDesignator <<Value Object>>
+class AircraftVariant <<Entity>>
+class CollaboratorEmail <<Value Object>>
+class SystemUsername <<Value Object>>
+enum CustomerType
+
+interface AircraftRepository <<Repository>> {
+    + findByRegistration(registration : AircraftRegistration) : Optional<Aircraft>
+    + findByCompany(company : AirTransportCompany) : Iterable<Aircraft>
+    + save(entity : Aircraft) : Aircraft
+}
+
+interface AircraftModelRepository <<Repository>> {
+    + findByDesignator(designator : AircraftModelDesignator) : Optional<AircraftModel>
+}
+
+interface EngineModelRepository <<Repository>> {
+    + findByDesignator(designator : EngineModelDesignator) : Optional<EngineModel>
+}
+
+interface AirTransportCompanyRepository <<Repository>> {
+    + findByIataCode(iataCode : IATACode) : Optional<AirTransportCompany>
+}
+
+interface CustomerCollaboratorRepository <<Repository>> {
+    + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
+}
+
+RegisterAircraftUI --> RegisterAircraftController
+RegisterAircraftController --> AircraftRepository
+RegisterAircraftController --> AircraftModelRepository
+RegisterAircraftController --> EngineModelRepository
+RegisterAircraftController --> AirTransportCompanyRepository
+RegisterAircraftController --> CustomerCollaboratorRepository
+RegisterAircraftController --> Aircraft
+
+Aircraft *-- AircraftRegistration
+Aircraft *-- AircraftRegistrationCountry
+Aircraft *-- CabinConfiguration
+Aircraft *-- AircraftOperationalStatus
+Aircraft --> AirTransportCompany
+Aircraft --> AircraftModel
+Aircraft --> EngineModel
+
+AirTransportCompany *-- IATACode
+AirTransportCompany *-- ICAOCode
+AircraftModel *-- AircraftModelDesignator
+AircraftModel *-- "1..*" AircraftVariant
+EngineModel *-- EngineModelDesignator
+CustomerCollaborator *-- CollaboratorEmail
+CustomerCollaborator *-- CustomerReference
+CustomerCollaborator *-- SystemUsername
+CustomerReference *-- CustomerType
+
+AircraftRepository ..> Aircraft
+AircraftModelRepository ..> AircraftModel
+EngineModelRepository ..> EngineModel
+AirTransportCompanyRepository ..> AirTransportCompany
+CustomerCollaboratorRepository ..> CustomerCollaborator
+
+@enduml
