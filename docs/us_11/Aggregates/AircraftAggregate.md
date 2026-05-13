@@ -42,6 +42,13 @@ AircraftModel.
   and engine model.
 
 
+- <span style="color:#70AD47">Controlled Decommissioning</span>
+
+  An Aircraft can be retired by changing its operational status to `DECOMMISSIONED`. Once decommissioned, it cannot be
+  decommissioned again and must not be used for future flight assignment. The rule that prevents decommissioning an
+  aircraft with pending flights is checked outside the aggregate because it depends on flight-related aggregates.
+
+
 ## <span style="color:#2E75B6">Justification</span>
 
 - <span style="color:#70AD47">Aggregate Root Responsibility</span>
@@ -90,3 +97,10 @@ configurations are prevented.
   External components do not manipulate `AircraftRegistration`, `Country`, `CabinConfiguration`, or 
 `AircraftOperationalStatus` directly. They interact only with `Aircraft`, which preserves the consistency of the 
 aggregate and clearly defines its boundary.
+
+
+- <span style="color:#70AD47">Lifecycle State Transition</span>
+
+  US071 extends the aggregate with a lifecycle transition represented by `Aircraft.decommission()`. This keeps the
+  retirement rule close to the aggregate state while leaving cross-aggregate checks, such as pending flights and company
+  ownership, in the application layer.

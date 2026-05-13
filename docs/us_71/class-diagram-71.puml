@@ -1,0 +1,83 @@
+@startuml
+skinparam {
+    BackgroundColor white
+    RoundCorner 8
+    Shadowing false
+    Handwritten false
+    ClassAttributeIconSize 0
+
+    ClassBackgroundColor white
+    ClassBorderColor #495057
+    ClassFontSize 12
+
+    ClassBackgroundColor<<UI>> #E7F5FF
+    ClassBorderColor<<UI>> #228BE6
+
+    ClassBackgroundColor<<Controller>> #EBFBEE
+    ClassBorderColor<<Controller>> #40C057
+
+    ClassBackgroundColor<<Aggregate Root>> #FFF9DB
+    ClassBorderColor<<Aggregate Root>> #FAB005
+
+    ClassBackgroundColor<<Value Object>> #FFF4E6
+    ClassBorderColor<<Value Object>> #FD7E14
+}
+
+hide circle
+
+class DecommissionAircraftUI <<UI>> {
+    + show()
+}
+
+class DecommissionAircraftController <<Controller>> {
+    + decommissionAircraft(registration : String) : Aircraft
+}
+
+interface PendingAircraftFlightsService {
+    + hasPendingFlights(aircraft : Aircraft) : boolean
+}
+
+class NoPendingAircraftFlightsService {
+    + hasPendingFlights(aircraft : Aircraft) : boolean
+}
+
+interface AircraftRepository {
+    + findByRegistration(registration : AircraftRegistration) : Optional<Aircraft>
+    + findByCompany(company : AirTransportCompany) : Iterable<Aircraft>
+    + save(aircraft : Aircraft) : Aircraft
+}
+
+interface AirTransportCompanyRepository
+interface CustomerCollaboratorRepository
+
+class Aircraft <<Aggregate Root>> {
+    - registration : AircraftRegistration
+    - operationalStatus : AircraftOperationalStatus
+    + decommission()
+    + isDecommissioned() : boolean
+    + canBeUsedForFlights() : boolean
+}
+
+class AircraftRegistration <<Value Object>>
+class AircraftOperationalStatus <<Value Object>> {
+    + active() : AircraftOperationalStatus
+    + decommissioned() : AircraftOperationalStatus
+    + isDecommissioned() : boolean
+}
+
+class AirTransportCompany <<Aggregate Root>>
+class CustomerCollaborator
+
+DecommissionAircraftUI --> DecommissionAircraftController
+DecommissionAircraftController --> AircraftRepository
+DecommissionAircraftController --> AirTransportCompanyRepository
+DecommissionAircraftController --> CustomerCollaboratorRepository
+DecommissionAircraftController --> PendingAircraftFlightsService
+NoPendingAircraftFlightsService ..|> PendingAircraftFlightsService
+
+Aircraft *-- AircraftRegistration
+Aircraft *-- AircraftOperationalStatus
+Aircraft --> AirTransportCompany
+CustomerCollaborator --> AirTransportCompany
+
+@enduml
