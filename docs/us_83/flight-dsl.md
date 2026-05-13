@@ -15,6 +15,8 @@ Keywords are case-insensitive:
 - `route`
 - `segment`
 - `fuel`
+- `aircraft`
+- `pilot`
 - `at`
 - `regular`
 - `charter`
@@ -25,7 +27,9 @@ Keywords are case-insensitive:
 
 Other lexical elements:
 
-- Flight identifiers: airline-style designators such as `TP123` or generic identifiers.
+- Flight identifiers: airline-style designators such as `TP123`.
+- Aircraft registration metadata: identifiers such as `CS-TXA`.
+- Pilot metadata: identifiers such as `pilot01`.
 - Airport codes: IATA or ICAO style uppercase codes with 3 or 4 letters.
 - Numeric literals: integer or decimal values, optionally signed.
 - Date/time literals: `yyyy-MM-ddTHH:mm` or separated date and time tokens.
@@ -41,7 +45,14 @@ The DSL is hierarchical and block-based:
 flightPlanFile : flightBlock EOF;
 
 flightBlock
-    : FLIGHT flightIdentifier flightType LBRACE legBlock+ RBRACE;
+    : FLIGHT flightIdentifier flightType LBRACE flightMetadata* legBlock+ RBRACE;
+
+flightMetadata
+    : aircraftStatement
+    | pilotStatement;
+
+aircraftStatement : AIRCRAFT aircraftRegistration SEMI;
+pilotStatement    : PILOT pilotIdentifier SEMI;
 
 legBlock
     : LEG LBRACE departureStatement arrivalStatement routeStatement segmentStatement+ fuelStatement RBRACE;
@@ -57,6 +68,8 @@ Example:
 
 ```text
 flight TP123 regular {
+  aircraft CS-TXA;
+  pilot pilot01;
   leg {
     departure OPO at 2026-05-10T10:00;
     arrival LIS at 2026-05-10T11:00;
@@ -72,6 +85,9 @@ flight TP123 regular {
 After lexical and syntactic validation, the implementation validates domain coherence:
 
 - Arrival date/time must be after departure date/time within the same leg.
+- Flight designator must follow the airline designator format, for example `TP123` or `TP123A`.
+- A flight plan can declare at most one aircraft and at most one pilot.
+- Aircraft registration and pilot identifier metadata must follow their accepted identifier formats.
 - Route origin must match the leg departure airport.
 - Route destination must match the leg arrival airport.
 - Consecutive legs must connect: arrival airport of leg `n` must match departure airport of leg `n + 1`.
@@ -102,3 +118,25 @@ Processing pipeline:
 - `FlightPlanAstBuilder` is an ANTLR visitor used to build the internal representation.
 
 The internal representation is exposed through `FlightPlanParseResult.flightPlan()` as `DslFlightPlan` and related `Dsl*` classes.
+
+## Manual Execution
+
+The repository includes a valid sample at:
+
+```text
+docs/us_83/valid-flight-plan.fpl
+```
+
+The DSL can be tested from the command line with `FlightPlanDslCli`, which validates the file and prints the internal representation produced by the visitor.
+
+From the repository root:
+
+```bash
+mvn -pl aisafe.core exec:java
+```
+
+To validate another file:
+
+```bash
+mvn -pl aisafe.core exec:java -DflightPlan.dsl.file="/path/to/flight-plan.fpl"
+```

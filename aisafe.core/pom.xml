@@ -13,6 +13,10 @@
     <artifactId>aisafe.core</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <flightPlan.dsl.file>${maven.multiModuleProjectDirectory}/docs/us_83/valid-flight-plan.fpl</flightPlan.dsl.file>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -21,6 +25,7 @@
                 <version>4.13.2</version>
                 <configuration>
                     <sourceDirectory>${basedir}/src/main/antlr4/isep/aisafe/flightplan/importer/dsl</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/antlr4/isep/aisafe/flightplan/importer/dsl</outputDirectory>
                     <visitor>true</visitor>
                     <arguments>
                         <argument>-visitor</argument>
@@ -54,6 +59,17 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <mainClass>isep.aisafe.flightplan.importer.dsl.FlightPlanDslCli</mainClass>
+                    <arguments>
+                        <argument>${flightPlan.dsl.file}</argument>
+                    </arguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>

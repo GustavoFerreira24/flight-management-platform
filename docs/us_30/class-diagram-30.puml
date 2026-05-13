@@ -1,0 +1,38 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterBackofficeUserUI <<UI>> {
+    + show() : void
+}
+
+class RegisterBackofficeUserController <<Controller>> {
+    + registerUser(username : String, password : String, firstName : String, lastName : String, email : String, roles : Set<Role>) : void
+}
+
+class UserRegistrationValidator <<Service>> {
+    + validate(username : String, password : String, firstName : String, lastName : String, email : String, roles : Set<Role>) : void
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AisafeRoles <<Roles>>
+class AisafePermissions <<Permissions>>
+class UserManagementService <<Framework Service>> {
+    + registerNewUser(...) : SystemUser
+}
+class SystemUser <<Framework Aggregate>>
+class Role <<Value Object>>
+
+RegisterBackofficeUserUI --> RegisterBackofficeUserController
+RegisterBackofficeUserController --> AisafeAuthorizationService
+RegisterBackofficeUserController --> UserRegistrationValidator
+RegisterBackofficeUserController --> UserManagementService
+RegisterBackofficeUserController --> Role
+UserRegistrationValidator --> AisafeRoles
+AisafePermissions --> AisafeRoles
+UserManagementService --> SystemUser
+
+@enduml
