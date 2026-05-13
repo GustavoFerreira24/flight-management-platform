@@ -1,0 +1,61 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterAirTransportCompanyUI <<UI>> {
+    - controller : AirCompanyConfigurationController
+    - scanner : Scanner
+    + show() : void
+}
+
+class AirCompanyConfigurationController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - airTransportCompanyRepository : AirTransportCompanyRepository
+    + execute() : void
+    + registerAirTransportCompany(...) : AirTransportCompany
+}
+
+class AirTransportCompany <<Aggregate Root>> {
+    - name : String
+    - country : Country
+    - iataCode : IATACode
+    - icaoCode : ICAOCode
+    + identity() : IATACode
+    + name() : String
+    + country() : Country
+    + iataCode() : IATACode
+    + icaoCode() : ICAOCode
+}
+
+class IATACode <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : IATACode
+    + compareTo(other : IATACode) : int
+}
+
+class ICAOCode <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : ICAOCode
+}
+
+class Country <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : Country
+}
+
+interface AirTransportCompanyRepository <<Repository>> {
+    + findByIataCode(iataCode : IATACode) : Optional<AirTransportCompany>
+    + findByIcaoCode(icaoCode : ICAOCode) : Optional<AirTransportCompany>
+    + save(entity : AirTransportCompany) : AirTransportCompany
+}
+
+RegisterAirTransportCompanyUI --> AirCompanyConfigurationController
+AirCompanyConfigurationController --> AirTransportCompanyRepository
+AirCompanyConfigurationController --> AirTransportCompany
+
+AirTransportCompany *-- IATACode
+AirTransportCompany *-- ICAOCode
+AirTransportCompany *-- Country
+AirTransportCompanyRepository ..> AirTransportCompany
+
+@enduml
