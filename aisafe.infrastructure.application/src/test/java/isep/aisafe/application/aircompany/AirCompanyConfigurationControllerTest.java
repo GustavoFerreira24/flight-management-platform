@@ -44,7 +44,7 @@ class AirCompanyConfigurationControllerTest {
                 "ZDD"
         );
 
-        assertArrayEquals(AisafePermissions.AIR_COMPANY_CONFIGURATION, authz.requestedRoles());
+        assertArrayEquals(AisafePermissions.BACKOFFICE_CONFIGURATION, authz.requestedRoles());
         assertEquals(IATACode.valueOf("ZD"), result.identity());
         assertEquals("Valid Test Airline", result.name());
         assertEquals("Portugal", result.country().toString());
@@ -142,6 +142,6 @@ class AirCompanyConfigurationControllerTest {
 
         controller.execute();
 
-        assertArrayEquals(AisafePermissions.AIR_COMPANY_CONFIGURATION, authz.requestedRoles());
+        assertArrayEquals(AisafePermissions.BACKOFFICE_CONFIGURATION, authz.requestedRoles());
     }
 }

@@ -55,8 +55,7 @@ public class AirCompanyConfigurationController {
      * Authorizes access to the air company configuration area.
      */
     public void execute() {
-        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
-        // TODO implement air company configuration behavior when the feature is developed.
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
     }
 
     /**
@@ -74,7 +73,7 @@ public class AirCompanyConfigurationController {
             final String iataCode,
             final String icaoCode) {
 
-        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
 
         final Country companyCountry = Country.valueOf(country);
         final IATACode companyIataCode = IATACode.valueOf(iataCode);
