@@ -36,21 +36,36 @@ public class RegisterAirControlAreaUI {
             System.out.println();
             System.out.println("Register Air Control Area");
 
-            System.out.print("Area code: ");
-            final String code = scanner.nextLine();
+            final String code = readAreaCode();
+            final String name = readRequiredText("Name: ", "Air control area name is required.");
 
-            System.out.print("Name: ");
-            final String name = scanner.nextLine();
+            final double minLatitude = readDoubleInRange(
+                    "Minimum latitude: ",
+                    -90,
+                    90,
+                    "Latitude must be between -90 and 90."
+            );
+            final double maxLatitude = readDoubleGreaterThan(
+                    "Maximum latitude: ",
+                    minLatitude,
+                    90,
+                    "Maximum latitude must be greater than minimum latitude and at most 90."
+            );
+            final double minLongitude = readDoubleInRange(
+                    "Minimum longitude: ",
+                    -180,
+                    180,
+                    "Longitude must be between -180 and 180."
+            );
+            final double maxLongitude = readDoubleGreaterThan(
+                    "Maximum longitude: ",
+                    minLongitude,
+                    180,
+                    "Maximum longitude must be greater than minimum longitude and at most 180."
+            );
 
-            final double minLatitude = readDouble("Minimum latitude: ");
-            final double maxLatitude = readDouble("Maximum latitude: ");
-            final double minLongitude = readDouble("Minimum longitude: ");
-            final double maxLongitude = readDouble("Maximum longitude: ");
-
-            final double minimumFuelAmount = readDouble("Minimum fuel amount: ");
-
-            System.out.print("Fuel unit (KG or L): ");
-            final String fuelUnit = scanner.nextLine();
+            final double minimumFuelAmount = readPositiveDouble("Minimum fuel amount: ");
+            final String fuelUnit = readFuelUnit();
 
             controller.registerAirControlArea(
                     code,
@@ -69,8 +84,107 @@ public class RegisterAirControlAreaUI {
         }
     }
 
+    private String readAreaCode() {
+        while (true) {
+            final String code = readRequiredText("Area code: ", "Air control area code is required.")
+                    .trim()
+                    .toUpperCase();
+
+            if (code.matches("[A-Z0-9]{2,10}")) {
+                return code;
+            }
+
+            System.out.println("Invalid area code. Use 2 to 10 letters or digits.");
+        }
+    }
+
+    private String readRequiredText(final String prompt, final String errorMessage) {
+        while (true) {
+            System.out.print(prompt);
+            final String value = scanner.nextLine().trim();
+
+            if (!value.isBlank()) {
+                return value;
+            }
+
+            System.out.println(errorMessage);
+        }
+    }
+
+    private double readDoubleInRange(
+            final String prompt,
+            final double minimum,
+            final double maximum,
+            final String errorMessage) {
+        while (true) {
+            final double value = readDouble(prompt);
+
+            if (value >= minimum && value <= maximum) {
+                return value;
+            }
+
+            System.out.println(errorMessage);
+        }
+    }
+
+    private double readDoubleGreaterThan(
+            final String prompt,
+            final double lowerBound,
+            final double maximum,
+            final String errorMessage) {
+        while (true) {
+            final double value = readDouble(prompt);
+
+            if (value > lowerBound && value <= maximum) {
+                return value;
+            }
+
+            System.out.println(errorMessage);
+        }
+    }
+
+    private double readPositiveDouble(final String prompt) {
+        while (true) {
+            final double value = readDouble(prompt);
+
+            if (value > 0) {
+                return value;
+            }
+
+            System.out.println("Invalid amount. Value must be greater than zero.");
+        }
+    }
+
     private double readDouble(final String prompt) {
-        System.out.print(prompt);
-        return Double.parseDouble(scanner.nextLine());
+        while (true) {
+            System.out.print(prompt);
+
+            try {
+                return Double.parseDouble(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number. Please enter a numeric value.");
+            }
+        }
+    }
+
+    private String readFuelUnit() {
+        while (true) {
+            System.out.println("Fuel unit:");
+            System.out.println("1 - KG");
+            System.out.println("2 - L");
+            System.out.print("Option: ");
+
+            final String option = scanner.nextLine().trim();
+
+            if ("1".equals(option)) {
+                return "KG";
+            }
+
+            if ("2".equals(option)) {
+                return "L";
+            }
+
+            System.out.println("Invalid option. Choose 1 or 2.");
+        }
     }
 }

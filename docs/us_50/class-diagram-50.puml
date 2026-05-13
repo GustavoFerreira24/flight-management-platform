@@ -1,0 +1,75 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterAirControlAreaUI <<UI>> {
+    - controller : RegisterAirControlAreaController
+    - scanner : Scanner
+    + show() : void
+}
+
+class RegisterAirControlAreaController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - airControlAreaRepository : AirControlAreaRepository
+    + registerAirControlArea(...) : AirControlArea
+}
+
+class AirControlArea <<Aggregate Root>> {
+    - code : AirControlAreaCode
+    - name : String
+    - geographicBoundary : GeographicBoundary
+    - minimumFuelRequirement : MinimumFuelRequirement
+    + identity() : AirControlAreaCode
+    + code() : AirControlAreaCode
+    + name() : String
+    + geographicBoundary() : GeographicBoundary
+    + minimumFuelRequirement() : MinimumFuelRequirement
+}
+
+class AirControlAreaCode <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AirControlAreaCode
+    + compareTo(other : AirControlAreaCode) : int
+}
+
+class GeographicBoundary <<Value Object>> {
+    - minLatitude : double
+    - maxLatitude : double
+    - minLongitude : double
+    - maxLongitude : double
+    + valueOf(...) : GeographicBoundary
+    + minLatitude() : double
+    + maxLatitude() : double
+    + minLongitude() : double
+    + maxLongitude() : double
+}
+
+class MinimumFuelRequirement <<Value Object>> {
+    - amount : double
+    - unit : FuelUnit
+    + valueOf(amount : double, unit : FuelUnit) : MinimumFuelRequirement
+    + amount() : double
+    + unit() : FuelUnit
+}
+
+class FuelUnit <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : FuelUnit
+}
+
+interface AirControlAreaRepository <<Repository>> {
+    + findByCode(code : AirControlAreaCode) : Optional<AirControlArea>
+    + save(entity : AirControlArea) : AirControlArea
+}
+
+RegisterAirControlAreaUI --> RegisterAirControlAreaController
+RegisterAirControlAreaController --> AirControlAreaRepository
+RegisterAirControlAreaController --> AirControlArea
+
+AirControlArea *-- AirControlAreaCode
+AirControlArea *-- GeographicBoundary
+AirControlArea *-- MinimumFuelRequirement
+MinimumFuelRequirement *-- FuelUnit
+AirControlAreaRepository ..> AirControlArea
+
+@enduml

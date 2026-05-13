@@ -34,29 +34,14 @@ This folder contains all documentation artifacts produced during development of 
 #### US11 — Domain Model (DDD)
 - [Overview](./us_11/readme.md)
 
-#### US30 — Register Backoffice Users
-- [Backoffice User Registration](./us_30/readme.md)
-
-#### US31 — Backoffice Configuration Access
-- [Backoffice Configuration Access](./us_31/readme.md)
-
-#### US61 — Register Customer Collaborators
-- [Customer Collaborator Registration](./us_61/readme.md)
-
 #### US55 — Create an Aircraft Model
 - [Aircraft Model Registration](./us_55/readme.md)
 
 #### US56 — Create an Aircraft Engine Model
 - [Engine Model Registration](./us_56/readme.md)
 
-#### US71 — Decommission an Aircraft
-- [Aircraft Decommissioning](./us_71/readme.md)
-
 #### US83 — Flight DSL Specification and Validation
 - [Flight DSL Specification](./us_83/flight-dsl.md)
-
-#### US81 — Flight Plan File Import
-- [Implementation Notes](./us_81/implementation-notes.md)
 
 ##### Aggregates Documentation
 - [Flight Aggregate](./us_11/Aggregates/FlightAggregate.md)

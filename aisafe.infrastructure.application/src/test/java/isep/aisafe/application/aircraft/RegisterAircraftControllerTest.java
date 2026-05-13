@@ -64,6 +64,28 @@ class RegisterAircraftControllerTest {
     }
 
     @Test
+    void ensureAircraftCanBeRegisteredWithExplicitOperationalStatus() {
+        final Fixture fixture = new Fixture("tap.status@aisafe.com");
+        fixture.bootstrapValidCompanyCollaboratorModelAndEngine();
+
+        final Aircraft result = fixture.controller().registerAircraft(
+                "CS-STS",
+                "Portugal",
+                "IN_MAINTENANCE",
+                6,
+                150,
+                12,
+                0,
+                "US70-A320neo",
+                "Airbus",
+                "US70-LEAP-1A",
+                "CFM International"
+        );
+
+        assertEquals("IN_MAINTENANCE", result.operationalStatus().toString());
+    }
+
+    @Test
     void ensureDuplicateAircraftRegistrationIsRejected() {
         final Fixture fixture = new Fixture("tap.duplicate@aisafe.com");
         fixture.bootstrapValidCompanyCollaboratorModelAndEngine();

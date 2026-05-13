@@ -117,6 +117,50 @@ public class RegisterAircraftController {
             final String engineModelName,
             final String engineModelManufacturer) {
 
+        return registerAircraft(
+                registration,
+                registrationCountry,
+                AircraftOperationalStatus.active().toString(),
+                crewSize,
+                economySeats,
+                businessSeats,
+                firstClassSeats,
+                aircraftModelName,
+                aircraftModelManufacturer,
+                engineModelName,
+                engineModelManufacturer
+        );
+    }
+
+    /**
+     * Registers an aircraft with an explicit operational status.
+     *
+     * @param registration the aircraft registration number
+     * @param registrationCountry the aircraft registration country
+     * @param operationalStatus the initial operational status
+     * @param crewSize the crew size
+     * @param economySeats the number of economy seats
+     * @param businessSeats the number of business seats
+     * @param firstClassSeats the number of first class seats
+     * @param aircraftModelName the aircraft model name
+     * @param aircraftModelManufacturer the aircraft model manufacturer
+     * @param engineModelName the engine model name
+     * @param engineModelManufacturer the engine model manufacturer
+     * @return the registered aircraft
+     */
+    public Aircraft registerAircraft(
+            final String registration,
+            final String registrationCountry,
+            final String operationalStatus,
+            final int crewSize,
+            final int economySeats,
+            final int businessSeats,
+            final int firstClassSeats,
+            final String aircraftModelName,
+            final String aircraftModelManufacturer,
+            final String engineModelName,
+            final String engineModelManufacturer) {
+
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
 
         final AircraftRegistration aircraftRegistration = AircraftRegistration.valueOf(registration);
@@ -149,11 +193,13 @@ public class RegisterAircraftController {
                 firstClassSeats
         );
 
+        final AircraftOperationalStatus status = AircraftOperationalStatus.valueOf(operationalStatus);
+
         final Aircraft aircraft = new Aircraft(
                 aircraftRegistration,
                 country,
                 cabinConfiguration,
-                AircraftOperationalStatus.active(),
+                status,
                 crewSize,
                 company,
                 aircraftModel,
