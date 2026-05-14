@@ -24,6 +24,9 @@ import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Controller for registering aircraft in an air transport company's fleet.
  */
@@ -207,6 +210,50 @@ public class RegisterAircraftController {
         );
 
         return aircraftRepository.save(aircraft);
+    }
+
+    /**
+     * Lists existing aircraft model designators available for aircraft registration.
+     *
+     * @return sorted aircraft model designators
+     */
+    public List<String> aircraftModelDesignators() {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        final List<String> designators = new ArrayList<>();
+
+        for (final AircraftModel aircraftModel : aircraftModelRepository.findAll()) {
+            designators.add(aircraftModel.designator().toString());
+        }
+
+        designators.sort(String::compareTo);
+        return designators;
+    }
+
+    /**
+     * Lists engine model designators certified for the selected aircraft model.
+     *
+     * @param aircraftModelDesignatorText selected aircraft model designator
+     * @return sorted certified engine model designators
+     */
+    public List<String> certifiedEngineModelDesignators(final String aircraftModelDesignatorText) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        final AircraftModelDesignator aircraftModelDesignator =
+                AircraftModelDesignator.valueOf(aircraftModelDesignatorText);
+
+        final AircraftModel aircraftModel = aircraftModelRepository
+                .findByDesignator(aircraftModelDesignator)
+                .orElseThrow(() -> new IllegalArgumentException("Aircraft model was not found."));
+
+        final List<String> designators = new ArrayList<>();
+
+        for (final EngineModel engineModel : aircraftModel.certifiedEngineModels()) {
+            designators.add(engineModel.designator().toString());
+        }
+
+        designators.sort(String::compareTo);
+        return designators;
     }
 
     private AirTransportCompany authenticatedCollaboratorCompany() {

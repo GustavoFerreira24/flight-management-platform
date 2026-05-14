@@ -1,4 +1,7 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "simulation.h"
+#include "position_history.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -190,7 +193,8 @@ static void print_update(const position_update_t *update) {
 }
 
 static void process_simulation_updates(int pipes[][2], int flight_count,
-                                       position_update_t latest_positions[]) {
+                                       position_update_t latest_positions[],
+                                       position_history_t *position_history) {
     for (int step = 0; step < SIMULATION_STEPS && !stop_requested; step++) {
         for (int flight_index = 0; flight_index < flight_count && !stop_requested; flight_index++) {
             position_update_t update;
@@ -207,7 +211,14 @@ static void process_simulation_updates(int pipes[][2], int flight_count,
                 break;
             }
 
-            latest_positions[flight_index] = update;
+            if (store_position_update(position_history, latest_positions, flight_count,
+                                      flight_index, &update) == -1) {
+                fprintf(stderr, "invalid update received from flight index %d at step %d\n",
+                        flight_index, update.step);
+                stop_requested = 1;
+                break;
+            }
+
             print_update(&update);
         }
     }
@@ -223,6 +234,7 @@ int main(void) {
     int pipes[MAX_FLIGHTS][2];
     pid_t child_pids[MAX_FLIGHTS] = {0};
     position_update_t latest_positions[MAX_FLIGHTS];
+    position_history_t position_history;
 
     if (flight_count > MAX_FLIGHTS) {
         fprintf(stderr, "too many flights configured\n");
@@ -231,6 +243,7 @@ int main(void) {
 
     memset(pipes, -1, sizeof(pipes));
     memset(latest_positions, 0, sizeof(latest_positions));
+    init_position_history(&position_history);
 
     if (install_stop_handlers() == -1) {
         perror("sigaction");
@@ -246,7 +259,7 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    process_simulation_updates(pipes, flight_count, latest_positions);
+    process_simulation_updates(pipes, flight_count, latest_positions, &position_history);
 
     if (stop_requested) {
         fprintf(stderr, "simulation interrupted, terminating child processes\n");
@@ -255,6 +268,8 @@ int main(void) {
 
     close_parent_pipes(pipes, flight_count);
     wait_for_children(child_pids, flight_count);
+
+    print_position_history(flights, flight_count, &position_history);
 
     printf("simulation finished\n");
     return stop_requested ? EXIT_FAILURE : EXIT_SUCCESS;
