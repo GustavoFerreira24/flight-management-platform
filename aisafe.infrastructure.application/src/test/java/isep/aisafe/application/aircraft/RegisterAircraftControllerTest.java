@@ -86,6 +86,28 @@ class RegisterAircraftControllerTest {
     }
 
     @Test
+    void ensureAircraftModelDesignatorsCanBeListedForSelection() {
+        final Fixture fixture = new Fixture("tap.models@aisafe.com");
+        fixture.bootstrapValidCompanyCollaboratorModelAndEngine();
+
+        final List<String> result = fixture.controller().aircraftModelDesignators();
+
+        assertArrayEquals(AisafePermissions.AIR_COMPANY_CONFIGURATION, fixture.authz.requestedRoles());
+        assertEquals(List.of("US70-A320NEO | AIRBUS"), result);
+    }
+
+    @Test
+    void ensureCertifiedEngineModelDesignatorsCanBeListedForSelectedAircraftModel() {
+        final Fixture fixture = new Fixture("tap.engines@aisafe.com");
+        fixture.bootstrapValidCompanyCollaboratorModelAndEngine();
+
+        final List<String> result = fixture.controller().certifiedEngineModelDesignators("US70-A320neo | Airbus");
+
+        assertArrayEquals(AisafePermissions.AIR_COMPANY_CONFIGURATION, fixture.authz.requestedRoles());
+        assertEquals(List.of("US70-LEAP-1A | CFM INTERNATIONAL"), result);
+    }
+
+    @Test
     void ensureDuplicateAircraftRegistrationIsRejected() {
         final Fixture fixture = new Fixture("tap.duplicate@aisafe.com");
         fixture.bootstrapValidCompanyCollaboratorModelAndEngine();

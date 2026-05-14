@@ -14,8 +14,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Version;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -176,6 +178,21 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
 
     public int passengerCapacity() {
         return passengerCapacity;
+    }
+
+    /**
+     * Returns the engine models certified for this aircraft model.
+     *
+     * @return certified engine models
+     */
+    public List<EngineModel> certifiedEngineModels() {
+        final List<EngineModel> certifiedEngineModels = new ArrayList<>();
+
+        for (final AircraftVariant variant : certifiedVariants) {
+            certifiedEngineModels.add(variant.engineModel());
+        }
+
+        return certifiedEngineModels;
     }
 
 

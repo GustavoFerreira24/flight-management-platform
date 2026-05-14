@@ -2,6 +2,7 @@ package isep.aisafe.app.backoffice.console.presentation.aircraft;
 
 import isep.aisafe.application.aircraft.RegisterAircraftController;
 
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -43,16 +44,10 @@ public class RegisterAircraftUI {
             final int crewSize = readPositiveInt("Crew size: ");
             final int[] cabinConfiguration = readCabinConfiguration();
 
-            final String aircraftModelName = readRequiredText("Aircraft model name: ", "Aircraft model name is required.");
-            final String aircraftModelManufacturer = readRequiredText(
-                    "Aircraft model manufacturer: ",
-                    "Aircraft model manufacturer is required."
-            );
-            final String engineModelName = readRequiredText("Engine model name: ", "Engine model name is required.");
-            final String engineModelManufacturer = readRequiredText(
-                    "Engine model manufacturer: ",
-                    "Engine model manufacturer is required."
-            );
+            final String aircraftModelDesignator = readAircraftModelDesignator();
+            final String engineModelDesignator = readCertifiedEngineModelDesignator(aircraftModelDesignator);
+            final String[] aircraftModelParts = splitDesignator(aircraftModelDesignator, "aircraft model");
+            final String[] engineModelParts = splitDesignator(engineModelDesignator, "engine model");
 
             controller.registerAircraft(
                     registration,
@@ -62,10 +57,10 @@ public class RegisterAircraftUI {
                     cabinConfiguration[0],
                     cabinConfiguration[1],
                     cabinConfiguration[2],
-                    aircraftModelName,
-                    aircraftModelManufacturer,
-                    engineModelName,
-                    engineModelManufacturer
+                    aircraftModelParts[0],
+                    aircraftModelParts[1],
+                    engineModelParts[0],
+                    engineModelParts[1]
             );
 
             System.out.println("Aircraft registered successfully.");
@@ -210,6 +205,54 @@ public class RegisterAircraftUI {
 
             System.out.println("Invalid number of seats. Value cannot be negative.");
         }
+    }
+
+    private String readAircraftModelDesignator() {
+        final List<String> aircraftModelDesignators = controller.aircraftModelDesignators();
+
+        if (aircraftModelDesignators.isEmpty()) {
+            throw new IllegalStateException("There are no aircraft models registered.");
+        }
+
+        return readOptionFromList("Aircraft model:", aircraftModelDesignators);
+    }
+
+    private String readCertifiedEngineModelDesignator(final String aircraftModelDesignator) {
+        final List<String> engineModelDesignators = controller.certifiedEngineModelDesignators(aircraftModelDesignator);
+
+        if (engineModelDesignators.isEmpty()) {
+            throw new IllegalStateException("The selected aircraft model has no certified engine models.");
+        }
+
+        return readOptionFromList("Certified engine model:", engineModelDesignators);
+    }
+
+    private String readOptionFromList(final String title, final List<String> options) {
+        while (true) {
+            System.out.println(title);
+
+            for (int i = 0; i < options.size(); i++) {
+                System.out.println((i + 1) + " - " + options.get(i));
+            }
+
+            final int selectedOption = readInt("Option: ");
+
+            if (selectedOption >= 1 && selectedOption <= options.size()) {
+                return options.get(selectedOption - 1);
+            }
+
+            System.out.println("Invalid option. Choose a number between 1 and " + options.size() + ".");
+        }
+    }
+
+    private String[] splitDesignator(final String designator, final String label) {
+        final String[] parts = designator.split("\\s*\\|\\s*", 2);
+
+        if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
+            throw new IllegalStateException("Invalid " + label + " designator: " + designator);
+        }
+
+        return parts;
     }
 
     private int readInt(final String prompt) {
