@@ -159,4 +159,23 @@ class GeographicBoundaryTest {
 
         assertEquals("30.0,45.0,-15.0,5.0", boundary.toString());
     }
+
+    @Test
+    void ensureCoordinatesInsideBoundaryAreAccepted() {
+        final GeographicBoundary boundary = GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0);
+
+        assertTrue(boundary.contains(38.72, -9.14));
+        assertTrue(boundary.contains(30.0, -15.0));
+        assertTrue(boundary.contains(45.0, 5.0));
+    }
+
+    @Test
+    void ensureCoordinatesOutsideBoundaryAreRejected() {
+        final GeographicBoundary boundary = GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0);
+
+        assertFalse(boundary.contains(29.99, -9.14));
+        assertFalse(boundary.contains(45.01, -9.14));
+        assertFalse(boundary.contains(38.72, -15.01));
+        assertFalse(boundary.contains(38.72, 5.01));
+    }
 }

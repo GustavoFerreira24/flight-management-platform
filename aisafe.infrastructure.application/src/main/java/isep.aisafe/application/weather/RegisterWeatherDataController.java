@@ -1,5 +1,6 @@
 package isep.aisafe.application.weather;
 
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
@@ -74,11 +75,22 @@ public class RegisterWeatherDataController {
 
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT);
 
+        ensureNotBlank(day, "Weather data day is required.");
+        ensureNotBlank(areaCode, "Air control area code is required.");
+        ensureNotBlank(providerName, "Weather provider name is required.");
+        ensureNotBlank(providerType, "Weather provider type is required.");
+        ensureNotBlank(parameter, "Weather parameter is required.");
+        ensureNotBlank(unit, "Weather unit is required.");
+
         final LocalDate measurementDay = LocalDate.parse(day);
         final AirControlAreaCode airControlAreaCode = AirControlAreaCode.valueOf(areaCode);
 
-        airControlAreaRepository().findByCode(airControlAreaCode)
+        final AirControlArea airControlArea = airControlAreaRepository().findByCode(airControlAreaCode)
                 .orElseThrow(() -> new IllegalArgumentException("Air control area not found."));
+
+        if (!airControlArea.geographicBoundary().contains(latitude, longitude)) {
+            throw new IllegalArgumentException("Weather coordinates must be inside the air control area.");
+        }
 
         final WeatherData weatherData = weatherDataRepository()
                 .findByDayAndAirControlArea(measurementDay, airControlAreaCode)
@@ -94,6 +106,12 @@ public class RegisterWeatherDataController {
         );
 
         return weatherDataRepository().save(weatherData);
+    }
+
+    private void ensureNotBlank(final String value, final String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     private WeatherDataRepository weatherDataRepository() {

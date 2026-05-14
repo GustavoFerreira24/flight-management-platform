@@ -92,6 +92,20 @@ public class GeographicBoundary implements ValueObject, Serializable {
         return maxLongitude;
     }
 
+    /**
+     * Checks whether a coordinate is inside this boundary, including the boundary edges.
+     *
+     * @param latitude latitude to check
+     * @param longitude longitude to check
+     * @return true if the coordinate belongs to this boundary
+     */
+    public boolean contains(final double latitude, final double longitude) {
+        return latitude >= minLatitude
+                && latitude <= maxLatitude
+                && longitude >= minLongitude
+                && longitude <= maxLongitude;
+    }
+
     @Override
     public boolean equals(final Object other) {
         if (this == other) {

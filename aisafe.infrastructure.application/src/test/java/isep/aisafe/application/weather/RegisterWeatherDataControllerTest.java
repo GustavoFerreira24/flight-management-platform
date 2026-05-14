@@ -2,7 +2,10 @@ package isep.aisafe.application.weather;
 
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
 import isep.aisafe.aircontrolarea.domain.InMemoryAirControlAreaRepository;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.support.CapturingAuthorizationService;
 import isep.aisafe.weatherdata.domain.InMemoryWeatherDataRepository;
@@ -177,6 +180,70 @@ class RegisterWeatherDataControllerTest {
     }
 
     /**
+     * Purpose: verify that required weather registration fields are validated before persistence.
+     * Scenario: submit blank day, area, provider, provider type, parameter and unit values.
+     * Expected output: each submission throws an IllegalArgumentException and no weather data is persisted.
+     */
+    @Test
+    void ensureRequiredWeatherRegistrationFieldsAreRejected() {
+        // Arrange
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+
+        // Act / Assert
+        assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                " ", "LISACC", "Manual Station", "Manual", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+        assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-06", " ", "Manual Station", "Manual", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+        assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-06", "LISACC", " ", "Manual", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+        assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-06", "LISACC", "Manual Station", " ", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+        assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-06", "LISACC", "Manual Station", "Manual", " ", 18.5, "C", 1200, 38.72, -9.14
+        ));
+        assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-06", "LISACC", "Manual Station", "Manual", "temperature", 18.5, " ", 1200, 38.72, -9.14
+        ));
+        assertTrue(weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2026, 6, 6),
+                AirControlAreaCode.valueOf("LISACC")
+        ).isEmpty());
+    }
+
+    /**
+     * Purpose: verify that measurement coordinates must belong to the selected air control area.
+     * Scenario: submit otherwise valid weather data with coordinates outside the area's boundary.
+     * Expected output: an IllegalArgumentException is thrown and no weather data is persisted.
+     */
+    @Test
+    void ensureCoordinatesOutsideAirControlAreaAreRejected() {
+        // Arrange
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+
+        // Act / Assert
+        assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-07", "LISACC", "Manual Station", "Manual",
+                "temperature", 18.5, "C", 1200, 50.0, -9.14
+        ));
+        assertTrue(weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2026, 6, 7),
+                AirControlAreaCode.valueOf("LISACC")
+        ).isEmpty());
+    }
+
+    /**
      * Purpose: ensure authorization is enforced before registering weather data.
      * Scenario: authorization service rejects the current actor.
      * Expected output: the same exception is propagated and no weather data is persisted.
@@ -208,7 +275,9 @@ class RegisterWeatherDataControllerTest {
         final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
         airControlAreaRepository.save(new AirControlArea(
                 AirControlAreaCode.valueOf("LISACC"),
-                "Lisbon Area Control Centre"
+                "Lisbon Area Control Centre",
+                GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
         ));
 
         return new RegisterWeatherDataController(
