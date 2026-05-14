@@ -94,8 +94,7 @@ public class RegisterAirportController {
         }
 
         // Procurar e validar a existência da Air Control Area [cite: 622]
-        final AirControlArea area = areaRepo.ofIdentity(AirControlAreaCode.valueOf(areaCode))
-                .orElseThrow(() -> new IllegalArgumentException("Air Control Area não encontrada!"));
+        final AirControlArea area = areaRepo.ofIdentity(AirControlAreaCode.valueOf(areaCode)).orElseThrow(() -> new IllegalArgumentException("Air Control Area não encontrada!"));
 
         // Utilizar o Builder para garantir a integridade do domínio
         final AirportBuilder builder = new AirportBuilder();

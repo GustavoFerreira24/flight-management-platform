@@ -12,6 +12,10 @@ public class Elevation implements ValueObject {
     protected Elevation() {}
 
     public Elevation(double meters) {
+
+        if (meters < 0) {
+            throw new IllegalArgumentException("Altitude cannot be below sea level (in other words, negative).");
+        }
         this.meters = meters;
     }
 
@@ -21,7 +25,6 @@ public class Elevation implements ValueObject {
         return String.format(Locale.US, "%.1f m", meters);
     }
 
-    // Garante que tens o equals para o teste de "ElevationsAreEqual" passar
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

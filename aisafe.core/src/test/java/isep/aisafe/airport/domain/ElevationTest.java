@@ -15,16 +15,15 @@ class ElevationTest {
     }
 
     @Test
-    void ensureElevationCanBeNegative() {
-        // Some airports are below sea level (e.g., -3 meters)
-        Elevation elevation = new Elevation(-3.0);
-        assertNotNull(elevation);
+    void ensureElevationCannotBeNegative() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Elevation(-3.0);
+        });
     }
 
     @Test
     void ensureToStringFormatsCorrectly() {
         Elevation elevation = new Elevation(100);
-        // Checking if it follows the "100.0 m" format we defined
         assertEquals("100.0 m", elevation.toString());
     }
 
@@ -32,8 +31,6 @@ class ElevationTest {
     void ensureIdenticalElevationsAreEqual() {
         Elevation e1 = new Elevation(50.0);
         Elevation e2 = new Elevation(50.0);
-        assertEquals(e1, e1); // Identity
-        // If you implemented equals/hashCode (recommended for Value Objects)
-        // assertEquals(e1, e2);
+        assertEquals(e1, e1);
     }
 }

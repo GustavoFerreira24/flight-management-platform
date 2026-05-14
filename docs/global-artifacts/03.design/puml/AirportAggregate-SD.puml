@@ -1,60 +1,88 @@
 @startuml
-title Airport Aggregate Scenario: Register Airport
+title Airport Aggregate - Register Airport
 
 skinparam monochrome true
 skinparam packageStyle rectangle
 skinparam shadowing false
-
 autonumber
 
 actor "Backoffice Operator" as BO
 boundary ":RegisterAirportUI" as UI
-control ":RegisterAirportController" as C
-participant "airportRepository\n:AirportRepository" as AirportRepo
-participant "airControlAreaRepository\n:AirControlAreaRepository" as AreaRepo
-participant "airControlArea\n:AirControlArea" as Area
-participant "airport\n:Airport" as Airport
-participant "coordinates\n:Coordinates" as Coordinates
-participant "country\n:Country" as Country
-participant "iataCode\n:IATACode" as IATACode
-participant "icaoCode\n:ICAOCode" as ICAOCode
+control ":RegisterAirportController" as Controller
+participant ":AirportRepository" as AirportRepo
+participant ":AirControlAreaRepository" as AreaRepo
+
+participant ":Airport" as Airport
+participant ":IATACode" as IATACode
+participant ":ICAOCode" as ICAOCode
+participant ":Country" as Country
+participant ":GpsCoordinates" as Coordinates
+participant ":Elevation" as Elevation
+participant ":AirControlArea" as Area
 
 BO -> UI : request to register airport
-UI -> BO : ask for name, town, country,\ncoordinates, altitude, IATA code,\nICAO code, and air control area
 
-BO -> UI : submit airport data
-UI -> C : registerAirport(name, town, country,\nlatitude, longitude, altitude,\niataCode, icaoCode, airControlAreaCode)
+UI -> BO : ask for IATA Code, ICAO Code, Name, City, Country,\nLatitude, Longitude, Elevation, Air Control Area Code
 
-C -> AirportRepo : existsByIATACode(iataCode)
-AirportRepo --> C : false
+BO -> UI : submit data
 
-C -> AirportRepo : existsByICAOCode(icaoCode)
-AirportRepo --> C : false
+UI -> Controller : registerAirport(iataCode, icaoCode, name, city, country,\nlatitude, longitude, elevation, areaCode)
 
-C -> AreaRepo : findByCode(airControlAreaCode)
-AreaRepo --> C : airControlArea
+== Validation ==
 
-C -> Airport ++ : create(name, town, altitude, airControlArea)
+Controller -> IATACode ++ : valueOf(icaoCode)
+IATACode --> Controller : icaoCode
 
-Airport -> Country ++ : create(country)
-Country --> Airport : country created
+Controller -> AirportRepo : ofIdentity(icaoCode)
+AirportRepo --> AirportRepo : isPresent()
 
-Airport -> Coordinates ++ : create(latitude, longitude)
-Coordinates --> Airport : coordinates created
+AirportRepo --> Controller : empty
 
-Airport -> IATACode ++ : create(iataCode)
-IATACode --> Airport : IATA code created
+Controller -> IATACode ++ : valueOf(iataCode)
+IATACode --> Controller : iataCode
 
-Airport -> ICAOCode ++ : create(icaoCode)
-ICAOCode --> Airport : ICAO code created
+Controller -> AirportRepo : findByIataCode(iataCode)
+AirportRepo --> AirportRepo : isPresent()
 
-Airport -> Airport : validateInternalInvariants()\n- coordinates are valid
-Airport --> C : airport created
+AirportRepo --> Controller : empty
 
-C -> AirportRepo : save(airport)
-AirportRepo --> C : success
+== Air Control Area Validation ==
 
-C --> UI : airportCreated
-UI --> BO : confirm airport registration
+Controller -> AreaCode ++ : valueOf(areaCode)
+AreaCode --> Controller : areaCode
+
+Controller -> AreaRepo : ofIdentity(areaCode)
+AreaRepo --> Controller : airControlArea
+
+== Domain Object Creation ==
+
+Controller -> Airport ++ : create(iataCode, icaoCode, name, city, country, \nlatitude, longitude, elevation, airControlArea)
+
+    Airport -> IATACode ++ : AirportIATACode(iataCode)
+    IATACode --> Airport : iataCode
+
+    Airport -> ICAOCode ++ : AirportICAOCode(icaoCode)
+    ICAOCode --> Airport : icaoCode
+
+    Airport -> Country ++ : Country(country)
+    Country --> Airport : country
+
+    Airport -> Coordinates ++ : GpsCoordinates(latitude, longitude)
+    Coordinates --> Airport : coordinates
+
+    Airport -> Elevation ++ : create(elevation)
+    Elevation --> Airport : elevation
+
+    Airport -> Airport : validate()
+
+Airport --> Controller : airport
+
+== Persistence ==
+
+Controller -> AirportRepo : save(airport)
+AirportRepo --> Controller : success
+
+Controller --> UI : success
+UI --> BO : "Airport registered successfully"
 
 @enduml
