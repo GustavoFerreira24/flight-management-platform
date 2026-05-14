@@ -19,6 +19,7 @@
         <class>isep.aisafe.airport.domain.Airport</class>
         <class>isep.aisafe.customercollaborator.domain.CustomerCollaborator</class>
         <class>isep.aisafe.aircraft.domain.Aircraft</class>
+        <class>isep.aisafe.weatherdata.domain.WeatherData</class>
 
 
         <properties>
