@@ -1,0 +1,30 @@
+flight TP987 charter {
+  aircraft CS-ABC;
+  pilot captain_01;
+
+  leg {
+    departure OPO at 2026-06-01T07:30;
+    arrival MAD at 2026-06-01T09:10;
+    route OPO -> MAD;
+    segment (41.1579,-8.6291) -> (40.4168,-3.7038) altitude [12000,18000] ft width 25 nm wind 240 deg 35 m/s;
+    segment (40.4168,-3.7038) -> (40.4722,-3.5608) altitude [7000,11000] ft width 10 km;
+    fuel 6200 kg;
+  }
+
+  leg {
+    departure MAD at 2026-06-01T10:20;
+    arrival CDG at 2026-06-01T12:35;
+    route MAD -> CDG;
+    segment (40.4722,-3.5608) -> (46.2276,2.2137) altitude [20000,32000] ft width 30 nm wind 180 deg 22 m/s;
+    segment (46.2276,2.2137) -> (49.0097,2.5479) altitude [9000,14000] ft width 12 km wind 60 deg 14 m/s;
+    fuel 8100 kg;
+  }
+
+  leg {
+    departure CDG at 2026-06-01T14:00;
+    arrival AMS at 2026-06-01T15:15;
+    route CDG -> AMS;
+    segment (49.0097,2.5479) -> (52.3105,4.7683) altitude [15000,24000] ft width 20 nm wind 300 deg 18 m/s;
+    fuel 4300 kg;
+  }
+}

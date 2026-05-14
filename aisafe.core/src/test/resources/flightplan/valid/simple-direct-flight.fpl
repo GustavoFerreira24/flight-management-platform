@@ -1,0 +1,11 @@
+flight TP123 regular {
+  aircraft CS-TXA;
+  pilot pilot01;
+  leg {
+    departure OPO at 2026-05-10T10:00;
+    arrival LIS at 2026-05-10T11:00;
+    route OPO -> LIS;
+    segment (41.1579,-8.6291) -> (38.7742,-9.1342) altitude [1000,2000] m width 10 km wind 90 deg 12 m/s;
+    fuel 5000 kg;
+  }
+}

@@ -1,0 +1,14 @@
+// Keywords are intentionally mixed case.
+Flight TP555 Regular {
+  Aircraft CS-TST;
+  Pilot pilot.test;
+
+  /* A short validation flight. */
+  Leg {
+    Departure OPO At 2026-07-12 08:00;
+    Arrival FAO At 2026-07-12T09:05;
+    Route OPO -> FAO;
+    Segment (41.1579,-8.6291) -> (37.0144,-7.9659) Width 15 km;
+    Fuel 3500 kg;
+  }
+}
