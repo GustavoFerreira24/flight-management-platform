@@ -53,7 +53,7 @@ This requirement depends on US060 because the aircraft belongs to an existing ai
 
 ## 3. Analysis
 
-The aircraft registration is the business identity of an aircraft and is represented by `AircraftRegistration`. The registration country is represented separately because it may differ from the company's home country.
+The aircraft registration is the business identity of an aircraft and is represented by `AircraftRegistration`. The registration country is represented separately because it may differ from the company's home country. The manufacture year is stored so that the system can calculate aircraft age for fleet listings.
 
 The authenticated collaborator determines the owning company. The controller obtains the authenticated username, resolves the matching `CustomerCollaborator`, verifies that the collaborator is associated with an air transport company and then loads that company from `AirTransportCompanyRepository`.
 
@@ -66,6 +66,7 @@ The domain model enforces the following invariants:
 - Cabin configuration must contain at least one seat.
 - Crew size must be positive.
 - Company, aircraft model and engine model are mandatory.
+- Manufacture year must be between 1903 and the current year.
 - Total seats cannot exceed the selected aircraft model passenger capacity.
 - Engine model must be certified for the selected aircraft model.
 - Operational status must be one of `ACTIVE`, `IN_MAINTENANCE` or `DECOMMISSIONED`.
@@ -76,7 +77,7 @@ The domain model enforces the following invariants:
 
 ![US70 class diagram](class-diagram-70.svg "US70 Class Diagram")
 
-The `RegisterAircraftUI` collects aircraft registration, registration country, operational status, crew size, cabin configuration, aircraft model and engine model data. The UI delegates registration to `RegisterAircraftController`.
+The `RegisterAircraftUI` collects aircraft registration, registration country, operational status, manufacture year, crew size, cabin configuration, aircraft model and engine model data. The UI delegates registration to `RegisterAircraftController`.
 
 The controller authorizes the operation with air company configuration permissions, checks registration uniqueness, resolves the authenticated collaborator's company, loads the selected aircraft model and engine model, creates the `Aircraft` aggregate and persists it through `AircraftRepository`.
 
@@ -133,6 +134,7 @@ Main implementation artifacts:
 - `AircraftRegistrationCountry`: value object for the aircraft registration country.
 - `CabinConfiguration`: value object for economy, business and first-class seats.
 - `AircraftOperationalStatus`: value object for aircraft status.
+- `Aircraft.manufactureYear`: aircraft manufacture year used to calculate aircraft age.
 - `AircraftRepository`: repository abstraction used to enforce registration uniqueness.
 - `InMemoryAircraftRepository`: in-memory repository used by tests and memory persistence mode.
 - `JpaAircraftRepository`: JPA repository implementation.

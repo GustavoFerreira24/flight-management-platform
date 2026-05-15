@@ -46,6 +46,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US71 — Decommission an Aircraft
 - [Aircraft Decommissioning](./us_71/readme.md)
 
+#### US72 — List Aircraft Fleet
+- [Aircraft Fleet Listing](./us_72/readme.md)
+
 #### US83 — Flight DSL Specification and Validation
 - [Flight DSL Specification](./us_83/flight-dsl.md)
 

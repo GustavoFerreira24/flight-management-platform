@@ -2,6 +2,7 @@ package isep.aisafe.app.backoffice.console;
 
 import isep.aisafe.app.backoffice.console.presentation.aircontrolarea.RegisterAirControlAreaUI;
 import isep.aisafe.app.backoffice.console.presentation.aircraft.DecommissionAircraftUI;
+import isep.aisafe.app.backoffice.console.presentation.aircraft.ListAircraftFleetUI;
 import isep.aisafe.app.backoffice.console.presentation.aircraft.RegisterAircraftUI;
 import isep.aisafe.app.backoffice.console.presentation.aircraftmodel.RegisterAircraftModelUI;
 import isep.aisafe.app.backoffice.console.presentation.airport.RegisterAirportUI;
@@ -162,7 +163,8 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         System.out.println("╠════════════════════════════════════════════════════════════╣");
         System.out.println("║ 1 - Register Aircraft                              (US70)  ║");
         System.out.println("║ 2 - Decommission Aircraft                          (US71)  ║");
-        System.out.println("║ 3 - Logout                                                 ║");
+        System.out.println("║ 3 - List Aircraft Fleet                            (US72)  ║");
+        System.out.println("║ 4 - Logout                                                 ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.print("Option: ");
 
@@ -179,6 +181,11 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("3".equals(option)) {
+            new ListAircraftFleetUI(scanner).show();
+            return true;
+        }
+
+        if ("4".equals(option)) {
             System.out.println("Returning to login menu.");
             return false;
         }

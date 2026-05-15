@@ -26,6 +26,7 @@ import isep.aisafe.infrastructure.persistence.PersistenceContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Year;
 
 /**
  * Controller for registering aircraft in an air transport company's fleet.
@@ -164,6 +165,53 @@ public class RegisterAircraftController {
             final String engineModelName,
             final String engineModelManufacturer) {
 
+        return registerAircraft(
+                registration,
+                registrationCountry,
+                operationalStatus,
+                Year.now().getValue(),
+                crewSize,
+                economySeats,
+                businessSeats,
+                firstClassSeats,
+                aircraftModelName,
+                aircraftModelManufacturer,
+                engineModelName,
+                engineModelManufacturer
+        );
+    }
+
+    /**
+     * Registers an aircraft with an explicit operational status and manufacture year.
+     *
+     * @param registration the aircraft registration number
+     * @param registrationCountry the aircraft registration country
+     * @param operationalStatus the initial operational status
+     * @param manufactureYear the aircraft manufacture year
+     * @param crewSize the crew size
+     * @param economySeats the number of economy seats
+     * @param businessSeats the number of business seats
+     * @param firstClassSeats the number of first class seats
+     * @param aircraftModelName the aircraft model name
+     * @param aircraftModelManufacturer the aircraft model manufacturer
+     * @param engineModelName the engine model name
+     * @param engineModelManufacturer the engine model manufacturer
+     * @return the registered aircraft
+     */
+    public Aircraft registerAircraft(
+            final String registration,
+            final String registrationCountry,
+            final String operationalStatus,
+            final int manufactureYear,
+            final int crewSize,
+            final int economySeats,
+            final int businessSeats,
+            final int firstClassSeats,
+            final String aircraftModelName,
+            final String aircraftModelManufacturer,
+            final String engineModelName,
+            final String engineModelManufacturer) {
+
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
 
         final AircraftRegistration aircraftRegistration = AircraftRegistration.valueOf(registration);
@@ -206,7 +254,8 @@ public class RegisterAircraftController {
                 crewSize,
                 company,
                 aircraftModel,
-                engineModel
+                engineModel,
+                manufactureYear
         );
 
         return aircraftRepository.save(aircraft);

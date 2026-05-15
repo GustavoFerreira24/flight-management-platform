@@ -2,6 +2,7 @@ package isep.aisafe.app.backoffice.console.presentation.aircraft;
 
 import isep.aisafe.application.aircraft.RegisterAircraftController;
 
+import java.time.Year;
 import java.util.List;
 import java.util.Scanner;
 
@@ -40,6 +41,7 @@ public class RegisterAircraftUI {
             final String registration = readAircraftRegistration();
             final String registrationCountry = readCountry();
             final String operationalStatus = readOperationalStatus();
+            final int manufactureYear = readManufactureYear();
 
             final int crewSize = readPositiveInt("Crew size: ");
             String aircraftModelDesignator;
@@ -63,6 +65,7 @@ public class RegisterAircraftUI {
                     registration,
                     registrationCountry,
                     operationalStatus,
+                    manufactureYear,
                     crewSize,
                     cabinConfiguration[0],
                     cabinConfiguration[1],
@@ -193,6 +196,20 @@ public class RegisterAircraftUI {
             }
 
             System.out.println("Invalid value. It must be greater than zero.");
+        }
+    }
+
+    private int readManufactureYear() {
+        final int currentYear = Year.now().getValue();
+
+        while (true) {
+            final int value = readInt("Manufacture year: ");
+
+            if (value >= 1903 && value <= currentYear) {
+                return value;
+            }
+
+            System.out.println("Invalid manufacture year. Enter a year between 1903 and " + currentYear + ".");
         }
     }
 
