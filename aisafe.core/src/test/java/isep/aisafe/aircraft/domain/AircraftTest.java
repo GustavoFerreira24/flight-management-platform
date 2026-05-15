@@ -14,6 +14,7 @@ import isep.aisafe.enginemodel.domain.EngineType;
 import isep.aisafe.enginemodel.domain.FuelType;
 import org.junit.jupiter.api.Test;
 
+import java.time.Year;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,9 +51,63 @@ class AircraftTest {
         assertEquals(CabinConfiguration.valueOf(150, 12, 0), aircraft.cabinConfiguration());
         assertEquals(AircraftOperationalStatus.active(), aircraft.operationalStatus());
         assertEquals(6, aircraft.crewSize());
+        assertEquals(Year.now().getValue(), aircraft.manufactureYear());
+        assertEquals(0, aircraft.ageInYears());
         assertEquals(company, aircraft.company());
         assertEquals(aircraftModel, aircraft.aircraftModel());
         assertEquals(engineModel, aircraft.engineModel());
+    }
+
+    @Test
+    void ensureAircraftManufactureYearIsAccepted() {
+        final EngineModel engineModel = engineModel("LEAP-AGE", "CFM International");
+        final AircraftModel aircraftModel = aircraftModel("A320age", "Airbus", 186, engineModel);
+        final int manufactureYear = Year.now().getValue() - 8;
+
+        final Aircraft aircraft = new Aircraft(
+                AircraftRegistration.valueOf("CS-AGE"),
+                AircraftRegistrationCountry.valueOf("Portugal"),
+                CabinConfiguration.valueOf(150, 12, 0),
+                AircraftOperationalStatus.active(),
+                6,
+                company("TAP Air Portugal", "Portugal", "TP", "TAP"),
+                aircraftModel,
+                engineModel,
+                manufactureYear
+        );
+
+        assertEquals(manufactureYear, aircraft.manufactureYear());
+        assertEquals(8, aircraft.ageInYears());
+    }
+
+    @Test
+    void ensureInvalidManufactureYearIsRejected() {
+        final EngineModel engineModel = engineModel("LEAP-YEAR", "CFM International");
+        final AircraftModel aircraftModel = aircraftModel("A320year", "Airbus", 186, engineModel);
+
+        assertThrows(IllegalArgumentException.class, () -> new Aircraft(
+                AircraftRegistration.valueOf("CS-Y01"),
+                AircraftRegistrationCountry.valueOf("Portugal"),
+                CabinConfiguration.valueOf(150, 12, 0),
+                AircraftOperationalStatus.active(),
+                6,
+                company("TAP Air Portugal", "Portugal", "TP", "TAP"),
+                aircraftModel,
+                engineModel,
+                1902
+        ));
+
+        assertThrows(IllegalArgumentException.class, () -> new Aircraft(
+                AircraftRegistration.valueOf("CS-Y02"),
+                AircraftRegistrationCountry.valueOf("Portugal"),
+                CabinConfiguration.valueOf(150, 12, 0),
+                AircraftOperationalStatus.active(),
+                6,
+                company("TAP Air Portugal", "Portugal", "TP", "TAP"),
+                aircraftModel,
+                engineModel,
+                Year.now().getValue() + 1
+        ));
     }
 
     @Test

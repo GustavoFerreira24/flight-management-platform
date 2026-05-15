@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 import java.io.Serializable;
+import java.time.Year;
 
 /**
  * Represents an aircraft registered in an air transport company's fleet.
@@ -48,6 +49,9 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
 
     @Column(nullable = false)
     private int crewSize;
+
+    @Column(nullable = false)
+    private int manufactureYear;
 
     @ManyToOne(optional = false)
     private AirTransportCompany company;
@@ -86,6 +90,43 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
             final AircraftModel aircraftModel,
             final EngineModel engineModel) {
 
+        this(
+                registration,
+                registrationCountry,
+                cabinConfiguration,
+                operationalStatus,
+                crewSize,
+                company,
+                aircraftModel,
+                engineModel,
+                Year.now().getValue()
+        );
+    }
+
+    /**
+     * Creates a new aircraft with its manufacture year.
+     *
+     * @param registration the aircraft registration
+     * @param registrationCountry the aircraft registration country
+     * @param cabinConfiguration the cabin seat configuration
+     * @param operationalStatus the aircraft operational status
+     * @param crewSize the aircraft crew size
+     * @param company the owning air transport company
+     * @param aircraftModel the aircraft model
+     * @param engineModel the engine model installed in the aircraft
+     * @param manufactureYear the aircraft manufacture year
+     */
+    public Aircraft(
+            final AircraftRegistration registration,
+            final AircraftRegistrationCountry registrationCountry,
+            final CabinConfiguration cabinConfiguration,
+            final AircraftOperationalStatus operationalStatus,
+            final int crewSize,
+            final AirTransportCompany company,
+            final AircraftModel aircraftModel,
+            final EngineModel engineModel,
+            final int manufactureYear) {
+
         Preconditions.nonNull(registration, "Aircraft registration cannot be null.");
         Preconditions.nonNull(registrationCountry, "Aircraft registration country cannot be null.");
         Preconditions.nonNull(cabinConfiguration, "Cabin configuration cannot be null.");
@@ -94,6 +135,11 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
         Preconditions.nonNull(company, "Air transport company cannot be null.");
         Preconditions.nonNull(aircraftModel, "Aircraft model cannot be null.");
         Preconditions.nonNull(engineModel, "Engine model cannot be null.");
+        Preconditions.ensure(manufactureYear >= 1903, "Manufacture year cannot be before 1903.");
+        Preconditions.ensure(
+                manufactureYear <= Year.now().getValue(),
+                "Manufacture year cannot be in the future."
+        );
         Preconditions.ensure(
                 cabinConfiguration.totalSeats() <= aircraftModel.passengerCapacity(),
                 "Total number of seats cannot exceed aircraft model passenger capacity."
@@ -111,6 +157,7 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
         this.company = company;
         this.aircraftModel = aircraftModel;
         this.engineModel = engineModel;
+        this.manufactureYear = manufactureYear;
     }
 
     @Override
@@ -175,6 +222,14 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
 
     public int crewSize() {
         return crewSize;
+    }
+
+    public int manufactureYear() {
+        return manufactureYear;
+    }
+
+    public int ageInYears() {
+        return Year.now().getValue() - manufactureYear;
     }
 
     public AirTransportCompany company() {
