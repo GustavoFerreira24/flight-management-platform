@@ -1,36 +1,112 @@
 @startuml
-skinparam {
-    BackgroundColor white
-    RoundCorner 8
-    Shadowing false
-    Handwritten false
-    ClassAttributeIconSize 0
-
-    ClassBackgroundColor white
-    ClassBorderColor #495057
-    ClassFontSize 12
-
-    ClassBackgroundColor<<UI>> #E7F5FF
-    ClassBorderColor<<UI>> #228BE6
-
-    ClassBackgroundColor<<Controller>> #EBFBEE
-    ClassBorderColor<<Controller>> #40C057
-
-    ClassBackgroundColor<<Aggregate Root>> #FFF9DB
-    ClassBorderColor<<Aggregate Root>> #FAB005
-
-    ClassBackgroundColor<<Value Object>> #FFF4E6
-    ClassBorderColor<<Value Object>> #FD7E14
-}
-
-hide circle
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
 
 class DecommissionAircraftUI <<UI>> {
-    + show()
+    - controller : DecommissionAircraftController
+    - scanner : Scanner
+    + show() : void
 }
 
 class DecommissionAircraftController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - aircraftRepository : AircraftRepository
+    - airTransportCompanyRepository : AirTransportCompanyRepository
+    - customerCollaboratorRepository : CustomerCollaboratorRepository
+    - pendingFlightsService : PendingAircraftFlightsService
     + decommissionAircraft(registration : String) : Aircraft
+    + decommissionableAircraft() : List<Aircraft>
+    - authenticatedCollaboratorCompany() : AirTransportCompany
+}
+
+class Aircraft <<Aggregate Root>> {
+    - registration : AircraftRegistration
+    - registrationCountry : AircraftRegistrationCountry
+    - cabinConfiguration : CabinConfiguration
+    - operationalStatus : AircraftOperationalStatus
+    - crewSize : int
+    - company : AirTransportCompany
+    - aircraftModel : AircraftModel
+    - engineModel : EngineModel
+    + identity() : AircraftRegistration
+    + registration() : AircraftRegistration
+    + operationalStatus() : AircraftOperationalStatus
+    + company() : AirTransportCompany
+    + aircraftModel() : AircraftModel
+    + decommission() : void
+    + isDecommissioned() : boolean
+    + canBeUsedForFlights() : boolean
+}
+
+class AircraftRegistration <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AircraftRegistration
+}
+
+class AircraftRegistrationCountry <<Value Object>>
+class CabinConfiguration <<Value Object>>
+
+class AircraftOperationalStatus <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AircraftOperationalStatus
+    + active() : AircraftOperationalStatus
+    + decommissioned() : AircraftOperationalStatus
+    + isDecommissioned() : boolean
+}
+
+class AirTransportCompany <<Aggregate Root>> {
+    - name : String
+    - iataCode : IATACode
+    - icaoCode : ICAOCode
+    + identity() : IATACode
+}
+
+class AircraftModel <<Aggregate Root>> {
+    - designator : AircraftModelDesignator
+    + identity() : AircraftModelDesignator
+}
+
+class EngineModel <<Aggregate Root>> {
+    - designator : EngineModelDesignator
+    + identity() : EngineModelDesignator
+}
+
+class CustomerCollaborator <<Aggregate Root>> {
+    - email : CollaboratorEmail
+    - customerReference : CustomerReference
+    - systemUsername : SystemUsername
+    + identity() : CollaboratorEmail
+    + customerReference() : CustomerReference
+}
+
+class CustomerReference <<Value Object>> {
+    - customerType : CustomerType
+    - customerIdentity : String
+    + airTransportCompany(customerIdentity : String) : CustomerReference
+    + customerType() : CustomerType
+    + customerIdentity() : String
+}
+
+class IATACode <<Value Object>>
+class ICAOCode <<Value Object>>
+class AircraftModelDesignator <<Value Object>>
+class EngineModelDesignator <<Value Object>>
+class CollaboratorEmail <<Value Object>>
+class SystemUsername <<Value Object>>
+enum CustomerType
+
+interface AircraftRepository <<Repository>> {
+    + findByRegistration(registration : AircraftRegistration) : Optional<Aircraft>
+    + findByCompany(company : AirTransportCompany) : Iterable<Aircraft>
+    + save(entity : Aircraft) : Aircraft
+}
+
+interface AirTransportCompanyRepository <<Repository>> {
+    + findByIataCode(iataCode : IATACode) : Optional<AirTransportCompany>
+}
+
+interface CustomerCollaboratorRepository <<Repository>> {
+    + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
 }
 
 interface PendingAircraftFlightsService {
@@ -41,43 +117,33 @@ class NoPendingAircraftFlightsService {
     + hasPendingFlights(aircraft : Aircraft) : boolean
 }
 
-interface AircraftRepository {
-    + findByRegistration(registration : AircraftRegistration) : Optional<Aircraft>
-    + findByCompany(company : AirTransportCompany) : Iterable<Aircraft>
-    + save(aircraft : Aircraft) : Aircraft
-}
-
-interface AirTransportCompanyRepository
-interface CustomerCollaboratorRepository
-
-class Aircraft <<Aggregate Root>> {
-    - registration : AircraftRegistration
-    - operationalStatus : AircraftOperationalStatus
-    + decommission()
-    + isDecommissioned() : boolean
-    + canBeUsedForFlights() : boolean
-}
-
-class AircraftRegistration <<Value Object>>
-class AircraftOperationalStatus <<Value Object>> {
-    + active() : AircraftOperationalStatus
-    + decommissioned() : AircraftOperationalStatus
-    + isDecommissioned() : boolean
-}
-
-class AirTransportCompany <<Aggregate Root>>
-class CustomerCollaborator
-
 DecommissionAircraftUI --> DecommissionAircraftController
 DecommissionAircraftController --> AircraftRepository
 DecommissionAircraftController --> AirTransportCompanyRepository
 DecommissionAircraftController --> CustomerCollaboratorRepository
 DecommissionAircraftController --> PendingAircraftFlightsService
+DecommissionAircraftController --> Aircraft
 NoPendingAircraftFlightsService ..|> PendingAircraftFlightsService
 
 Aircraft *-- AircraftRegistration
+Aircraft *-- AircraftRegistrationCountry
+Aircraft *-- CabinConfiguration
 Aircraft *-- AircraftOperationalStatus
 Aircraft --> AirTransportCompany
-CustomerCollaborator --> AirTransportCompany
+Aircraft --> AircraftModel
+Aircraft --> EngineModel
+
+AirTransportCompany *-- IATACode
+AirTransportCompany *-- ICAOCode
+AircraftModel *-- AircraftModelDesignator
+EngineModel *-- EngineModelDesignator
+CustomerCollaborator *-- CollaboratorEmail
+CustomerCollaborator *-- CustomerReference
+CustomerCollaborator *-- SystemUsername
+CustomerReference *-- CustomerType
+
+AircraftRepository ..> Aircraft
+AirTransportCompanyRepository ..> AirTransportCompany
+CustomerCollaboratorRepository ..> CustomerCollaborator
 
 @enduml

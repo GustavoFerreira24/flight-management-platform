@@ -1,0 +1,9 @@
+flight TP123 regular {
+  leg {
+    departure OPO at 2026-05-10T10:00;
+    arrival LIS at 2026-05-10T11:00;
+    route OPO -> LIS;
+    segment (41.0,-8.0) -> (38.0,-9.0) @;
+    fuel 5000 kg;
+  }
+}

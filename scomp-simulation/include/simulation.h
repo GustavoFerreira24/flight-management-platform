@@ -3,7 +3,7 @@
 
 #include <sys/types.h>
 
-#define MAX_FLIGHTS 8
+#define MAX_FLIGHTS 64
 #define SIMULATION_STEPS 5
 
 typedef struct {
