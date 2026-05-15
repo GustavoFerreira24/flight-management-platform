@@ -1,6 +1,7 @@
 #include "position_history.h"
 
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 static position_update_t make_update(int flight_id, int step) {
@@ -90,6 +91,8 @@ int main(void) {
     test_store_position_update_rejects_invalid_step();
     test_store_position_update_rejects_invalid_flight_index();
     test_store_position_update_rejects_null_arguments();
+
+    printf("PASS test_position_history\n");
 
     return 0;
 }

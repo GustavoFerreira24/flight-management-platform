@@ -130,7 +130,7 @@ AIRPORT_CODE
 NUMBER      : '-'? DIGIT+ ('.' DIGIT+)?;
 WIND_UNIT   : M '/' S;
 UNIT        : K G | LITRE | M | F T | K M | N M;
-IDENTIFIER  : [A-Za-z_][A-Za-z0-9_-]*;
+IDENTIFIER  : [A-Za-z_][A-Za-z0-9_.-]*;
 
 ARROW       : '->';
 LBRACE      : '{';

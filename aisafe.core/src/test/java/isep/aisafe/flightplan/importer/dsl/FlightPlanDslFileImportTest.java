@@ -4,10 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -178,9 +180,54 @@ class FlightPlanDslFileImportTest {
         assertTrue(semanticResult.errors().stream().anyMatch(error -> error.message().contains("Route origin")));
     }
 
+    @Test
+    void ensureValidResourceFlightPlanFilesAreAccepted() throws IOException, URISyntaxException {
+        final List<Path> validFiles = List.of(
+                resourcePath("/flightplan/valid/simple-direct-flight.fpl"),
+                resourcePath("/flightplan/valid/complex-multi-leg-flight.fpl"),
+                resourcePath("/flightplan/valid/comments-and-mixed-case.fpl")
+        );
+
+        for (Path validFile : validFiles) {
+            final FlightPlanParseResult result = validator.validate(validFile);
+
+            assertTrue(result.isValid(), () -> "Expected valid sample: " + validFile + " errors: " + result.errors());
+            assertNotNull(result.flightPlan());
+            assertFalse(result.flightPlan().legs().isEmpty());
+        }
+    }
+
+    @Test
+    void ensureInvalidResourceFlightPlanFilesAreRejected() throws IOException, URISyntaxException {
+        assertResourceErrorType("/flightplan/invalid/lexical-unexpected-character.fpl", FlightPlanDslErrorType.LEXICAL);
+        assertResourceErrorType("/flightplan/invalid/syntax-missing-semicolon.fpl", FlightPlanDslErrorType.SYNTACTIC);
+        assertResourceErrorType("/flightplan/invalid/syntax-unknown-unit.fpl", FlightPlanDslErrorType.SYNTACTIC);
+        assertResourceErrorType("/flightplan/invalid/semantic-invalid-dates.fpl", FlightPlanDslErrorType.SEMANTIC);
+        assertResourceErrorType("/flightplan/invalid/semantic-route-mismatch.fpl", FlightPlanDslErrorType.SEMANTIC);
+        assertResourceErrorType("/flightplan/invalid/semantic-duplicate-metadata.fpl", FlightPlanDslErrorType.SEMANTIC);
+        assertResourceErrorType("/flightplan/invalid/semantic-segment-values.fpl", FlightPlanDslErrorType.SEMANTIC);
+    }
+
     private Path writeFlightPlan(final String fileName, final String source) throws IOException {
         final Path file = temporaryDirectory.resolve(fileName);
         Files.writeString(file, source);
         return file;
+    }
+
+    private void assertResourceErrorType(final String resource, final FlightPlanDslErrorType expectedType)
+            throws IOException, URISyntaxException {
+
+        final Path file = resourcePath(resource);
+        final FlightPlanParseResult result = validator.validate(file);
+
+        assertFalse(result.isValid(), () -> "Expected invalid sample: " + file);
+        assertFalse(result.errors().isEmpty());
+        assertEquals(expectedType, result.errors().getFirst().type());
+        assertNull(result.parseTree());
+        assertNull(result.flightPlan());
+    }
+
+    private Path resourcePath(final String resource) throws URISyntaxException {
+        return Path.of(Objects.requireNonNull(getClass().getResource(resource), resource + " not found").toURI());
     }
 }

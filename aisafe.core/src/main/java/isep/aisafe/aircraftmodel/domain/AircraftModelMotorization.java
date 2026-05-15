@@ -1,6 +1,7 @@
 package isep.aisafe.aircraftmodel.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -15,9 +16,7 @@ public class AircraftModelMotorization implements ValueObject, Serializable {
     }
 
     private AircraftModelMotorization(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft model motorization cannot be empty.");
-        }
+        Preconditions.ensure(value != null && !value.trim().isEmpty(), "Aircraft model motorization cannot be empty.");
 
         this.value = normalize(value);
     }

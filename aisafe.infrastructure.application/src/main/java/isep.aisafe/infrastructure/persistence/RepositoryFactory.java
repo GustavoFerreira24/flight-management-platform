@@ -9,6 +9,7 @@ import isep.aisafe.airport.domain.AirportRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
+import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 
 /**
  * Factory contract for repositories used by the application layer.
@@ -85,5 +86,12 @@ public interface RepositoryFactory {
      * @return aircraft repository
      */
     AircraftRepository aircraft();
+
+    /**
+     * Returns the repository for weather data aggregates.
+     *
+     * @return weather data repository
+     */
+    WeatherDataRepository weatherData();
 
 }

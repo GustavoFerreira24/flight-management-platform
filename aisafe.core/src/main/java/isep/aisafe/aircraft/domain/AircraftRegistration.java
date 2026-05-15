@@ -1,6 +1,7 @@
 package isep.aisafe.aircraft.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -23,17 +24,14 @@ public class AircraftRegistration implements ValueObject, Comparable<AircraftReg
     }
 
     private AircraftRegistration(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft registration cannot be empty.");
-        }
+        Preconditions.ensure(value != null && !value.trim().isEmpty(), "Aircraft registration cannot be empty.");
 
         final String normalizedValue = value.trim().toUpperCase();
 
-        if (!normalizedValue.matches("[A-Z0-9][A-Z0-9-]{1,9}")) {
-            throw new IllegalArgumentException(
-                    "Aircraft registration must have 2 to 10 letters, digits or hyphens."
-            );
-        }
+        Preconditions.ensure(
+                normalizedValue.matches("[A-Z0-9][A-Z0-9-]{1,9}"),
+                "Aircraft registration must have 2 to 10 letters, digits or hyphens."
+        );
 
         this.value = normalizedValue;
     }

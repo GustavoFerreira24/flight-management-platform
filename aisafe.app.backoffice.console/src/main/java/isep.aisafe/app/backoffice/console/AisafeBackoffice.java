@@ -37,44 +37,30 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
 
         final Scanner scanner = new Scanner(System.in);
 
-        while (showAccessOptions(scanner)) {
-            // Return here after each authenticated area logs out.
+        while (showLoginOptions(scanner)) {
+            // Return here after each authenticated user logs out.
         }
 
         System.out.println("Exiting application.");
     }
 
-    private boolean showAccessOptions(final Scanner scanner) {
+    private boolean showLoginOptions(final Scanner scanner) {
         System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║                    AISafe Console Login                    ║");
+        System.out.println("║                      AISafe Console                        ║");
         System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║ 1 - Backoffice / Admin login                               ║");
-        System.out.println("║ 2 - Air Company Collaborator login                         ║");
-        System.out.println("║ 3 - Exit                                                   ║");
+        System.out.println("║ 1 - Login                                                  ║");
+        System.out.println("║ 2 - Exit                                                   ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.print("Option: ");
 
         final String option = scanner.nextLine();
 
         if ("1".equals(option)) {
-            if (loginFor("Backoffice / Admin", scanner, AisafePermissions.USER_MANAGEMENT)) {
-                while (showBackofficeOptions(scanner)) {
-                    // Keep the authenticated backoffice session open until logout.
-                }
-            }
+            loginAndShowAuthorizedMenu(scanner);
             return true;
         }
 
         if ("2".equals(option)) {
-            if (loginFor("Air Company Collaborator", scanner, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
-                while (showAirCompanyOptions(scanner)) {
-                    // Keep the authenticated air-company session open until logout.
-                }
-            }
-            return true;
-        }
-
-        if ("3".equals(option)) {
             return false;
         }
 
@@ -82,36 +68,54 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         return true;
     }
 
-    private boolean loginFor(final String accessArea, final Scanner scanner, final Role... allowedRoles) {
+    private void loginAndShowAuthorizedMenu(final Scanner scanner) {
         System.out.println();
-        System.out.println(accessArea + " login");
 
         final LoginUI loginUI = new LoginUI(new AuthenticationCredentialHandler(), scanner);
 
         if (!loginUI.show()) {
-            return false;
+            return;
         }
 
-        try {
-            new AisafeAuthorizationService().ensureAuthenticatedUserHasAnyOf(allowedRoles);
-            return true;
-        } catch (RuntimeException e) {
-            System.out.println("Authenticated user is not allowed to access " + accessArea + ".");
-            return false;
+        final AisafeAuthorizationService authz = new AisafeAuthorizationService();
+        System.out.println("Logged in as: " + authz.authenticatedUsername());
+
+        if (hasPermission(AisafePermissions.USER_REGISTRATION)) {
+            while (showAdminOptions(scanner)) {
+                // Keep the authenticated admin session open until logout.
+            }
+            return;
         }
+
+        if (hasPermission(AisafePermissions.BACKOFFICE_CONFIGURATION)) {
+            while (showBackofficeOptions(scanner)) {
+                // Keep the authenticated backoffice session open until logout.
+            }
+            return;
+        }
+
+        if (hasPermission(AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            while (showAirCompanyOptions(scanner)) {
+                // Keep the authenticated air-company session open until logout.
+            }
+            return;
+        }
+
+        System.out.println("Authenticated user has no console menu available.");
     }
 
-    private boolean showBackofficeOptions(final Scanner scanner) {
+    private boolean hasPermission(final Role... roles) {
+        return AuthzRegistry.authorizationService().session()
+                .map(session -> session.authenticatedUser().hasAny(roles))
+                .orElse(false);
+    }
+
+    private boolean showAdminOptions(final Scanner scanner) {
         System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║               Backoffice Management Console                ║");
+        System.out.println("║                  Admin Management Console                  ║");
         System.out.println("╠════════════════════════════════════════════════════════════╣");
         System.out.println("║ 1 - Register Backoffice User                               ║");
-        System.out.println("║ 2 - Register Aircraft Model                        (US55)  ║");
-        System.out.println("║ 3 - Register Engine Model                          (US56)  ║");
-        System.out.println("║ 4 - Register Air Transport Company                 (US60)  ║");
-        System.out.println("║ 5 - Register Air Control Area                      (US50)  ║");
-        System.out.println("║ 6 - Register Airport                               (US52)  ║");
-        System.out.println("║ 7 - Logout                                                 ║");
+        System.out.println("║ 2 - Logout                                                 ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.print("Option: ");
 
@@ -123,31 +127,55 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("2".equals(option)) {
+            System.out.println("Returning to login menu.");
+            return false;
+        }
+
+        System.out.println("Unknown option.");
+        return true;
+    }
+
+    private boolean showBackofficeOptions(final Scanner scanner) {
+        System.out.println("╔════════════════════════════════════════════════════════════╗");
+        System.out.println("║               Backoffice Management Console                ║");
+        System.out.println("╠════════════════════════════════════════════════════════════╣");
+        System.out.println("║ 1 - Register Aircraft Model                        (US55)  ║");
+        System.out.println("║ 2 - Register Engine Model                          (US56)  ║");
+        System.out.println("║ 3 - Register Air Transport Company                 (US60)  ║");
+        System.out.println("║ 4 - Register Air Control Area                      (US50)  ║");
+        System.out.println("║ 5 - Register Airport                               (US52)  ║");
+        System.out.println("║ 6 - Logout                                                 ║");
+        System.out.println("╚════════════════════════════════════════════════════════════╝");
+        System.out.print("Option: ");
+
+        final String option = scanner.nextLine();
+
+        if ("1".equals(option)) {
             new RegisterAircraftModelUI(scanner).show();
             return true;
         }
 
-        if ("3".equals(option)) {
+        if ("2".equals(option)) {
             new RegisterEngineModelUI(scanner).show();
             return true;
         }
 
-        if ("4".equals(option)) {
+        if ("3".equals(option)) {
             new RegisterAirTransportCompanyUI(scanner).show();
             return true;
         }
 
-        if ("5".equals(option)) {
+        if ("4".equals(option)) {
             new RegisterAirControlAreaUI(scanner).show();
             return true;
         }
 
-        if ("6".equals(option)) {
+        if ("5".equals(option)) {
             new RegisterAirportUI(scanner).show();
             return true;
         }
 
-        if ("7".equals(option)) {
+        if ("6".equals(option)) {
             System.out.println("Returning to login menu.");
             return false;
         }

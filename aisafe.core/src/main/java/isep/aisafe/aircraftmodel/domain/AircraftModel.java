@@ -1,6 +1,7 @@
 package isep.aisafe.aircraftmodel.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 import isep.aisafe.enginemodel.domain.EngineModel;
 import isep.aisafe.enginemodel.domain.EngineModelDesignator;
 
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @Entity
@@ -77,15 +79,9 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
             final int passengerCapacity,
             final Collection<EngineModel> certifiedEngineModels) {
 
-        if (designator == null) {
-            throw new IllegalArgumentException("Aircraft model designator cannot be null.");
-        }
-        if (type == null) {
-            throw new IllegalArgumentException("Aircraft model type cannot be null.");
-        }
-        if (motorization == null) {
-            throw new IllegalArgumentException("Aircraft model motorization cannot be null.");
-        }
+        Preconditions.nonNull(designator, "Aircraft model designator cannot be null.");
+        Preconditions.nonNull(type, "Aircraft model type cannot be null.");
+        Preconditions.nonNull(motorization, "Aircraft model motorization cannot be null.");
         ensurePositive(maxRange, "Maximum range");
         ensurePositive(emptyWeight, "Empty weight");
         ensurePositive(mtow, "MTOW");
@@ -96,9 +92,7 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
         ensurePositive(wingArea, "Wing area");
         ensurePositive(dragCoefficient, "Drag coefficient");
         ensurePositive(liftCoefficient, "Lift coefficient");
-        if (passengerCapacity <= 0) {
-            throw new IllegalArgumentException("Passenger capacity must be greater than zero.");
-        }
+        Preconditions.isPositive(passengerCapacity, "Passenger capacity must be greater than zero.");
 
         this.designator = designator;
         this.type = type;
@@ -115,9 +109,10 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
         this.liftCoefficient = liftCoefficient;
         this.passengerCapacity = passengerCapacity;
 
-        if (certifiedEngineModels == null || certifiedEngineModels.isEmpty()) {
-            throw new IllegalArgumentException("Aircraft model must have at least one certified engine model.");
-        }
+        Preconditions.ensure(
+                certifiedEngineModels != null && !certifiedEngineModels.isEmpty(),
+                "Aircraft model must have at least one certified engine model."
+        );
 
         for (EngineModel engineModel : certifiedEngineModels) {
             addCertifiedVariant(engineModel);
@@ -125,9 +120,7 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
     }
 
     public void addCertifiedVariant(final EngineModel engineModel) {
-        if (engineModel == null) {
-            throw new IllegalArgumentException("Engine model cannot be null.");
-        }
+        Preconditions.nonNull(engineModel, "Engine model cannot be null.");
 
         ensureEngineModelNotDuplicated(engineModel.identity());
         ensureEngineTypeCompatibility(engineModel);
@@ -152,9 +145,7 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
     }
 
     private void ensurePositive(final double value, final String fieldName) {
-        if (value <= 0) {
-            throw new IllegalArgumentException(fieldName + " must be greater than zero.");
-        }
+        Preconditions.ensure(value > 0, fieldName + " must be greater than zero.");
     }
 
     @Override
@@ -178,6 +169,24 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
 
     public int passengerCapacity() {
         return passengerCapacity;
+    }
+
+    /**
+     * Returns a short operational description suitable for selection lists.
+     *
+     * @return aircraft model summary
+     */
+    public String description() {
+        return String.format(
+                Locale.ROOT,
+                "Type: %s; motorization: %s; range: %.0f km; capacity: %d passengers; cruise: %.0f km/h; certified engines: %d",
+                type,
+                motorization,
+                maxRange,
+                passengerCapacity,
+                cruiseSpeed,
+                certifiedVariants.size()
+        );
     }
 
     /**

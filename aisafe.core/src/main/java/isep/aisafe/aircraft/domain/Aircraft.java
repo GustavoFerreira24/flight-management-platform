@@ -86,48 +86,22 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
             final AircraftModel aircraftModel,
             final EngineModel engineModel) {
 
-
-        if (registration == null) {
-            throw new IllegalArgumentException("Aircraft registration cannot be null.");
-        }
-
-        if (registrationCountry == null) {
-            throw new IllegalArgumentException("Aircraft registration country cannot be null.");
-        }
-
-        if (cabinConfiguration == null) {
-            throw new IllegalArgumentException("Cabin configuration cannot be null.");
-        }
-
-        if (operationalStatus == null) {
-            throw new IllegalArgumentException("Aircraft operational status cannot be null.");
-        }
-
-        if (crewSize <= 0) {
-            throw new IllegalArgumentException("Crew size must be greater than zero.");
-        }
-
-        if (company == null) {
-            throw new IllegalArgumentException("Air transport company cannot be null.");
-        }
-
-        if (aircraftModel == null) {
-            throw new IllegalArgumentException("Aircraft model cannot be null.");
-        }
-
-        if (engineModel == null) {
-            throw new IllegalArgumentException("Engine model cannot be null.");
-        }
-
-        if (cabinConfiguration.totalSeats() > aircraftModel.passengerCapacity()) {
-            throw new IllegalArgumentException(
-                    "Total number of seats cannot exceed aircraft model passenger capacity."
-            );
-        }
-
-        if (!aircraftModel.hasCertifiedEngineModel(engineModel)) {
-            throw new IllegalArgumentException("Engine model is not certified for this aircraft model.");
-        }
+        Preconditions.nonNull(registration, "Aircraft registration cannot be null.");
+        Preconditions.nonNull(registrationCountry, "Aircraft registration country cannot be null.");
+        Preconditions.nonNull(cabinConfiguration, "Cabin configuration cannot be null.");
+        Preconditions.nonNull(operationalStatus, "Aircraft operational status cannot be null.");
+        Preconditions.isPositive(crewSize, "Crew size must be greater than zero.");
+        Preconditions.nonNull(company, "Air transport company cannot be null.");
+        Preconditions.nonNull(aircraftModel, "Aircraft model cannot be null.");
+        Preconditions.nonNull(engineModel, "Engine model cannot be null.");
+        Preconditions.ensure(
+                cabinConfiguration.totalSeats() <= aircraftModel.passengerCapacity(),
+                "Total number of seats cannot exceed aircraft model passenger capacity."
+        );
+        Preconditions.ensure(
+                aircraftModel.hasCertifiedEngineModel(engineModel),
+                "Engine model is not certified for this aircraft model."
+        );
 
         this.registration = registration;
         this.registrationCountry = registrationCountry;

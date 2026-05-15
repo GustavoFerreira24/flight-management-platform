@@ -1,6 +1,7 @@
 package isep.aisafe.enginemodel.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -15,9 +16,7 @@ public class FuelType implements ValueObject, Serializable {
     }
 
     private FuelType(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Fuel type cannot be empty.");
-        }
+        Preconditions.ensure(value != null && !value.trim().isEmpty(), "Fuel type cannot be empty.");
 
         this.value = value.trim().replaceAll("\\s+", " ").toUpperCase();
     }

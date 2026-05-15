@@ -1,6 +1,7 @@
 package isep.aisafe.aircontrolarea.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -28,13 +29,8 @@ public class MinimumFuelRequirement implements ValueObject, Serializable {
     }
 
     private MinimumFuelRequirement(final double amount, final FuelUnit unit) {
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Minimum fuel amount must be greater than zero.");
-        }
-
-        if (unit == null) {
-            throw new IllegalArgumentException("Fuel unit is required.");
-        }
+        Preconditions.ensure(amount > 0, "Minimum fuel amount must be greater than zero.");
+        Preconditions.nonNull(unit, "Fuel unit is required.");
 
         this.amount = amount;
         this.unit = unit;

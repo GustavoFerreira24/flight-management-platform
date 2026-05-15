@@ -1,6 +1,7 @@
 package isep.aisafe.customercollaborator.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
@@ -24,15 +25,11 @@ public class CollaboratorEmail implements ValueObject, Comparable<CollaboratorEm
     }
 
     private CollaboratorEmail(final String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Collaborator email is required.");
-        }
+        Preconditions.ensure(value != null && !value.isBlank(), "Collaborator email is required.");
 
         final String normalized = value.trim().toLowerCase();
 
-        if (!EMAIL_PATTERN.matcher(normalized).matches()) {
-            throw new IllegalArgumentException("Collaborator email format is invalid.");
-        }
+        Preconditions.ensure(EMAIL_PATTERN.matcher(normalized).matches(), "Collaborator email format is invalid.");
 
         this.value = normalized;
     }

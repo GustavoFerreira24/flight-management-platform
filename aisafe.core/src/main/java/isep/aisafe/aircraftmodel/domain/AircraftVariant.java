@@ -1,5 +1,6 @@
 package isep.aisafe.aircraftmodel.domain;
 
+import eapli.framework.validations.Preconditions;
 import isep.aisafe.enginemodel.domain.EngineModel;
 import isep.aisafe.enginemodel.domain.EngineModelDesignator;
 import jakarta.persistence.Entity;
@@ -25,9 +26,7 @@ public class AircraftVariant implements Serializable {
     }
 
     private AircraftVariant(final EngineModel engineModel) {
-        if (engineModel == null) {
-            throw new IllegalArgumentException("Engine model cannot be null for an aircraft variant.");
-        }
+        Preconditions.nonNull(engineModel, "Engine model cannot be null for an aircraft variant.");
 
         this.variantId = UUID.randomUUID().toString();
         this.engineModel = engineModel;

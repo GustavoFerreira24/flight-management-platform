@@ -121,6 +121,18 @@ class RegisterAircraftControllerTest {
     }
 
     @Test
+    void ensureExistingAircraftRegistrationCanBeCheckedBeforeRegistration() {
+        final Fixture fixture = new Fixture("tap.existing@aisafe.com");
+        fixture.bootstrapValidCompanyCollaboratorModelAndEngine();
+
+        fixture.registerValidAircraft("CS-CHK");
+
+        assertArrayEquals(AisafePermissions.AIR_COMPANY_CONFIGURATION, fixture.authz.requestedRoles());
+        assertTrue(fixture.controller().aircraftRegistrationExists("CS-CHK"));
+        assertFalse(fixture.controller().aircraftRegistrationExists("CS-NEW"));
+    }
+
+    @Test
     void ensureUnknownAircraftModelIsRejected() {
         final Fixture fixture = new Fixture("tap.model@aisafe.com");
         fixture.bootstrapValidCompanyCollaboratorModelAndEngine();

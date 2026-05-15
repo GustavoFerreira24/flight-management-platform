@@ -1,6 +1,7 @@
 package isep.aisafe.aircraft.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -29,21 +30,13 @@ public class CabinConfiguration implements ValueObject, Serializable {
             final int businessSeats,
             final int firstClassSeats) {
 
-        if (economySeats < 0) {
-            throw new IllegalArgumentException("Economy seats cannot be negative.");
-        }
-
-        if (businessSeats < 0) {
-            throw new IllegalArgumentException("Business seats cannot be negative.");
-        }
-
-        if (firstClassSeats < 0) {
-            throw new IllegalArgumentException("First class seats cannot be negative.");
-        }
-
-        if (economySeats + businessSeats + firstClassSeats <= 0) {
-            throw new IllegalArgumentException("Cabin configuration must have at least one seat.");
-        }
+        Preconditions.nonNegative(economySeats, "Economy seats cannot be negative.");
+        Preconditions.nonNegative(businessSeats, "Business seats cannot be negative.");
+        Preconditions.nonNegative(firstClassSeats, "First class seats cannot be negative.");
+        Preconditions.ensure(
+                economySeats + businessSeats + firstClassSeats > 0,
+                "Cabin configuration must have at least one seat."
+        );
 
         this.economySeats = economySeats;
         this.businessSeats = businessSeats;

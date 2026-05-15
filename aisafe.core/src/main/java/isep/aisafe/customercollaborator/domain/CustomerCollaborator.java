@@ -1,6 +1,7 @@
 package isep.aisafe.customercollaborator.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -70,18 +71,9 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
 
         ensureNotBlank(firstName, "Collaborator first name is required.");
         ensureNotBlank(lastName, "Collaborator last name is required.");
-
-        if (email == null) {
-            throw new IllegalArgumentException("Collaborator email is required.");
-        }
-
-        if (customerReference == null) {
-            throw new IllegalArgumentException("Customer collaborator must be associated with a customer.");
-        }
-
-        if (systemUsername == null) {
-            throw new IllegalArgumentException("Collaborator system username is required.");
-        }
+        Preconditions.nonNull(email, "Collaborator email is required.");
+        Preconditions.nonNull(customerReference, "Customer collaborator must be associated with a customer.");
+        Preconditions.nonNull(systemUsername, "Collaborator system username is required.");
 
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
@@ -92,9 +84,7 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
     }
 
     private void ensureNotBlank(final String value, final String message) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(message);
-        }
+        Preconditions.ensure(value != null && !value.isBlank(), message);
     }
 
     @Override

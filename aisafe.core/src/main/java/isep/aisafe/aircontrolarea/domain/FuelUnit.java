@@ -1,6 +1,7 @@
 package isep.aisafe.aircontrolarea.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -20,15 +21,11 @@ public class FuelUnit implements ValueObject, Serializable {
     }
 
     private FuelUnit(final String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Fuel unit is required.");
-        }
+        Preconditions.ensure(value != null && !value.isBlank(), "Fuel unit is required.");
 
         final String normalized = value.trim().toUpperCase();
 
-        if (!normalized.matches("KG|L")) {
-            throw new IllegalArgumentException("Fuel unit must be KG or L.");
-        }
+        Preconditions.ensure(normalized.matches("KG|L"), "Fuel unit must be KG or L.");
 
         this.value = normalized;
     }

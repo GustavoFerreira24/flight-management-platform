@@ -1,6 +1,7 @@
 package isep.aisafe.customercollaborator.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
@@ -22,9 +23,7 @@ public class SystemUsername implements ValueObject, Serializable {
     }
 
     private SystemUsername(final String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("System username is required.");
-        }
+        Preconditions.ensure(value != null && !value.isBlank(), "System username is required.");
 
         this.value = value.trim().toLowerCase();
     }
