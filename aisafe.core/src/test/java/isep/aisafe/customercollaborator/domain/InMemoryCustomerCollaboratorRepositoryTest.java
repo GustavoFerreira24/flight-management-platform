@@ -2,10 +2,11 @@ package isep.aisafe.customercollaborator.domain;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryCustomerCollaboratorRepositoryTest {
-
     /**
      * Purpose: verify the in-memory repository lookup needed by application tests.
      * Scenario: save a collaborator and search by the same email.
