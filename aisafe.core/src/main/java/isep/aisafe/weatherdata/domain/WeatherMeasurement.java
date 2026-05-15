@@ -1,6 +1,7 @@
 package isep.aisafe.weatherdata.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
@@ -56,29 +57,12 @@ public class WeatherMeasurement implements ValueObject, Serializable {
             final double altitude,
             final WeatherCoordinates coordinates) {
 
-        if (provider == null) {
-            throw new IllegalArgumentException("Weather provider is required.");
-        }
-
-        if (parameter == null) {
-            throw new IllegalArgumentException("Weather parameter is required.");
-        }
-
-        if (unit == null) {
-            throw new IllegalArgumentException("Weather unit is required.");
-        }
-
-        if (!parameter.isCompatibleWith(unit)) {
-            throw new IllegalArgumentException("Weather unit is not compatible with parameter.");
-        }
-
-        if (coordinates == null) {
-            throw new IllegalArgumentException("Weather coordinates are required.");
-        }
-
-        if (altitude < 0) {
-            throw new IllegalArgumentException("Altitude cannot be negative.");
-        }
+        Preconditions.nonNull(provider, "Weather provider is required.");
+        Preconditions.nonNull(parameter, "Weather parameter is required.");
+        Preconditions.nonNull(unit, "Weather unit is required.");
+        Preconditions.ensure(parameter.isCompatibleWith(unit), "Weather unit is not compatible with parameter.");
+        Preconditions.nonNull(coordinates, "Weather coordinates are required.");
+        Preconditions.ensure(altitude >= 0, "Altitude cannot be negative.");
 
         validateValue(parameter, value);
 
@@ -91,25 +75,26 @@ public class WeatherMeasurement implements ValueObject, Serializable {
     }
 
     private void validateValue(final WeatherParameter parameter, final double value) {
-        if ("TEMPERATURE".equals(parameter.name()) && (value < -100 || value > 70)) {
-            throw new IllegalArgumentException("Temperature must be between -100 and 70 C.");
-        }
-
-        if ("WIND_SPEED".equals(parameter.name()) && value < 0) {
-            throw new IllegalArgumentException("Wind speed cannot be negative.");
-        }
-
-        if ("WIND_DIRECTION".equals(parameter.name()) && (value < 0 || value > 360)) {
-            throw new IllegalArgumentException("Wind direction must be between 0 and 360 degrees.");
-        }
-
-        if ("PRESSURE".equals(parameter.name()) && (value < 800 || value > 1100)) {
-            throw new IllegalArgumentException("Pressure must be between 800 and 1100 hPa.");
-        }
-
-        if ("HUMIDITY".equals(parameter.name()) && (value < 0 || value > 100)) {
-            throw new IllegalArgumentException("Humidity must be between 0 and 100 percent.");
-        }
+        Preconditions.ensure(
+                !"TEMPERATURE".equals(parameter.name()) || (value >= -100 && value <= 70),
+                "Temperature must be between -100 and 70 C."
+        );
+        Preconditions.ensure(
+                !"WIND_SPEED".equals(parameter.name()) || value >= 0,
+                "Wind speed cannot be negative."
+        );
+        Preconditions.ensure(
+                !"WIND_DIRECTION".equals(parameter.name()) || (value >= 0 && value <= 360),
+                "Wind direction must be between 0 and 360 degrees."
+        );
+        Preconditions.ensure(
+                !"PRESSURE".equals(parameter.name()) || (value >= 800 && value <= 1100),
+                "Pressure must be between 800 and 1100 hPa."
+        );
+        Preconditions.ensure(
+                !"HUMIDITY".equals(parameter.name()) || (value >= 0 && value <= 100),
+                "Humidity must be between 0 and 100 percent."
+        );
     }
 
     public WeatherProvider provider() {

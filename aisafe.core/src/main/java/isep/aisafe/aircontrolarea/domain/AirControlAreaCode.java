@@ -1,6 +1,7 @@
 package isep.aisafe.aircontrolarea.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
@@ -20,15 +21,14 @@ public class AirControlAreaCode implements ValueObject, Comparable<AirControlAre
     }
 
     private AirControlAreaCode(final String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Air control area code is required.");
-        }
+        Preconditions.ensure(value != null && !value.isBlank(), "Air control area code is required.");
 
         final String normalized = value.trim().toUpperCase();
 
-        if (!normalized.matches("[A-Z0-9]{2,10}")) {
-            throw new IllegalArgumentException("Air control area code must have 2 to 10 letters or digits.");
-        }
+        Preconditions.ensure(
+                normalized.matches("[A-Z0-9]{2,10}"),
+                "Air control area code must have 2 to 10 letters or digits."
+        );
 
         this.value = normalized;
     }

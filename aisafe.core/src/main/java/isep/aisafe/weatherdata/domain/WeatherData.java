@@ -1,6 +1,7 @@
 package isep.aisafe.weatherdata.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CollectionTable;
@@ -54,13 +55,8 @@ public class WeatherData implements AggregateRoot<WeatherDataId>, Serializable {
     }
 
     public WeatherData(final LocalDate day, final AirControlAreaCode airControlAreaCode) {
-        if (day == null) {
-            throw new IllegalArgumentException("Weather data day is required.");
-        }
-
-        if (airControlAreaCode == null) {
-            throw new IllegalArgumentException("Air control area code is required.");
-        }
+        Preconditions.nonNull(day, "Weather data day is required.");
+        Preconditions.nonNull(airControlAreaCode, "Air control area code is required.");
 
         this.day = day;
         this.airControlAreaCode = airControlAreaCode;

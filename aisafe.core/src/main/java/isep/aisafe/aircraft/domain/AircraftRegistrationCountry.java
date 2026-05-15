@@ -1,6 +1,7 @@
 package isep.aisafe.aircraft.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -23,9 +24,10 @@ public class AircraftRegistrationCountry implements ValueObject, Serializable {
     }
 
     private AircraftRegistrationCountry(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft registration country cannot be empty.");
-        }
+        Preconditions.ensure(
+                value != null && !value.trim().isEmpty(),
+                "Aircraft registration country cannot be empty."
+        );
 
         this.value = value.trim().replaceAll("\\s+", " ");
     }

@@ -1,6 +1,7 @@
 package isep.aisafe.aircontrolarea.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -28,29 +29,30 @@ public class GeographicBoundary implements ValueObject, Serializable {
             final double minLongitude,
             final double maxLongitude) {
 
-        if (minLatitude < -90 || minLatitude > 90) {
-            throw new IllegalArgumentException("Minimum latitude must be between -90 and 90.");
-        }
-
-        if (maxLatitude < -90 || maxLatitude > 90) {
-            throw new IllegalArgumentException("Maximum latitude must be between -90 and 90.");
-        }
-
-        if (minLongitude < -180 || minLongitude > 180) {
-            throw new IllegalArgumentException("Minimum longitude must be between -180 and 180.");
-        }
-
-        if (maxLongitude < -180 || maxLongitude > 180) {
-            throw new IllegalArgumentException("Maximum longitude must be between -180 and 180.");
-        }
-
-        if (minLatitude >= maxLatitude) {
-            throw new IllegalArgumentException("Minimum latitude must be lower than maximum latitude.");
-        }
-
-        if (minLongitude >= maxLongitude) {
-            throw new IllegalArgumentException("Minimum longitude must be lower than maximum longitude.");
-        }
+        Preconditions.ensure(
+                minLatitude >= -90 && minLatitude <= 90,
+                "Minimum latitude must be between -90 and 90."
+        );
+        Preconditions.ensure(
+                maxLatitude >= -90 && maxLatitude <= 90,
+                "Maximum latitude must be between -90 and 90."
+        );
+        Preconditions.ensure(
+                minLongitude >= -180 && minLongitude <= 180,
+                "Minimum longitude must be between -180 and 180."
+        );
+        Preconditions.ensure(
+                maxLongitude >= -180 && maxLongitude <= 180,
+                "Maximum longitude must be between -180 and 180."
+        );
+        Preconditions.ensure(
+                minLatitude < maxLatitude,
+                "Minimum latitude must be lower than maximum latitude."
+        );
+        Preconditions.ensure(
+                minLongitude < maxLongitude,
+                "Minimum longitude must be lower than maximum longitude."
+        );
 
         this.minLatitude = minLatitude;
         this.maxLatitude = maxLatitude;

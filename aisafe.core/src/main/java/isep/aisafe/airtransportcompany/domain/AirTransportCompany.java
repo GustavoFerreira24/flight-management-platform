@@ -1,6 +1,7 @@
 package isep.aisafe.airtransportcompany.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -60,21 +61,10 @@ public class AirTransportCompany implements AggregateRoot<IATACode>, Serializabl
             final IATACode iataCode,
             final ICAOCode icaoCode) {
 
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Company name cannot be empty.");
-        }
-
-        if (country == null) {
-            throw new IllegalArgumentException("Country cannot be null.");
-        }
-
-        if (iataCode == null) {
-            throw new IllegalArgumentException("IATA code cannot be null.");
-        }
-
-        if (icaoCode == null) {
-            throw new IllegalArgumentException("ICAO code cannot be null.");
-        }
+        Preconditions.ensure(name != null && !name.trim().isEmpty(), "Company name cannot be empty.");
+        Preconditions.nonNull(country, "Country cannot be null.");
+        Preconditions.nonNull(iataCode, "IATA code cannot be null.");
+        Preconditions.nonNull(icaoCode, "ICAO code cannot be null.");
 
         this.name = name.trim().replaceAll("\\s+", " ");
         this.country = country;

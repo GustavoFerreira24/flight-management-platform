@@ -1,6 +1,7 @@
 package isep.aisafe.aircraftmodel.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -15,9 +16,7 @@ public class AircraftModelDesignator implements ValueObject, Serializable, Compa
     }
 
     private AircraftModelDesignator(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft model designator cannot be empty.");
-        }
+        Preconditions.ensure(value != null && !value.trim().isEmpty(), "Aircraft model designator cannot be empty.");
 
         this.value = normalize(value);
     }
@@ -27,13 +26,11 @@ public class AircraftModelDesignator implements ValueObject, Serializable, Compa
     }
 
     public static AircraftModelDesignator valueOf(final String modelName, final String manufacturer) {
-        if (modelName == null || modelName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft model name cannot be empty.");
-        }
-
-        if (manufacturer == null || manufacturer.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft model manufacturer cannot be empty.");
-        }
+        Preconditions.ensure(modelName != null && !modelName.trim().isEmpty(), "Aircraft model name cannot be empty.");
+        Preconditions.ensure(
+                manufacturer != null && !manufacturer.trim().isEmpty(),
+                "Aircraft model manufacturer cannot be empty."
+        );
 
         return new AircraftModelDesignator(modelName.trim() + " | " + manufacturer.trim());
     }

@@ -1,6 +1,7 @@
 package isep.aisafe.weatherdata.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -24,13 +25,8 @@ public class WeatherDataId implements ValueObject, Comparable<WeatherDataId>, Se
     }
 
     private WeatherDataId(final LocalDate day, final AirControlAreaCode airControlAreaCode) {
-        if (day == null) {
-            throw new IllegalArgumentException("Weather data day is required.");
-        }
-
-        if (airControlAreaCode == null) {
-            throw new IllegalArgumentException("Air control area code is required.");
-        }
+        Preconditions.nonNull(day, "Weather data day is required.");
+        Preconditions.nonNull(airControlAreaCode, "Air control area code is required.");
 
         value = day + "|" + airControlAreaCode;
     }

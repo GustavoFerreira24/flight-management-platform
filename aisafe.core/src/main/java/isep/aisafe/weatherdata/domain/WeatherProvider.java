@@ -1,6 +1,7 @@
 package isep.aisafe.weatherdata.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -28,13 +29,8 @@ public class WeatherProvider implements ValueObject, Serializable {
     }
 
     private WeatherProvider(final String name, final WeatherProviderType type) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Weather provider name is required.");
-        }
-
-        if (type == null) {
-            throw new IllegalArgumentException("Weather provider type is required.");
-        }
+        Preconditions.ensure(name != null && !name.isBlank(), "Weather provider name is required.");
+        Preconditions.nonNull(type, "Weather provider type is required.");
 
         this.name = name.trim().replaceAll("\\s+", " ");
         this.type = type;

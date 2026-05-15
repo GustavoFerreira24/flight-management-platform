@@ -1,6 +1,7 @@
 package isep.aisafe.aircraftmodel.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -15,9 +16,7 @@ public class AircraftModelType implements ValueObject, Serializable {
     }
 
     private AircraftModelType(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft model type cannot be empty.");
-        }
+        Preconditions.ensure(value != null && !value.trim().isEmpty(), "Aircraft model type cannot be empty.");
 
         this.value = value.trim().replaceAll("\\s+", " ").toUpperCase();
     }

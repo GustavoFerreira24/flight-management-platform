@@ -1,6 +1,7 @@
 package isep.aisafe.enginemodel.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -15,9 +16,7 @@ public class EngineModelDesignator implements ValueObject, Serializable, Compara
     }
 
     private EngineModelDesignator(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Engine model designator cannot be empty.");
-        }
+        Preconditions.ensure(value != null && !value.trim().isEmpty(), "Engine model designator cannot be empty.");
 
         this.value = normalize(value);
     }
@@ -27,13 +26,11 @@ public class EngineModelDesignator implements ValueObject, Serializable, Compara
     }
 
     public static EngineModelDesignator valueOf(final String modelName, final String manufacturer) {
-        if (modelName == null || modelName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Engine model name cannot be empty.");
-        }
-
-        if (manufacturer == null || manufacturer.trim().isEmpty()) {
-            throw new IllegalArgumentException("Engine model manufacturer cannot be empty.");
-        }
+        Preconditions.ensure(modelName != null && !modelName.trim().isEmpty(), "Engine model name cannot be empty.");
+        Preconditions.ensure(
+                manufacturer != null && !manufacturer.trim().isEmpty(),
+                "Engine model manufacturer cannot be empty."
+        );
 
         return new EngineModelDesignator(modelName.trim() + " | " + manufacturer.trim());
     }

@@ -1,6 +1,7 @@
 package isep.aisafe.weatherdata.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -31,9 +32,7 @@ public class WeatherParameter implements ValueObject, Serializable {
     }
 
     private WeatherParameter(final String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Weather parameter is required.");
-        }
+        Preconditions.ensure(name != null && !name.isBlank(), "Weather parameter is required.");
 
         final String normalized = name.trim().replace('-', '_').replace(' ', '_').toUpperCase();
         if (!COMPATIBLE_UNITS.containsKey(normalized)) {

@@ -1,6 +1,7 @@
 package isep.aisafe.customercollaborator.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -28,13 +29,8 @@ public class CustomerReference implements ValueObject, Serializable {
     }
 
     private CustomerReference(final CustomerType customerType, final String customerIdentity) {
-        if (customerType == null) {
-            throw new IllegalArgumentException("Customer type is required.");
-        }
-
-        if (customerIdentity == null || customerIdentity.isBlank()) {
-            throw new IllegalArgumentException("Customer identity is required.");
-        }
+        Preconditions.nonNull(customerType, "Customer type is required.");
+        Preconditions.ensure(customerIdentity != null && !customerIdentity.isBlank(), "Customer identity is required.");
 
         this.customerType = customerType;
         this.customerIdentity = customerIdentity.trim().toUpperCase();

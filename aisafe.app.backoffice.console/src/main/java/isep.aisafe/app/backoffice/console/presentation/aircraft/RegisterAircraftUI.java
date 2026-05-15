@@ -42,9 +42,19 @@ public class RegisterAircraftUI {
             final String operationalStatus = readOperationalStatus();
 
             final int crewSize = readPositiveInt("Crew size: ");
-            final int[] cabinConfiguration = readCabinConfiguration();
+            String aircraftModelDesignator;
+            int[] cabinConfiguration;
 
-            final String aircraftModelDesignator = readAircraftModelDesignator();
+            while (true) {
+                aircraftModelDesignator = readAircraftModelDesignator();
+                final int passengerCapacity = controller.aircraftModelPassengerCapacity(aircraftModelDesignator);
+                cabinConfiguration = readCabinConfiguration(aircraftModelDesignator, passengerCapacity);
+
+                if (cabinConfiguration != null) {
+                    break;
+                }
+            }
+
             final String engineModelDesignator = readCertifiedEngineModelDesignator(aircraftModelDesignator);
             final String[] aircraftModelParts = splitDesignator(aircraftModelDesignator, "aircraft model");
             final String[] engineModelParts = splitDesignator(engineModelDesignator, "engine model");
@@ -77,6 +87,11 @@ public class RegisterAircraftUI {
             ).trim().toUpperCase();
 
             if (registration.matches("[A-Z0-9][A-Z0-9-]{1,9}")) {
+                if (controller.aircraftRegistrationExists(registration)) {
+                    System.out.println("Aircraft registration already exists. Please enter a different registration.");
+                    continue;
+                }
+
                 return registration;
             }
 
@@ -181,17 +196,52 @@ public class RegisterAircraftUI {
         }
     }
 
-    private int[] readCabinConfiguration() {
+    private int[] readCabinConfiguration(final String aircraftModelDesignator, final int passengerCapacity) {
         while (true) {
             final int economySeats = readNonNegativeInt("Economy seats: ");
             final int businessSeats = readNonNegativeInt("Business seats: ");
             final int firstClassSeats = readNonNegativeInt("First class seats: ");
+            final int totalSeats = economySeats + businessSeats + firstClassSeats;
 
-            if (economySeats + businessSeats + firstClassSeats > 0) {
+            if (totalSeats > 0 && totalSeats <= passengerCapacity) {
                 return new int[] { economySeats, businessSeats, firstClassSeats };
             }
 
-            System.out.println("Cabin configuration must have at least one seat. Please enter the seats again.");
+            if (totalSeats == 0) {
+                System.out.println("Cabin configuration must have at least one seat. Please enter the seats again.");
+                continue;
+            }
+
+            System.out.println(
+                    "Total seats (" + totalSeats + ") exceed the passenger capacity of "
+                            + aircraftModelDesignator + " (" + passengerCapacity + ")."
+            );
+
+            if (readCabinCapacityAction()) {
+                continue;
+            }
+
+            return null;
+        }
+    }
+
+    private boolean readCabinCapacityAction() {
+        while (true) {
+            System.out.println("What do you want to do?");
+            System.out.println("1 - Enter seats again");
+            System.out.println("2 - Choose another aircraft model");
+            System.out.print("Option: ");
+
+            final String option = scanner.nextLine().trim();
+
+            if ("1".equals(option)) {
+                return true;
+            }
+            if ("2".equals(option)) {
+                return false;
+            }
+
+            System.out.println("Invalid option. Choose 1 or 2.");
         }
     }
 
@@ -214,7 +264,7 @@ public class RegisterAircraftUI {
             throw new IllegalStateException("There are no aircraft models registered.");
         }
 
-        return readOptionFromList("Aircraft model:", aircraftModelDesignators);
+        return readAircraftModelOptionFromList(aircraftModelDesignators);
     }
 
     private String readCertifiedEngineModelDesignator(final String aircraftModelDesignator) {
@@ -224,7 +274,55 @@ public class RegisterAircraftUI {
             throw new IllegalStateException("The selected aircraft model has no certified engine models.");
         }
 
-        return readOptionFromList("Certified engine model:", engineModelDesignators);
+        return readCertifiedEngineModelOptionFromList(aircraftModelDesignator, engineModelDesignators);
+    }
+
+    private String readAircraftModelOptionFromList(final List<String> options) {
+        while (true) {
+            System.out.println("Aircraft model:");
+
+            for (int i = 0; i < options.size(); i++) {
+                final String aircraftModelDesignator = options.get(i);
+
+                System.out.println((i + 1) + " - " + aircraftModelDesignator);
+                System.out.println("    " + controller.aircraftModelDescription(aircraftModelDesignator));
+            }
+
+            final int selectedOption = readInt("Option: ");
+
+            if (selectedOption >= 1 && selectedOption <= options.size()) {
+                return options.get(selectedOption - 1);
+            }
+
+            System.out.println("Invalid option. Choose a number between 1 and " + options.size() + ".");
+        }
+    }
+
+    private String readCertifiedEngineModelOptionFromList(
+            final String aircraftModelDesignator,
+            final List<String> options) {
+
+        while (true) {
+            System.out.println("Certified engine model:");
+
+            for (int i = 0; i < options.size(); i++) {
+                final String engineModelDesignator = options.get(i);
+
+                System.out.println((i + 1) + " - " + engineModelDesignator);
+                System.out.println("    " + controller.certifiedEngineModelDescription(
+                        aircraftModelDesignator,
+                        engineModelDesignator
+                ));
+            }
+
+            final int selectedOption = readInt("Option: ");
+
+            if (selectedOption >= 1 && selectedOption <= options.size()) {
+                return options.get(selectedOption - 1);
+            }
+
+            System.out.println("Invalid option. Choose a number between 1 and " + options.size() + ".");
+        }
     }
 
     private String readOptionFromList(final String title, final List<String> options) {

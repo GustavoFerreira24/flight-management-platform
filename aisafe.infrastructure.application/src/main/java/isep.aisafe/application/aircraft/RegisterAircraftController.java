@@ -213,6 +213,19 @@ public class RegisterAircraftController {
     }
 
     /**
+     * Checks whether an aircraft registration number is already in use.
+     *
+     * @param registration aircraft registration number
+     * @return true if the registration already exists
+     */
+    public boolean aircraftRegistrationExists(final String registration) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        final AircraftRegistration aircraftRegistration = AircraftRegistration.valueOf(registration);
+        return aircraftRepository.findByRegistration(aircraftRegistration).isPresent();
+    }
+
+    /**
      * Lists existing aircraft model designators available for aircraft registration.
      *
      * @return sorted aircraft model designators
@@ -228,6 +241,42 @@ public class RegisterAircraftController {
 
         designators.sort(String::compareTo);
         return designators;
+    }
+
+    /**
+     * Gets a short description for a selected aircraft model.
+     *
+     * @param aircraftModelDesignatorText selected aircraft model designator
+     * @return aircraft model description
+     */
+    public String aircraftModelDescription(final String aircraftModelDesignatorText) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        final AircraftModelDesignator aircraftModelDesignator =
+                AircraftModelDesignator.valueOf(aircraftModelDesignatorText);
+
+        return aircraftModelRepository
+                .findByDesignator(aircraftModelDesignator)
+                .orElseThrow(() -> new IllegalArgumentException("Aircraft model was not found."))
+                .description();
+    }
+
+    /**
+     * Gets the passenger capacity for a selected aircraft model.
+     *
+     * @param aircraftModelDesignatorText selected aircraft model designator
+     * @return aircraft model passenger capacity
+     */
+    public int aircraftModelPassengerCapacity(final String aircraftModelDesignatorText) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        final AircraftModelDesignator aircraftModelDesignator =
+                AircraftModelDesignator.valueOf(aircraftModelDesignatorText);
+
+        return aircraftModelRepository
+                .findByDesignator(aircraftModelDesignator)
+                .orElseThrow(() -> new IllegalArgumentException("Aircraft model was not found."))
+                .passengerCapacity();
     }
 
     /**
@@ -254,6 +303,37 @@ public class RegisterAircraftController {
 
         designators.sort(String::compareTo);
         return designators;
+    }
+
+    /**
+     * Gets a short description for an engine model certified for the selected aircraft model.
+     *
+     * @param aircraftModelDesignatorText selected aircraft model designator
+     * @param engineModelDesignatorText selected certified engine model designator
+     * @return certified engine model description
+     */
+    public String certifiedEngineModelDescription(
+            final String aircraftModelDesignatorText,
+            final String engineModelDesignatorText) {
+
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        final AircraftModelDesignator aircraftModelDesignator =
+                AircraftModelDesignator.valueOf(aircraftModelDesignatorText);
+        final EngineModelDesignator engineModelDesignator =
+                EngineModelDesignator.valueOf(engineModelDesignatorText);
+
+        final AircraftModel aircraftModel = aircraftModelRepository
+                .findByDesignator(aircraftModelDesignator)
+                .orElseThrow(() -> new IllegalArgumentException("Aircraft model was not found."));
+
+        for (final EngineModel engineModel : aircraftModel.certifiedEngineModels()) {
+            if (engineModel.designator().equals(engineModelDesignator)) {
+                return engineModel.description();
+            }
+        }
+
+        throw new IllegalArgumentException("Engine model is not certified for this aircraft model.");
     }
 
     private AirTransportCompany authenticatedCollaboratorCompany() {

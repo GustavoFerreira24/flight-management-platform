@@ -1,6 +1,7 @@
 package isep.aisafe.aircontrolarea.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -73,21 +74,10 @@ public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serial
             final GeographicBoundary geographicBoundary,
             final MinimumFuelRequirement minimumFuelRequirement) {
 
-        if (code == null) {
-            throw new IllegalArgumentException("Air control area code is required.");
-        }
-
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Air control area name is required.");
-        }
-
-        if (geographicBoundary == null) {
-            throw new IllegalArgumentException("Geographic boundary is required.");
-        }
-
-        if (minimumFuelRequirement == null) {
-            throw new IllegalArgumentException("Minimum fuel requirement is required.");
-        }
+        Preconditions.nonNull(code, "Air control area code is required.");
+        Preconditions.ensure(name != null && !name.isBlank(), "Air control area name is required.");
+        Preconditions.nonNull(geographicBoundary, "Geographic boundary is required.");
+        Preconditions.nonNull(minimumFuelRequirement, "Minimum fuel requirement is required.");
 
         this.code = code;
         this.name = name.trim().replaceAll("\\s+", " ");

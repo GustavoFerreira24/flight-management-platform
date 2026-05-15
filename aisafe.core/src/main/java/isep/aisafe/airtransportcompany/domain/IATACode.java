@@ -1,6 +1,7 @@
 package isep.aisafe.airtransportcompany.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -20,15 +21,11 @@ public class IATACode implements ValueObject, Comparable<IATACode>, Serializable
     }
 
     private IATACode(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("IATA code cannot be empty.");
-        }
+        Preconditions.ensure(value != null && !value.trim().isEmpty(), "IATA code cannot be empty.");
 
         final String normalizedValue = value.trim().toUpperCase();
 
-        if (!normalizedValue.matches("[A-Z]{2}")) {
-            throw new IllegalArgumentException("IATA code must have exactly 2 letters.");
-        }
+        Preconditions.ensure(normalizedValue.matches("[A-Z]{2}"), "IATA code must have exactly 2 letters.");
 
         this.value = normalizedValue;
     }

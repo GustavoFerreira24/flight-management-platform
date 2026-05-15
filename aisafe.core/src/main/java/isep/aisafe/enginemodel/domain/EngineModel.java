@@ -1,6 +1,7 @@
 package isep.aisafe.enginemodel.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -10,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
 import java.io.Serializable;
+import java.util.Locale;
 
 @Entity
 public class EngineModel implements AggregateRoot<EngineModelDesignator>, Serializable {
@@ -49,29 +51,12 @@ public class EngineModel implements AggregateRoot<EngineModelDesignator>, Serial
             final double thrust,
             final double tsfc) {
 
-        if (designator == null) {
-            throw new IllegalArgumentException("Engine model designator cannot be null.");
-        }
-
-        if (engineType == null) {
-            throw new IllegalArgumentException("Engine type cannot be null.");
-        }
-
-        if (fuelType == null) {
-            throw new IllegalArgumentException("Fuel type cannot be null.");
-        }
-
-        if (power <= 0) {
-            throw new IllegalArgumentException("Engine power must be greater than zero.");
-        }
-
-        if (thrust <= 0) {
-            throw new IllegalArgumentException("Engine thrust must be greater than zero.");
-        }
-
-        if (tsfc <= 0) {
-            throw new IllegalArgumentException("Engine TSFC must be greater than zero.");
-        }
+        Preconditions.nonNull(designator, "Engine model designator cannot be null.");
+        Preconditions.nonNull(engineType, "Engine type cannot be null.");
+        Preconditions.nonNull(fuelType, "Fuel type cannot be null.");
+        Preconditions.ensure(power > 0, "Engine power must be greater than zero.");
+        Preconditions.ensure(thrust > 0, "Engine thrust must be greater than zero.");
+        Preconditions.ensure(tsfc > 0, "Engine TSFC must be greater than zero.");
 
         this.designator = designator;
         this.engineType = engineType;
@@ -118,5 +103,22 @@ public class EngineModel implements AggregateRoot<EngineModelDesignator>, Serial
 
     public double tsfc() {
         return tsfc;
+    }
+
+    /**
+     * Returns a short technical description suitable for selection lists.
+     *
+     * @return engine model summary
+     */
+    public String description() {
+        return String.format(
+                Locale.ROOT,
+                "Type: %s; fuel: %s; power: %.2f; thrust: %.2f; TSFC: %.3f",
+                engineType,
+                fuelType,
+                power,
+                thrust,
+                tsfc
+        );
     }
 }

@@ -1,6 +1,7 @@
 package isep.aisafe.weatherdata.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Embeddable;
 
 import java.io.Serializable;
@@ -21,13 +22,8 @@ public class WeatherCoordinates implements ValueObject, Serializable {
     }
 
     private WeatherCoordinates(final double latitude, final double longitude) {
-        if (latitude < -90 || latitude > 90) {
-            throw new IllegalArgumentException("Latitude must be between -90 and 90.");
-        }
-
-        if (longitude < -180 || longitude > 180) {
-            throw new IllegalArgumentException("Longitude must be between -180 and 180.");
-        }
+        Preconditions.ensure(latitude >= -90 && latitude <= 90, "Latitude must be between -90 and 90.");
+        Preconditions.ensure(longitude >= -180 && longitude <= 180, "Longitude must be between -180 and 180.");
 
         this.latitude = latitude;
         this.longitude = longitude;

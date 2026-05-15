@@ -1,6 +1,7 @@
 package isep.aisafe.aircraft.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
@@ -27,17 +28,19 @@ public class AircraftOperationalStatus implements ValueObject, Serializable {
     }
 
     private AircraftOperationalStatus(final String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Aircraft operational status cannot be empty.");
-        }
+        Preconditions.ensure(
+                value != null && !value.trim().isEmpty(),
+                "Aircraft operational status cannot be empty."
+        );
 
         final String normalizedValue = value.trim().toUpperCase();
 
-        if (!normalizedValue.equals(ACTIVE)
-                && !normalizedValue.equals(IN_MAINTENANCE)
-                && !normalizedValue.equals(DECOMMISSIONED)) {
-            throw new IllegalArgumentException("Invalid aircraft operational status.");
-        }
+        Preconditions.ensure(
+                normalizedValue.equals(ACTIVE)
+                        || normalizedValue.equals(IN_MAINTENANCE)
+                        || normalizedValue.equals(DECOMMISSIONED),
+                "Invalid aircraft operational status."
+        );
 
         this.value = normalizedValue;
     }

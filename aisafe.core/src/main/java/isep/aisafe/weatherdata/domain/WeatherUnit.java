@@ -1,6 +1,7 @@
 package isep.aisafe.weatherdata.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import eapli.framework.validations.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -22,9 +23,7 @@ public class WeatherUnit implements ValueObject, Serializable {
     }
 
     private WeatherUnit(final String value) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Weather unit is required.");
-        }
+        Preconditions.ensure(value != null && !value.isBlank(), "Weather unit is required.");
 
         this.value = value.trim().toUpperCase();
     }
