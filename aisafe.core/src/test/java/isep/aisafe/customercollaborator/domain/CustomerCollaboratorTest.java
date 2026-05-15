@@ -164,4 +164,45 @@ class CustomerCollaboratorTest {
         assertFalse(first.sameAs(third));
         assertFalse(first.sameAs("not a collaborator"));
     }
+
+    @Test
+    void ensureCollaboratorIsActiveWhenCreated() {
+
+        final CustomerCollaborator collaborator = buildCollaborator();
+
+        assertTrue(collaborator.isActive());
+    }
+
+    @Test
+    void ensureDisableSetsCollaboratorInactive() {
+
+        final CustomerCollaborator collaborator =
+                buildCollaborator();
+
+        collaborator.disable();
+
+        assertFalse(collaborator.isActive());
+    }
+
+    @Test
+    void ensureEnableSetsCollaboratorActive() {
+
+        final CustomerCollaborator collaborator =
+                buildCollaborator();
+
+        collaborator.enable();
+
+        assertTrue(collaborator.isActive());
+    }
+
+    private CustomerCollaborator buildCollaborator() {
+
+        return new CustomerCollaborator(
+                "John",
+                "Doe",
+                CollaboratorEmail.valueOf("john@test.com"),
+                CustomerReference.airTransportCompany("TP"),
+                SystemUsername.valueOf("john@test.com")
+        );
+    }
 }
