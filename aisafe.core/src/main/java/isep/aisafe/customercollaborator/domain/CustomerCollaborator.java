@@ -46,6 +46,9 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
     @AttributeOverride(name = "value", column = @Column(name = "SYSTEM_USERNAME", nullable = false, unique = true))
     private SystemUsername systemUsername;
 
+    @Column(name = "ACTIVE", nullable = false)
+    private boolean active;
+
     protected CustomerCollaborator() {
     }
 
@@ -85,6 +88,7 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
         this.email = email;
         this.customerReference = customerReference;
         this.systemUsername = systemUsername;
+        this.active = true;
     }
 
     private void ensureNotBlank(final String value, final String message) {
@@ -126,5 +130,17 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
 
     public SystemUsername systemUsername() {
         return systemUsername;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void disable() {
+        this.active = false;
+    }
+
+    public void enable() {
+        this.active = true;
     }
 }
