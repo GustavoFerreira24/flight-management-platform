@@ -1,4 +1,4 @@
-package isep.aisafe.application.listCustomers;
+package isep.aisafe.application.listcustomercollaborators;
 
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
@@ -13,6 +13,18 @@ import isep.aisafe.infrastructure.persistence.PersistenceContext;
 
 import java.util.List;
 
+
+/**
+ * Application service responsible for listing only active {@link CustomerCollaborator}
+ * entities associated with either an Air Transport Company or an Air Control Area.
+ *
+ * This controller enforces authorization rules before accessing collaborator data
+ * and ensures that only active collaborators are returned.
+ *
+ * Responsibilities:
+ *    Retrieve collaborators from the repository
+ *    Filter only active collaborators
+ */
 public class ListCustomerCollaboratorsController {
 
     private final AisafeAuthorizationService authz;
@@ -31,6 +43,16 @@ public class ListCustomerCollaboratorsController {
 
     }
 
+    /**
+     * Full constructor allowing dependency injection (recommended for testing).
+     *
+     * @param authz authorization service used to validate user permissions
+     * @param collaboratorRepository repository of customer collaborators
+     * @param airTransportCompanyRepository repository of air transport companies
+     * @param airControlAreaRepository repository of air control areas
+     * @throws IllegalArgumentException if any dependency is null
+     */
+
     public ListCustomerCollaboratorsController(
             final AisafeAuthorizationService authz,
             final CustomerCollaboratorRepository collaboratorRepository,
@@ -47,6 +69,19 @@ public class ListCustomerCollaboratorsController {
         this.airControlAreaRepository = airControlAreaRepository;
     }
 
+    /**
+     * Retrieves all active collaborators associated with a given Air Transport Company.
+     *
+     * Process:
+     *     Validates that the user has {@link AisafePermissions#USER_MANAGEMENT} permission
+     *     Validates that the Air Transport Company exists
+     *     Fetches collaborators linked to the company
+     *     Filters only active collaborators
+     * @param iataCode IATA code of the Air Transport Company
+     * @return list of active collaborators associated with the company
+     * @throws IllegalArgumentException if the company does not exist
+     */
+
     public List<CustomerCollaborator> listForAirTransportCompany(String iataCode) {
 
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.USER_MANAGEMENT);
@@ -58,6 +93,19 @@ public class ListCustomerCollaboratorsController {
 
         return collaboratorRepository.findByCustomerReference(reference).stream().filter(CustomerCollaborator::isActive).toList();
     }
+
+        /**
+        * Retrieves all active collaborators associated with a given Air Control Area.
+        *
+        * Process:
+        *     Validates that the user has {@link AisafePermissions#BACKOFFICE_CONFIGURATION} permission
+        *     Validates that the Air Control Area exists
+        *     Fetches collaborators linked to the area
+        *     Filters only active collaborators
+        * @param areaCode code of the Air Control Area
+        * @return list of active collaborators associated with the area
+        * @throws IllegalArgumentException if the area does not exist
+        */
 
     public List<CustomerCollaborator> listForAirControlArea(String areaCode) {
 

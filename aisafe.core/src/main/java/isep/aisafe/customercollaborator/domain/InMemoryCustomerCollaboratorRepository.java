@@ -37,4 +37,8 @@ public class InMemoryCustomerCollaboratorRepository
 
         return result;
     }
+
+    public void clear() {
+        data().clear();
+    }
 }

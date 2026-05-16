@@ -58,4 +58,95 @@ class InMemoryCustomerCollaboratorRepositoryTest {
         // Assert
         assertTrue(repository.findBySystemUsername(systemUsername).isPresent());
     }
+
+    @Test
+    void ensureFindByCustomerReferenceOnlyReturnsMatchingReference() {
+
+        final InMemoryCustomerCollaboratorRepository repository =
+                new InMemoryCustomerCollaboratorRepository();
+
+        final CustomerReference tpRef =
+                CustomerReference.airTransportCompany("TP");
+
+        final CustomerReference frRef =
+                CustomerReference.airTransportCompany("FR");
+
+        final CustomerCollaborator tpCollaborator =
+                new CustomerCollaborator(
+                        "John",
+                        "Doe",
+                        CollaboratorEmail.valueOf("john@tp.com"),
+                        tpRef,
+                        SystemUsername.valueOf("john@tp.com")
+                );
+
+        final CustomerCollaborator frCollaborator =
+                new CustomerCollaborator(
+                        "Jane",
+                        "Doe",
+                        CollaboratorEmail.valueOf("jane@fr.com"),
+                        frRef,
+                        SystemUsername.valueOf("jane@fr.com")
+                );
+
+        repository.save(tpCollaborator);
+        repository.save(frCollaborator);
+
+        final List<CustomerCollaborator> result =
+                repository.findByCustomerReference(tpRef);
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains(tpCollaborator));
+    }
+
+    @Test
+    void ensureFindByCustomerReferenceReturnsEmptyWhenRepositoryIsEmpty() {
+
+        final InMemoryCustomerCollaboratorRepository repository =
+                new InMemoryCustomerCollaboratorRepository();
+
+        final List<CustomerCollaborator> result =
+                repository.findByCustomerReference(
+                        CustomerReference.airTransportCompany("TP")
+                );
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void ensureCustomerReferenceTypesAreNotMixed() {
+
+        final InMemoryCustomerCollaboratorRepository repository =
+                new InMemoryCustomerCollaboratorRepository();
+
+        final CustomerCollaborator transportCollaborator =
+                new CustomerCollaborator(
+                        "John",
+                        "Doe",
+                        CollaboratorEmail.valueOf("john@tp.com"),
+                        CustomerReference.airTransportCompany("TP"),
+                        SystemUsername.valueOf("john@tp.com")
+                );
+
+        final CustomerCollaborator controlAreaCollaborator =
+                new CustomerCollaborator(
+                        "Jane",
+                        "Doe",
+                        CollaboratorEmail.valueOf("jane@tp.com"),
+                        CustomerReference.airControlArea("LISACC"),
+                        SystemUsername.valueOf("jane@tp.com")
+                );
+
+        repository.save(transportCollaborator);
+        repository.save(controlAreaCollaborator);
+
+        final List<CustomerCollaborator> result =
+                repository.findByCustomerReference(
+                        CustomerReference.airTransportCompany("TP")
+                );
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains(transportCollaborator));
+        assertFalse(result.contains(controlAreaCollaborator));
+    }
 }

@@ -1,6 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.listCollaborators;
 
-import isep.aisafe.application.listCustomers.ListCustomerCollaboratorsController;
+import isep.aisafe.application.listcustomercollaborators.ListCustomerCollaboratorsController;
 
 import java.util.List;
 import java.util.Scanner;
