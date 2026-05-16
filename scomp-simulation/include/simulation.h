@@ -5,6 +5,7 @@
 
 #define MAX_FLIGHTS 64
 #define SIMULATION_STEPS 5
+#define TIME_STEP_SECONDS 1
 
 typedef struct {
     int flight_id;
