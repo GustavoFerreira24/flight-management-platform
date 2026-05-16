@@ -49,6 +49,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US72 — List Aircraft Fleet
 - [Aircraft Fleet Listing](./us_72/readme.md)
 
+#### US81 — Create a Flight Plan from a File
+- [Flight Plan File Import](./us_81/implementation-notes.md)
+
 #### US83 — Flight DSL Specification and Validation
 - [Flight DSL Specification](./us_83/flight-dsl.md)
 
