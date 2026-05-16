@@ -4,6 +4,7 @@
 #include "position_history.h"
 #include "safety_monitor.h"
 #include "flight_loader.h"
+#include "report.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -323,7 +324,8 @@ static void notify_safety_violations(const safety_scan_result_t *scan_result,
                                      const pid_t child_pids[],
                                      int flight_count,
                                      int reported_violations[MAX_FLIGHTS][MAX_FLIGHTS][SIMULATION_STEPS],
-                                     int *total_violations) {
+                                     int *total_violations,
+                                     simulation_report_t *report) {
     for (int i = 0; i < scan_result->count && !stop_requested; i++) {
         const safety_violation_t *violation = &scan_result->violations[i];
         const int first = violation->first_flight_index;
@@ -346,6 +348,8 @@ static void notify_safety_violations(const safety_scan_result_t *scan_result,
         log_safety_violation(stdout, violation);
         fflush(stdout);
 
+        report_record_violation(report, violation);
+
         kill(child_pids[first], SIGUSR1);
         kill(child_pids[second], SIGUSR1);
 
@@ -365,7 +369,8 @@ static void detect_and_notify_step_violations(const position_history_t *position
                                               int flight_count,
                                               const pid_t child_pids[],
                                               int reported_violations[MAX_FLIGHTS][MAX_FLIGHTS][SIMULATION_STEPS],
-                                              int *total_violations) {
+                                              int *total_violations,
+                                              simulation_report_t *report) {
     safety_scan_result_t scan_result;
 
     if (scan_safety_violations(position_history, flight_count, step, &scan_result) == -1) {
@@ -378,7 +383,8 @@ static void detect_and_notify_step_violations(const position_history_t *position
                              child_pids,
                              flight_count,
                              reported_violations,
-                             total_violations);
+                             total_violations,
+                             report);
 }
 
 static int release_flights_for_step(int control_pipes[][2], int flight_count, int step) {
@@ -413,7 +419,8 @@ static void process_simulation_updates(int update_pipes[][2], int control_pipes[
                                         position_history_t *position_history,
                                         const pid_t child_pids[],
                                         int reported_violations[MAX_FLIGHTS][MAX_FLIGHTS][SIMULATION_STEPS],
-                                        int *total_violations) {
+                                        int *total_violations,
+                                        simulation_report_t *report) {
     for (int step = 0; step < SIMULATION_STEPS && !stop_requested; step++) {
         const int simulation_time = step * TIME_STEP_SECONDS;
 
@@ -475,7 +482,8 @@ static void process_simulation_updates(int update_pipes[][2], int control_pipes[
                                                flight_count,
                                                child_pids,
                                                reported_violations,
-                                               total_violations);
+                                               total_violations,
+                                               report);
         }
 
         if (!stop_requested && step < SIMULATION_STEPS - 1) {
@@ -494,6 +502,7 @@ int main(int argc, char *argv[]) {
     position_history_t position_history;
     int reported_violations[MAX_FLIGHTS][MAX_FLIGHTS][SIMULATION_STEPS];
     int total_violations = 0;
+    simulation_report_t report;
 
     if (argc > 2) {
         fprintf(stderr, "usage: %s [flight_csv]\n", argv[0]);
@@ -515,6 +524,7 @@ int main(int argc, char *argv[]) {
     memset(latest_positions, 0, sizeof(latest_positions));
     memset(reported_violations, 0, sizeof(reported_violations));
     init_position_history(&position_history);
+    init_simulation_report(&report);
 
     if (install_stop_handlers() == -1) {
         perror("sigaction");
@@ -539,7 +549,8 @@ int main(int argc, char *argv[]) {
                                &position_history,
                                child_pids,
                                reported_violations,
-                               &total_violations);
+                               &total_violations,
+                               &report);
 
     if (stop_requested) {
         fprintf(stderr, "simulation interrupted, terminating child processes\n");
@@ -550,6 +561,14 @@ int main(int argc, char *argv[]) {
     wait_for_children(child_pids, flight_count);
 
     print_position_history(flights, flight_count, &position_history);
+
+    report_collect_flight_results(&report, flights, flight_count, &position_history, stop_requested);
+
+    if (report_save_to_file(&report, REPORT_FILE_PATH) == 0) {
+        printf("simulation report saved to %s\n", REPORT_FILE_PATH);
+    } else {
+        fprintf(stderr, "failed to save simulation report to %s\n", REPORT_FILE_PATH);
+    }
 
     printf("simulation finished\n");
     return stop_requested ? EXIT_FAILURE : EXIT_SUCCESS;
