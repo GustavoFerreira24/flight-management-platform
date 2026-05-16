@@ -404,7 +404,6 @@ public class AisafeBootstrapper {
         final AirportRepository repository = PersistenceContext.repositories().airports();
         final AirControlAreaRepository areaRepo = PersistenceContext.repositories().airControlAreas();
 
-        // Precisamos de uma área real que já exista no bootstrap
         final AirControlArea lisbonArea = areaRepo.ofIdentity(AirControlAreaCode.valueOf("LISACC"))
                 .orElseThrow(() -> new IllegalStateException("Bootstrap: LISACC area not found"));
 
@@ -423,7 +422,7 @@ public class AisafeBootstrapper {
         );
     }
 
-    private static void registerAirportIfMissing(
+    static Airport registerAirportIfMissing(
             final AirportRepository repository,
             final String icao,
             final String iata,
@@ -439,7 +438,7 @@ public class AisafeBootstrapper {
 
         // Verifica se já existe para não duplicar
         if (repository.ofIdentity(icaoCode).isPresent()) {
-            return;
+            return repository.ofIdentity(icaoCode).get();
         }
 
         // Usamos o Builder que criaste para garantir que as validações de domínio são feitas
@@ -452,5 +451,7 @@ public class AisafeBootstrapper {
 
         repository.save(airport);
         System.out.println("Bootstrapped airport: " + icaoCode);
+
+        return airport;
     }
 }

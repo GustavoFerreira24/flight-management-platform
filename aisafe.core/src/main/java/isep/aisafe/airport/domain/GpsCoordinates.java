@@ -16,4 +16,11 @@ public class GpsCoordinates implements ValueObject {
         this.latitude = lat;
         this.longitude = lon;
     }
+
+    public double latitude() {
+        return latitude;
+    }
+    public double longitude() {
+        return longitude;
+    }
 }

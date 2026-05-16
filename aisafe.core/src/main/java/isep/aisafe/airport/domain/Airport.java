@@ -4,6 +4,7 @@ import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.domain.model.DomainEntities;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 
+import isep.aisafe.airtransportcompany.domain.Country;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -32,6 +33,9 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
     @Column(nullable = false)
     private String name;
 
+    @Embedded
+    private Country country;
+
     @Column(nullable = false)
     private String town;
 
@@ -56,6 +60,7 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
      * @param icao the airport ICAO code
      * @param iata the airport IATA code
      * @param name the airport name
+     * @param country the airport country
      * @param town the airport town
      * @param coords the airport coordinates
      * @param elev the airport elevation
@@ -65,6 +70,7 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
             final AirportICAOCode icao,
             final AirportIATACode iata,
             final String name,
+            final Country country,
             final String town,
             final GpsCoordinates coords,
             final Elevation elev,
@@ -80,6 +86,10 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
 
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Airport name cannot be empty.");
+        }
+
+        if (country == null) {
+            throw new IllegalArgumentException("Airport country cannot be null.");
         }
 
         if (town == null || town.trim().isEmpty()) {
@@ -101,6 +111,7 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
         this.icao = icao;
         this.iata = iata;
         this.name = name.trim().replaceAll("\\s+", " ");
+        this.country = country;
         this.town = town.trim().replaceAll("\\s+", " ");
         this.coordinates = coords;
         this.elevation = elev;
@@ -127,6 +138,10 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
 
     public String name() {
         return name;
+    }
+
+    public Country country() {
+        return country;
     }
 
     public String town() {

@@ -79,6 +79,6 @@ public class AirportBuilder implements DomainFactory<Airport> {
      */
     @Override
     public Airport build() {
-        return new Airport(icao, iata, name, town, coords, elev, area);
+        return new Airport(icao, iata, name, country ,town, coords, elev, area);
     }
 }

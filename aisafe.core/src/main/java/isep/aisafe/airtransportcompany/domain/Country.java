@@ -20,7 +20,7 @@ public class Country implements ValueObject, Serializable {
     protected Country() {
     }
 
-    private Country(final String value) {
+    public Country(final String value) {
         Preconditions.ensure(value != null && !value.trim().isEmpty(), "Country cannot be empty.");
 
         this.value = value.trim().replaceAll("\\s+", " ");

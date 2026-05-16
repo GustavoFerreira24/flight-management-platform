@@ -19,6 +19,10 @@ public class Elevation implements ValueObject {
         this.meters = meters;
     }
 
+    public double meters() {
+        return meters;
+    }
+
     @Override
     public String toString() {
         // Usa Locale.US para garantir que sai "114.0 m" e não "114,0 m"

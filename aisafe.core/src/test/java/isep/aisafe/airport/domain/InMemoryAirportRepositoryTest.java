@@ -1,6 +1,7 @@
 package isep.aisafe.airport.domain;
 
 import isep.aisafe.aircontrolarea.domain.*;
+import isep.aisafe.airtransportcompany.domain.Country;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,6 +65,7 @@ class InMemoryAirportRepositoryTest {
                 AirportICAOCode.valueOf(icao),
                 AirportIATACode.valueOf(iata),
                 name,
+                Country.valueOf("Portugal"),
                 town,
                 new GpsCoordinates(41.248, -8.681),
                 new Elevation(69.0),

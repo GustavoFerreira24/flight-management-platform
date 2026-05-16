@@ -2,6 +2,7 @@ package isep.aisafe.airport.domain;
 
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.airtransportcompany.domain.Country;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,6 +18,7 @@ class AirportTest {
                 AirportICAOCode.valueOf("LPPT"),
                 AirportIATACode.valueOf("LIS"),
                 "Lisbon Airport",
+                new Country("Country"),
                 "Lisbon",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
@@ -37,6 +39,7 @@ class AirportTest {
                 AirportICAOCode.valueOf("TAP"),
                 AirportIATACode.valueOf("LIS"),
                 "Name",
+                new Country("Country"),
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
@@ -50,6 +53,7 @@ class AirportTest {
                 AirportICAOCode.valueOf("LPPT"),
                 AirportIATACode.valueOf("TP"),
                 "Name",
+                new Country("Country"),
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
@@ -63,6 +67,7 @@ class AirportTest {
                 null,
                 AirportIATACode.valueOf("LIS"),
                 "Name",
+                new Country("Country"),
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
@@ -76,6 +81,7 @@ class AirportTest {
                 AirportICAOCode.valueOf("LPPT"),
                 null,
                 "Name",
+                new Country("Country"),
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
@@ -89,6 +95,7 @@ class AirportTest {
                 AirportICAOCode.valueOf("LPPT"),
                 AirportIATACode.valueOf("LIS"),
                 "Name",
+                new Country("Country"),
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
