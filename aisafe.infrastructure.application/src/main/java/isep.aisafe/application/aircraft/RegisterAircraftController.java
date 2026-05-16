@@ -9,6 +9,7 @@ import isep.aisafe.aircraft.domain.CabinConfiguration;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
+import isep.aisafe.aircraftmodel.domain.AircraftVariantService;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.airtransportcompany.domain.IATACode;
@@ -39,6 +40,7 @@ public class RegisterAircraftController {
     private final EngineModelRepository engineModelRepository;
     private final AirTransportCompanyRepository airTransportCompanyRepository;
     private final CustomerCollaboratorRepository customerCollaboratorRepository;
+    private final AircraftVariantService aircraftVariantService;
 
     /**
      * Creates the controller with default services and repositories.
@@ -50,7 +52,8 @@ public class RegisterAircraftController {
                 PersistenceContext.repositories().aircraftModels(),
                 PersistenceContext.repositories().engineModels(),
                 PersistenceContext.repositories().airTransportCompanies(),
-                PersistenceContext.repositories().customerCollaborators()
+                PersistenceContext.repositories().customerCollaborators(),
+                new AircraftVariantService()
         );
     }
 
@@ -61,6 +64,26 @@ public class RegisterAircraftController {
             final EngineModelRepository engineModelRepository,
             final AirTransportCompanyRepository airTransportCompanyRepository,
             final CustomerCollaboratorRepository customerCollaboratorRepository) {
+
+        this(
+                authz,
+                aircraftRepository,
+                aircraftModelRepository,
+                engineModelRepository,
+                airTransportCompanyRepository,
+                customerCollaboratorRepository,
+                new AircraftVariantService()
+        );
+    }
+
+    RegisterAircraftController(
+            final AisafeAuthorizationService authz,
+            final AircraftRepository aircraftRepository,
+            final AircraftModelRepository aircraftModelRepository,
+            final EngineModelRepository engineModelRepository,
+            final AirTransportCompanyRepository airTransportCompanyRepository,
+            final CustomerCollaboratorRepository customerCollaboratorRepository,
+            final AircraftVariantService aircraftVariantService) {
 
         if (authz == null) {
             throw new IllegalArgumentException("Authorization service cannot be null.");
@@ -86,12 +109,17 @@ public class RegisterAircraftController {
             throw new IllegalArgumentException("Customer collaborator repository cannot be null.");
         }
 
+        if (aircraftVariantService == null) {
+            throw new IllegalArgumentException("Aircraft variant service cannot be null.");
+        }
+
         this.authz = authz;
         this.aircraftRepository = aircraftRepository;
         this.aircraftModelRepository = aircraftModelRepository;
         this.engineModelRepository = engineModelRepository;
         this.airTransportCompanyRepository = airTransportCompanyRepository;
         this.customerCollaboratorRepository = customerCollaboratorRepository;
+        this.aircraftVariantService = aircraftVariantService;
     }
 
     /**
@@ -235,6 +263,8 @@ public class RegisterAircraftController {
         final EngineModel engineModel = engineModelRepository
                 .findByDesignator(engineModelDesignator)
                 .orElseThrow(() -> new IllegalArgumentException("Engine model was not found."));
+
+        aircraftVariantService.ensureCertifiedVariant(aircraftModel, engineModel);
 
         final AircraftRegistrationCountry country = AircraftRegistrationCountry.valueOf(registrationCountry);
 

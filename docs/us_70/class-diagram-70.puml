@@ -15,8 +15,13 @@ class RegisterAircraftController <<Controller>> {
     - engineModelRepository : EngineModelRepository
     - airTransportCompanyRepository : AirTransportCompanyRepository
     - customerCollaboratorRepository : CustomerCollaboratorRepository
+    - aircraftVariantService : AircraftVariantService
     + registerAircraft(...) : Aircraft
     - authenticatedCollaboratorCompany() : AirTransportCompany
+}
+
+class AircraftVariantService <<Domain Service>> {
+    + ensureCertifiedVariant(aircraftModel : AircraftModel, engineModel : EngineModel) : void
 }
 
 class Aircraft <<Aggregate Root>> {
@@ -143,7 +148,10 @@ RegisterAircraftController --> AircraftModelRepository
 RegisterAircraftController --> EngineModelRepository
 RegisterAircraftController --> AirTransportCompanyRepository
 RegisterAircraftController --> CustomerCollaboratorRepository
+RegisterAircraftController --> AircraftVariantService
 RegisterAircraftController --> Aircraft
+AircraftVariantService --> AircraftModel
+AircraftVariantService --> EngineModel
 
 Aircraft *-- AircraftRegistration
 Aircraft *-- AircraftRegistrationCountry

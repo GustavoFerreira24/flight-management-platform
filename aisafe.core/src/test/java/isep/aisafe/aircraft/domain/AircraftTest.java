@@ -260,12 +260,12 @@ class AircraftTest {
     }
 
     @Test
-    void ensureEngineModelMustBeCertifiedForAircraftModel() {
+    void ensureAircraftAcceptsEngineModelCertificationValidatedExternally() {
         final EngineModel certifiedEngine = engineModel("LEAP-X2", "CFM International");
         final EngineModel nonCertifiedEngine = engineModel("PW-X2", "Pratt Whitney");
         final AircraftModel aircraftModel = aircraftModel("A319neo", "Airbus", 150, certifiedEngine);
 
-        assertThrows(IllegalArgumentException.class, () -> new Aircraft(
+        final Aircraft aircraft = new Aircraft(
                 AircraftRegistration.valueOf("CS-TVK"),
                 AircraftRegistrationCountry.valueOf("Portugal"),
                 CabinConfiguration.valueOf(120, 10, 0),
@@ -274,7 +274,9 @@ class AircraftTest {
                 company("TAP Air Portugal", "Portugal", "TP", "TAP"),
                 aircraftModel,
                 nonCertifiedEngine
-        ));
+        );
+
+        assertEquals(nonCertifiedEngine, aircraft.engineModel());
     }
 
     @Test

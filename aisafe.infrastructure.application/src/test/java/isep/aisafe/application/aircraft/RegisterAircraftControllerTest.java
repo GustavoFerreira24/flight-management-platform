@@ -8,6 +8,7 @@ import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
 import isep.aisafe.aircraftmodel.domain.AircraftModelType;
+import isep.aisafe.aircraftmodel.domain.AircraftVariantService;
 import isep.aisafe.aircraftmodel.domain.InMemoryAircraftModelRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.Country;
@@ -177,6 +178,32 @@ class RegisterAircraftControllerTest {
     }
 
     @Test
+    void ensureNonCertifiedEngineModelIsRejected() {
+        final Fixture fixture = new Fixture("tap.variant@aisafe.com");
+        fixture.bootstrapValidCompanyCollaboratorModelAndEngine();
+
+        final EngineModel nonCertifiedEngineModel = engineModel("US70-PW1100G", "Pratt Whitney");
+        fixture.engineModelRepository.save(nonCertifiedEngineModel);
+
+        final IllegalArgumentException result = assertThrows(IllegalArgumentException.class, () ->
+                fixture.controller().registerAircraft(
+                        "CS-VAR",
+                        "Portugal",
+                        6,
+                        150,
+                        12,
+                        0,
+                        "US70-A320neo",
+                        "Airbus",
+                        "US70-PW1100G",
+                        "Pratt Whitney"
+                ));
+
+        assertEquals("Engine model is not certified for this aircraft model.", result.getMessage());
+        assertFalse(fixture.aircraftRepository.findByRegistration(AircraftRegistration.valueOf("CS-VAR")).isPresent());
+    }
+
+    @Test
     void ensureAuthenticatedUserMustBeCustomerCollaborator() {
         final Fixture fixture = new Fixture("unknown@aisafe.com");
 
@@ -321,6 +348,26 @@ class RegisterAircraftControllerTest {
                 new InMemoryEngineModelRepository(),
                 new InMemoryAirTransportCompanyRepository(),
                 null
+        ));
+
+        assertThrows(IllegalArgumentException.class, () -> new RegisterAircraftController(
+                authz,
+                new InMemoryAircraftRepository(),
+                new InMemoryAircraftModelRepository(),
+                new InMemoryEngineModelRepository(),
+                new InMemoryAirTransportCompanyRepository(),
+                new InMemoryCustomerCollaboratorRepository(),
+                null
+        ));
+
+        assertDoesNotThrow(() -> new RegisterAircraftController(
+                authz,
+                new InMemoryAircraftRepository(),
+                new InMemoryAircraftModelRepository(),
+                new InMemoryEngineModelRepository(),
+                new InMemoryAirTransportCompanyRepository(),
+                new InMemoryCustomerCollaboratorRepository(),
+                new AircraftVariantService()
         ));
     }
 

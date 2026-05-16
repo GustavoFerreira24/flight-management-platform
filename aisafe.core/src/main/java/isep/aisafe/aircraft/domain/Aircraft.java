@@ -144,10 +144,6 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
                 cabinConfiguration.totalSeats() <= aircraftModel.passengerCapacity(),
                 "Total number of seats cannot exceed aircraft model passenger capacity."
         );
-        Preconditions.ensure(
-                aircraftModel.hasCertifiedEngineModel(engineModel),
-                "Engine model is not certified for this aircraft model."
-        );
 
         this.registration = registration;
         this.registrationCountry = registrationCountry;

@@ -36,8 +36,8 @@ EngineModelRepo --> C : engineModel
 C -> AircraftRepo : existsByRegistration(registration)
 AircraftRepo --> C : false
 
-C -> VariantService : isCertifiedVariant(aircraftModel, engineModel)
-VariantService --> C : true
+C -> VariantService : ensureCertifiedVariant(aircraftModel, engineModel)
+VariantService --> C : certified variant accepted
 
 C -> Aircraft ++ : create(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModel, engineModel)
 
