@@ -253,7 +253,9 @@ static int start_flight_processes(const flight_plan_t flights[], int flight_coun
 
         child_pids[i] = pid;
         close_if_open(update_pipes[i][1]);
+        update_pipes[i][1] = -1;
         close_if_open(control_pipes[i][0]);
+        control_pipes[i][0] = -1;
     }
 
     return 0;
@@ -285,7 +287,9 @@ static void terminate_children(const pid_t child_pids[], int flight_count) {
 static void close_parent_pipes(int update_pipes[][2], int control_pipes[][2], int flight_count) {
     for (int i = 0; i < flight_count; i++) {
         close_if_open(update_pipes[i][0]);
+        update_pipes[i][0] = -1;
         close_if_open(control_pipes[i][1]);
+        control_pipes[i][1] = -1;
     }
 }
 
