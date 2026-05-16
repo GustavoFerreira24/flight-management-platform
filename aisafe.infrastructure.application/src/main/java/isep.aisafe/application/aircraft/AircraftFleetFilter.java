@@ -72,27 +72,37 @@ public class AircraftFleetFilter {
         }
     }
 
+    /**
+     * Returns the aircraft model filter text.
+     *
+     * @return model filter or null if not applied
+     */
     public String model() {
         return model;
     }
 
-    public String maker() {
-        return maker;
-    }
+    /**
+     * Returns the aircraft maker filter text.
+     */
+    public String maker() { return maker; }
 
-    public Integer minimumCapacity() {
-        return minimumCapacity;
-    }
+    /**
+     * Returns the minimum seat capacity filter.
+     */
+    public Integer minimumCapacity() { return minimumCapacity; }
 
-    public Integer maximumCapacity() {
-        return maximumCapacity;
-    }
+    /**
+     * Returns the maximum seat capacity filter.
+     */
+    public Integer maximumCapacity() { return maximumCapacity; }
 
-    public Integer minimumAge() {
-        return minimumAge;
-    }
+    /**
+     * Returns the minimum aircraft age filter (in years).
+     */
+    public Integer minimumAge() { return minimumAge; }
 
-    public Integer maximumAge() {
-        return maximumAge;
-    }
+    /**
+     * Returns the maximum aircraft age filter (in years).
+     */
+    public Integer maximumAge() { return maximumAge; }
 }

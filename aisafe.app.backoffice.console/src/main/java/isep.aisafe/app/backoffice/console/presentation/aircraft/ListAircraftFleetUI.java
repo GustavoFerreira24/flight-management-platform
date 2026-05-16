@@ -58,8 +58,8 @@ public class ListAircraftFleetUI {
             return AircraftFleetFilter.empty();
         }
 
-        final String model = readOptionalText("Model contains: ");
-        final String maker = readOptionalText("Maker contains: ");
+        final String model = readOptionalText("Model ");
+        final String maker = readOptionalText("Maker: ");
         final Integer minimumCapacity = readOptionalNonNegativeInt("Minimum total seats (blank for none): ");
         final Integer maximumCapacity = readOptionalNonNegativeInt("Maximum total seats (blank for none): ");
         final Integer minimumAge = readOptionalNonNegativeInt("Minimum age in years (blank for none): ");
