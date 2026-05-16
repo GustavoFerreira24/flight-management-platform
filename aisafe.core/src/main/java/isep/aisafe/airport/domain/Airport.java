@@ -128,34 +128,75 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
         return this.icao;
     }
 
+
+    /**
+     * Returns icao code.
+     *
+     * @return icao code
+     */
     public AirportICAOCode icaoCode() {
         return icao;
     }
 
+    /**
+     * Returns iata code.
+     *
+     * @return iata code
+     */
     public AirportIATACode iataCode() {
         return iata;
     }
 
+    /**
+     * Returns airport name
+     *
+     * @return airport name
+     */
     public String name() {
         return name;
     }
 
+    /**
+     * Returns airport country
+     *
+     * @return airport country
+     */
     public Country country() {
         return country;
     }
 
+    /**
+     * Returns airport town
+     *
+     * @return airport town
+     */
     public String town() {
         return town;
     }
 
+    /**
+     * Returns airport coordinates
+     *
+     * @return airport coordinates
+     */
     public GpsCoordinates coordinates() {
         return coordinates;
     }
 
+    /**
+     * Returns airport elevation
+     *
+     * @return airport elevation
+     */
     public Elevation elevation() {
         return elevation;
     }
 
+    /**
+     * Returns airport air ccontrol area
+     *
+     * @return airport air ccontrol area
+     */
     public AirControlArea airControlArea() {
         return airControlArea;
     }
