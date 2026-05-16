@@ -102,34 +102,71 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
         return identity().equals(that.identity());
     }
 
+    /**
+     * Returns collaborator first name
+     *
+     * @return collaborator first name
+     */
     public String firstName() {
         return firstName;
     }
 
+    /**
+     * Returns collaborator last name
+     *
+     * @return collaborator last name
+     */
     public String lastName() {
         return lastName;
     }
 
+    /**
+     * Returns collaborator email
+     *
+     * @return collaborator email
+     */
     public CollaboratorEmail email() {
         return email;
     }
 
+    /**
+     * Returns customer associated with the collaborator
+     *
+     * @return customer associated with the collaborator
+     */
     public CustomerReference customerReference() {
         return customerReference;
     }
 
+    /**
+     * Returns  username of the system user associated with the collaborator
+     *
+     * @return  username of the system user associated with the collaborator
+     */
     public SystemUsername systemUsername() {
         return systemUsername;
     }
 
+
+    /**
+     * Returns weather the collaborator is active or not
+     *
+     * @return  weather the collaborator is active or not
+     */
     public boolean isActive() {
         return active;
     }
 
+    /**
+     * disables the collaborator
+     */
     public void disable() {
         this.active = false;
     }
 
+    /**
+     * enables the collaborator
+     */
     public void enable() {
         this.active = true;
     }
