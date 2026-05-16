@@ -29,6 +29,7 @@ static void handle_safety_violation_signal(int signal_number) {
 
 static int install_stop_handlers(void) {
     struct sigaction action;
+    struct sigaction ignore_action;
 
     memset(&action, 0, sizeof(action));
     action.sa_handler = handle_stop_signal;
@@ -40,6 +41,14 @@ static int install_stop_handlers(void) {
     }
 
     if (sigaction(SIGTERM, &action, NULL) == -1) {
+        return -1;
+    }
+
+    memset(&ignore_action, 0, sizeof(ignore_action));
+    ignore_action.sa_handler = SIG_IGN;
+    sigemptyset(&ignore_action.sa_mask);
+
+    if (sigaction(SIGPIPE, &ignore_action, NULL) == -1) {
         return -1;
     }
 
@@ -63,22 +72,6 @@ static int install_flight_signal_handlers(void) {
     }
 
     return 0;
-}
-
-static void wait_between_position_updates(void) {
-    struct timespec delay;
-    struct timespec remaining;
-
-    delay.tv_sec = 0;
-    delay.tv_nsec = 200000000L;
-
-    while (!stop_requested && nanosleep(&delay, &remaining) == -1) {
-        if (errno != EINTR) {
-            return;
-        }
-
-        delay = remaining;
-    }
 }
 
 static void print_pending_safety_notification(int flight_id) {
@@ -150,40 +143,83 @@ static position_update_t build_position_update(const flight_plan_t *flight, int 
     return update;
 }
 
-static void run_flight_process(const flight_plan_t *flight, int write_descriptor) {
+static void close_if_open(int file_descriptor) {
+    if (file_descriptor >= 0) {
+        close(file_descriptor);
+    }
+}
+
+static void run_flight_process(const flight_plan_t *flight, int update_write_descriptor,
+                               int control_read_descriptor) {
     if (install_flight_signal_handlers() == -1) {
         perror("sigaction");
-        close(write_descriptor);
+        close_if_open(update_write_descriptor);
+        close_if_open(control_read_descriptor);
         _exit(EXIT_FAILURE);
     }
 
-    for (int step = 0; step < SIMULATION_STEPS && !stop_requested; step++) {
-        const position_update_t update = build_position_update(flight, step);
+    while (!stop_requested) {
+        int step;
+        const int control_result = read_exact(control_read_descriptor, &step, sizeof(step));
 
-        if (write_exact(write_descriptor, &update, sizeof(update)) == -1) {
-            perror("write");
-            close(write_descriptor);
+        if (control_result == 0) {
+            break;
+        }
+
+        if (control_result == -1) {
+            perror("read control");
+            close_if_open(update_write_descriptor);
+            close_if_open(control_read_descriptor);
             _exit(EXIT_FAILURE);
         }
 
-        if (!update.completed) {
-            wait_between_position_updates();
+        if (step < 0 || step >= SIMULATION_STEPS) {
+            fprintf(stderr, "invalid timestep command %d for flight %d\n", step, flight->flight_id);
+            close_if_open(update_write_descriptor);
+            close_if_open(control_read_descriptor);
+            _exit(EXIT_FAILURE);
         }
 
         print_pending_safety_notification(flight->flight_id);
+
+        const position_update_t update = build_position_update(flight, step);
+
+        if (write_exact(update_write_descriptor, &update, sizeof(update)) == -1) {
+            perror("write update");
+            close_if_open(update_write_descriptor);
+            close_if_open(control_read_descriptor);
+            _exit(EXIT_FAILURE);
+        }
+
+        print_pending_safety_notification(flight->flight_id);
+
+        if (update.completed) {
+            break;
+        }
     }
 
     print_pending_safety_notification(flight->flight_id);
 
-    close(write_descriptor);
+    close_if_open(update_write_descriptor);
+    close_if_open(control_read_descriptor);
     _exit(EXIT_SUCCESS);
 }
 
 static int start_flight_processes(const flight_plan_t flights[], int flight_count,
-                                  int pipes[][2], pid_t child_pids[]) {
+                                  int update_pipes[][2], int control_pipes[][2],
+                                  pid_t child_pids[]) {
     for (int i = 0; i < flight_count; i++) {
-        if (pipe(pipes[i]) == -1) {
-            perror("pipe");
+        if (pipe(update_pipes[i]) == -1) {
+            perror("update pipe");
+            return -1;
+        }
+
+        if (pipe(control_pipes[i]) == -1) {
+            perror("control pipe");
+            close_if_open(update_pipes[i][0]);
+            close_if_open(update_pipes[i][1]);
+            update_pipes[i][0] = -1;
+            update_pipes[i][1] = -1;
             return -1;
         }
 
@@ -191,23 +227,33 @@ static int start_flight_processes(const flight_plan_t flights[], int flight_coun
 
         if (pid == -1) {
             perror("fork");
-            close(pipes[i][0]);
-            close(pipes[i][1]);
+            close_if_open(update_pipes[i][0]);
+            close_if_open(update_pipes[i][1]);
+            close_if_open(control_pipes[i][0]);
+            close_if_open(control_pipes[i][1]);
+            update_pipes[i][0] = -1;
+            update_pipes[i][1] = -1;
+            control_pipes[i][0] = -1;
+            control_pipes[i][1] = -1;
             return -1;
         }
 
         if (pid == 0) {
             for (int previous = 0; previous < i; previous++) {
-                close(pipes[previous][0]);
-                close(pipes[previous][1]);
+                close_if_open(update_pipes[previous][0]);
+                close_if_open(update_pipes[previous][1]);
+                close_if_open(control_pipes[previous][0]);
+                close_if_open(control_pipes[previous][1]);
             }
 
-            close(pipes[i][0]);
-            run_flight_process(&flights[i], pipes[i][1]);
+            close_if_open(update_pipes[i][0]);
+            close_if_open(control_pipes[i][1]);
+            run_flight_process(&flights[i], update_pipes[i][1], control_pipes[i][0]);
         }
 
         child_pids[i] = pid;
-        close(pipes[i][1]);
+        close_if_open(update_pipes[i][1]);
+        close_if_open(control_pipes[i][0]);
     }
 
     return 0;
@@ -236,9 +282,10 @@ static void terminate_children(const pid_t child_pids[], int flight_count) {
     }
 }
 
-static void close_parent_pipes(int pipes[][2], int flight_count) {
+static void close_parent_pipes(int update_pipes[][2], int control_pipes[][2], int flight_count) {
     for (int i = 0; i < flight_count; i++) {
-        close(pipes[i][0]);
+        close_if_open(update_pipes[i][0]);
+        close_if_open(control_pipes[i][1]);
     }
 }
 
@@ -330,20 +377,60 @@ static void detect_and_notify_step_violations(const position_history_t *position
                              total_violations);
 }
 
-static void process_simulation_updates(int pipes[][2], int flight_count,
+static int release_flights_for_step(int control_pipes[][2], int flight_count, int step) {
+    for (int flight_index = 0; flight_index < flight_count && !stop_requested; flight_index++) {
+        if (write_exact(control_pipes[flight_index][1], &step, sizeof(step)) == -1) {
+            perror("write control");
+            return -1;
+        }
+    }
+
+    return stop_requested ? -1 : 0;
+}
+
+static void wait_for_next_timestep(void) {
+    struct timespec delay;
+    struct timespec remaining;
+
+    delay.tv_sec = TIME_STEP_SECONDS;
+    delay.tv_nsec = 0;
+
+    while (!stop_requested && nanosleep(&delay, &remaining) == -1) {
+        if (errno != EINTR) {
+            return;
+        }
+
+        delay = remaining;
+    }
+}
+
+static void process_simulation_updates(int update_pipes[][2], int control_pipes[][2], int flight_count,
                                         position_update_t latest_positions[],
                                         position_history_t *position_history,
                                         const pid_t child_pids[],
                                         int reported_violations[MAX_FLIGHTS][MAX_FLIGHTS][SIMULATION_STEPS],
                                         int *total_violations) {
     for (int step = 0; step < SIMULATION_STEPS && !stop_requested; step++) {
+        const int simulation_time = step * TIME_STEP_SECONDS;
+
+        printf("\n--- timestep %d (t=%ds) ---\n", step, simulation_time);
+        fflush(stdout);
+
+        if (release_flights_for_step(control_pipes, flight_count, step) == -1) {
+            stop_requested = 1;
+            break;
+        }
+
+        int received_updates = 0;
+
         for (int flight_index = 0; flight_index < flight_count && !stop_requested; flight_index++) {
             position_update_t update;
-            const int result = read_exact(pipes[flight_index][0], &update, sizeof(update));
+            const int result = read_exact(update_pipes[flight_index][0], &update, sizeof(update));
 
             if (result == 0) {
                 fprintf(stderr, "flight pipe closed before step %d\n", step);
-                continue;
+                stop_requested = 1;
+                break;
             }
 
             if (result == -1) {
@@ -371,15 +458,24 @@ static void process_simulation_updates(int pipes[][2], int flight_count,
             }
 
             print_update(&update);
+            received_updates++;
         }
 
-        if (!stop_requested) {
+        if (!stop_requested && received_updates == flight_count) {
+            printf("timestep %d barrier complete: %d/%d updates processed\n",
+                   step, received_updates, flight_count);
+            fflush(stdout);
+
             detect_and_notify_step_violations(position_history,
-                                              step,
-                                              flight_count,
-                                              child_pids,
-                                              reported_violations,
-                                              total_violations);
+                                               step,
+                                               flight_count,
+                                               child_pids,
+                                               reported_violations,
+                                               total_violations);
+        }
+
+        if (!stop_requested && step < SIMULATION_STEPS - 1) {
+            wait_for_next_timestep();
         }
     }
 }
@@ -387,7 +483,8 @@ static void process_simulation_updates(int pipes[][2], int flight_count,
 int main(int argc, char *argv[]) {
     flight_plan_t flights[MAX_FLIGHTS];
     int flight_count;
-    int pipes[MAX_FLIGHTS][2];
+    int update_pipes[MAX_FLIGHTS][2];
+    int control_pipes[MAX_FLIGHTS][2];
     pid_t child_pids[MAX_FLIGHTS] = {0};
     position_update_t latest_positions[MAX_FLIGHTS];
     position_history_t position_history;
@@ -409,7 +506,8 @@ int main(int argc, char *argv[]) {
         flight_count = load_default_flights(flights);
     }
 
-    memset(pipes, -1, sizeof(pipes));
+    memset(update_pipes, -1, sizeof(update_pipes));
+    memset(control_pipes, -1, sizeof(control_pipes));
     memset(latest_positions, 0, sizeof(latest_positions));
     memset(reported_violations, 0, sizeof(reported_violations));
     init_position_history(&position_history);
@@ -419,17 +517,19 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    printf("starting simulation with %d flights and %d steps\n", flight_count, SIMULATION_STEPS);
+    printf("starting simulation with %d flights, %d steps and %ds timesteps\n",
+           flight_count, SIMULATION_STEPS, TIME_STEP_SECONDS);
     fflush(stdout);
 
-    if (start_flight_processes(flights, flight_count, pipes, child_pids) == -1) {
+    if (start_flight_processes(flights, flight_count, update_pipes, control_pipes, child_pids) == -1) {
         terminate_children(child_pids, flight_count);
-        close_parent_pipes(pipes, flight_count);
+        close_parent_pipes(update_pipes, control_pipes, flight_count);
         wait_for_children(child_pids, flight_count);
         return EXIT_FAILURE;
     }
 
-    process_simulation_updates(pipes,
+    process_simulation_updates(update_pipes,
+                               control_pipes,
                                flight_count,
                                latest_positions,
                                &position_history,
@@ -442,7 +542,7 @@ int main(int argc, char *argv[]) {
         terminate_children(child_pids, flight_count);
     }
 
-    close_parent_pipes(pipes, flight_count);
+    close_parent_pipes(update_pipes, control_pipes, flight_count);
     wait_for_children(child_pids, flight_count);
 
     print_position_history(flights, flight_count, &position_history);
