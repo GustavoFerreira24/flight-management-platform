@@ -62,7 +62,7 @@ public class ListCustomerCollaboratorsUI {
             if ("2".equals(option)) {
                 System.out.print("Enter the code of the Air Control Area Company (2 to 10 digits or letters): ");
                 final String areaCode = scanner.nextLine();
-                collaborators = controller.listForAirTransportCompany(areaCode);
+                collaborators = controller.listForAirControlArea(areaCode);
 
                 System.out.println();
 
