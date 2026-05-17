@@ -1,0 +1,89 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class ListCustomerCollaboratorsUI <<UI>> {
+    - controller : ListCustomerCollaboratorsController
+    - scanner : Scanner
+    + show() : boolean
+}
+
+class ListCustomerCollaboratorsController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - collaboratorRepository : CustomerCollaboratorRepository
+    - airTransportCompanyRepository : AirTransportCompanyRepository
+    - airControlAreaRepository : AirControlAreaRepository
+
+    + listForAirTransportCompany(iataCode : String) : List<CustomerCollaborator>
+    + listForAirControlArea(areaCode : String) : List<CustomerCollaborator>
+}
+
+class CustomerCollaborator <<Aggregate Root>> {
+    - firstName : String
+    - lastName : String
+    - email : CollaboratorEmail
+    - customerReference : CustomerReference
+    - systemUsername : SystemUsername
+    - active : boolean
+
+    + firstName() : String
+    + lastName() : String
+    + email() : CollaboratorEmail
+    + customerReference() : CustomerReference
+    + systemUsername() : SystemUsername
+    + isActive() : boolean
+    + disable() : void
+    + enable() : void
+}
+
+class CustomerReference <<Value Object>> {
+    - customerType : CustomerType
+    - customerIdentity : String
+
+    + airTransportCompany(iataCode : String) : CustomerReference
+    + airControlArea(areaCode : String) : CustomerReference
+    + customerType() : CustomerType
+    + customerIdentity() : String
+}
+
+enum CustomerType <<Enumeration>> {
+    AIR_TRANSPORT_COMPANY
+    AIR_CONTROL_AREA
+}
+
+interface CustomerCollaboratorRepository <<Repository>> {
+    + findByEmail(email : CollaboratorEmail) : Optional<CustomerCollaborator>
+    + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
+    + findByCustomerReference(customerReference : CustomerReference) : List<CustomerCollaborator>
+}
+
+interface AirTransportCompanyRepository <<Repository>> {
+    + findByIataCode(iataCode : IATACode) : Optional<AirTransportCompany>
+    + findByIcaoCode(icaoCode : ICAOCode) : Optional<AirTransportCompany>
+}
+
+interface AirControlAreaRepository <<Repository>> {
+    + findByCode(code : AirControlAreaCode) : Optional<AirControlArea>
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(roles...) : void
+}
+
+' ---------------- RELATIONSHIPS ----------------
+
+ListCustomerCollaboratorsUI --> ListCustomerCollaboratorsController
+
+ListCustomerCollaboratorsController --> AisafeAuthorizationService
+ListCustomerCollaboratorsController --> CustomerCollaboratorRepository
+ListCustomerCollaboratorsController --> AirTransportCompanyRepository
+ListCustomerCollaboratorsController --> AirControlAreaRepository
+
+ListCustomerCollaboratorsController ..> CustomerCollaborator
+
+CustomerCollaborator *-- CustomerReference
+CustomerReference --> CustomerType
+
+CustomerCollaboratorRepository ..> CustomerCollaborator
+
+@enduml
