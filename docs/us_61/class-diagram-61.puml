@@ -2,6 +2,16 @@
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
 
+class RegisterCustomerCollaboratorUI <<UI>> {
+    + show() : void
+    - askCustomerType() : String
+    - askIataCode() : String
+    - askAreaCode() : String
+    - askPersonName(label : String, errorMessage : String) : String
+    - askEmail() : String
+    - askRequiredText(label : String, errorMessage : String) : String
+}
+
 class RegisterCustomerCollaboratorController <<Controller>> {
     + registerCollaboratorForAirTransportCompany(...) : CustomerCollaborator
     + registerCollaboratorForAirControlArea(...) : CustomerCollaborator
@@ -13,14 +23,25 @@ class CustomerCollaborator <<Aggregate Root>> {
     - email : CollaboratorEmail
     - customerReference : CustomerReference
     - systemUsername : SystemUsername
+    - active : boolean
     + identity() : CollaboratorEmail
+    + firstName() : String
+    + lastName() : String
+    + email() : CollaboratorEmail
+    + customerReference() : CustomerReference
+    + systemUsername() : SystemUsername
+    + isActive() : boolean
+    + disable() : void
+    + enable() : void
 }
 
 class CustomerReference <<Value Object>> {
     - customerType : CustomerType
     - customerIdentity : String
-    + airTransportCompany(iataCode : String) : CustomerReference
-    + airControlArea(areaCode : String) : CustomerReference
+    + {static} airTransportCompany(iataCode : String) : CustomerReference
+    + {static} airControlArea(areaCode : String) : CustomerReference
+    + customerType() : CustomerType
+    + customerIdentity() : String
 }
 
 enum CustomerType {
@@ -28,16 +49,38 @@ enum CustomerType {
     AIR_CONTROL_AREA
 }
 
-class CollaboratorEmail <<Value Object>>
-class SystemUsername <<Value Object>>
-class AisafeAuthorizationService <<Service>>
-class UserManagementService <<Framework Service>>
-class AisafeRoles <<Roles>>
-class AisafePermissions <<Permissions>>
+class CollaboratorEmail <<Value Object>> {
+    - value : String
+    + {static} valueOf(value : String) : CollaboratorEmail
+}
+
+class SystemUsername <<Value Object>> {
+    - value : String
+    + {static} valueOf(value : String) : SystemUsername
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class UserManagementService <<Framework Service>> {
+    + registerNewUser(...) : SystemUser
+}
+
+class AisafeRoles <<Roles>> {
+    + {static} AIR_TRANSPORT_COMPANY_COLLABORATOR : Role
+    + {static} FLIGHT_CONTROL_OPERATOR : Role
+    + {static} WEATHER_PERSON : Role
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} BACKOFFICE_CONFIGURATION : Role[]
+}
 
 interface CustomerCollaboratorRepository {
     + findByEmail(email : CollaboratorEmail) : Optional<CustomerCollaborator>
-    + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
+    + findBySystemUsername(username : SystemUsername) : Optional<CustomerCollaborator>
+    + findByCustomerReference(ref : CustomerReference) : List<CustomerCollaborator>
 }
 
 interface AirTransportCompanyRepository
@@ -46,6 +89,20 @@ interface AirControlAreaRepository
 class AirTransportCompany <<Aggregate Root>>
 class AirControlArea <<Aggregate Root>>
 
+note bottom of RegisterCustomerCollaboratorController
+  Air control area collaborators can receive either
+  FLIGHT_CONTROL_OPERATOR or WEATHER_PERSON roles,
+  depending on the registration context.
+  The UI uses this controller for both.
+end note
+
+note bottom of CustomerCollaboratorRepository
+  findByCustomerReference() supports
+  US062 (list collaborators) and
+  US064 (disable collaborator).
+end note
+
+RegisterCustomerCollaboratorUI --> RegisterCustomerCollaboratorController
 RegisterCustomerCollaboratorController --> AisafeAuthorizationService
 RegisterCustomerCollaboratorController --> CustomerCollaboratorRepository
 RegisterCustomerCollaboratorController --> AirTransportCompanyRepository
