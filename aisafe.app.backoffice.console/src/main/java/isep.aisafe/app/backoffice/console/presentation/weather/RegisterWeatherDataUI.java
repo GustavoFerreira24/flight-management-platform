@@ -1,7 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.weather;
 
 import isep.aisafe.application.weather.RegisterWeatherDataController;
-import isep.aisafe.weatherdata.domain.WeatherData;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -67,7 +66,7 @@ public class RegisterWeatherDataUI {
         final double longitude = askLongitude();
 
         try {
-            final WeatherData weatherData = controller.registerWeatherMeasurement(
+            controller.registerWeatherMeasurement(
                     day,
                     areaCode,
                     providerName,

@@ -1,0 +1,185 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterWeatherDataUI <<UI>> {
+    - {static} AREA_CODE_PATTERN : Pattern
+    - {static} PARAMETER_UNITS : Map<String, Map<String, String>>
+    + show() : void
+    - askDate() : String
+    - askAreaCode() : String
+    - askParameter() : String
+    - askValue(parameter : String) : double
+    - askUnit(parameter : String) : String
+    - askAltitude() : double
+    - askLatitude() : double
+    - askLongitude() : double
+    - askRequiredText(label : String, errorMessage : String) : String
+    - askDouble(label : String, errorMessage : String, min : double, max : double) : double
+}
+
+note right of RegisterWeatherDataUI
+  PARAMETER_UNITS is a static LinkedHashMap
+  mapping each parameter to its compatible units.
+  Parameter and unit selection uses numbered menus
+  to prevent invalid input.
+  Date validated with ISO 8601 (YYYY-MM-DD).
+  Area code validated with [A-Z0-9]{2,10}.
+end note
+
+class RegisterWeatherDataController <<Controller>> {
+    + registerWeatherMeasurement(day : String, areaCode : String, providerName : String, providerType : String, parameter : String, value : double, unit : String, altitude : double, latitude : double, longitude : double) : WeatherData
+    - ensureNotBlank(value : String, message : String) : void
+    - weatherDataRepository() : WeatherDataRepository
+    - airControlAreaRepository() : AirControlAreaRepository
+}
+
+note right of RegisterWeatherDataController
+  Repositories are lazily resolved from
+  PersistenceContext when null (production).
+  Injected directly in tests.
+end note
+
+class WeatherData <<Aggregate Root>> {
+    - pk : Long
+    - id : WeatherDataId
+    - day : LocalDate
+    - airControlAreaCode : AirControlAreaCode
+    - measurements : List<WeatherMeasurement>
+    + addMeasurement(provider, parameter, value, unit, altitude, coordinates) : void
+    + identity() : WeatherDataId
+    + day() : LocalDate
+    + airControlAreaCode() : AirControlAreaCode
+    + measurements() : List<WeatherMeasurement>
+}
+
+class WeatherMeasurement <<Value Object>> {
+    - provider : WeatherProvider
+    - parameter : WeatherParameter
+    - value : double
+    - unit : WeatherUnit
+    - altitude : double
+    - coordinates : WeatherCoordinates
+    + provider() : WeatherProvider
+    + parameter() : WeatherParameter
+    + value() : double
+    + unit() : WeatherUnit
+    + altitude() : double
+    + coordinates() : WeatherCoordinates
+}
+
+note bottom of WeatherMeasurement
+  Validates value ranges per parameter:
+  TEMPERATURE [-100, 70] C
+  WIND_SPEED [>=0] M/S or KT
+  WIND_DIRECTION [0, 360] DEG
+  PRESSURE [800, 1100] HPA
+  HUMIDITY [0, 100] PERCENT
+  Altitude must be >= 0.
+  Unit must be compatible with parameter.
+end note
+
+class WeatherDataId <<Value Object>> {
+    - value : String
+    + {static} valueOf(day : LocalDate, areaCode : AirControlAreaCode) : WeatherDataId
+}
+
+class WeatherProvider <<Value Object>> {
+    - name : String
+    - type : WeatherProviderType
+    + {static} valueOf(name : String, type : WeatherProviderType) : WeatherProvider
+    + name() : String
+    + type() : WeatherProviderType
+}
+
+class WeatherProviderType <<Value Object>> {
+    - value : String
+    + {static} valueOf(value : String) : WeatherProviderType
+}
+
+class WeatherParameter <<Value Object>> {
+    - name : String
+    - {static} COMPATIBLE_UNITS : Map<String, Set<String>>
+    + {static} valueOf(name : String) : WeatherParameter
+    + isCompatibleWith(unit : WeatherUnit) : boolean
+    + name() : String
+}
+
+note right of WeatherParameter
+  Normalizes input: spaces and hyphens
+  replaced with underscores, uppercased.
+  Rejects unknown parameter names.
+end note
+
+class WeatherUnit <<Value Object>> {
+    - value : String
+    + {static} valueOf(value : String) : WeatherUnit
+}
+
+class WeatherCoordinates <<Value Object>> {
+    - latitude : double
+    - longitude : double
+    + {static} valueOf(latitude : double, longitude : double) : WeatherCoordinates
+    + latitude() : double
+    + longitude() : double
+}
+
+note right of WeatherCoordinates
+  latitude [-90, 90]
+  longitude [-180, 180]
+end note
+
+interface WeatherDataRepository {
+    + findByDayAndAirControlArea(day : LocalDate, code : AirControlAreaCode) : Optional<WeatherData>
+}
+
+interface AirControlAreaRepository {
+    + findByCode(code : AirControlAreaCode) : Optional<AirControlArea>
+}
+
+class AirControlArea <<Aggregate Root>> {
+    + geographicBoundary() : GeographicBoundary
+}
+
+class GeographicBoundary <<Value Object>> {
+    + contains(latitude : double, longitude : double) : boolean
+}
+
+class AirControlAreaCode <<Value Object>>
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} WEATHER_DATA_MANAGEMENT : Role[]
+}
+
+RegisterWeatherDataUI --> RegisterWeatherDataController
+RegisterWeatherDataController --> AisafeAuthorizationService
+RegisterWeatherDataController --> AisafePermissions
+RegisterWeatherDataController --> WeatherDataRepository
+RegisterWeatherDataController --> AirControlAreaRepository
+RegisterWeatherDataController --> WeatherData
+RegisterWeatherDataController --> WeatherProvider
+RegisterWeatherDataController --> WeatherProviderType
+RegisterWeatherDataController --> WeatherParameter
+RegisterWeatherDataController --> WeatherUnit
+RegisterWeatherDataController --> WeatherCoordinates
+
+WeatherData *-- WeatherDataId
+WeatherData *-- AirControlAreaCode
+WeatherData "1" *-- "0..*" WeatherMeasurement
+
+WeatherMeasurement *-- WeatherProvider
+WeatherMeasurement *-- WeatherParameter
+WeatherMeasurement *-- WeatherUnit
+WeatherMeasurement *-- WeatherCoordinates
+WeatherProvider *-- WeatherProviderType
+
+WeatherDataRepository --> WeatherData
+AirControlAreaRepository --> AirControlArea
+AirControlArea *-- GeographicBoundary
+AirControlArea *-- AirControlAreaCode
+
+@enduml
