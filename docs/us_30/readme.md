@@ -51,9 +51,9 @@ This requirement depends on the eAPLI authentication and authorization framework
 
 Backoffice user registration is a security-sensitive operation. The implementation separates three responsibilities:
 
-- `AisafeRoles` centralizes the role names supported by the application.
-- `AisafePermissions` defines which roles can execute protected actions.
-- `UserRegistrationValidator` validates submitted registration data before the user is created.
+- `AisafeRoles` centralizes the role names supported by the application. It defines all six roles: `ADMIN`, `BACKOFFICE_OPERATOR`, `AIR_TRANSPORT_COMPANY_COLLABORATOR`, `PILOT`, `FLIGHT_CONTROL_OPERATOR`, and `WEATHER_PERSON`.
+- `AisafePermissions` defines which roles can execute protected actions. The permission used for user registration is `USER_REGISTRATION`, restricted exclusively to `ADMIN`. A separate `USER_MANAGEMENT` permission exists for admin and backoffice operator shared operations.
+- `UserRegistrationValidator` validates submitted registration data before the user is created. It accepts all six AISafe roles.
 
 The application does not duplicate the framework user aggregate. Instead, `RegisterBackofficeUserController` validates and authorizes the request, then delegates user creation to `UserManagementService`.
 
@@ -65,15 +65,17 @@ The domain-specific invariants for this use case are:
 - Every assigned role must be one of the supported AISafe roles.
 - User registration requires `AisafePermissions.USER_REGISTRATION`, currently restricted to `ADMIN`.
 
+**UI role scope note:** The `RegisterBackofficeUserUI` currently exposes only `ADMIN` and `BACKOFFICE_OPERATOR` as selectable options. The validator supports all six AISafe roles. If new role types need to be registered through the UI in the future, the `askRole()` method in the UI must be extended accordingly.
+
 ## 4. Design
 
 ### 4.1. Realization
 
 ![US30 class diagram](class-diagram-30.svg "US30 Class Diagram")
 
-The `RegisterBackofficeUserUI` collects the registration data and asks the administrator to choose a supported backoffice role. It delegates the operation to `RegisterBackofficeUserController`.
+The `RegisterBackofficeUserUI` collects the registration data and asks the administrator to choose a supported backoffice role (currently `ADMIN` or `BACKOFFICE_OPERATOR`). It delegates the operation to `RegisterBackofficeUserController`.
 
-The controller checks `USER_REGISTRATION` permission, validates the submitted data with `UserRegistrationValidator`, and registers the system user through the framework `UserManagementService`.
+The controller checks `USER_REGISTRATION` permission (restricted to `ADMIN`), validates the submitted data with `UserRegistrationValidator`, and registers the system user through the framework `UserManagementService`. The `UserManagementService` is resolved lazily from `AuthzRegistry` to allow dependency injection in tests.
 
 ### 4.2. Acceptance Tests
 
@@ -105,11 +107,11 @@ Implemented in `UserRegistrationValidatorTest` and `AisafeRolesTest`.
 
 Main implementation artifacts:
 
-- `RegisterBackofficeUserUI`: Backoffice console UI for collecting registration data.
+- `RegisterBackofficeUserUI`: Backoffice console UI for collecting registration data. Exposes `ADMIN` and `BACKOFFICE_OPERATOR` role options only.
 - `RegisterBackofficeUserController`: application controller that authorizes, validates and delegates registration.
-- `UserRegistrationValidator`: validates mandatory fields, email format and roles.
-- `AisafeRoles`: central definition of supported AISafe roles.
-- `AisafePermissions`: central definition of protected action permissions.
+- `UserRegistrationValidator`: validates mandatory fields, email format and roles. Accepts all six AISafe roles.
+- `AisafeRoles`: central definition of all six supported AISafe roles.
+- `AisafePermissions`: central definition of protected action permissions. `USER_REGISTRATION` is restricted to `ADMIN`. `USER_MANAGEMENT` is available to both `ADMIN` and `BACKOFFICE_OPERATOR` for shared user management operations.
 - `AisafeAuthorizationService`: facade used by controllers to enforce permissions.
 - `AisafeBootstrapper`: creates initial administrator and backoffice operator users.
 
@@ -136,8 +138,12 @@ Then select:
 1 - Register Backoffice User
 ```
 
-The UI asks for username, password, first name, last name, email and role.
+The UI asks for username, password, first name, last name, email and role (ADMIN or BACKOFFICE_OPERATOR).
 
 ## 7. Observations
 
 The framework is responsible for enforcing username/email uniqueness and password encoding. AISafe validates only the application-specific data before delegating to the framework service.
+
+The `UserManagementService` is not injected directly in the production constructor — it is resolved lazily from `AuthzRegistry` on first use. This pattern is consistent with other controllers in the codebase and allows test injection without requiring a running persistence context.
+
+The `USER_MANAGEMENT` permission (`ADMIN` + `BACKOFFICE_OPERATOR`) currently has no dedicated controller. It is defined in `AisafePermissions` to support future shared user management features and should be assigned to a controller when that functionality is implemented.
