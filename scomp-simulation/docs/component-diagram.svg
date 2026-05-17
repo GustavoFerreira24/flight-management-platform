@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="920" viewBox="0 0 1400 920">
+  <rect width="1400" height="920" fill="#ffffff" />
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+    <style>
+      .parent { fill: #fff4e6; stroke: #b35c00; stroke-width: 2; rx: 10; }
+      .child { fill: #fff4e6; stroke: #b35c00; stroke-width: 2; rx: 10; }
+      .module { fill: #f8fbff; stroke: #1f4e79; stroke-width: 2; rx: 10; }
+      .file { fill: #f5fff4; stroke: #2f7d32; stroke-width: 2; rx: 10; }
+      .test { fill: #f7f2ff; stroke: #674ea7; stroke-width: 2; rx: 10; }
+      .title { font: bold 24px Arial, sans-serif; fill: #111; }
+      .text { font: 16px Arial, sans-serif; fill: #111; }
+      .small { font: 13px Arial, sans-serif; fill: #222; }
+      .label { font: 13px Arial, sans-serif; fill: #111; }
+      .pipe { stroke: #0066cc; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .signal { stroke: #b00020; stroke-width: 2; stroke-dasharray: 6 5; fill: none; marker-end: url(#arrow); }
+      .line { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .lightline { stroke: #666; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <text x="700" y="36" text-anchor="middle" class="title">SCOMP Flight Simulation - Component Diagram</text>
+
+  <rect x="565" y="70" width="270" height="78" class="parent" />
+  <text x="700" y="102" text-anchor="middle" class="text">Main Process</text>
+  <text x="700" y="126" text-anchor="middle" class="small">simulator</text>
+
+  <rect x="90" y="260" width="230" height="82" class="child" />
+  <text x="205" y="293" text-anchor="middle" class="text">Flight Process 0</text>
+  <text x="205" y="318" text-anchor="middle" class="small">fork()</text>
+
+  <rect x="585" y="260" width="230" height="82" class="child" />
+  <text x="700" y="293" text-anchor="middle" class="text">Flight Process 1</text>
+  <text x="700" y="318" text-anchor="middle" class="small">fork()</text>
+
+  <rect x="1080" y="260" width="230" height="82" class="child" />
+  <text x="1195" y="293" text-anchor="middle" class="text">Flight Process N</text>
+  <text x="1195" y="318" text-anchor="middle" class="small">fork()</text>
+
+  <rect x="565" y="455" width="270" height="82" class="parent" />
+  <text x="700" y="488" text-anchor="middle" class="text">Main Process</text>
+  <text x="700" y="513" text-anchor="middle" class="small">barrier: received_updates == flight_count</text>
+
+  <path d="M565 112 C390 120 205 170 205 260" class="pipe" />
+  <text x="250" y="160" class="label">control pipe 0: step command</text>
+
+  <path d="M700 148 L700 260" class="pipe" />
+  <text x="715" y="210" class="label">control pipe 1: step command</text>
+
+  <path d="M835 112 C1010 120 1195 170 1195 260" class="pipe" />
+  <text x="930" y="160" class="label">control pipe N: step command</text>
+
+  <path d="M205 342 C205 420 435 440 565 478" class="pipe" />
+  <text x="270" y="405" class="label">update pipe 0: position_update_t</text>
+
+  <path d="M700 342 L700 455" class="pipe" />
+  <text x="715" y="405" class="label">update pipe 1: position_update_t</text>
+
+  <path d="M1195 342 C1195 420 965 440 835 478" class="pipe" />
+  <text x="930" y="405" class="label">update pipe N: position_update_t</text>
+
+  <rect x="80" y="650" width="250" height="94" class="module" />
+  <text x="205" y="684" text-anchor="middle" class="text">Position History</text>
+  <text x="205" y="709" text-anchor="middle" class="small">position_history.c</text>
+  <text x="205" y="730" text-anchor="middle" class="small">stores positions by flight/step</text>
+
+  <rect x="405" y="650" width="250" height="94" class="module" />
+  <text x="530" y="684" text-anchor="middle" class="text">Safety Monitor</text>
+  <text x="530" y="709" text-anchor="middle" class="small">safety_monitor.c</text>
+  <text x="530" y="730" text-anchor="middle" class="small">detects/predicts violations</text>
+
+  <rect x="730" y="650" width="250" height="94" class="module" />
+  <text x="855" y="684" text-anchor="middle" class="text">Report Generator</text>
+  <text x="855" y="709" text-anchor="middle" class="small">report.c</text>
+  <text x="855" y="730" text-anchor="middle" class="small">writes final report</text>
+
+  <rect x="1055" y="650" width="250" height="94" class="module" />
+  <text x="1180" y="684" text-anchor="middle" class="text">Flight Loader</text>
+  <text x="1180" y="709" text-anchor="middle" class="small">flight_loader.c</text>
+  <text x="1180" y="730" text-anchor="middle" class="small">loads CSV flight plans</text>
+
+  <path d="M610 537 C500 585 315 610 205 650" class="line" />
+  <text x="350" y="603" class="label">store updates</text>
+
+  <path d="M660 537 C610 590 560 610 530 650" class="line" />
+  <text x="565" y="604" class="label">scan timestep</text>
+
+  <path d="M740 537 C790 590 830 610 855 650" class="line" />
+  <text x="780" y="604" class="label">record violations/results</text>
+
+  <path d="M1180 650 C1180 560 940 520 835 500" class="line" />
+  <text x="1010" y="555" class="label">flight_plan_t[]</text>
+
+  <path d="M530 650 C420 560 280 430 205 342" class="signal" />
+  <text x="300" y="535" class="label">SIGUSR1 / SIGTERM</text>
+
+  <path d="M530 650 C600 560 675 430 700 342" class="signal" />
+  <text x="605" y="535" class="label">SIGUSR1 / SIGTERM</text>
+
+  <path d="M530 650 C730 560 1030 430 1195 342" class="signal" />
+  <text x="890" y="535" class="label">SIGUSR1 / SIGTERM</text>
+
+  <rect x="80" y="805" width="250" height="70" class="test" />
+  <text x="205" y="836" text-anchor="middle" class="text">tests/</text>
+  <text x="205" y="859" text-anchor="middle" class="small">unit tests with assert()</text>
+
+  <rect x="730" y="805" width="250" height="70" class="file" />
+  <text x="855" y="836" text-anchor="middle" class="text">simulation_report.txt</text>
+  <text x="855" y="859" text-anchor="middle" class="small">final report file</text>
+
+  <rect x="1055" y="805" width="250" height="70" class="file" />
+  <text x="1180" y="836" text-anchor="middle" class="text">Input CSV Files</text>
+  <text x="1180" y="859" text-anchor="middle" class="small">data/*.csv</text>
+
+  <path d="M205 805 L205 744" class="lightline" />
+  <path d="M330 840 C420 815 475 775 510 744" class="lightline" />
+  <path d="M330 855 C520 835 740 780 835 744" class="lightline" />
+  <path d="M855 744 L855 805" class="line" />
+  <path d="M1180 805 L1180 744" class="line" />
+</svg>

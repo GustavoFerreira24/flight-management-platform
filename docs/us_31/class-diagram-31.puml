@@ -6,6 +6,13 @@ class BackofficeConfigurationController <<Controller>> {
     + execute() : void
 }
 
+note right of BackofficeConfigurationController
+  execute() is currently an authorization
+  boundary only. Feature-specific behavior
+  is implemented in dedicated controllers
+  (e.g. RegisterAirControlAreaController).
+end note
+
 class AisafeAuthorizationService <<Service>> {
     + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
 }
@@ -14,13 +21,19 @@ class AuthorizationService <<Framework Service>> {
     + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
 }
 
-class AisafePermissions <<Permissions>>
-class AisafeRoles <<Roles>>
+class AisafePermissions <<Permissions>> {
+    + {static} BACKOFFICE_CONFIGURATION : Role[]
+}
+
+class AisafeRoles <<Roles>> {
+    + {static} BACKOFFICE_OPERATOR : Role
+}
+
 class Role <<Value Object>>
 
 BackofficeConfigurationController --> AisafeAuthorizationService
-AisafeAuthorizationService --> AuthorizationService
 BackofficeConfigurationController --> AisafePermissions
+AisafeAuthorizationService --> AuthorizationService
 AisafePermissions --> AisafeRoles
 AisafeRoles --> Role
 

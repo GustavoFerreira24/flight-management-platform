@@ -6,8 +6,12 @@ import isep.aisafe.usermanagement.domain.AisafeRoles;
 
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class RegisterBackofficeUserUI {
+
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
 
     private final RegisterBackofficeUserController controller =
             new RegisterBackofficeUserController();
@@ -25,20 +29,11 @@ public class RegisterBackofficeUserUI {
         System.out.println();
         System.out.println("Register Backoffice User");
 
-        System.out.print("Username: ");
-        final String username = scanner.nextLine();
-
-        System.out.print("Password: ");
-        final String password = scanner.nextLine();
-
-        System.out.print("First name: ");
-        final String firstName = scanner.nextLine();
-
-        System.out.print("Last name: ");
-        final String lastName = scanner.nextLine();
-
-        System.out.print("Email: ");
-        final String email = scanner.nextLine();
+        final String username = askRequiredText("Username", "Username is required.");
+        final String password = askRequiredText("Password", "Password is required.");
+        final String firstName = askRequiredText("First name", "First name is required.");
+        final String lastName = askRequiredText("Last name", "Last name is required.");
+        final String email = askEmail();
 
         final Set<Role> roles = askRole(scanner);
 
@@ -58,18 +53,49 @@ public class RegisterBackofficeUserUI {
         }
     }
 
-    private Set<Role> askRole(final Scanner scanner) {
-        System.out.println("Role:");
-        System.out.println("1 - Admin");
-        System.out.println("2 - Backoffice Operator");
-        System.out.print("Option: ");
+    private String askRequiredText(final String label, final String errorMessage) {
+        while (true) {
+            System.out.print(label + ": ");
+            final String value = scanner.nextLine();
 
-        final String option = scanner.nextLine();
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
 
-        if ("1".equals(option)) {
-            return Set.of(AisafeRoles.ADMIN);
+            System.out.println(errorMessage);
         }
+    }
 
-        return Set.of(AisafeRoles.BACKOFFICE_OPERATOR);
+    private String askEmail() {
+        while (true) {
+            final String email = askRequiredText("Email", "Email is required.");
+
+            if (EMAIL_PATTERN.matcher(email).matches()) {
+                return email;
+            }
+
+            System.out.println("Email format is invalid.");
+        }
+    }
+
+    private Set<Role> askRole(final Scanner scanner) {
+        while (true) {
+            System.out.println("Role:");
+            System.out.println("1 - Admin");
+            System.out.println("2 - Backoffice Operator");
+            System.out.print("Option: ");
+
+            final String option = scanner.nextLine();
+
+            if ("1".equals(option)) {
+                return Set.of(AisafeRoles.ADMIN);
+            }
+
+            if ("2".equals(option)) {
+                return Set.of(AisafeRoles.BACKOFFICE_OPERATOR);
+            }
+
+            System.out.println("Invalid role option.");
+        }
     }
 }

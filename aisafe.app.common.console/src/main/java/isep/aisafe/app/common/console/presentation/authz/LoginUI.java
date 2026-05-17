@@ -19,13 +19,17 @@ public class LoginUI {
 
     public boolean show() {
         System.out.println("Login");
-        System.out.print("Username/Email: ");
-        final String identity = scanner.nextLine();
+        final String identity = askRequiredText("Username/Email", "Username/email is required.");
+        final String password = askRequiredText("Password", "Password is required.");
 
-        System.out.print("Password: ");
-        final String password = scanner.nextLine();
+        final boolean success;
 
-        final boolean success = credentialHandler.authWithCredentialData(identity, password);
+        try {
+            success = credentialHandler.authWithCredentialData(identity, password);
+        } catch (RuntimeException e) {
+            System.out.println("Login failed: " + e.getMessage());
+            return false;
+        }
 
         if (success) {
             System.out.println("Login successful.");
@@ -34,5 +38,18 @@ public class LoginUI {
         }
 
         return success;
+    }
+
+    private String askRequiredText(final String label, final String errorMessage) {
+        while (true) {
+            System.out.print(label + ": ");
+            final String value = scanner.nextLine();
+
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+
+            System.out.println(errorMessage);
+        }
     }
 }

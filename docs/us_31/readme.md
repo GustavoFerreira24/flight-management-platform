@@ -63,6 +63,8 @@ The authorization invariant for this user story is:
 
 The `BackofficeConfigurationController` represents the protected application entry point. It requests `BACKOFFICE_CONFIGURATION` permission through `AisafeAuthorizationService`.
 
+The `execute()` method currently acts as an authorization boundary only — it enforces the permission check but contains no feature-specific behavior (marked with a TODO). All concrete backoffice configuration features are implemented in their own dedicated controllers (e.g. `RegisterAirControlAreaController`, `RegisterEngineModelController`), each calling the same centralized permission via `AisafePermissions.BACKOFFICE_CONFIGURATION`.
+
 The permission itself is defined in `AisafePermissions`, which maps protected actions to roles from `AisafeRoles`.
 
 ### 4.2. Acceptance Tests
@@ -89,8 +91,8 @@ Implemented in `AisafeAuthorizationServiceTest`.
 
 Main implementation artifacts:
 
-- `BackofficeConfigurationController`: application controller for protected configuration access.
-- `AisafePermissions`: defines `BACKOFFICE_CONFIGURATION`.
+- `BackofficeConfigurationController`: application controller for protected configuration access. The `execute()` method currently enforces authorization only; feature-specific behavior is delegated to dedicated controllers.
+- `AisafePermissions`: defines `BACKOFFICE_CONFIGURATION` (restricted to `BACKOFFICE_OPERATOR`).
 - `AisafeRoles`: defines `BACKOFFICE_OPERATOR`.
 - `AisafeAuthorizationService`: authorization facade used by controllers.
 - `CapturingAuthorizationService`: test support fake used to verify required permissions.
@@ -121,4 +123,4 @@ Then execute any backoffice configuration operation exposed by the menu.
 
 ## 7. Observations
 
-The controller currently acts as an authorization boundary. Specific configuration features are implemented in their own controllers, all using the same centralized permission rule.
+The `BackofficeConfigurationController.execute()` method is intentionally kept minimal. It acts as a shared authorization guard. Concrete configuration features each have their own controller, all enforcing the same `BACKOFFICE_CONFIGURATION` permission directly via `AisafeAuthorizationService`. This avoids unnecessary coupling to a single entry-point controller while still centralizing the permission definition in `AisafePermissions`.

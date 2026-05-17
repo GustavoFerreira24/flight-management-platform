@@ -40,7 +40,7 @@ public class WeatherData implements AggregateRoot<WeatherDataId>, Serializable {
     @AttributeOverride(name = "value", column = @Column(name = "WEATHER_DATA_ID", nullable = false, unique = true))
     private WeatherDataId id;
 
-    @Column(nullable = false)
+    @Column(name = "WEATHER_DAY", nullable = false)
     private LocalDate day;
 
     @Embedded

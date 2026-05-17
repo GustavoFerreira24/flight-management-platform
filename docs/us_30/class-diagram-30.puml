@@ -4,6 +4,9 @@ skinparam linetype ortho
 
 class RegisterBackofficeUserUI <<UI>> {
     + show() : void
+    - askRequiredText(label : String, errorMessage : String) : String
+    - askEmail() : String
+    - askRole(scanner : Scanner) : Set<Role>
 }
 
 class RegisterBackofficeUserController <<Controller>> {
@@ -18,11 +21,31 @@ class AisafeAuthorizationService <<Service>> {
     + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
 }
 
-class AisafeRoles <<Roles>>
-class AisafePermissions <<Permissions>>
+class AisafeRoles <<Roles>> {
+    + {static} ADMIN : Role
+    + {static} BACKOFFICE_OPERATOR : Role
+    + {static} AIR_TRANSPORT_COMPANY_COLLABORATOR : Role
+    + {static} PILOT : Role
+    + {static} FLIGHT_CONTROL_OPERATOR : Role
+    + {static} WEATHER_PERSON : Role
+}
+
+
+class AisafePermissions <<Permissions>> {
+    + {static} USER_REGISTRATION : Role[]
+    + {static} USER_MANAGEMENT : Role[]
+    + {static} BACKOFFICE_CONFIGURATION : Role[]
+    + {static} WEATHER_DATA_MANAGEMENT : Role[]
+    + {static} WEATHER_DATA_CONSULTATION : Role[]
+    + {static} AIR_COMPANY_CONFIGURATION : Role[]
+    + {static} FLIGHT_PLAN_MANAGEMENT : Role[]
+    + {static} FLIGHT_CONTROL : Role[]
+}
+
 class UserManagementService <<Framework Service>> {
     + registerNewUser(...) : SystemUser
 }
+
 class SystemUser <<Framework Aggregate>>
 class Role <<Value Object>>
 
@@ -30,6 +53,7 @@ RegisterBackofficeUserUI --> RegisterBackofficeUserController
 RegisterBackofficeUserController --> AisafeAuthorizationService
 RegisterBackofficeUserController --> UserRegistrationValidator
 RegisterBackofficeUserController --> UserManagementService
+RegisterBackofficeUserController --> AisafePermissions
 RegisterBackofficeUserController --> Role
 UserRegistrationValidator --> AisafeRoles
 AisafePermissions --> AisafeRoles

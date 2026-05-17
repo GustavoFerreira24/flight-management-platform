@@ -310,4 +310,55 @@ class FlightPlanDslSyntaxValidatorTest {
         assertFalse(result.isValid());
         assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("following leg")));
     }
+
+    @Test
+    void ensureCoordinatesAreValidatedSemantically() {
+        // Arrange
+        final String source = """
+                flight TP123 regular {
+                  leg {
+                    departure OPO at 2026-05-10T10:00;
+                    arrival LIS at 2026-05-10T11:00;
+                    route OPO -> LIS;
+                    segment (91.0,-181.0) -> (38.0,-9.0);
+                    fuel 5000 kg;
+                  }
+                }
+                """;
+
+        // Act
+        final FlightPlanParseResult result = validator.validate(source);
+
+        // Assert
+        assertFalse(result.isValid());
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Latitude")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Longitude")));
+    }
+
+    @Test
+    void ensureUnitsAreValidatedByContextSemantically() {
+        // Arrange
+        final String source = """
+                flight TP123 regular {
+                  leg {
+                    departure OPO at 2026-05-10T10:00;
+                    arrival LIS at 2026-05-10T11:00;
+                    route OPO -> LIS;
+                    segment (41.0,-8.0) -> (38.0,-9.0) altitude [1000,2000] kg width 10 kg wind 90 deg 12 ft;
+                    fuel 5000 m;
+                  }
+                }
+                """;
+
+        // Act
+        final FlightPlanParseResult result = validator.validate(source);
+
+        // Assert
+        assertFalse(result.isValid());
+        assertEquals(List.of(FlightPlanDslErrorType.SEMANTIC), result.errors().stream().map(FlightPlanDslError::type).distinct().toList());
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Altitude unit")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("width unit")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Wind speed unit")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Fuel unit")));
+    }
 }
