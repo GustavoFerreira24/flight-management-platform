@@ -7,6 +7,7 @@ import isep.aisafe.app.backoffice.console.presentation.aircraft.RegisterAircraft
 import isep.aisafe.app.backoffice.console.presentation.aircraftmodel.RegisterAircraftModelUI;
 import isep.aisafe.app.backoffice.console.presentation.airport.RegisterAirportUI;
 import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
+import isep.aisafe.app.backoffice.console.presentation.customercollaborator.RegisterCustomerCollaboratorUI;
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
 import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCustomerCollaboratorsUI;
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
@@ -148,8 +149,9 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         System.out.println("║ 3 - Register Air Transport Company                 (US60)  ║");
         System.out.println("║ 4 - Register Air Control Area                      (US50)  ║");
         System.out.println("║ 5 - Register Airport                               (US52)  ║");
-        System.out.println("║ 6 - List Collaborators                             (US62)  ║");
-        System.out.println("║ 7 - Logout                                                 ║");
+        System.out.println("║ 6 - Register Customer Collaborator                 (US61)  ║");
+        System.out.println("║ 7 - List Collaborators                             (US62)  ║");
+        System.out.println("║ 8 - Logout                                                 ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.print("Option: ");
 
@@ -181,11 +183,16 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("6".equals(option)) {
-            executeMenuAction(() -> new ListCustomerCollaboratorsUI(scanner).show());
+            executeMenuAction(() -> new RegisterCustomerCollaboratorUI(scanner).show());
             return true;
         }
 
         if ("7".equals(option)) {
+            executeMenuAction(() -> new ListCustomerCollaboratorsUI(scanner).show());
+            return true;
+        }
+
+        if ("8".equals(option)) {
             System.out.println("Returning to login menu.");
             return false;
         }
