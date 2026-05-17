@@ -42,8 +42,10 @@ void report_collect_flight_results(simulation_report_t *report,
 }
 
 void report_record_violation(simulation_report_t *report,
-                             const safety_violation_t *violation) {
-    if (report == NULL || violation == NULL) {
+                             const safety_violation_t *violation,
+                             const position_history_t *history,
+                             int flight_count) {
+    if (report == NULL || violation == NULL || history == NULL) {
         return;
     }
 
@@ -51,7 +53,30 @@ void report_record_violation(simulation_report_t *report,
         return;
     }
 
-    report->violations[report->violation_count] = *violation;
+    const int first = violation->first_flight_index;
+    const int second = violation->second_flight_index;
+    const int snap_step = (violation->step > 0 && violation->predicted)
+                          ? violation->step - 1
+                          : violation->step;
+    const int step = snap_step < SIMULATION_STEPS ? snap_step : SIMULATION_STEPS - 1;
+
+    report_violation_entry_t *entry = &report->violations[report->violation_count];
+    entry->violation = *violation;
+
+    if (first >= 0 && first < flight_count && history->received[first][step]) {
+        entry->first_snapshot = history->updates[first][step];
+    } else {
+        memset(&entry->first_snapshot, 0, sizeof(entry->first_snapshot));
+        entry->first_snapshot.flight_id = violation->first_flight_id;
+    }
+
+    if (second >= 0 && second < flight_count && history->received[second][step]) {
+        entry->second_snapshot = history->updates[second][step];
+    } else {
+        memset(&entry->second_snapshot, 0, sizeof(entry->second_snapshot));
+        entry->second_snapshot.flight_id = violation->second_flight_id;
+    }
+
     report->violation_count++;
 }
 
@@ -112,14 +137,25 @@ static void write_violations(FILE *file, const simulation_report_t *report) {
     }
 
     for (int i = 0; i < report->violation_count; i++) {
-        const safety_violation_t *v = &report->violations[i];
+        const report_violation_entry_t *entry = &report->violations[i];
+        const safety_violation_t *v = &entry->violation;
+        const position_update_t *f = &entry->first_snapshot;
+        const position_update_t *s = &entry->second_snapshot;
 
         fprintf(file, "[VIOLATION #%d]\n", i + 1);
         fprintf(file, "  Type              : %s\n", v->predicted ? "PREDICTED" : "DETECTED");
-        fprintf(file, "  Step              : %d\n", v->step);
+        fprintf(file, "  Step              : %d (t=%ds)\n", v->step, v->step * TIME_STEP_SECONDS);
         fprintf(file, "  Flights           : %d <-> %d\n", v->first_flight_id, v->second_flight_id);
         fprintf(file, "  Horizontal Dist.  : %.1f m\n", v->horizontal_distance_meters);
         fprintf(file, "  Vertical Dist.    : %.1f m\n", v->vertical_distance_meters);
+        fprintf(file, "  Flight %d position : lat=%.4f lon=%.4f alt=%.1f m\n",
+                f->flight_id, f->latitude, f->longitude, f->altitude);
+        fprintf(file, "  Flight %d velocity : vlat=%.4f vlon=%.4f valt=%.1f m/s\n",
+                f->flight_id, f->velocity_latitude, f->velocity_longitude, f->velocity_altitude);
+        fprintf(file, "  Flight %d position : lat=%.4f lon=%.4f alt=%.1f m\n",
+                s->flight_id, s->latitude, s->longitude, s->altitude);
+        fprintf(file, "  Flight %d velocity : vlat=%.4f vlon=%.4f valt=%.1f m/s\n",
+                s->flight_id, s->velocity_latitude, s->velocity_longitude, s->velocity_altitude);
         fprintf(file, "\n");
     }
 }

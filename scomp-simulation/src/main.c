@@ -325,7 +325,8 @@ static void notify_safety_violations(const safety_scan_result_t *scan_result,
                                      int flight_count,
                                      int reported_violations[MAX_FLIGHTS][MAX_FLIGHTS][SIMULATION_STEPS],
                                      int *total_violations,
-                                     simulation_report_t *report) {
+                                     simulation_report_t *report,
+                                     const position_history_t *position_history) {
     for (int i = 0; i < scan_result->count && !stop_requested; i++) {
         const safety_violation_t *violation = &scan_result->violations[i];
         const int first = violation->first_flight_index;
@@ -348,7 +349,7 @@ static void notify_safety_violations(const safety_scan_result_t *scan_result,
         log_safety_violation(stdout, violation);
         fflush(stdout);
 
-        report_record_violation(report, violation);
+        report_record_violation(report, violation, position_history, flight_count);
 
         kill(child_pids[first], SIGUSR1);
         kill(child_pids[second], SIGUSR1);
@@ -384,7 +385,8 @@ static void detect_and_notify_step_violations(const position_history_t *position
                              flight_count,
                              reported_violations,
                              total_violations,
-                             report);
+                             report,
+                             position_history);
 }
 
 static int release_flights_for_step(int control_pipes[][2], int flight_count, int step) {

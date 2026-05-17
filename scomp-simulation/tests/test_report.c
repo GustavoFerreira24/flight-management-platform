@@ -25,19 +25,26 @@ static position_update_t make_update(int flight_id, int step, int completed) {
     memset(&update, 0, sizeof(update));
     update.flight_id = flight_id;
     update.step = step;
-    update.latitude = 41.0 + step;
-    update.longitude = -8.0 - step;
-    update.altitude = 1000.0 + step;
+    update.latitude = 41.0 + step * 0.1;
+    update.longitude = -8.0 - step * 0.1;
+    update.altitude = 1000.0 + step * 10.0;
+    update.velocity_latitude = 0.1;
+    update.velocity_longitude = 0.1;
+    update.velocity_altitude = 10.0;
     update.completed = completed;
 
     return update;
 }
 
-static safety_violation_t make_violation(int first_id, int second_id, int step, int predicted) {
+static safety_violation_t make_violation(int first_index, int first_id,
+                                         int second_index, int second_id,
+                                         int step, int predicted) {
     safety_violation_t violation;
 
     memset(&violation, 0, sizeof(violation));
+    violation.first_flight_index = first_index;
     violation.first_flight_id = first_id;
+    violation.second_flight_index = second_index;
     violation.second_flight_id = second_id;
     violation.step = step;
     violation.predicted = predicted;
@@ -130,27 +137,43 @@ static void test_collect_rejects_null_arguments(void) {
     assert(report.flight_count == 0);
 }
 
-static void test_record_violation_stores_entry(void) {
+static void test_record_violation_stores_snapshots(void) {
     simulation_report_t report;
-    safety_violation_t v = make_violation(101, 202, 2, 0);
+    position_history_t history;
+    position_update_t latest[MAX_FLIGHTS];
+    safety_violation_t v = make_violation(0, 101, 1, 202, 0, 0);
 
+    memset(latest, 0, sizeof(latest));
     init_simulation_report(&report);
-    report_record_violation(&report, &v);
+    init_position_history(&history);
+
+    position_update_t u0 = make_update(101, 0, 0);
+    position_update_t u1 = make_update(202, 0, 0);
+    store_position_update(&history, latest, 2, 0, &u0);
+    store_position_update(&history, latest, 2, 1, &u1);
+
+    report_record_violation(&report, &v, &history, 2);
 
     assert(report.violation_count == 1);
-    assert(report.violations[0].first_flight_id == 101);
-    assert(report.violations[0].second_flight_id == 202);
-    assert(report.violations[0].step == 2);
-    assert(report.violations[0].predicted == 0);
+    assert(report.violations[0].violation.first_flight_id == 101);
+    assert(report.violations[0].violation.second_flight_id == 202);
+    assert(report.violations[0].first_snapshot.flight_id == 101);
+    assert(report.violations[0].second_snapshot.flight_id == 202);
+    assert(report.violations[0].first_snapshot.latitude == u0.latitude);
+    assert(report.violations[0].second_snapshot.latitude == u1.latitude);
 }
 
 static void test_record_violation_rejects_null(void) {
     simulation_report_t report;
-    safety_violation_t v = make_violation(101, 202, 0, 0);
+    position_history_t history;
+    safety_violation_t v = make_violation(0, 101, 1, 202, 0, 0);
 
     init_simulation_report(&report);
-    report_record_violation(NULL, &v);
-    report_record_violation(&report, NULL);
+    init_position_history(&history);
+
+    report_record_violation(NULL, &v, &history, 2);
+    report_record_violation(&report, NULL, &history, 2);
+    report_record_violation(&report, &v, NULL, 2);
 
     assert(report.violation_count == 0);
 }
@@ -179,8 +202,8 @@ static void test_save_to_file_creates_file(void) {
 
     report_collect_flight_results(&report, flights, 2, &history, 0);
 
-    safety_violation_t v = make_violation(101, 202, 1, 1);
-    report_record_violation(&report, &v);
+    safety_violation_t v = make_violation(0, 101, 1, 202, 1, 1);
+    report_record_violation(&report, &v, &history, 2);
 
     assert(report_save_to_file(&report, path) == 0);
 
@@ -191,11 +214,15 @@ static void test_save_to_file_creates_file(void) {
     int found_summary = 0;
     int found_result = 0;
     int found_violation = 0;
+    int found_position = 0;
+    int found_velocity = 0;
 
     while (fgets(line, sizeof(line), file) != NULL) {
         if (strstr(line, "SUMMARY") != NULL) found_summary = 1;
         if (strstr(line, "FINAL RESULT") != NULL) found_result = 1;
         if (strstr(line, "VIOLATION") != NULL) found_violation = 1;
+        if (strstr(line, "position") != NULL) found_position = 1;
+        if (strstr(line, "velocity") != NULL) found_velocity = 1;
     }
 
     fclose(file);
@@ -203,6 +230,8 @@ static void test_save_to_file_creates_file(void) {
     assert(found_summary == 1);
     assert(found_result == 1);
     assert(found_violation == 1);
+    assert(found_position == 1);
+    assert(found_velocity == 1);
 }
 
 static void test_save_to_file_rejects_null(void) {
@@ -220,7 +249,7 @@ int main(void) {
     test_collect_marks_completed_flights();
     test_collect_marks_terminated_flights();
     test_collect_rejects_null_arguments();
-    test_record_violation_stores_entry();
+    test_record_violation_stores_snapshots();
     test_record_violation_rejects_null();
     test_save_to_file_creates_file();
     test_save_to_file_rejects_null();
