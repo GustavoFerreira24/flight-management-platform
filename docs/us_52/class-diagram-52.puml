@@ -1,0 +1,120 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterAirportUI <<UI>> {
+    - controller : RegisterAirportController
+    - scanner : Scanner
+    + show() : void
+    - readDouble(prompt : String) : double
+}
+
+class RegisterAirportController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - airportRepo : AirportRepository
+    - areaRepo : AirControlAreaRepository
+
+    + registerAirport(...) : Airport
+}
+
+class Airport <<Aggregate Root>> {
+    - icao : AirportICAOCode
+    - iata : AirportIATACode
+    - name : String
+    - country : Country
+    - town : String
+    - coordinates : GpsCoordinates
+    - elevation : Elevation
+    - airControlArea : AirControlArea
+
+    + identity() : AirportICAOCode
+    + icaoCode() : AirportICAOCode
+    + iataCode() : AirportIATACode
+    + name() : String
+    + country() : Country
+    + town() : String
+    + coordinates() : GpsCoordinates
+    + elevation() : Elevation
+    + airControlArea() : AirControlArea
+}
+
+class AirportBuilder <<Factory>> {
+    - icao : AirportICAOCode
+    - iata : AirportIATACode
+    - name : String
+    - country : Country
+    - town : String
+    - coords : GpsCoordinates
+    - elev : Elevation
+    - area : AirControlArea
+
+    + withData(...) : AirportBuilder
+    + withLocation(...) : AirportBuilder
+    + inArea(area : AirControlArea) : AirportBuilder
+    + build() : Airport
+}
+
+class AirportICAOCode <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AirportICAOCode
+}
+
+class AirportIATACode <<Value Object>> {
+    - value : String
+    + valueOf(value : String) : AirportIATACode
+}
+
+class GpsCoordinates <<Value Object>> {
+    - latitude : double
+    - longitude : double
+
+    + latitude() : double
+    + longitude() : double
+}
+
+class Elevation <<Value Object>> {
+    - meters : double
+
+    + meters() : double
+}
+
+class Country <<Value Object>> {
+    - value : String
+
+    + valueOf(value : String) : Country
+    + toString() : String
+
+
+
+}
+
+class AirControlArea <<Aggregate Root>>
+
+interface AirportRepository <<Repository>> {
+    + findByIataCode(iata : AirportIATACode) : Optional<Airport>
+    + findByIcaoCode(icao : AirportICAOCode) : Optional<Airport>
+    + save(entity : Airport) : Airport
+}
+
+interface AirControlAreaRepository <<Repository>>
+
+RegisterAirportUI --> RegisterAirportController
+
+RegisterAirportController --> AirportRepository
+RegisterAirportController --> AirControlAreaRepository
+RegisterAirportController --> AirportBuilder
+RegisterAirportController --> Airport
+
+AirportBuilder --> Airport
+
+Airport *-- AirportICAOCode
+Airport *-- AirportIATACode
+Airport *-- Country
+Airport *-- GpsCoordinates
+Airport *-- Elevation
+
+Airport --> AirControlArea
+
+AirportRepository ..> Airport
+
+@enduml
