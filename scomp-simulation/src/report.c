@@ -145,16 +145,20 @@ static void write_violations(FILE *file, const simulation_report_t *report) {
         fprintf(file, "[VIOLATION #%d]\n", i + 1);
         fprintf(file, "  Type              : %s\n", v->predicted ? "PREDICTED" : "DETECTED");
         fprintf(file, "  Step              : %d (t=%ds)\n", v->step, v->step * TIME_STEP_SECONDS);
+        if (v->predicted) {
+            const int detect_step = v->step > 0 ? v->step - 1 : 0;
+            fprintf(file, "  Detected at step  : %d (t=%ds)\n", detect_step, detect_step * TIME_STEP_SECONDS);
+        }
         fprintf(file, "  Flights           : %d <-> %d\n", v->first_flight_id, v->second_flight_id);
         fprintf(file, "  Horizontal Dist.  : %.1f m\n", v->horizontal_distance_meters);
         fprintf(file, "  Vertical Dist.    : %.1f m\n", v->vertical_distance_meters);
-        fprintf(file, "  Flight %d position : lat=%.4f lon=%.4f alt=%.1f m\n",
+        fprintf(file, "  Flight %d position (at detection) : lat=%.4f lon=%.4f alt=%.1f m\n",
                 f->flight_id, f->latitude, f->longitude, f->altitude);
-        fprintf(file, "  Flight %d velocity : vlat=%.4f vlon=%.4f valt=%.1f m/s\n",
+        fprintf(file, "  Flight %d velocity (at detection) : vlat=%.4f vlon=%.4f valt=%.1f m/s\n",
                 f->flight_id, f->velocity_latitude, f->velocity_longitude, f->velocity_altitude);
-        fprintf(file, "  Flight %d position : lat=%.4f lon=%.4f alt=%.1f m\n",
+        fprintf(file, "  Flight %d position (at detection) : lat=%.4f lon=%.4f alt=%.1f m\n",
                 s->flight_id, s->latitude, s->longitude, s->altitude);
-        fprintf(file, "  Flight %d velocity : vlat=%.4f vlon=%.4f valt=%.1f m/s\n",
+        fprintf(file, "  Flight %d velocity (at detection) : vlat=%.4f vlon=%.4f valt=%.1f m/s\n",
                 s->flight_id, s->velocity_latitude, s->velocity_longitude, s->velocity_altitude);
         fprintf(file, "\n");
     }
