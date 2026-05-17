@@ -29,7 +29,7 @@ public class WeatherMeasurement implements ValueObject, Serializable {
     @AttributeOverride(name = "name", column = @Column(name = "PARAMETER_NAME", nullable = false))
     private WeatherParameter parameter;
 
-    @Column(nullable = false)
+    @Column(name = "MEASUREMENT_VALUE", nullable = false)
     private double value;
 
     @Embedded
