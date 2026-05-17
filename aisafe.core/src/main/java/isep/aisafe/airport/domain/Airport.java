@@ -34,6 +34,7 @@ public class Airport implements AggregateRoot<AirportICAOCode>, Serializable {
     private String name;
 
     @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "COUNTRY_NAME", nullable = false))
     private Country country;
 
     @Column(nullable = false)
