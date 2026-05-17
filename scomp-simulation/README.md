@@ -4,59 +4,7 @@ This module implements the SCOMP flight simulation component for Sprint 2.
 
 ## Component Diagram
 
-```text
-                               +-------------------------+
-                               |      Main Process       |
-                               |      simulator          |
-                               +-----------+-------------+
-                                           |
-                 +-------------------------+-------------------------+
-                 |                         |                         |
-        control pipe 0            control pipe 1            control pipe N
-        parent -> child           parent -> child           parent -> child
-                 |                         |                         |
-        +--------v--------+       +--------v--------+       +--------v--------+
-        | Flight Process  |       | Flight Process  |       | Flight Process  |
-        | Flight 0        |       | Flight 1        |       | Flight N        |
-        +--------+--------+       +--------+--------+       +--------+--------+
-                 |                         |                         |
-        update pipe 0             update pipe 1             update pipe N
-        child -> parent           child -> parent           child -> parent
-                 |                         |                         |
-                 +-------------------------+-------------------------+
-                                           |
-                               +-----------v-------------+
-                               |      Main Process       |
-                               | receives position_update|
-                               +-----------+-------------+
-                                           |
-             +-----------------------------+-----------------------------+
-             |                             |                             |
- +-----------v-----------+     +-----------v-----------+     +-----------v-----------+
- | Position History      |     | Safety Monitor        |     | Report Generator      |
- | position_history.c    |     | safety_monitor.c      |     | report.c              |
- | stores past positions |     | detects violations    |     | writes final report   |
- +-----------------------+     +-----------+-----------+     +-----------+-----------+
-                                           |                             |
-                                           | SIGUSR1                     |
-                                           v                             v
-                                  +----------------+          +----------------------+
-                                  | Flight Process |          | simulation_report.txt|
-                                  | notified       |          +----------------------+
-                                  +----------------+
-
-Input files:
-  data/flights_from_simulador_v1.csv
-  data/large_normal_flights.csv
-  data/large_violation_flights.csv
-
-Build/test files:
-  Makefile
-  tests/test_position_history.c
-  tests/test_safety_monitor.c
-  tests/test_flight_loader.c
-  tests/test_report.c
-```
+![SCOMP Flight Simulation Component Diagram](docs/component-diagram.svg)
 
 ## Implemented User Stories
 
@@ -246,11 +194,11 @@ timestep 4 barrier complete: 40/40 updates processed
 
 Replace the placeholder names and percentages with the real group members before delivery.
 
-| Student | Contribution (%) | Main Contribution |
-| --- | ---: | --- |
-| Student 1 | 25 | US100/US103 process and pipe coordination |
-| Student 2 | 25 | US101 position history and tests |
-| Student 3 | 25 | US102 safety monitor and violation signalling |
-| Student 4 | 25 | US109 report generation, loader and validation |
+| Student          | Contribution (%) | Main Contribution |
+|------------------| ---: | --- |
+| Bruno Monteiro   | 25 | US100 |
+| Francisco Vieira | 25 | US101 position history and tests |
+| Gustavo Ferreira | 25 | US102 safety monitor and violation signalling |
+| Pedro Rodrigues  | 25 | US109 report generation, loader and validation |
 
 Total: 100%.
