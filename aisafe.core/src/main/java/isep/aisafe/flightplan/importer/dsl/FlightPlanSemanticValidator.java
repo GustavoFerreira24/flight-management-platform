@@ -12,6 +12,10 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
     private static final String FLIGHT_DESIGNATOR_PATTERN = "[A-Z]{2}[0-9]{1,4}[A-Z]?";
     private static final String AIRCRAFT_REGISTRATION_PATTERN = "[A-Z0-9][A-Z0-9-]{1,9}";
     private static final String PILOT_IDENTIFIER_PATTERN = "[A-Za-z][A-Za-z0-9._-]{2,49}";
+    private static final Set<String> ALTITUDE_UNITS = Set.of("m", "ft");
+    private static final Set<String> WIDTH_UNITS = Set.of("m", "km", "nm");
+    private static final Set<String> WIND_SPEED_UNITS = Set.of("m/s");
+    private static final Set<String> FUEL_UNITS = Set.of("kg", "l");
 
     private final List<FlightPlanDslError> errors = new ArrayList<>();
     private final List<LegSummary> legs = new ArrayList<>();
@@ -63,6 +67,9 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
         final double endLatitude = number(ctx.coordinate(1).number(0));
         final double endLongitude = number(ctx.coordinate(1).number(1));
 
+        validateCoordinate(ctx.coordinate(0), startLatitude, startLongitude);
+        validateCoordinate(ctx.coordinate(1), endLatitude, endLongitude);
+
         if (Double.compare(startLatitude, endLatitude) == 0 && Double.compare(startLongitude, endLongitude) == 0) {
             addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
                     "Segment start and end coordinates must be different.");
@@ -83,6 +90,10 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
             addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
                     "Altitude minimum must be lower than altitude maximum.");
         }
+
+        if (ctx.unit() != null) {
+            validateUnit(ctx.unit(), ALTITUDE_UNITS, "Altitude unit must be m or ft.");
+        }
     }
 
     @Override
@@ -90,6 +101,10 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
         if (number(ctx.number()) <= 0) {
             addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
                     "Segment width must be positive.");
+        }
+
+        if (ctx.unit() != null) {
+            validateUnit(ctx.unit(), WIDTH_UNITS, "Segment width unit must be m, km or nm.");
         }
     }
 
@@ -107,6 +122,10 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
             addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
                     "Wind speed must be positive.");
         }
+
+        if (ctx.windUnit() != null) {
+            validateUnit(ctx.windUnit(), WIND_SPEED_UNITS, "Wind speed unit must be m/s.");
+        }
     }
 
     @Override
@@ -115,6 +134,8 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
             addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
                     "Fuel quantity must be positive.");
         }
+
+        validateUnit(ctx.unit(), FUEL_UNITS, "Fuel unit must be kg or l.");
     }
 
     boolean hasErrors() {
@@ -241,6 +262,32 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
 
     private double number(final FlightPlanDslParser.NumberContext context) {
         return Double.parseDouble(context.getText());
+    }
+
+    private void validateCoordinate(
+            final FlightPlanDslParser.CoordinateContext context,
+            final double latitude,
+            final double longitude) {
+
+        if (latitude < -90 || latitude > 90) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
+                    "Latitude must be between -90 and 90 degrees.");
+        }
+
+        if (longitude < -180 || longitude > 180) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
+                    "Longitude must be between -180 and 180 degrees.");
+        }
+    }
+
+    private void validateUnit(
+            final org.antlr.v4.runtime.ParserRuleContext context,
+            final Set<String> allowedUnits,
+            final String message) {
+
+        if (!allowedUnits.contains(context.getText().toLowerCase())) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(), message);
+        }
     }
 
     private void addError(final int line, final int column, final String message) {
