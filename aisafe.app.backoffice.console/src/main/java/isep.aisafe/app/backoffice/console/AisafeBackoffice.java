@@ -11,6 +11,7 @@ import isep.aisafe.app.backoffice.console.presentation.customercollaborator.Regi
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
 import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCustomerCollaboratorsUI;
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
+import isep.aisafe.app.backoffice.console.presentation.weather.RegisterWeatherDataUI;
 import isep.aisafe.app.common.console.AisafeBaseApplication;
 import isep.aisafe.app.common.console.presentation.authz.LoginUI;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
@@ -55,7 +56,8 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         System.out.println("║ 1 - Admin login                                            ║");
         System.out.println("║ 2 - Backoffice Operator login                              ║");
         System.out.println("║ 3 - Air Company Collaborator login                         ║");
-        System.out.println("║ 4 - Exit                                                   ║");
+        System.out.println("║ 4 - Weather Person login                                   ║");
+        System.out.println("║ 5 - Exit                                                   ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.print("Option: ");
 
@@ -89,6 +91,15 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("4".equals(option)) {
+            if (loginFor("Weather Person", scanner, AisafePermissions.WEATHER_DATA_MANAGEMENT)) {
+                while (showWeatherPersonOptions(scanner)) {
+                    // Keep the authenticated weather person session open until logout.
+                }
+            }
+            return true;
+        }
+
+        if ("5".equals(option)) {
             return false;
         }
 
@@ -230,6 +241,31 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("4".equals(option)) {
+            System.out.println("Returning to login menu.");
+            return false;
+        }
+
+        System.out.println("Unknown option.");
+        return true;
+    }
+
+    private boolean showWeatherPersonOptions(final Scanner scanner) {
+        System.out.println("╔════════════════════════════════════════════════════════════╗");
+        System.out.println("║              Weather Management Console                   ║");
+        System.out.println("╠════════════════════════════════════════════════════════════╣");
+        System.out.println("║ 1 - Register Weather Data                          (US41)  ║");
+        System.out.println("║ 2 - Logout                                                 ║");
+        System.out.println("╚════════════════════════════════════════════════════════════╝");
+        System.out.print("Option: ");
+
+        final String option = scanner.nextLine();
+
+        if ("1".equals(option)) {
+            executeMenuAction(() -> new RegisterWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("2".equals(option)) {
             System.out.println("Returning to login menu.");
             return false;
         }
