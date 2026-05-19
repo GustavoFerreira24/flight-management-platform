@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryAirControlAreaRepositoryTest {
 
+    /**
+     * Verifica que a pesquisa por codigo devolve uma area guardada.
+     */
     @Test
     void ensureFindByCodeReturnsSavedArea() {
         final InMemoryAirControlAreaRepository repository = new InMemoryAirControlAreaRepository();
@@ -23,6 +26,9 @@ class InMemoryAirControlAreaRepositoryTest {
         assertEquals(area, repository.findByCode(AirControlAreaCode.valueOf("LPPTFIR")).get());
     }
 
+    /**
+     * Verifica que a pesquisa por codigo devolve vazio quando a area nao existe.
+     */
     @Test
     void ensureFindByCodeReturnsEmptyWhenAreaDoesNotExist() {
         final InMemoryAirControlAreaRepository repository = new InMemoryAirControlAreaRepository();

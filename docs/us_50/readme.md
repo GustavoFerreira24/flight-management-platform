@@ -8,26 +8,15 @@ The implementation follows the existing DDD approach in the project: `AirControl
 
 ### 1.1 List of issues
 
-Analysis:
+GitHub sub-issues:
 
-- 1 - Implement Air Control Area Registration
-- 2 - Validate Air Control Area Code and Geographic Boundaries
-- 3 - Enforce Unique Area Code
-
-Design:
-
-- 6 - Document Air Control Area Registration
-
-Implement:
-
-- 1 - Implement Air Control Area Registration
-- 2 - Validate Geographic Boundaries
-- 3 - Implement Air Control Area Bootstrap Process
-
-Test:
-
-- 4 - Add Air Control Area Domain Tests
-- 5 - Add Air Control Area Controller Tests
+- US050.1 - Implement Air Control Area Registration (#120)
+- US050.2 - Validate Area Code and Name (#121)
+- US050.3 - Enforce Unique Area Code (#122)
+- US050.4 - Validate Geographic Boundary (#123)
+- US050.5 - Implement Air Control Area Bootstrap Process (#124)
+- US050.6 - Add Air Control Area Registration Tests (#125)
+- US050.7 - Document Air Control Area Registration (#126)
 
 ## 2. Requirements
 

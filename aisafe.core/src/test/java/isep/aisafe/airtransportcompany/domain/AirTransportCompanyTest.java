@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AirTransportCompanyTest {
 
+    /**
+     * Verifica que existe um construtor protegido para suporte do ORM.
+     */
     @Test
     void ensureProtectedConstructorExistsForOrm() {
         final AirTransportCompany company = new AirTransportCompany();
@@ -13,6 +16,9 @@ class AirTransportCompanyTest {
         assertNotNull(company);
     }
 
+    /**
+     * Verifica que uma companhia aerea valida e aceite com todos os seus dados.
+     */
     @Test
     void ensureValidAirTransportCompanyIsAccepted() {
         final AirTransportCompany company = new AirTransportCompany(
@@ -28,6 +34,9 @@ class AirTransportCompanyTest {
         assertEquals("TAP", company.icaoCode().toString());
     }
 
+    /**
+     * Verifica que o nome da companhia e normalizado ao remover espacos extra.
+     */
     @Test
     void ensureCompanyNameIsNormalized() {
         final AirTransportCompany company = new AirTransportCompany(
@@ -40,6 +49,9 @@ class AirTransportCompanyTest {
         assertEquals("TAP Air Portugal", company.name());
     }
 
+    /**
+     * Verifica que uma companhia sem nome e rejeitada.
+     */
     @Test
     void ensureNullCompanyNameIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirTransportCompany(
@@ -50,6 +62,9 @@ class AirTransportCompanyTest {
         ));
     }
 
+    /**
+     * Verifica que uma companhia com nome vazio e rejeitada.
+     */
     @Test
     void ensureEmptyCompanyNameIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirTransportCompany(
@@ -60,6 +75,9 @@ class AirTransportCompanyTest {
         ));
     }
 
+    /**
+     * Verifica que uma companhia sem pais e rejeitada.
+     */
     @Test
     void ensureNullCountryIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirTransportCompany(
@@ -70,6 +88,9 @@ class AirTransportCompanyTest {
         ));
     }
 
+    /**
+     * Verifica que uma companhia sem codigo IATA e rejeitada.
+     */
     @Test
     void ensureNullIataCodeIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirTransportCompany(
@@ -80,6 +101,9 @@ class AirTransportCompanyTest {
         ));
     }
 
+    /**
+     * Verifica que uma companhia sem codigo ICAO e rejeitada.
+     */
     @Test
     void ensureNullIcaoCodeIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirTransportCompany(
@@ -90,6 +114,9 @@ class AirTransportCompanyTest {
         ));
     }
 
+    /**
+     * Verifica que a identidade da companhia corresponde ao codigo IATA.
+     */
     @Test
     void ensureIdentityIsIataCode() {
         final AirTransportCompany company = new AirTransportCompany(
@@ -102,6 +129,9 @@ class AirTransportCompanyTest {
         assertEquals(IATACode.valueOf("TP"), company.identity());
     }
 
+    /**
+     * Verifica que a comparacao sameAs aceita a propria instancia.
+     */
     @Test
     void ensureSameAsReturnsTrueForSameInstance() {
         final AirTransportCompany company = new AirTransportCompany(
@@ -114,6 +144,9 @@ class AirTransportCompanyTest {
         assertTrue(company.sameAs(company));
     }
 
+    /**
+     * Verifica que a comparacao sameAs aceita companhias com a mesma identidade.
+     */
     @Test
     void ensureSameAsReturnsTrueForSameIdentity() {
         final AirTransportCompany first = new AirTransportCompany(
@@ -133,6 +166,9 @@ class AirTransportCompanyTest {
         assertTrue(first.sameAs(second));
     }
 
+    /**
+     * Verifica que a comparacao sameAs rejeita companhias com identidades diferentes.
+     */
     @Test
     void ensureSameAsReturnsFalseForDifferentIdentity() {
         final AirTransportCompany first = new AirTransportCompany(
@@ -152,6 +188,9 @@ class AirTransportCompanyTest {
         assertFalse(first.sameAs(second));
     }
 
+    /**
+     * Verifica que a comparacao sameAs rejeita objetos de outro tipo.
+     */
     @Test
     void ensureSameAsReturnsFalseForDifferentObjectType() {
         final AirTransportCompany company = new AirTransportCompany(
@@ -164,6 +203,9 @@ class AirTransportCompanyTest {
         assertFalse(company.sameAs("not a company"));
     }
 
+    /**
+     * Verifica que a comparacao sameAs rejeita um valor nulo.
+     */
     @Test
     void ensureSameAsReturnsFalseForNull() {
         final AirTransportCompany company = new AirTransportCompany(

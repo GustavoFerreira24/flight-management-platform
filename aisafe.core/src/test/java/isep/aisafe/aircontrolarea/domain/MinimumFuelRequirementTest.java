@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MinimumFuelRequirementTest {
 
+    /**
+     * Verifica que o construtor protegido existe para uso pelo ORM.
+     */
     @Test
     void ensureProtectedConstructorExistsForOrm() {
         final MinimumFuelRequirement requirement = new MinimumFuelRequirement();
@@ -13,6 +16,9 @@ class MinimumFuelRequirementTest {
         assertNotNull(requirement);
     }
 
+    /**
+     * Verifica que um requisito minimo de combustivel valido e aceite.
+     */
     @Test
     void ensureValidMinimumFuelRequirementIsAccepted() {
         final MinimumFuelRequirement requirement = MinimumFuelRequirement.valueOf(
@@ -24,24 +30,36 @@ class MinimumFuelRequirementTest {
         assertEquals(FuelUnit.valueOf("KG"), requirement.unit());
     }
 
+    /**
+     * Verifica que uma quantidade zero de combustivel e rejeitada.
+     */
     @Test
     void ensureZeroAmountIsRejected() {
         assertThrows(IllegalArgumentException.class, () ->
                 MinimumFuelRequirement.valueOf(0.0, FuelUnit.valueOf("KG")));
     }
 
+    /**
+     * Verifica que uma quantidade negativa de combustivel e rejeitada.
+     */
     @Test
     void ensureNegativeAmountIsRejected() {
         assertThrows(IllegalArgumentException.class, () ->
                 MinimumFuelRequirement.valueOf(-1.0, FuelUnit.valueOf("KG")));
     }
 
+    /**
+     * Verifica que um requisito sem unidade de combustivel e rejeitado.
+     */
     @Test
     void ensureNullFuelUnitIsRejected() {
         assertThrows(IllegalArgumentException.class, () ->
                 MinimumFuelRequirement.valueOf(5000.0, null));
     }
 
+    /**
+     * Verifica que a mesma instancia de requisito minimo de combustivel e igual a si propria.
+     */
     @Test
     void ensureSameMinimumFuelRequirementInstanceIsEqual() {
         final MinimumFuelRequirement requirement = MinimumFuelRequirement.valueOf(
@@ -52,6 +70,9 @@ class MinimumFuelRequirementTest {
         assertEquals(requirement, requirement);
     }
 
+    /**
+     * Verifica que requisitos minimos de combustivel com os mesmos valores sao iguais.
+     */
     @Test
     void ensureMinimumFuelRequirementsWithSameValuesAreEqual() {
         final MinimumFuelRequirement first = MinimumFuelRequirement.valueOf(
@@ -68,6 +89,9 @@ class MinimumFuelRequirementTest {
         assertEquals(first.hashCode(), second.hashCode());
     }
 
+    /**
+     * Verifica que requisitos minimos com quantidades diferentes nao sao iguais.
+     */
     @Test
     void ensureMinimumFuelRequirementsWithDifferentAmountsAreNotEqual() {
         final MinimumFuelRequirement first = MinimumFuelRequirement.valueOf(
@@ -83,6 +107,9 @@ class MinimumFuelRequirementTest {
         assertNotEquals(first, second);
     }
 
+    /**
+     * Verifica que requisitos minimos com unidades diferentes nao sao iguais.
+     */
     @Test
     void ensureMinimumFuelRequirementsWithDifferentUnitsAreNotEqual() {
         final MinimumFuelRequirement first = MinimumFuelRequirement.valueOf(
@@ -98,6 +125,9 @@ class MinimumFuelRequirementTest {
         assertNotEquals(first, second);
     }
 
+    /**
+     * Verifica que um requisito minimo nao e igual a um objeto de outro tipo.
+     */
     @Test
     void ensureMinimumFuelRequirementIsNotEqualToDifferentObjectType() {
         final MinimumFuelRequirement requirement = MinimumFuelRequirement.valueOf(
@@ -108,6 +138,9 @@ class MinimumFuelRequirementTest {
         assertNotEquals(requirement, "5000 KG");
     }
 
+    /**
+     * Verifica que um requisito minimo nao e igual a nulo.
+     */
     @Test
     void ensureMinimumFuelRequirementIsNotEqualToNull() {
         final MinimumFuelRequirement requirement = MinimumFuelRequirement.valueOf(
@@ -118,6 +151,9 @@ class MinimumFuelRequirementTest {
         assertNotEquals(null, requirement);
     }
 
+    /**
+     * Verifica que um requisito minimo pode ser representado como texto.
+     */
     @Test
     void ensureMinimumFuelRequirementCanBeRepresentedAsText() {
         final MinimumFuelRequirement requirement = MinimumFuelRequirement.valueOf(

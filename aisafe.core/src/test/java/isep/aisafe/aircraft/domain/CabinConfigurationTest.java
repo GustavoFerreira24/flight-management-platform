@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CabinConfigurationTest {
 
+    /**
+     * Verifica que o construtor protegido existe para suporte do ORM.
+     */
     @Test
     void ensureProtectedConstructorExistsForOrm() {
         final CabinConfiguration configuration = new CabinConfiguration();
@@ -13,6 +16,9 @@ class CabinConfigurationTest {
         assertNotNull(configuration);
     }
 
+    /**
+     * Verifica que uma configuracao de cabine valida e aceite com o total correto.
+     */
     @Test
     void ensureValidCabinConfigurationIsAccepted() {
         final CabinConfiguration configuration = CabinConfiguration.valueOf(150, 12, 4);
@@ -23,6 +29,9 @@ class CabinConfigurationTest {
         assertEquals(166, configuration.totalSeats());
     }
 
+    /**
+     * Verifica que uma configuracao com apenas lugares economicos e aceite.
+     */
     @Test
     void ensureCabinConfigurationWithOnlyEconomySeatsIsAccepted() {
         final CabinConfiguration configuration = CabinConfiguration.valueOf(100, 0, 0);
@@ -30,26 +39,41 @@ class CabinConfigurationTest {
         assertEquals(100, configuration.totalSeats());
     }
 
+    /**
+     * Verifica que um numero negativo de lugares economicos e rejeitado.
+     */
     @Test
     void ensureNegativeEconomySeatsAreRejected() {
         assertThrows(IllegalArgumentException.class, () -> CabinConfiguration.valueOf(-1, 10, 0));
     }
 
+    /**
+     * Verifica que um numero negativo de lugares executivos e rejeitado.
+     */
     @Test
     void ensureNegativeBusinessSeatsAreRejected() {
         assertThrows(IllegalArgumentException.class, () -> CabinConfiguration.valueOf(100, -1, 0));
     }
 
+    /**
+     * Verifica que um numero negativo de lugares de primeira classe e rejeitado.
+     */
     @Test
     void ensureNegativeFirstClassSeatsAreRejected() {
         assertThrows(IllegalArgumentException.class, () -> CabinConfiguration.valueOf(100, 10, -1));
     }
 
+    /**
+     * Verifica que uma configuracao de cabine sem lugares e rejeitada.
+     */
     @Test
     void ensureCabinConfigurationWithoutSeatsIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> CabinConfiguration.valueOf(0, 0, 0));
     }
 
+    /**
+     * Verifica que a mesma instancia de configuracao de cabine e igual a si propria.
+     */
     @Test
     void ensureSameCabinConfigurationInstanceIsEqual() {
         final CabinConfiguration configuration = CabinConfiguration.valueOf(150, 12, 4);
@@ -57,6 +81,9 @@ class CabinConfigurationTest {
         assertEquals(configuration, configuration);
     }
 
+    /**
+     * Verifica que configuracoes de cabine com os mesmos valores sao iguais.
+     */
     @Test
     void ensureCabinConfigurationsWithSameValuesAreEqual() {
         final CabinConfiguration first = CabinConfiguration.valueOf(150, 12, 4);
@@ -66,6 +93,9 @@ class CabinConfigurationTest {
         assertEquals(first.hashCode(), second.hashCode());
     }
 
+    /**
+     * Verifica que configuracoes de cabine com valores diferentes nao sao iguais.
+     */
     @Test
     void ensureCabinConfigurationsWithDifferentValuesAreNotEqual() {
         final CabinConfiguration first = CabinConfiguration.valueOf(150, 12, 4);
@@ -74,6 +104,9 @@ class CabinConfigurationTest {
         assertNotEquals(first, second);
     }
 
+    /**
+     * Verifica que uma configuracao de cabine nao e igual a um objeto de outro tipo.
+     */
     @Test
     void ensureCabinConfigurationIsNotEqualToDifferentObjectType() {
         final CabinConfiguration configuration = CabinConfiguration.valueOf(150, 12, 4);
@@ -81,6 +114,9 @@ class CabinConfigurationTest {
         assertNotEquals(configuration, "150/12/4");
     }
 
+    /**
+     * Verifica que uma configuracao de cabine nao e igual a nulo.
+     */
     @Test
     void ensureCabinConfigurationIsNotEqualToNull() {
         final CabinConfiguration configuration = CabinConfiguration.valueOf(150, 12, 4);
@@ -88,6 +124,9 @@ class CabinConfigurationTest {
         assertNotEquals(null, configuration);
     }
 
+    /**
+     * Verifica que a configuracao de cabine pode ser representada em texto.
+     */
     @Test
     void ensureCabinConfigurationCanBeRepresentedAsText() {
         final CabinConfiguration configuration = CabinConfiguration.valueOf(150, 12, 4);

@@ -35,6 +35,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegisterAircraftControllerTest {
 
+    /**
+     * Verifica que uma aeronave valida e registada e fica associada aos dados corretos.
+     */
     @Test
     void ensureValidAircraftRegistrationIsAccepted() {
         final Fixture fixture = new Fixture("tap.collaborator@aisafe.com");
@@ -64,6 +67,9 @@ class RegisterAircraftControllerTest {
         assertTrue(fixture.aircraftRepository.findByRegistration(AircraftRegistration.valueOf("CS-U70")).isPresent());
     }
 
+    /**
+     * Verifica que uma aeronave pode ser registada com estado operacional explicito.
+     */
     @Test
     void ensureAircraftCanBeRegisteredWithExplicitOperationalStatus() {
         final Fixture fixture = new Fixture("tap.status@aisafe.com");
@@ -86,6 +92,9 @@ class RegisterAircraftControllerTest {
         assertEquals("IN_MAINTENANCE", result.operationalStatus().toString());
     }
 
+    /**
+     * Verifica que os designadores de modelos de aeronave podem ser listados para selecao.
+     */
     @Test
     void ensureAircraftModelDesignatorsCanBeListedForSelection() {
         final Fixture fixture = new Fixture("tap.models@aisafe.com");
@@ -97,6 +106,9 @@ class RegisterAircraftControllerTest {
         assertEquals(List.of("US70-A320NEO | AIRBUS"), result);
     }
 
+    /**
+     * Verifica que os motores certificados podem ser listados para o modelo de aeronave selecionado.
+     */
     @Test
     void ensureCertifiedEngineModelDesignatorsCanBeListedForSelectedAircraftModel() {
         final Fixture fixture = new Fixture("tap.engines@aisafe.com");
@@ -108,6 +120,9 @@ class RegisterAircraftControllerTest {
         assertEquals(List.of("US70-LEAP-1A | CFM INTERNATIONAL"), result);
     }
 
+    /**
+     * Verifica que uma matricula de aeronave duplicada e rejeitada.
+     */
     @Test
     void ensureDuplicateAircraftRegistrationIsRejected() {
         final Fixture fixture = new Fixture("tap.duplicate@aisafe.com");
@@ -121,6 +136,9 @@ class RegisterAircraftControllerTest {
         assertEquals("Aircraft registration already exists.", result.getMessage());
     }
 
+    /**
+     * Verifica que e possivel confirmar se uma matricula ja existe antes do registo.
+     */
     @Test
     void ensureExistingAircraftRegistrationCanBeCheckedBeforeRegistration() {
         final Fixture fixture = new Fixture("tap.existing@aisafe.com");
@@ -133,6 +151,9 @@ class RegisterAircraftControllerTest {
         assertFalse(fixture.controller().aircraftRegistrationExists("CS-NEW"));
     }
 
+    /**
+     * Verifica que o registo e rejeitado quando o modelo de aeronave nao existe.
+     */
     @Test
     void ensureUnknownAircraftModelIsRejected() {
         final Fixture fixture = new Fixture("tap.model@aisafe.com");
@@ -155,6 +176,9 @@ class RegisterAircraftControllerTest {
         assertEquals("Aircraft model was not found.", result.getMessage());
     }
 
+    /**
+     * Verifica que o registo e rejeitado quando o modelo de motor nao existe.
+     */
     @Test
     void ensureUnknownEngineModelIsRejected() {
         final Fixture fixture = new Fixture("tap.engine@aisafe.com");
@@ -177,6 +201,9 @@ class RegisterAircraftControllerTest {
         assertEquals("Engine model was not found.", result.getMessage());
     }
 
+    /**
+     * Verifica que um motor nao certificado para o modelo de aeronave e rejeitado.
+     */
     @Test
     void ensureNonCertifiedEngineModelIsRejected() {
         final Fixture fixture = new Fixture("tap.variant@aisafe.com");
@@ -203,6 +230,9 @@ class RegisterAircraftControllerTest {
         assertFalse(fixture.aircraftRepository.findByRegistration(AircraftRegistration.valueOf("CS-VAR")).isPresent());
     }
 
+    /**
+     * Verifica que o utilizador autenticado tem de ser colaborador de cliente.
+     */
     @Test
     void ensureAuthenticatedUserMustBeCustomerCollaborator() {
         final Fixture fixture = new Fixture("unknown@aisafe.com");
@@ -224,6 +254,9 @@ class RegisterAircraftControllerTest {
         assertEquals("Authenticated user is not a customer collaborator.", result.getMessage());
     }
 
+    /**
+     * Verifica que o colaborador autenticado tem de estar associado a uma companhia aerea.
+     */
     @Test
     void ensureCollaboratorMustBeAssociatedWithAirTransportCompany() {
         final Fixture fixture = new Fixture("area.collaborator@aisafe.com");
@@ -253,6 +286,9 @@ class RegisterAircraftControllerTest {
         assertEquals("Authenticated collaborator is not associated with an air transport company.", result.getMessage());
     }
 
+    /**
+     * Verifica que a companhia aerea associada ao colaborador tem de existir.
+     */
     @Test
     void ensureAssociatedAirTransportCompanyMustExist() {
         final Fixture fixture = new Fixture("missing.company@aisafe.com");
@@ -279,6 +315,9 @@ class RegisterAircraftControllerTest {
         assertEquals("Associated air transport company was not found.", result.getMessage());
     }
 
+    /**
+     * Verifica que erros de autorizacao sao propagados pelo controlador.
+     */
     @Test
     void ensureAuthorizationErrorsArePropagated() {
         final Fixture fixture = new Fixture("tap.auth@aisafe.com");
@@ -292,6 +331,9 @@ class RegisterAircraftControllerTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Verifica que dependencias nulas do controlador sao rejeitadas.
+     */
     @Test
     void ensureNullDependenciesAreRejected() {
         final TestAuthorizationService authz = new TestAuthorizationService("tap.nulls@aisafe.com");

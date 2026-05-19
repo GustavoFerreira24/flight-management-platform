@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryAircraftRepositoryTest {
 
+    /**
+     * Verifica que uma aeronave gravada pode ser encontrada pela matricula.
+     */
     @Test
     void ensureFindByRegistrationReturnsSavedAircraft() {
         final InMemoryAircraftRepository repository = new InMemoryAircraftRepository();
@@ -36,6 +39,9 @@ class InMemoryAircraftRepositoryTest {
         assertEquals(aircraft, repository.findByRegistration(AircraftRegistration.valueOf("CS-R01")).get());
     }
 
+    /**
+     * Verifica que a pesquisa por matricula devolve vazio quando a aeronave nao existe.
+     */
     @Test
     void ensureFindByRegistrationReturnsEmptyWhenAircraftDoesNotExist() {
         final InMemoryAircraftRepository repository = new InMemoryAircraftRepository();
@@ -43,6 +49,9 @@ class InMemoryAircraftRepositoryTest {
         assertTrue(repository.findByRegistration(AircraftRegistration.valueOf("CS-R02")).isEmpty());
     }
 
+    /**
+     * Verifica que a pesquisa por companhia devolve a aeronave gravada dessa companhia.
+     */
     @Test
     void ensureFindByCompanyReturnsSavedAircraftFromCompany() {
         final InMemoryAircraftRepository repository = new InMemoryAircraftRepository();
@@ -61,6 +70,9 @@ class InMemoryAircraftRepositoryTest {
         assertEquals(aircraft, result.iterator().next());
     }
 
+    /**
+     * Verifica que a pesquisa por companhia nao devolve aeronaves de outra companhia.
+     */
     @Test
     void ensureFindByCompanyDoesNotReturnAircraftFromAnotherCompany() {
         final InMemoryAircraftRepository repository = new InMemoryAircraftRepository();

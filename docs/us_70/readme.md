@@ -8,28 +8,15 @@ The implementation follows the existing DDD approach in the project: `Aircraft` 
 
 ### 1.1 List of issues
 
-Analysis:
+GitHub sub-issues:
 
-- 1 - Implement Aircraft Registration in Company Fleet
-- 2 - Validate Aircraft Registration and Cabin Configuration
-- 3 - Enforce Certified Engine Selection
-- 4 - Associate Aircraft with Authenticated Collaborator Company
-
-Design:
-
-- 8 - Document Aircraft Registration
-
-Implement:
-
-- 1 - Implement Aircraft Aggregate and Repository
-- 2 - Implement Fleet Registration Controller
-- 3 - Implement Aircraft Persistence Support
-
-Test:
-
-- 5 - Add Aircraft Domain Tests
-- 6 - Add Aircraft Controller Tests
-- 7 - Add Aircraft Repository Tests
+- US070.1 - Implement Aircraft Fleet Registration (#142)
+- US070.2 - Associate Aircraft with Model and Engines (#143)
+- US070.3 - Validate Aircraft Registration and Country (#144)
+- US070.4 - Validate Seat Configuration and Capacity (#145)
+- US070.5 - Define and Store Aircraft Operational Status (#146)
+- US070.6 - Add Aircraft Registration Tests (#148)
+- US070.7 - Document Aircraft Fleet Registration (#149)
 
 ## 2. Requirements
 

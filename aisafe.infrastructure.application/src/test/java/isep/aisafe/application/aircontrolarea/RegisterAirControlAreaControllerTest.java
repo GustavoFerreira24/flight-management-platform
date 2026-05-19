@@ -14,6 +14,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegisterAirControlAreaControllerTest {
 
+    /**
+     * Verifica que o controlador pode ser criado apenas com o repositorio.
+     */
     @Test
     void ensureControllerCanBeCreatedWithRepositoryOnly() {
         final RegisterAirControlAreaController controller =
@@ -22,6 +25,9 @@ class RegisterAirControlAreaControllerTest {
         assertNotNull(controller);
     }
 
+    /**
+     * Verifica que o controlador rejeita um repositorio nulo.
+     */
     @Test
     void ensureNullRepositoryIsRejected() {
         assertThrows(IllegalArgumentException.class, () ->
@@ -31,6 +37,9 @@ class RegisterAirControlAreaControllerTest {
                 ));
     }
 
+    /**
+     * Verifica que o controlador rejeita um servico de autorizacao nulo.
+     */
     @Test
     void ensureNullAuthorizationServiceIsRejected() {
         assertThrows(IllegalArgumentException.class, () ->
@@ -40,6 +49,9 @@ class RegisterAirControlAreaControllerTest {
                 ));
     }
 
+    /**
+     * Verifica que o registo de uma area de controlo aereo valida e aceite e persistido.
+     */
     @Test
     void ensureValidAirControlAreaRegistrationIsAccepted() {
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
@@ -70,6 +82,9 @@ class RegisterAirControlAreaControllerTest {
         assertTrue(repository.findByCode(result.identity()).isPresent());
     }
 
+    /**
+     * Verifica que o registo de um codigo de area duplicado e rejeitado.
+     */
     @Test
     void ensureDuplicateAirControlAreaCodeRegistrationIsRejected() {
         final InMemoryAirControlAreaRepository repository = new InMemoryAirControlAreaRepository();
@@ -106,6 +121,9 @@ class RegisterAirControlAreaControllerTest {
         assertEquals("Air control area code already exists.", result.getMessage());
     }
 
+    /**
+     * Verifica que o registo com codigo de area invalido e rejeitado.
+     */
     @Test
     void ensureInvalidAirControlAreaCodeIsRejected() {
         final RegisterAirControlAreaController controller =
@@ -127,6 +145,9 @@ class RegisterAirControlAreaControllerTest {
                 ));
     }
 
+    /**
+     * Verifica que o registo com limite geografico invalido e rejeitado.
+     */
     @Test
     void ensureInvalidGeographicBoundaryIsRejected() {
         final RegisterAirControlAreaController controller =
@@ -148,6 +169,9 @@ class RegisterAirControlAreaControllerTest {
                 ));
     }
 
+    /**
+     * Verifica que o registo com quantidade minima de combustivel invalida e rejeitado.
+     */
     @Test
     void ensureInvalidMinimumFuelAmountIsRejected() {
         final RegisterAirControlAreaController controller =
@@ -169,6 +193,9 @@ class RegisterAirControlAreaControllerTest {
                 ));
     }
 
+    /**
+     * Verifica que o registo com unidade de combustivel invalida e rejeitado.
+     */
     @Test
     void ensureInvalidFuelUnitIsRejected() {
         final RegisterAirControlAreaController controller =
@@ -190,6 +217,9 @@ class RegisterAirControlAreaControllerTest {
                 ));
     }
 
+    /**
+     * Verifica que erros de autorizacao sao propagados pelo controlador.
+     */
     @Test
     void ensureAuthorizationErrorsArePropagated() {
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();

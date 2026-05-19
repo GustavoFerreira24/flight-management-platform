@@ -11,6 +11,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AirCompanyConfigurationControllerTest {
 
+    /**
+     * Verifica que o controlador pode ser criado apenas com o repositorio.
+     */
     @Test
     void ensureControllerCanBeCreatedWithRepositoryOnly() {
         final AirCompanyConfigurationController controller =
@@ -19,18 +22,27 @@ class AirCompanyConfigurationControllerTest {
         assertNotNull(controller);
     }
 
+    /**
+     * Verifica que a criacao do controlador rejeita um repositorio nulo.
+     */
     @Test
     void ensureNullRepositoryIsRejected() {
         assertThrows(IllegalArgumentException.class, () ->
                 new AirCompanyConfigurationController(new CapturingAuthorizationService(), null));
     }
 
+    /**
+     * Verifica que a criacao do controlador rejeita um servico de autorizacao nulo.
+     */
     @Test
     void ensureNullAuthorizationServiceIsRejected() {
         assertThrows(IllegalArgumentException.class, () ->
                 new AirCompanyConfigurationController(null, new InMemoryAirTransportCompanyRepository()));
     }
 
+    /**
+     * Verifica que o registo de uma companhia aerea valida e aceite e persistido.
+     */
     @Test
     void ensureValidAirTransportCompanyRegistrationIsAccepted() {
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
@@ -53,6 +65,9 @@ class AirCompanyConfigurationControllerTest {
         assertTrue(repository.findByIataCode(result.identity()).isPresent());
     }
 
+    /**
+     * Verifica que o registo rejeita um codigo IATA ja existente.
+     */
     @Test
     void ensureDuplicateIataCodeRegistrationIsRejected() {
         final InMemoryAirTransportCompanyRepository repository = new InMemoryAirTransportCompanyRepository();
@@ -77,6 +92,9 @@ class AirCompanyConfigurationControllerTest {
         assertEquals("Air transport company IATA code already exists.", result.getMessage());
     }
 
+    /**
+     * Verifica que o registo rejeita um codigo ICAO ja existente.
+     */
     @Test
     void ensureDuplicateIcaoCodeRegistrationIsRejected() {
         final InMemoryAirTransportCompanyRepository repository = new InMemoryAirTransportCompanyRepository();
@@ -101,6 +119,9 @@ class AirCompanyConfigurationControllerTest {
         assertEquals("Air transport company ICAO code already exists.", result.getMessage());
     }
 
+    /**
+     * Verifica que o registo rejeita dados invalidos da companhia aerea.
+     */
     @Test
     void ensureInvalidAirTransportCompanyDataIsRejected() {
         final AirCompanyConfigurationController controller = new AirCompanyConfigurationController(
@@ -114,6 +135,9 @@ class AirCompanyConfigurationControllerTest {
         ));
     }
 
+    /**
+     * Verifica que erros de autorizacao sao propagados pelo controlador.
+     */
     @Test
     void ensureAuthorizationErrorsArePropagated() {
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
@@ -134,6 +158,9 @@ class AirCompanyConfigurationControllerTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Verifica que a execucao do controlador valida a autorizacao necessaria.
+     */
     @Test
     void ensureExecuteChecksAuthorization() {
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();

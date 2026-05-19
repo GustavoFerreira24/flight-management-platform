@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AirControlAreaTest {
 
+    /**
+     * Verifica que o construtor protegido existe para uso pelo ORM.
+     */
     @Test
     void ensureProtectedConstructorExistsForOrm() {
         final AirControlArea area = new AirControlArea();
@@ -13,6 +16,9 @@ class AirControlAreaTest {
         assertNotNull(area);
     }
 
+    /**
+     * Verifica que uma area de controlo aereo valida e aceite com todos os atributos.
+     */
     @Test
     void ensureValidAirControlAreaIsAccepted() {
         final AirControlArea area = new AirControlArea(
@@ -32,6 +38,9 @@ class AirControlAreaTest {
         );
     }
 
+    /**
+     * Verifica que o construtor legado cria a area com limites e combustivel por defeito.
+     */
     @Test
     void ensureLegacyConstructorCreatesAreaWithDefaultBoundaryAndFuelRequirement() {
         final AirControlArea area = new AirControlArea(
@@ -48,6 +57,9 @@ class AirControlAreaTest {
         );
     }
 
+    /**
+     * Verifica que o nome da area e normalizado removendo espacos em excesso.
+     */
     @Test
     void ensureNameIsNormalized() {
         final AirControlArea area = new AirControlArea(
@@ -60,6 +72,9 @@ class AirControlAreaTest {
         assertEquals("Lisbon FIR", area.name());
     }
 
+    /**
+     * Verifica que uma area sem codigo e rejeitada.
+     */
     @Test
     void ensureNullCodeIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirControlArea(
@@ -70,6 +85,9 @@ class AirControlAreaTest {
         ));
     }
 
+    /**
+     * Verifica que uma area sem nome e rejeitada.
+     */
     @Test
     void ensureNullNameIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirControlArea(
@@ -80,6 +98,9 @@ class AirControlAreaTest {
         ));
     }
 
+    /**
+     * Verifica que uma area com nome vazio e rejeitada.
+     */
     @Test
     void ensureEmptyNameIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirControlArea(
@@ -90,6 +111,9 @@ class AirControlAreaTest {
         ));
     }
 
+    /**
+     * Verifica que uma area sem limite geografico e rejeitada.
+     */
     @Test
     void ensureNullGeographicBoundaryIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirControlArea(
@@ -100,6 +124,9 @@ class AirControlAreaTest {
         ));
     }
 
+    /**
+     * Verifica que uma area sem requisito minimo de combustivel e rejeitada.
+     */
     @Test
     void ensureNullMinimumFuelRequirementIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new AirControlArea(
@@ -110,6 +137,9 @@ class AirControlAreaTest {
         ));
     }
 
+    /**
+     * Verifica que a identidade da area corresponde ao seu codigo.
+     */
     @Test
     void ensureIdentityIsAreaCode() {
         final AirControlArea area = new AirControlArea(
@@ -122,6 +152,9 @@ class AirControlAreaTest {
         assertEquals(AirControlAreaCode.valueOf("LPPTFIR"), area.identity());
     }
 
+    /**
+     * Verifica que sameAs devolve verdadeiro para a mesma instancia.
+     */
     @Test
     void ensureSameAsReturnsTrueForSameInstance() {
         final AirControlArea area = new AirControlArea(
@@ -134,6 +167,9 @@ class AirControlAreaTest {
         assertTrue(area.sameAs(area));
     }
 
+    /**
+     * Verifica que sameAs devolve verdadeiro para areas com a mesma identidade.
+     */
     @Test
     void ensureSameAsReturnsTrueForSameIdentity() {
         final AirControlArea first = new AirControlArea(
@@ -153,6 +189,9 @@ class AirControlAreaTest {
         assertTrue(first.sameAs(second));
     }
 
+    /**
+     * Verifica que sameAs devolve falso para areas com identidades diferentes.
+     */
     @Test
     void ensureSameAsReturnsFalseForDifferentIdentity() {
         final AirControlArea first = new AirControlArea(
@@ -172,6 +211,9 @@ class AirControlAreaTest {
         assertFalse(first.sameAs(second));
     }
 
+    /**
+     * Verifica que sameAs devolve falso para objetos de outro tipo.
+     */
     @Test
     void ensureSameAsReturnsFalseForDifferentObjectType() {
         final AirControlArea area = new AirControlArea(
@@ -184,6 +226,9 @@ class AirControlAreaTest {
         assertFalse(area.sameAs("not an air control area"));
     }
 
+    /**
+     * Verifica que sameAs devolve falso para valor nulo.
+     */
     @Test
     void ensureSameAsReturnsFalseForNull() {
         final AirControlArea area = new AirControlArea(

@@ -8,26 +8,14 @@ The implementation follows the existing DDD approach in the project: `AirTranspo
 
 ### 1.1 List of issues
 
-Analysis:
+GitHub sub-issues:
 
-- 1 - Implement Air Transport Company Registration
-- 2 - Validate IATA and ICAO Codes
-- 3 - Enforce Unique IATA and ICAO Codes
-
-Design:
-
-- 6 - Document Air Transport Company Registration
-
-Implement:
-
-- 1 - Implement Air Transport Company Registration
-- 2 - Implement Air Transport Company Bootstrap Process
-- 3 - Correct Backoffice Operator Authorization
-
-Test:
-
-- 4 - Add Air Transport Company Domain Tests
-- 5 - Add Air Transport Company Controller Tests
+- US060.1 - Implement Air Transport Company Registration (#107)
+- US060.2 - Validate Company Name and Codes (#108)
+- US060.3 - Enforce Unique IATA and ICAO Codes (#109)
+- US060.4 - Implement Company Bootstrap Process (#110)
+- US060.5 - Add Company Registration Tests (#111)
+- US060.6 - Document Company Registration (#112)
 
 ## 2. Requirements
 

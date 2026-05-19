@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryAirTransportCompanyRepositoryTest {
 
+    /**
+     * Verifica que a pesquisa por codigo IATA devolve a companhia guardada.
+     */
     @Test
     void ensureFindByIataCodeReturnsSavedCompany() {
         final InMemoryAirTransportCompanyRepository repository = new InMemoryAirTransportCompanyRepository();
@@ -23,6 +26,9 @@ class InMemoryAirTransportCompanyRepositoryTest {
         assertEquals(company, repository.findByIataCode(IATACode.valueOf("RA")).get());
     }
 
+    /**
+     * Verifica que a pesquisa por codigo IATA devolve vazio quando nao existe companhia.
+     */
     @Test
     void ensureFindByIataCodeReturnsEmptyWhenCompanyDoesNotExist() {
         final InMemoryAirTransportCompanyRepository repository = new InMemoryAirTransportCompanyRepository();
@@ -30,6 +36,9 @@ class InMemoryAirTransportCompanyRepositoryTest {
         assertTrue(repository.findByIataCode(IATACode.valueOf("RB")).isEmpty());
     }
 
+    /**
+     * Verifica que a pesquisa por codigo ICAO devolve a companhia guardada.
+     */
     @Test
     void ensureFindByIcaoCodeReturnsSavedCompany() {
         final InMemoryAirTransportCompanyRepository repository = new InMemoryAirTransportCompanyRepository();
@@ -47,6 +56,9 @@ class InMemoryAirTransportCompanyRepositoryTest {
         assertEquals(company, repository.findByIcaoCode(ICAOCode.valueOf("RCC")).get());
     }
 
+    /**
+     * Verifica que a pesquisa por codigo ICAO devolve vazio quando nao existe companhia.
+     */
     @Test
     void ensureFindByIcaoCodeReturnsEmptyWhenCompanyDoesNotExist() {
         final InMemoryAirTransportCompanyRepository repository = new InMemoryAirTransportCompanyRepository();

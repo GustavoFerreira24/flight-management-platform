@@ -21,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AircraftTest {
 
+    /**
+     * Verifica que o construtor protegido existe para suporte do ORM.
+     */
     @Test
     void ensureProtectedConstructorExistsForOrm() {
         final Aircraft aircraft = new Aircraft();
@@ -28,6 +31,9 @@ class AircraftTest {
         assertNotNull(aircraft);
     }
 
+    /**
+     * Verifica que uma aeronave valida e aceite com todos os atributos esperados.
+     */
     @Test
     void ensureValidAircraftIsAccepted() {
         final EngineModel engineModel = engineModel("LEAP-1A", "CFM International");
@@ -58,6 +64,9 @@ class AircraftTest {
         assertEquals(engineModel, aircraft.engineModel());
     }
 
+    /**
+     * Verifica que o ano de fabrico indicado e aceite e usado no calculo da idade.
+     */
     @Test
     void ensureAircraftManufactureYearIsAccepted() {
         final EngineModel engineModel = engineModel("LEAP-AGE", "CFM International");
@@ -80,6 +89,9 @@ class AircraftTest {
         assertEquals(8, aircraft.ageInYears());
     }
 
+    /**
+     * Verifica que anos de fabrico fora do intervalo permitido sao rejeitados.
+     */
     @Test
     void ensureInvalidManufactureYearIsRejected() {
         final EngineModel engineModel = engineModel("LEAP-YEAR", "CFM International");
@@ -110,6 +122,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave sem matricula e rejeitada.
+     */
     @Test
     void ensureNullRegistrationIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> new Aircraft(
@@ -124,6 +139,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave sem pais de registo e rejeitada.
+     */
     @Test
     void ensureNullRegistrationCountryIsRejected() {
         final EngineModel engineModel = engineModel("LEAP-1B", "CFM International");
@@ -141,6 +159,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave sem configuracao de cabine e rejeitada.
+     */
     @Test
     void ensureNullCabinConfigurationIsRejected() {
         final EngineModel engineModel = engineModel("LEAP-1C", "CFM International");
@@ -158,6 +179,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave sem estado operacional e rejeitada.
+     */
     @Test
     void ensureNullOperationalStatusIsRejected() {
         final EngineModel engineModel = engineModel("TRENT700", "Rolls Royce");
@@ -175,6 +199,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave com tripulacao invalida e rejeitada.
+     */
     @Test
     void ensureInvalidCrewSizeIsRejected() {
         final EngineModel engineModel = engineModel("GE90", "GE Aerospace");
@@ -192,6 +219,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave sem companhia associada e rejeitada.
+     */
     @Test
     void ensureNullCompanyIsRejected() {
         final EngineModel engineModel = engineModel("PW1100G", "Pratt Whitney");
@@ -209,6 +239,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave sem modelo de aeronave e rejeitada.
+     */
     @Test
     void ensureNullAircraftModelIsRejected() {
         final EngineModel engineModel = engineModel("PW1500G", "Pratt Whitney");
@@ -225,6 +258,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que uma aeronave sem modelo de motor e rejeitada.
+     */
     @Test
     void ensureNullEngineModelIsRejected() {
         final EngineModel engineModel = engineModel("CF34", "GE Aerospace");
@@ -242,6 +278,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que a lotacao da cabine nao pode exceder a capacidade do modelo.
+     */
     @Test
     void ensureTotalSeatsCannotExceedModelCapacity() {
         final EngineModel engineModel = engineModel("LEAP-X1", "CFM International");
@@ -259,6 +298,9 @@ class AircraftTest {
         ));
     }
 
+    /**
+     * Verifica que a aeronave guarda o motor recebido mesmo com certificacao validada externamente.
+     */
     @Test
     void ensureAircraftAcceptsEngineModelCertificationValidatedExternally() {
         final EngineModel certifiedEngine = engineModel("LEAP-X2", "CFM International");
@@ -279,6 +321,9 @@ class AircraftTest {
         assertEquals(nonCertifiedEngine, aircraft.engineModel());
     }
 
+    /**
+     * Verifica que sameAs devolve verdadeiro para a propria instancia.
+     */
     @Test
     void ensureSameAsReturnsTrueForSameInstance() {
         final EngineModel engineModel = engineModel("LEAP-X3", "CFM International");
@@ -294,6 +339,9 @@ class AircraftTest {
         assertTrue(aircraft.sameAs(aircraft));
     }
 
+    /**
+     * Verifica que sameAs devolve verdadeiro para aeronaves com a mesma identidade.
+     */
     @Test
     void ensureSameAsReturnsTrueForSameIdentity() {
         final EngineModel engineModel = engineModel("LEAP-X4", "CFM International");
@@ -316,6 +364,9 @@ class AircraftTest {
         assertTrue(first.sameAs(second));
     }
 
+    /**
+     * Verifica que sameAs devolve falso para aeronaves com identidades diferentes.
+     */
     @Test
     void ensureSameAsReturnsFalseForDifferentIdentity() {
         final EngineModel engineModel = engineModel("LEAP-X5", "CFM International");
@@ -338,6 +389,9 @@ class AircraftTest {
         assertFalse(first.sameAs(second));
     }
 
+    /**
+     * Verifica que sameAs devolve falso para objetos de outro tipo.
+     */
     @Test
     void ensureSameAsReturnsFalseForDifferentObjectType() {
         final EngineModel engineModel = engineModel("LEAP-X6", "CFM International");
@@ -353,6 +407,9 @@ class AircraftTest {
         assertFalse(aircraft.sameAs("not an aircraft"));
     }
 
+    /**
+     * Verifica que sameAs devolve falso quando compara com nulo.
+     */
     @Test
     void ensureSameAsReturnsFalseForNull() {
         final EngineModel engineModel = engineModel("LEAP-X7", "CFM International");
@@ -368,6 +425,9 @@ class AircraftTest {
         assertFalse(aircraft.sameAs(null));
     }
 
+    /**
+     * Verifica que uma aeronave ativa pode ser descomissionada.
+     */
     @Test
     void ensureAircraftCanBeDecommissioned() {
         final EngineModel engineModel = engineModel("LEAP-X8", "CFM International");
@@ -387,6 +447,9 @@ class AircraftTest {
         assertFalse(aircraft.canBeUsedForFlights());
     }
 
+    /**
+     * Verifica que uma aeronave ja descomissionada nao pode ser descomissionada novamente.
+     */
     @Test
     void ensureAlreadyDecommissionedAircraftCannotBeDecommissionedAgain() {
         final EngineModel engineModel = engineModel("LEAP-X9", "CFM International");
