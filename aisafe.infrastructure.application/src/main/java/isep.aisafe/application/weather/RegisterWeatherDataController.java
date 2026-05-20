@@ -14,6 +14,8 @@ import isep.aisafe.weatherdata.domain.WeatherProvider;
 import isep.aisafe.weatherdata.domain.WeatherProviderType;
 import isep.aisafe.weatherdata.domain.WeatherUnit;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDate;
 
 /**
@@ -64,6 +66,30 @@ public class RegisterWeatherDataController {
     public WeatherData registerWeatherMeasurement(
             final String day,
             final String areaCode,
+            final String parameter,
+            final double value,
+            final String unit,
+            final double altitude,
+            final double latitude,
+            final double longitude) {
+
+        return registerWeatherMeasurement(
+                day,
+                areaCode,
+                authz.authenticatedUsername(),
+                "AUTHENTICATED_PROVIDER",
+                parameter,
+                value,
+                unit,
+                altitude,
+                latitude,
+                longitude
+        );
+    }
+
+    public WeatherData registerWeatherMeasurement(
+            final String day,
+            final String areaCode,
             final String providerName,
             final String providerType,
             final String parameter,
@@ -106,6 +132,69 @@ public class RegisterWeatherDataController {
         );
 
         return weatherDataRepository().save(weatherData);
+    }
+
+    /**
+     * Lists air control areas whose geographic boundary contains the given coordinates.
+     *
+     * @param latitude weather measurement latitude
+     * @param longitude weather measurement longitude
+     * @return sorted area selection labels
+     */
+    public List<String> airControlAreasContaining(final double latitude, final double longitude) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT);
+
+        WeatherCoordinates.valueOf(latitude, longitude);
+
+        final List<String> areas = new ArrayList<>();
+
+        for (final AirControlArea area : airControlAreaRepository().findAll()) {
+            if (area.geographicBoundary().contains(latitude, longitude)) {
+                areas.add(area.code() + " | " + area.name());
+            }
+        }
+
+        areas.sort(String::compareTo);
+        return areas;
+    }
+
+    /**
+     * Lists available air control areas for weather data registration.
+     *
+     * @return sorted area selection labels
+     */
+    public List<String> airControlAreas() {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT);
+
+        final List<String> areas = new ArrayList<>();
+
+        for (final AirControlArea area : airControlAreaRepository().findAll()) {
+            areas.add(area.code() + " | " + area.name());
+        }
+
+        areas.sort(String::compareTo);
+        return areas;
+    }
+
+    /**
+     * Checks whether coordinates belong to the selected air control area.
+     *
+     * @param areaCode selected air control area code
+     * @param latitude weather measurement latitude
+     * @param longitude weather measurement longitude
+     * @return true if the coordinates are inside the selected area
+     */
+    public boolean airControlAreaContains(final String areaCode, final double latitude, final double longitude) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT);
+        ensureNotBlank(areaCode, "Air control area code is required.");
+
+        WeatherCoordinates.valueOf(latitude, longitude);
+
+        final AirControlAreaCode code = AirControlAreaCode.valueOf(areaCode);
+        final AirControlArea airControlArea = airControlAreaRepository().findByCode(code)
+                .orElseThrow(() -> new IllegalArgumentException("Air control area not found."));
+
+        return airControlArea.geographicBoundary().contains(latitude, longitude);
     }
 
     private void ensureNotBlank(final String value, final String message) {

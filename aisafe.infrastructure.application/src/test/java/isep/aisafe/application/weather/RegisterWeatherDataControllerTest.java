@@ -13,6 +13,7 @@ import isep.aisafe.weatherdata.domain.WeatherData;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -126,6 +127,93 @@ class RegisterWeatherDataControllerTest {
                 LocalDate.of(2026, 6, 2),
                 AirControlAreaCode.valueOf("LISACC")
         ).orElseThrow().measurements().size());
+    }
+
+    @Test
+    void ensureAuthenticatedProviderIsUsedWhenProviderIsNotSubmitted() {
+        final CapturingAuthorizationService authz = new AuthenticatedAuthorizationService("meteo.provider@aisafe.com");
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final RegisterWeatherDataController controller = controller(authz, weatherDataRepository);
+
+        final WeatherData weatherData = controller.registerWeatherMeasurement(
+                "2026-07-15",
+                "LISACC",
+                "temperature",
+                18.5,
+                "C",
+                1200,
+                38.72,
+                -9.14
+        );
+
+        assertEquals("meteo.provider@aisafe.com", weatherData.measurements().getFirst().provider().name());
+        assertEquals("AUTHENTICATED_PROVIDER", weatherData.measurements().getFirst().provider().type().toString());
+    }
+
+    @Test
+    void ensureAirControlAreasContainingCoordinatesCanBeListed() {
+        final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
+        airControlAreaRepository.save(new AirControlArea(
+                AirControlAreaCode.valueOf("LISACC"),
+                "Lisbon Area Control Centre",
+                GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
+        ));
+        airControlAreaRepository.save(new AirControlArea(
+                AirControlAreaCode.valueOf("IBRACC"),
+                "Iberian Area Control Centre",
+                GeographicBoundary.valueOf(35.0, 43.0, -10.0, 0.0),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
+        ));
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        final RegisterWeatherDataController controller = new RegisterWeatherDataController(
+                authz,
+                new InMemoryWeatherDataRepository(),
+                airControlAreaRepository
+        );
+
+        final List<String> result = controller.airControlAreasContaining(40.4936, -3.56676);
+
+        assertArrayEquals(AisafePermissions.WEATHER_DATA_MANAGEMENT, authz.requestedRoles());
+        assertTrue(result.containsAll(List.of(
+                "IBRACC | Iberian Area Control Centre",
+                "LISACC | Lisbon Area Control Centre"
+        )));
+    }
+
+    @Test
+    void ensureNoAirControlAreasContainingCoordinatesReturnsEmptyList() {
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository()
+        );
+
+        final List<String> result = controller.airControlAreasContaining(50.0, 20.0);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void ensureAirControlAreasCanBeListedForSelection() {
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository()
+        );
+
+        final List<String> result = controller.airControlAreas();
+
+        assertTrue(result.contains("LISACC | Lisbon Area Control Centre"));
+    }
+
+    @Test
+    void ensureSelectedAirControlAreaCoordinatesCanBeChecked() {
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository()
+        );
+
+        assertTrue(controller.airControlAreaContains("LISACC", 38.72, -9.14));
+        assertFalse(controller.airControlAreaContains("LISACC", 50.0, 20.0));
     }
 
     /**
@@ -285,5 +373,19 @@ class RegisterWeatherDataControllerTest {
                 weatherDataRepository,
                 airControlAreaRepository
         );
+    }
+
+    private static class AuthenticatedAuthorizationService extends CapturingAuthorizationService {
+
+        private final String username;
+
+        AuthenticatedAuthorizationService(final String username) {
+            this.username = username;
+        }
+
+        @Override
+        public String authenticatedUsername() {
+            return username;
+        }
     }
 }

@@ -6,13 +6,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public class RegisterWeatherDataUI {
-
-    private static final Pattern AREA_CODE_PATTERN = Pattern.compile("[A-Z0-9]{2,10}");
 
     private static final Map<String, Map<String, String>> PARAMETER_UNITS = new LinkedHashMap<>();
 
@@ -55,22 +53,25 @@ public class RegisterWeatherDataUI {
         System.out.println("Register Weather Data");
 
         final String day = askDate();
-        final String areaCode = askAreaCode();
-        final String providerName = askRequiredText("Provider name", "Provider name is required.");
-        final String providerType = askRequiredText("Provider type", "Provider type is required.");
+        final String areaCode = selectAirControlArea();
+
+        if (areaCode == null) {
+            return;
+        }
+
+        final double[] coordinates = askCoordinatesInside(areaCode);
+        final double latitude = coordinates[0];
+        final double longitude = coordinates[1];
+
         final String parameter = askParameter();
         final double value = askValue(parameter);
         final String unit = askUnit(parameter);
         final double altitude = askAltitude();
-        final double latitude = askLatitude();
-        final double longitude = askLongitude();
 
         try {
             controller.registerWeatherMeasurement(
                     day,
                     areaCode,
-                    providerName,
-                    providerType,
                     parameter,
                     value,
                     unit,
@@ -105,21 +106,6 @@ public class RegisterWeatherDataUI {
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid date format. Use YYYY-MM-DD (e.g., 2026-05-17).");
             }
-        }
-    }
-
-    private String askAreaCode() {
-        while (true) {
-            final String value = askRequiredText(
-                    "Air control area code",
-                    "Air control area code is required."
-            ).toUpperCase();
-
-            if (AREA_CODE_PATTERN.matcher(value).matches()) {
-                return value;
-            }
-
-            System.out.println("Invalid area code. Use 2 to 10 letters or digits.");
         }
     }
 
@@ -266,6 +252,68 @@ public class RegisterWeatherDataUI {
             } catch (NumberFormatException e) {
                 System.out.println(errorMessage);
             }
+        }
+    }
+
+    private String selectAirControlArea() {
+        final List<String> areas = controller.airControlAreas();
+
+        if (areas.isEmpty()) {
+            System.out.println("No air control areas are registered.");
+            System.out.println("The weather measurement cannot be registered until an air control area exists.");
+            return null;
+        }
+
+        if (areas.size() == 1) {
+            final String selectedArea = areas.getFirst();
+            System.out.println("Selected air control area: " + selectedArea);
+            return areaCodeFrom(selectedArea);
+        }
+
+        System.out.println("Air control areas:");
+
+        for (int i = 0; i < areas.size(); i++) {
+            System.out.printf("%d - %s%n", i + 1, areas.get(i));
+        }
+
+        while (true) {
+            System.out.print("Choose air control area: ");
+            final String input = scanner.nextLine().trim();
+
+            try {
+                final int selected = Integer.parseInt(input);
+                if (selected >= 1 && selected <= areas.size()) {
+                    return areaCodeFrom(areas.get(selected - 1));
+                }
+            } catch (NumberFormatException ignored) {
+                // Fall through to the validation message below.
+            }
+
+            System.out.println("Invalid option. Please choose a listed number.");
+        }
+    }
+
+    private String areaCodeFrom(final String areaOption) {
+        final int separator = areaOption.indexOf('|');
+
+        if (separator < 0) {
+            return areaOption.trim();
+        }
+
+        return areaOption.substring(0, separator).trim();
+    }
+
+    private double[] askCoordinatesInside(final String areaCode) {
+        while (true) {
+            final double latitude = askLatitude();
+            final double longitude = askLongitude();
+
+            if (controller.airControlAreaContains(areaCode, latitude, longitude)) {
+                return new double[]{latitude, longitude};
+            }
+
+            System.out.println("Coordinates are outside the selected air control area.");
+            System.out.println("Please enter coordinates inside " + areaCode + ".");
         }
     }
 }
