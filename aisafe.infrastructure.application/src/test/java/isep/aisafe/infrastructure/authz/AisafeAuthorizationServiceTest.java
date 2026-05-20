@@ -109,6 +109,24 @@ class AisafeAuthorizationServiceTest {
         assertThrows(IllegalStateException.class, service::authenticatedUsername);
     }
 
+    /**
+     * Purpose: verify role checks can be made from the current session without calling authorization enforcement.
+     * Scenario: the authenticated user has the air company collaborator role.
+     * Expected output: role lookup returns true for that role and false for unrelated roles.
+     */
+    @Test
+    void ensureAuthenticatedUserRolesCanBeCheckedWithoutAuthorizationAttempt() {
+        // Arrange
+        final CapturingFrameworkAuthorizationService frameworkAuthz = new CapturingFrameworkAuthorizationService();
+        frameworkAuthz.session = Optional.of(new UserSession(systemUser("collaborator@aisafe.com")));
+        final AisafeAuthorizationService service = new AisafeAuthorizationService(frameworkAuthz);
+
+        // Act / Assert
+        assertTrue(service.authenticatedUserHasAnyOf(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR));
+        assertFalse(service.authenticatedUserHasAnyOf(AisafeRoles.ADMIN, AisafeRoles.BACKOFFICE_OPERATOR));
+        assertNull(frameworkAuthz.requestedRoles);
+    }
+
     private static final class CapturingFrameworkAuthorizationService extends AuthorizationService {
 
         private Role[] requestedRoles;

@@ -65,6 +65,20 @@ public class AisafeAuthorizationService {
                 .toString();
     }
 
+    /**
+     * Checks whether the current authenticated user has any of the given roles without logging an authorization failure.
+     *
+     * @param roles roles to check
+     * @return true when the authenticated user has at least one role
+     * @throws IllegalStateException when no user is authenticated
+     */
+    public boolean authenticatedUserHasAnyOf(final Role... roles) {
+        return authorizationService().session()
+                .orElseThrow(() -> new IllegalStateException("No authenticated user."))
+                .authenticatedUser()
+                .hasAny(roles);
+    }
+
     private AuthorizationService authorizationService() {
         if (authorizationService != null) {
             return authorizationService;

@@ -22,7 +22,6 @@ import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
-import eapli.framework.infrastructure.authz.domain.model.Role;
 
 import java.util.Scanner;
 
@@ -53,53 +52,21 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         System.out.println("╔════════════════════════════════════════════════════════════╗");
         System.out.println("║                    AISafe Console Login                    ║");
         System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║ 1 - Admin login                                            ║");
-        System.out.println("║ 2 - Backoffice Operator login                              ║");
-        System.out.println("║ 3 - Air Company Collaborator login                         ║");
-        System.out.println("║ 4 - Weather Person login                                   ║");
-        System.out.println("║ 5 - Exit                                                   ║");
+        System.out.println("║ 1 - Login                                                  ║");
+        System.out.println("║ 2 - Exit                                                   ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         System.out.print("Option: ");
 
         final String option = scanner.nextLine();
 
         if ("1".equals(option)) {
-            if (loginFor("Admin", scanner, AisafeRoles.ADMIN)) {
-                while (showAdminOptions(scanner)) {
-                    // Keep the authenticated admin session open until logout.
-                }
+            if (login(scanner)) {
+                showAuthenticatedUserOptions(scanner);
             }
             return true;
         }
 
         if ("2".equals(option)) {
-            if (loginFor("Backoffice Operator", scanner, AisafeRoles.BACKOFFICE_OPERATOR)) {
-                while (showBackofficeOptions(scanner)) {
-                    // Keep the authenticated backoffice session open until logout.
-                }
-            }
-            return true;
-        }
-
-        if ("3".equals(option)) {
-            if (loginFor("Air Company Collaborator", scanner, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
-                while (showAirCompanyOptions(scanner)) {
-                    // Keep the authenticated air-company session open until logout.
-                }
-            }
-            return true;
-        }
-
-        if ("4".equals(option)) {
-            if (loginFor("Weather Person", scanner, AisafePermissions.WEATHER_DATA_MANAGEMENT)) {
-                while (showWeatherPersonOptions(scanner)) {
-                    // Keep the authenticated weather person session open until logout.
-                }
-            }
-            return true;
-        }
-
-        if ("5".equals(option)) {
             return false;
         }
 
@@ -107,23 +74,45 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         return true;
     }
 
-    private boolean loginFor(final String accessArea, final Scanner scanner, final Role... allowedRoles) {
+    private boolean login(final Scanner scanner) {
         System.out.println();
-        System.out.println(accessArea + " login");
 
         final LoginUI loginUI = new LoginUI(new AuthenticationCredentialHandler(), scanner);
+        return loginUI.show();
+    }
 
-        if (!loginUI.show()) {
-            return false;
+    private void showAuthenticatedUserOptions(final Scanner scanner) {
+        final AisafeAuthorizationService authz = new AisafeAuthorizationService();
+
+        if (authz.authenticatedUserHasAnyOf(AisafeRoles.ADMIN)) {
+            while (showAdminOptions(scanner)) {
+                // Keep the authenticated admin session open until logout.
+            }
+            return;
         }
 
-        try {
-            new AisafeAuthorizationService().ensureAuthenticatedUserHasAnyOf(allowedRoles);
-            return true;
-        } catch (RuntimeException e) {
-            System.out.println("Authenticated user is not allowed to access " + accessArea + ".");
-            return false;
+        if (authz.authenticatedUserHasAnyOf(AisafeRoles.BACKOFFICE_OPERATOR)) {
+            while (showBackofficeOptions(scanner)) {
+                // Keep the authenticated backoffice session open until logout.
+            }
+            return;
         }
+
+        if (authz.authenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            while (showAirCompanyOptions(scanner)) {
+                // Keep the authenticated air-company session open until logout.
+            }
+            return;
+        }
+
+        if (authz.authenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT)) {
+            while (showWeatherPersonOptions(scanner)) {
+                // Keep the authenticated weather person session open until logout.
+            }
+            return;
+        }
+
+        System.out.println("Authenticated user has no console menu available.");
     }
 
     private boolean showAdminOptions(final Scanner scanner) {
