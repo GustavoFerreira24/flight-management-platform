@@ -7,6 +7,8 @@ import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -50,6 +52,28 @@ class RegisterAirportControllerTest {
                 ));
     }
 
+    @Test
+    void ensureAirControlAreasContainingCoordinatesCanBeListed() {
+        final Fixture fixture = new Fixture("backoffice@aisafe.com");
+        fixture.bootstrapAirControlArea("LISACC", "Lisbon ACC", 30, 45, -15, 5);
+        fixture.bootstrapAirControlArea("IBRACC", "Iberian ACC", 35, 43, -10, 0);
+
+        final List<String> result = fixture.controller().airControlAreasContaining(40.0, -8.0);
+
+        assertArrayEquals(AisafePermissions.BACKOFFICE_CONFIGURATION, fixture.authz.requestedRoles());
+        assertTrue(result.containsAll(List.of("IBRACC | Iberian ACC", "LISACC | Lisbon ACC")));
+    }
+
+    @Test
+    void ensureNoAirControlAreasContainingCoordinatesReturnsEmptyList() {
+        final Fixture fixture = new Fixture("backoffice@aisafe.com");
+        fixture.bootstrapAirControlArea("LISACC", "Lisbon ACC", 30, 45, -15, 5);
+
+        final List<String> result = fixture.controller().airControlAreasContaining(50.0, 20.0);
+
+        assertTrue(result.isEmpty());
+    }
+
     private static class Fixture {
         private final TestAuthorizationService authz;
         // Inicializa o repositório para remover o erro de compilação
@@ -62,10 +86,20 @@ class RegisterAirportControllerTest {
         }
 
         void bootstrapAirControlArea(final String areaCode) {
+            bootstrapAirControlArea(areaCode, "Lisbon ACC", 30, 45, -15, 5);
+        }
+
+        void bootstrapAirControlArea(
+                final String areaCode,
+                final String name,
+                final double minLatitude,
+                final double maxLatitude,
+                final double minLongitude,
+                final double maxLongitude) {
             area = new AirControlArea(
                     AirControlAreaCode.valueOf(areaCode),
-                    "Lisbon ACC",
-                    GeographicBoundary.valueOf(30, 45, -15, 5),
+                    name,
+                    GeographicBoundary.valueOf(minLatitude, maxLatitude, minLongitude, maxLongitude),
                     MinimumFuelRequirement.valueOf(5000, FuelUnit.valueOf("KG"))
             );
             areaRepository.save(area);

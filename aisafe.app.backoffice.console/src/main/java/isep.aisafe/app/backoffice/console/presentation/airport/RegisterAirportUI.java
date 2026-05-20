@@ -1,8 +1,8 @@
 package isep.aisafe.app.backoffice.console.presentation.airport;
 
 import isep.aisafe.application.airport.RegisterAirportController;
+import java.util.List;
 import java.util.Scanner;
-import isep.aisafe.airport.domain.*;
 
 /**
  * User interface for registering a new airport in the backoffice application.
@@ -61,14 +61,15 @@ public class RegisterAirportUI {
             final double lon = readDouble("Longitude (-180 to 180): ");
             final double elev = readDouble("Elevation (meters): ");
 
-            System.out.print("Area code (must exist in system): ");
-            final String areaCode = scanner.nextLine();
+            final String areaCode = selectAirControlArea(lat, lon);
+
+            if (areaCode == null) {
+                return;
+            }
 
             controller.registerAirport(
                     icao, iata, name, country, town, lat, lon, elev, areaCode
             );
-
-            System.out.println("Bootstrapped airport: " + icao);
 
             System.out.println("\nAirport registered successfully.");
 
@@ -94,5 +95,53 @@ public class RegisterAirportUI {
                 System.out.println("Invalid number format. Please use '.' for decimals.");
             }
         }
+    }
+
+    private String selectAirControlArea(final double latitude, final double longitude) {
+        final List<String> matchingAreas = controller.airControlAreasContaining(latitude, longitude);
+
+        if (matchingAreas.isEmpty()) {
+            System.out.println("No air control area contains the airport coordinates.");
+            System.out.println("The airport cannot be registered until a matching air control area exists.");
+            return null;
+        }
+
+        if (matchingAreas.size() == 1) {
+            final String selectedArea = matchingAreas.getFirst();
+            System.out.println("Matching air control area: " + selectedArea);
+            return areaCodeFrom(selectedArea);
+        }
+
+        System.out.println("Matching air control areas:");
+
+        for (int i = 0; i < matchingAreas.size(); i++) {
+            System.out.printf("%d - %s%n", i + 1, matchingAreas.get(i));
+        }
+
+        while (true) {
+            System.out.print("Choose air control area: ");
+            final String input = scanner.nextLine().trim();
+
+            try {
+                final int selected = Integer.parseInt(input);
+                if (selected >= 1 && selected <= matchingAreas.size()) {
+                    return areaCodeFrom(matchingAreas.get(selected - 1));
+                }
+            } catch (NumberFormatException ignored) {
+                // Fall through to the validation message below.
+            }
+
+            System.out.println("Invalid option. Please choose a listed number.");
+        }
+    }
+
+    private String areaCodeFrom(final String areaOption) {
+        final int separator = areaOption.indexOf('|');
+
+        if (separator < 0) {
+            return areaOption.trim();
+        }
+
+        return areaOption.substring(0, separator).trim();
     }
 }

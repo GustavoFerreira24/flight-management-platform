@@ -8,6 +8,9 @@ import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Controller responsável por registar novos aeroportos no sistema.
  * * <p>Este controlador garante que o utilizador autenticado possui as permissões
@@ -103,5 +106,30 @@ public class RegisterAirportController {
                 .inArea(area);
 
         return airportRepo.save(builder.build());
+    }
+
+    /**
+     * Lists air control areas whose geographic boundary contains the given coordinates.
+     *
+     * @param lat airport latitude
+     * @param lon airport longitude
+     * @return sorted area selection labels
+     */
+    public List<String> airControlAreasContaining(final double lat, final double lon) {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
+
+        // Reuse the airport coordinate value object to reject invalid coordinates early.
+        new GpsCoordinates(lat, lon);
+
+        final List<String> areas = new ArrayList<>();
+
+        for (final AirControlArea area : areaRepo.findAll()) {
+            if (area.geographicBoundary().contains(lat, lon)) {
+                areas.add(area.code() + " | " + area.name());
+            }
+        }
+
+        areas.sort(String::compareTo);
+        return areas;
     }
 }

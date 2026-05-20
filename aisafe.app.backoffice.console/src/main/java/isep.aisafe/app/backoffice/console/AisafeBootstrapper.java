@@ -9,6 +9,12 @@ import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.aircontrolarea.domain.FuelUnit;
 import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
 import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
+import isep.aisafe.aircraft.domain.Aircraft;
+import isep.aisafe.aircraft.domain.AircraftOperationalStatus;
+import isep.aisafe.aircraft.domain.AircraftRegistration;
+import isep.aisafe.aircraft.domain.AircraftRegistrationCountry;
+import isep.aisafe.aircraft.domain.AircraftRepository;
+import isep.aisafe.aircraft.domain.CabinConfiguration;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
@@ -17,13 +23,7 @@ import isep.aisafe.aircraftmodel.domain.AircraftModelType;
 import isep.aisafe.airport.domain.Airport;
 import isep.aisafe.airport.domain.AirportBuilder;
 import isep.aisafe.airport.domain.AirportICAOCode;
-import isep.aisafe.enginemodel.domain.EngineModel;
-import isep.aisafe.enginemodel.domain.EngineModelDesignator;
-import isep.aisafe.enginemodel.domain.EngineModelRepository;
-import isep.aisafe.enginemodel.domain.EngineType;
-import isep.aisafe.enginemodel.domain.FuelType;
-import isep.aisafe.infrastructure.persistence.PersistenceContext;
-import isep.aisafe.usermanagement.domain.AisafeRoles;
+import isep.aisafe.airport.domain.AirportRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.airtransportcompany.domain.Country;
@@ -34,7 +34,13 @@ import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
-import isep.aisafe.airport.domain.AirportRepository;
+import isep.aisafe.enginemodel.domain.EngineModel;
+import isep.aisafe.enginemodel.domain.EngineModelDesignator;
+import isep.aisafe.enginemodel.domain.EngineModelRepository;
+import isep.aisafe.enginemodel.domain.EngineType;
+import isep.aisafe.enginemodel.domain.FuelType;
+import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.usermanagement.domain.AisafeRoles;
 
 import java.util.List;
 import java.util.Set;
@@ -63,13 +69,10 @@ public class AisafeBootstrapper {
 
         bootstrapAirTransportCompanies();
         bootstrapAirControlAreas();
+        bootstrapAirports();
         bootstrapCustomerCollaborators(userService);
         bootstrapAircraftAndEngineModels();
-        bootstrapAirTransportCompanies();
-        bootstrapAirControlAreas(); // Os aeroportos vêm depois das áreas!
-        bootstrapAirports();        // <--- ADICIONA ISTO
-        bootstrapCustomerCollaborators(userService);
-        bootstrapAircraftAndEngineModels();
+        bootstrapDemoAircraftFleet();
     }
 
     private static void bootstrapAircraftAndEngineModels() {
@@ -86,32 +89,65 @@ public class AisafeBootstrapper {
                 0.60
         );
 
-        final AircraftModelDesignator a320neo = AircraftModelDesignator.valueOf("A320neo", "Airbus");
-
-        if (aircraftModelRepository.findByDesignator(a320neo).isPresent()) {
-            return;
-        }
-
-        final AircraftModel aircraftModel = new AircraftModel(
-                a320neo,
-                AircraftModelType.valueOf("PASSENGER"),
-                AircraftModelMotorization.valueOf("TURBOFAN"),
-                6300,
-                44500,
-                79000,
-                64500,
-                27200,
-                12000,
-                833,
-                122.6,
-                0.024,
-                0.62,
-                186,
-                List.of(cfmLeap)
+        final EngineModel ge90b = registerEngineModelIfMissing(
+                engineModelRepository,
+                EngineModelDesignator.valueOf("GE 90B", "General Electric"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                0.84,
+                489000.0,
+                0.00016
         );
 
-        aircraftModelRepository.save(aircraftModel);
-        System.out.println("Bootstrapped aircraft model: " + a320neo);
+        final AircraftModelDesignator a320neo = AircraftModelDesignator.valueOf("A320neo", "Airbus");
+
+        if (aircraftModelRepository.findByDesignator(a320neo).isEmpty()) {
+            final AircraftModel aircraftModel = new AircraftModel(
+                    a320neo,
+                    AircraftModelType.valueOf("PASSENGER"),
+                    AircraftModelMotorization.valueOf("TURBOFAN"),
+                    6300,
+                    44500,
+                    79000,
+                    64500,
+                    27200,
+                    12000,
+                    833,
+                    122.6,
+                    0.024,
+                    0.62,
+                    186,
+                    List.of(cfmLeap)
+            );
+
+            aircraftModelRepository.save(aircraftModel);
+            System.out.println("Bootstrapped aircraft model: " + a320neo);
+        }
+
+        final AircraftModelDesignator boeing777 = AircraftModelDesignator.valueOf("777-200ER", "Boeing");
+
+        if (aircraftModelRepository.findByDesignator(boeing777).isEmpty()) {
+            final AircraftModel aircraftModel = new AircraftModel(
+                    boeing777,
+                    AircraftModelType.valueOf("PASSENGER"),
+                    AircraftModelMotorization.valueOf("TURBOFAN"),
+                    14200,
+                    145150,
+                    347450,
+                    209000,
+                    181280,
+                    13100,
+                    905,
+                    440.0,
+                    0.017,
+                    0.87,
+                    314,
+                    List.of(ge90b)
+            );
+
+            aircraftModelRepository.save(aircraftModel);
+            System.out.println("Bootstrapped aircraft model: " + boeing777);
+        }
     }
 
     private static EngineModel registerEngineModelIfMissing(
@@ -193,6 +229,14 @@ public class AisafeBootstrapper {
                 "LH",
                 "DLH"
         );
+
+        registerAirTransportCompanyIfMissing(
+                repository,
+                "Air Europa",
+                "Spain",
+                "UX",
+                "AEA"
+        );
     }
 
     /**
@@ -210,6 +254,18 @@ public class AisafeBootstrapper {
                 45.0,
                 -15.0,
                 5.0,
+                5000.0,
+                "KG"
+        );
+
+        registerAirControlAreaIfMissing(
+                repository,
+                "IBRACC",
+                "Iberian Area Control Centre",
+                35.0,
+                43.0,
+                -10.0,
+                0.0,
                 5000.0,
                 "KG"
         );
@@ -244,6 +300,28 @@ public class AisafeBootstrapper {
                 "Password1",
                 CustomerReference.airControlArea("LISACC"),
                 Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
+        );
+
+        registerCustomerCollaboratorIfMissing(
+                userService,
+                collaboratorRepository,
+                "Ryanair",
+                "Collaborator",
+                "ryanair.collaborator@aisafe.com",
+                "Password1",
+                CustomerReference.airTransportCompany("FR"),
+                Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
+        );
+
+        registerCustomerCollaboratorIfMissing(
+                userService,
+                collaboratorRepository,
+                "Air Europa",
+                "Collaborator",
+                "aireuropa.collaborator@aisafe.com",
+                "Password1",
+                CustomerReference.airTransportCompany("UX"),
+                Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
         );
     }
 
@@ -404,22 +482,115 @@ public class AisafeBootstrapper {
         final AirportRepository repository = PersistenceContext.repositories().airports();
         final AirControlAreaRepository areaRepo = PersistenceContext.repositories().airControlAreas();
 
-        final AirControlArea lisbonArea = areaRepo.ofIdentity(AirControlAreaCode.valueOf("LISACC"))
-                .orElseThrow(() -> new IllegalStateException("Bootstrap: LISACC area not found"));
+        final AirControlArea iberianArea = areaRepo.ofIdentity(AirControlAreaCode.valueOf("IBRACC"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: IBRACC area not found"));
 
         registerAirportIfMissing(
                 repository,
-                "LPPR", "OPO", "Francisco Sá Carneiro", "Portugal","Porto",
-                41.2355, -8.6703, 69.0,
-                lisbonArea
+                "LPPR", "OPO", "Francisco de Sa Carneiro Airport", "Portugal", "Porto",
+                41.2481003, -8.6813898, 69.0,
+                iberianArea
         );
 
         registerAirportIfMissing(
                 repository,
-                "LPPT", "LIS", "Humberto Delgado", "Portugal", "Lisboa",
-                38.7742, -9.1342, 114.0,
-                lisbonArea
+                "LPPT", "LIS", "Humberto Delgado Airport", "Portugal", "Lisbon",
+                38.7812996, -9.1359196, 114.0,
+                iberianArea
         );
+
+        registerAirportIfMissing(
+                repository,
+                "LEMD", "MAD", "Adolfo Suarez Madrid Barajas International Airport", "Spain", "Madrid",
+                40.4936, -3.56676, 610.0,
+                iberianArea
+        );
+    }
+
+    private static void bootstrapDemoAircraftFleet() {
+        final AircraftRepository aircraftRepository = PersistenceContext.repositories().aircraft();
+        final AirTransportCompanyRepository companyRepository = PersistenceContext.repositories().airTransportCompanies();
+        final AircraftModelRepository aircraftModelRepository = PersistenceContext.repositories().aircraftModels();
+        final EngineModelRepository engineModelRepository = PersistenceContext.repositories().engineModels();
+
+        final AircraftModel aircraftModel = aircraftModelRepository
+                .findByDesignator(AircraftModelDesignator.valueOf("777-200ER", "Boeing"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: Boeing 777-200ER model not found"));
+        final EngineModel engineModel = engineModelRepository
+                .findByDesignator(EngineModelDesignator.valueOf("GE 90B", "General Electric"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: GE 90B engine model not found"));
+
+        final AirTransportCompany airEuropa = companyRepository
+                .findByIataCode(IATACode.valueOf("UX"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: Air Europa not found"));
+        final AirTransportCompany ryanair = companyRepository
+                .findByIataCode(IATACode.valueOf("FR"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: Ryanair not found"));
+
+        registerAircraftIfMissing(
+                aircraftRepository,
+                "EC-UX7",
+                "Spain",
+                2012,
+                10,
+                279,
+                35,
+                0,
+                airEuropa,
+                aircraftModel,
+                engineModel
+        );
+
+        registerAircraftIfMissing(
+                aircraftRepository,
+                "EI-FR7",
+                "Ireland",
+                2014,
+                10,
+                314,
+                0,
+                0,
+                ryanair,
+                aircraftModel,
+                engineModel
+        );
+    }
+
+    static Aircraft registerAircraftIfMissing(
+            final AircraftRepository repository,
+            final String registration,
+            final String registrationCountry,
+            final int manufactureYear,
+            final int crewSize,
+            final int economySeats,
+            final int businessSeats,
+            final int firstClassSeats,
+            final AirTransportCompany company,
+            final AircraftModel aircraftModel,
+            final EngineModel engineModel) {
+
+        final AircraftRegistration aircraftRegistration = AircraftRegistration.valueOf(registration);
+
+        if (repository.findByRegistration(aircraftRegistration).isPresent()) {
+            return repository.findByRegistration(aircraftRegistration).get();
+        }
+
+        final Aircraft aircraft = new Aircraft(
+                aircraftRegistration,
+                AircraftRegistrationCountry.valueOf(registrationCountry),
+                CabinConfiguration.valueOf(economySeats, businessSeats, firstClassSeats),
+                AircraftOperationalStatus.active(),
+                crewSize,
+                company,
+                aircraftModel,
+                engineModel,
+                manufactureYear
+        );
+
+        final Aircraft savedAircraft = repository.save(aircraft);
+        System.out.println("Bootstrapped aircraft: " + aircraftRegistration);
+
+        return savedAircraft;
     }
 
     static Airport registerAirportIfMissing(

@@ -4,17 +4,34 @@ import eapli.framework.infrastructure.authz.application.UserManagementService;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import isep.aisafe.aircontrolarea.domain.*;
+import isep.aisafe.aircraft.domain.Aircraft;
+import isep.aisafe.aircraft.domain.AircraftRegistration;
+import isep.aisafe.aircraft.domain.InMemoryAircraftRepository;
+import isep.aisafe.aircraftmodel.domain.AircraftModel;
+import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
+import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
+import isep.aisafe.aircraftmodel.domain.AircraftModelType;
 import isep.aisafe.airport.domain.Airport;
 import isep.aisafe.airport.domain.InMemoryAirportRepository;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
+import isep.aisafe.airtransportcompany.domain.Country;
+import isep.aisafe.airtransportcompany.domain.IATACode;
+import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
+import isep.aisafe.enginemodel.domain.EngineModel;
+import isep.aisafe.enginemodel.domain.EngineModelDesignator;
+import isep.aisafe.enginemodel.domain.EngineType;
+import isep.aisafe.enginemodel.domain.FuelType;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
+import static isep.aisafe.app.backoffice.console.AisafeBootstrapper.registerAircraftIfMissing;
 import static isep.aisafe.app.backoffice.console.AisafeBootstrapper.registerAirportIfMissing;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -130,7 +147,6 @@ class AisafeBootstrapperTest {
     @Test
     void ensureAirportIsBootstrappedWhenMissing() {
         // Arrange
-        final FakeUserManagementService userService = new FakeUserManagementService();
         final InMemoryAirControlAreaRepository areaRepo = new InMemoryAirControlAreaRepository();
         final InMemoryAirportRepository airportRepo = new InMemoryAirportRepository();
 
@@ -165,5 +181,84 @@ class AisafeBootstrapperTest {
         assertEquals(41.2355, airport.coordinates().latitude());
         assertEquals(-8.6703, airport.coordinates().longitude());
         assertEquals(69.0, airport.elevation().meters());
+    }
+
+    @Test
+    void ensureAircraftIsBootstrappedWhenMissing() {
+        final InMemoryAircraftRepository repository = new InMemoryAircraftRepository();
+        final EngineModel engineModel = engineModel();
+        final AircraftModel aircraftModel = aircraftModel(engineModel);
+        final AirTransportCompany company = new AirTransportCompany(
+                "Air Europa",
+                Country.valueOf("Spain"),
+                IATACode.valueOf("UX"),
+                ICAOCode.valueOf("AEA")
+        );
+
+        final Aircraft aircraft = registerAircraftIfMissing(
+                repository,
+                "EC-UX7",
+                "Spain",
+                2012,
+                10,
+                279,
+                35,
+                0,
+                company,
+                aircraftModel,
+                engineModel
+        );
+
+        final Aircraft existingAircraft = registerAircraftIfMissing(
+                repository,
+                "EC-UX7",
+                "Spain",
+                2012,
+                10,
+                279,
+                35,
+                0,
+                company,
+                aircraftModel,
+                engineModel
+        );
+
+        assertEquals(AircraftRegistration.valueOf("EC-UX7"), aircraft.identity());
+        assertEquals(314, aircraft.cabinConfiguration().totalSeats());
+        assertEquals(2012, aircraft.manufactureYear());
+        assertEquals(company, aircraft.company());
+        assertEquals(aircraft, existingAircraft);
+        assertTrue(repository.findByRegistration(AircraftRegistration.valueOf("EC-UX7")).isPresent());
+    }
+
+    private EngineModel engineModel() {
+        return new EngineModel(
+                EngineModelDesignator.valueOf("GE 90B", "General Electric"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                0.84,
+                489000.0,
+                0.00016
+        );
+    }
+
+    private AircraftModel aircraftModel(final EngineModel engineModel) {
+        return new AircraftModel(
+                AircraftModelDesignator.valueOf("777-200ER", "Boeing"),
+                AircraftModelType.valueOf("PASSENGER"),
+                AircraftModelMotorization.valueOf("TURBOFAN"),
+                14200,
+                145150,
+                347450,
+                209000,
+                181280,
+                13100,
+                905,
+                440.0,
+                0.017,
+                0.87,
+                314,
+                List.of(engineModel)
+        );
     }
 }
