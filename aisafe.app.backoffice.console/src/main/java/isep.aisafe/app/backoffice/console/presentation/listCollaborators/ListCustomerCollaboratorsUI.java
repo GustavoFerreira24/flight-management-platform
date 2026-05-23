@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.listCollaborators;
 
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.listcustomercollaborators.ListCustomerCollaboratorsController;
 
 import java.util.List;
@@ -30,12 +31,13 @@ public class ListCustomerCollaboratorsUI {
 
     public boolean show() {
         try {
-            System.out.println("\nDo you wish to list:");
+            ConsoleStyle.printMenu(
+                    "Do you wish to list",
+                    ConsoleStyle.option(1, "Air Transport Company Customer Collaborators"),
+                    ConsoleStyle.option(2, "Air Control Area Customer Collaborators")
+            );
 
-            System.out.println("1 - Air Transport Company Customer Collaborators");
-            System.out.println("2 - Air Control Area Customer Collaborators     ");
-
-            System.out.print("Option: ");
+            ConsoleStyle.printPrompt("Option: ");
             final String option = scanner.nextLine();
 
             System.out.println();
@@ -44,15 +46,15 @@ public class ListCustomerCollaboratorsUI {
 
             if ("1".equals(option)) {
 
-                System.out.print("Enter the IATA code of the Air Transport Company (2 letters): ");
+                ConsoleStyle.printPrompt("Enter the IATA code of the Air Transport Company (2 letters): ");
                 final String iata = scanner.nextLine();
                 collaborators = controller.listForAirTransportCompany(iata);
 
                 System.out.println();
 
-                System.out.println("Air Transport Company Collaborators:");
+                ConsoleStyle.printSection("Air Transport Company Collaborators");
                 for (CustomerCollaborator collaborator : collaborators) {
-                    System.out.println("- " + collaborator.firstName() + " " + collaborator.lastName() + " (" + collaborator.email() + ")");
+                    System.out.println(ConsoleStyle.muted("- ") + collaborator.firstName() + " " + collaborator.lastName() + " (" + collaborator.email() + ")");
                 }
 
                 System.out.println();
@@ -60,15 +62,15 @@ public class ListCustomerCollaboratorsUI {
             }
 
             if ("2".equals(option)) {
-                System.out.print("Enter the code of the Air Control Area Company (2 to 10 digits or letters): ");
+                ConsoleStyle.printPrompt("Enter the code of the Air Control Area Company (2 to 10 digits or letters): ");
                 final String areaCode = scanner.nextLine();
                 collaborators = controller.listForAirControlArea(areaCode);
 
                 System.out.println();
 
-                System.out.println("Air Control Area Company Collaborators:");
+                ConsoleStyle.printSection("Air Control Area Company Collaborators");
                 for (CustomerCollaborator collaborator : collaborators) {
-                    System.out.println("- " + collaborator.firstName() + " " + collaborator.lastName() + " (" + collaborator.email() + ")");
+                    System.out.println(ConsoleStyle.muted("- ") + collaborator.firstName() + " " + collaborator.lastName() + " (" + collaborator.email() + ")");
                 }
 
                 System.out.println();
@@ -76,7 +78,7 @@ public class ListCustomerCollaboratorsUI {
             }
 
         } catch (Exception e) {
-            System.out.println("\nCould not list collaborators: " + e.getMessage());
+            ConsoleStyle.printError("Could not list collaborators: " + e.getMessage());
         }
         return false;
     }

@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.airport;
 
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.airport.RegisterAirportController;
 import java.util.List;
 import java.util.Scanner;
@@ -40,21 +41,21 @@ public class RegisterAirportUI {
      */
     public void show() {
         try {
-            System.out.println("\nRegister Airport");
+            ConsoleStyle.printSection("Register Airport");
 
-            System.out.print("Country to add the airport: ");
+            ConsoleStyle.printPrompt("Country to add the airport: ");
             final String country = scanner.nextLine();
 
-            System.out.print("Town to add the airport: ");
+            ConsoleStyle.printPrompt("Town to add the airport: ");
             final String town = scanner.nextLine();
 
-            System.out.print("Airport name: ");
+            ConsoleStyle.printPrompt("Airport name: ");
             final String name = scanner.nextLine();
 
-            System.out.print("IATA code (3 letters): ");
+            ConsoleStyle.printPrompt("IATA code (3 letters): ");
             final String iata = scanner.nextLine();
 
-            System.out.print("ICAO code (4 letters): ");
+            ConsoleStyle.printPrompt("ICAO code (4 letters): ");
             final String icao = scanner.nextLine();
 
             final double lat = readDouble("Latitude (-90 to 90): ");
@@ -71,10 +72,10 @@ public class RegisterAirportUI {
                     icao, iata, name, country, town, lat, lon, elev, areaCode
             );
 
-            System.out.println("\nAirport registered successfully.");
+            ConsoleStyle.printSuccess("Airport registered successfully.");
 
         } catch (Exception e) {
-            System.out.println("\nCould not register airport: " + e.getMessage());
+            ConsoleStyle.printError("Could not register airport: " + e.getMessage());
         }
     }
 
@@ -89,10 +90,10 @@ public class RegisterAirportUI {
     private double readDouble(String prompt) {
         while (true) {
             try {
-                System.out.print(prompt);
+                ConsoleStyle.printPrompt(prompt);
                 return Double.parseDouble(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Invalid number format. Please use '.' for decimals.");
+                ConsoleStyle.printWarning("Invalid number format. Please use '.' for decimals.");
             }
         }
     }
@@ -101,25 +102,25 @@ public class RegisterAirportUI {
         final List<String> matchingAreas = controller.airControlAreasContaining(latitude, longitude);
 
         if (matchingAreas.isEmpty()) {
-            System.out.println("No air control area contains the airport coordinates.");
-            System.out.println("The airport cannot be registered until a matching air control area exists.");
+            ConsoleStyle.printWarning("No air control area contains the airport coordinates.");
+            ConsoleStyle.printWarning("The airport cannot be registered until a matching air control area exists.");
             return null;
         }
 
         if (matchingAreas.size() == 1) {
             final String selectedArea = matchingAreas.getFirst();
-            System.out.println("Matching air control area: " + selectedArea);
+            ConsoleStyle.printSuccess("Matching air control area: " + selectedArea);
             return areaCodeFrom(selectedArea);
         }
 
-        System.out.println("Matching air control areas:");
+        ConsoleStyle.printSection("Matching air control areas");
 
         for (int i = 0; i < matchingAreas.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, matchingAreas.get(i));
+            System.out.println(ConsoleStyle.option(i + 1, matchingAreas.get(i)));
         }
 
         while (true) {
-            System.out.print("Choose air control area: ");
+            ConsoleStyle.printPrompt("Choose air control area: ");
             final String input = scanner.nextLine().trim();
 
             try {
@@ -131,7 +132,7 @@ public class RegisterAirportUI {
                 // Fall through to the validation message below.
             }
 
-            System.out.println("Invalid option. Please choose a listed number.");
+            ConsoleStyle.printWarning("Invalid option. Please choose a listed number.");
         }
     }
 

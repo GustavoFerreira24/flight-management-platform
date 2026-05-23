@@ -1,6 +1,7 @@
 package isep.aisafe.app.backoffice.console.presentation.aircontrolarea;
 
 import isep.aisafe.application.aircontrolarea.RegisterAirControlAreaController;
+import isep.aisafe.app.common.console.ConsoleStyle;
 
 import java.util.Scanner;
 
@@ -34,7 +35,7 @@ public class RegisterAirControlAreaUI {
     public void show() {
         try {
             System.out.println();
-            System.out.println("Register Air Control Area");
+            ConsoleStyle.printSection("Register Air Control Area");
 
             final String code = readAreaCode();
             final String name = readRequiredText("Name: ", "Air control area name is required.");
@@ -78,9 +79,9 @@ public class RegisterAirControlAreaUI {
                     fuelUnit
             );
 
-            System.out.println("Air control area registered successfully.");
+            ConsoleStyle.printSuccess("Air control area registered successfully.");
         } catch (RuntimeException e) {
-            System.out.println("Could not register air control area: " + e.getMessage());
+            ConsoleStyle.printError("Could not register air control area: " + e.getMessage());
         }
     }
 
@@ -94,20 +95,20 @@ public class RegisterAirControlAreaUI {
                 return code;
             }
 
-            System.out.println("Invalid area code. Use 2 to 10 letters or digits.");
+            ConsoleStyle.printWarning("Invalid area code. Use 2 to 10 letters or digits.");
         }
     }
 
     private String readRequiredText(final String prompt, final String errorMessage) {
         while (true) {
-            System.out.print(prompt);
+            ConsoleStyle.printPrompt(prompt);
             final String value = scanner.nextLine().trim();
 
             if (!value.isBlank()) {
                 return value;
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
@@ -123,7 +124,7 @@ public class RegisterAirControlAreaUI {
                 return value;
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
@@ -139,7 +140,7 @@ public class RegisterAirControlAreaUI {
                 return value;
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
@@ -151,28 +152,30 @@ public class RegisterAirControlAreaUI {
                 return value;
             }
 
-            System.out.println("Invalid amount. Value must be greater than zero.");
+            ConsoleStyle.printWarning("Invalid amount. Value must be greater than zero.");
         }
     }
 
     private double readDouble(final String prompt) {
         while (true) {
-            System.out.print(prompt);
+            ConsoleStyle.printPrompt(prompt);
 
             try {
                 return Double.parseDouble(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Invalid number. Please enter a numeric value.");
+                ConsoleStyle.printWarning("Invalid number. Please enter a numeric value.");
             }
         }
     }
 
     private String readFuelUnit() {
         while (true) {
-            System.out.println("Fuel unit:");
-            System.out.println("1 - KG");
-            System.out.println("2 - L");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Fuel Unit",
+                    ConsoleStyle.option(1, "KG"),
+                    ConsoleStyle.option(2, "L")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
 
@@ -184,7 +187,7 @@ public class RegisterAirControlAreaUI {
                 return "L";
             }
 
-            System.out.println("Invalid option. Choose 1 or 2.");
+            ConsoleStyle.printWarning("Invalid option. Choose 1 or 2.");
         }
     }
 }

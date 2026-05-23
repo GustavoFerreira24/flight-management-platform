@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.aircraft;
 
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.aircraft.AircraftFleetEntry;
 import isep.aisafe.application.aircraft.AircraftFleetFilter;
 import isep.aisafe.application.aircraft.ListAircraftFleetController;
@@ -36,20 +37,19 @@ public class ListAircraftFleetUI {
      */
     public void show() {
         try {
-            System.out.println();
-            System.out.println("List Aircraft Fleet");
+            ConsoleStyle.printSection("List Aircraft Fleet");
 
             final AircraftFleetFilter filter = readFilter();
             final List<AircraftFleetEntry> aircraft = controller.listAircraftFleet(filter);
 
             if (aircraft.isEmpty()) {
-                System.out.println("No aircraft found for the selected filters.");
+                ConsoleStyle.printWarning("No aircraft found for the selected filters.");
                 return;
             }
 
             printAircraft(aircraft);
         } catch (RuntimeException e) {
-            System.out.println("Could not list aircraft fleet: " + e.getMessage());
+            ConsoleStyle.printError("Could not list aircraft fleet: " + e.getMessage());
         }
     }
 
@@ -75,15 +75,15 @@ public class ListAircraftFleetUI {
                     maximumAge
             );
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Please enter the filters again.");
+            ConsoleStyle.printWarning(e.getMessage());
+            ConsoleStyle.printWarning("Please enter the filters again.");
             return readFilter();
         }
     }
 
     private boolean readYesNo(final String prompt) {
         while (true) {
-            System.out.print(prompt);
+            ConsoleStyle.printPrompt(prompt);
             final String value = scanner.nextLine().trim();
 
             if ("Y".equalsIgnoreCase(value) || "YES".equalsIgnoreCase(value)) {
@@ -94,12 +94,12 @@ public class ListAircraftFleetUI {
                 return false;
             }
 
-            System.out.println("Invalid option. Enter Y or N.");
+            ConsoleStyle.printWarning("Invalid option. Enter Y or N.");
         }
     }
 
     private String readOptionalText(final String prompt) {
-        System.out.print(prompt);
+        ConsoleStyle.printPrompt(prompt);
         final String value = scanner.nextLine().trim();
 
         if (value.isBlank()) {
@@ -111,7 +111,7 @@ public class ListAircraftFleetUI {
 
     private Integer readOptionalNonNegativeInt(final String prompt) {
         while (true) {
-            System.out.print(prompt);
+            ConsoleStyle.printPrompt(prompt);
             final String value = scanner.nextLine().trim();
 
             if (value.isBlank()) {
@@ -125,16 +125,16 @@ public class ListAircraftFleetUI {
                     return parsed;
                 }
 
-                System.out.println("Invalid value. It cannot be negative.");
+                ConsoleStyle.printWarning("Invalid value. It cannot be negative.");
             } catch (NumberFormatException e) {
-                System.out.println("Invalid number. Please enter an integer value.");
+                ConsoleStyle.printWarning("Invalid number. Please enter an integer value.");
             }
         }
     }
 
     private void printAircraft(final List<AircraftFleetEntry> aircraft) {
-        System.out.println("Aircraft fleet:");
-        System.out.println("Registration | Model | Maker | Seats | Model Capacity | Year | Age | Status | Engine");
+        ConsoleStyle.printSection("Aircraft fleet");
+        System.out.println(ConsoleStyle.muted("Registration | Model | Maker | Seats | Model Capacity | Year | Age | Status | Engine"));
 
         for (final AircraftFleetEntry entry : aircraft) {
             System.out.printf(
