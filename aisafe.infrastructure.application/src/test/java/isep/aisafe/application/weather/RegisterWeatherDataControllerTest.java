@@ -307,6 +307,30 @@ class RegisterWeatherDataControllerTest {
     }
 
     /**
+     * Purpose: verify weather data date format validation.
+     * Scenario: submit a date that does not follow ISO local date format.
+     * Expected output: an IllegalArgumentException with clear feedback is thrown and no weather data is persisted.
+     */
+    @Test
+    void ensureInvalidWeatherDataDateIsRejectedWithClearFeedback() {
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "06/06/2026", "LISACC", "Manual Station", "Manual", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+
+        assertEquals("Weather data day must use ISO date format YYYY-MM-DD.", exception.getMessage());
+        assertTrue(weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2026, 6, 6),
+                AirControlAreaCode.valueOf("LISACC")
+        ).isEmpty());
+    }
+
+    /**
      * Purpose: verify that measurement coordinates must belong to the selected air control area.
      * Scenario: submit otherwise valid weather data with coordinates outside the area's boundary.
      * Expected output: an IllegalArgumentException is thrown and no weather data is persisted.

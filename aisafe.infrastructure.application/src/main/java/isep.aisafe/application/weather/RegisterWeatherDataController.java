@@ -17,6 +17,7 @@ import isep.aisafe.weatherdata.domain.WeatherUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 /**
  * Coordinates manual weather data registration.
@@ -108,7 +109,7 @@ public class RegisterWeatherDataController {
         ensureNotBlank(parameter, "Weather parameter is required.");
         ensureNotBlank(unit, "Weather unit is required.");
 
-        final LocalDate measurementDay = LocalDate.parse(day);
+        final LocalDate measurementDay = parseDay(day);
         final AirControlAreaCode airControlAreaCode = AirControlAreaCode.valueOf(areaCode);
 
         final AirControlArea airControlArea = airControlAreaRepository().findByCode(airControlAreaCode)
@@ -200,6 +201,14 @@ public class RegisterWeatherDataController {
     private void ensureNotBlank(final String value, final String message) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(message);
+        }
+    }
+
+    private LocalDate parseDay(final String day) {
+        try {
+            return LocalDate.parse(day);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException("Weather data day must use ISO date format YYYY-MM-DD.", ex);
         }
     }
 
