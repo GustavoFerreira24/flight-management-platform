@@ -13,6 +13,7 @@ import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCus
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.RegisterWeatherDataUI;
 import isep.aisafe.app.common.console.AisafeBaseApplication;
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.app.common.console.presentation.authz.LoginUI;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
@@ -45,17 +46,16 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
             // Return here after each authenticated area logs out.
         }
 
-        System.out.println("Exiting application.");
+        ConsoleStyle.printInfo("Exiting application.");
     }
 
     private boolean showAccessOptions(final Scanner scanner) {
-        System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║                    AISafe Console Login                    ║");
-        System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║ 1 - Login                                                  ║");
-        System.out.println("║ 2 - Exit                                                   ║");
-        System.out.println("╚════════════════════════════════════════════════════════════╝");
-        System.out.print("Option: ");
+        ConsoleStyle.printMenu(
+                "AISafe Console Login",
+                ConsoleStyle.option(1, "Login"),
+                ConsoleStyle.option(2, "Exit")
+        );
+        ConsoleStyle.printPrompt("Option: ");
 
         final String option = scanner.nextLine();
 
@@ -70,7 +70,7 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
             return false;
         }
 
-        System.out.println("Unknown option.");
+        ConsoleStyle.printWarning("Unknown option.");
         return true;
     }
 
@@ -112,17 +112,16 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
             return;
         }
 
-        System.out.println("Authenticated user has no console menu available.");
+        ConsoleStyle.printWarning("Authenticated user has no console menu available.");
     }
 
     private boolean showAdminOptions(final Scanner scanner) {
-        System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║                    Admin Management Console                ║");
-        System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║ 1 - Register Backoffice User                               ║");
-        System.out.println("║ 2 - Logout                                                 ║");
-        System.out.println("╚════════════════════════════════════════════════════════════╝");
-        System.out.print("Option: ");
+        ConsoleStyle.printMenu(
+                "Admin Management Console",
+                ConsoleStyle.option(1, "Register Backoffice User"),
+                ConsoleStyle.option(2, "Logout")
+        );
+        ConsoleStyle.printPrompt("Option: ");
 
         final String option = scanner.nextLine();
 
@@ -132,28 +131,27 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("2".equals(option)) {
-            System.out.println("Returning to login menu.");
+            ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
 
-        System.out.println("Unknown option.");
+        ConsoleStyle.printWarning("Unknown option.");
         return true;
     }
 
     private boolean showBackofficeOptions(final Scanner scanner) {
-        System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║               Backoffice Management Console                ║");
-        System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║ 1 - Register Aircraft Model                        (US55)  ║");
-        System.out.println("║ 2 - Register Engine Model                          (US56)  ║");
-        System.out.println("║ 3 - Register Air Transport Company                 (US60)  ║");
-        System.out.println("║ 4 - Register Air Control Area                      (US50)  ║");
-        System.out.println("║ 5 - Register Airport                               (US52)  ║");
-        System.out.println("║ 6 - Register Customer Collaborator                 (US61)  ║");
-        System.out.println("║ 7 - List Collaborators                             (US62)  ║");
-        System.out.println("║ 8 - Logout                                                 ║");
-        System.out.println("╚════════════════════════════════════════════════════════════╝");
-        System.out.print("Option: ");
+        ConsoleStyle.printMenu(
+                "Backoffice Management Console",
+                ConsoleStyle.option(1, "Register Aircraft Model                        (US55)"),
+                ConsoleStyle.option(2, "Register Engine Model                          (US56)"),
+                ConsoleStyle.option(3, "Register Air Transport Company                 (US60)"),
+                ConsoleStyle.option(4, "Register Air Control Area                      (US50)"),
+                ConsoleStyle.option(5, "Register Airport                               (US52)"),
+                ConsoleStyle.option(6, "Register Customer Collaborator                 (US61)"),
+                ConsoleStyle.option(7, "List Collaborators                             (US62)"),
+                ConsoleStyle.option(8, "Logout")
+        );
+        ConsoleStyle.printPrompt("Option: ");
 
         final String option = scanner.nextLine();
 
@@ -193,24 +191,23 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("8".equals(option)) {
-            System.out.println("Returning to login menu.");
+            ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
 
-        System.out.println("Unknown option.");
+        ConsoleStyle.printWarning("Unknown option.");
         return true;
     }
 
     private boolean showAirCompanyOptions(final Scanner scanner) {
-        System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║              Air Company Management Console               ║");
-        System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║ 1 - Register Aircraft                              (US70)  ║");
-        System.out.println("║ 2 - Decommission Aircraft                          (US71)  ║");
-        System.out.println("║ 3 - List Aircraft Fleet                            (US72)  ║");
-        System.out.println("║ 4 - Logout                                                 ║");
-        System.out.println("╚════════════════════════════════════════════════════════════╝");
-        System.out.print("Option: ");
+        ConsoleStyle.printMenu(
+                "Air Company Management Console",
+                ConsoleStyle.option(1, "Register Aircraft                              (US70)"),
+                ConsoleStyle.option(2, "Decommission Aircraft                          (US71)"),
+                ConsoleStyle.option(3, "List Aircraft Fleet                            (US72)"),
+                ConsoleStyle.option(4, "Logout")
+        );
+        ConsoleStyle.printPrompt("Option: ");
 
         final String option = scanner.nextLine();
 
@@ -230,22 +227,21 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("4".equals(option)) {
-            System.out.println("Returning to login menu.");
+            ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
 
-        System.out.println("Unknown option.");
+        ConsoleStyle.printWarning("Unknown option.");
         return true;
     }
 
     private boolean showWeatherPersonOptions(final Scanner scanner) {
-        System.out.println("╔════════════════════════════════════════════════════════════╗");
-        System.out.println("║              Weather Management Console                   ║");
-        System.out.println("╠════════════════════════════════════════════════════════════╣");
-        System.out.println("║ 1 - Register Weather Data                          (US41)  ║");
-        System.out.println("║ 2 - Logout                                                 ║");
-        System.out.println("╚════════════════════════════════════════════════════════════╝");
-        System.out.print("Option: ");
+        ConsoleStyle.printMenu(
+                "Weather Management Console",
+                ConsoleStyle.option(1, "Register Weather Data                          (US41)"),
+                ConsoleStyle.option(2, "Logout")
+        );
+        ConsoleStyle.printPrompt("Option: ");
 
         final String option = scanner.nextLine();
 
@@ -255,11 +251,11 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("2".equals(option)) {
-            System.out.println("Returning to login menu.");
+            ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
 
-        System.out.println("Unknown option.");
+        ConsoleStyle.printWarning("Unknown option.");
         return true;
     }
 
@@ -267,9 +263,9 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         try {
             action.run();
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid input: " + e.getMessage());
+            ConsoleStyle.printError("Invalid input: " + e.getMessage());
         } catch (RuntimeException e) {
-            System.out.println("Operation failed: " + e.getMessage());
+            ConsoleStyle.printError("Operation failed: " + e.getMessage());
         }
     }
 

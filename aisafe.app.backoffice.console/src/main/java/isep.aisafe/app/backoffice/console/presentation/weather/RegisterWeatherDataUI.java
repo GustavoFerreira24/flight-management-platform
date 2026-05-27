@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.weather;
 
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.weather.RegisterWeatherDataController;
 
 import java.time.LocalDate;
@@ -49,8 +50,7 @@ public class RegisterWeatherDataUI {
     }
 
     public void show() {
-        System.out.println();
-        System.out.println("Register Weather Data");
+        ConsoleStyle.printSection("Register Weather Data");
 
         final String day = askDate();
         final String areaCode = selectAirControlArea();
@@ -80,11 +80,11 @@ public class RegisterWeatherDataUI {
                     longitude
             );
 
-            System.out.println("Weather measurement registered successfully.");
+            ConsoleStyle.printSuccess("Weather measurement registered successfully.");
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid weather data: " + e.getMessage());
+            ConsoleStyle.printError("Invalid weather data: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Could not register weather data. " + e.getMessage());
+            ConsoleStyle.printError("Could not register weather data. " + e.getMessage());
         }
     }
 
@@ -92,11 +92,11 @@ public class RegisterWeatherDataUI {
         final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
 
         while (true) {
-            System.out.print("Date (YYYY-MM-DD): ");
+            ConsoleStyle.printPrompt("Date (YYYY-MM-DD): ");
             final String input = scanner.nextLine().trim();
 
             if (input.isBlank()) {
-                System.out.println("Date is required.");
+                ConsoleStyle.printWarning("Date is required.");
                 continue;
             }
 
@@ -104,33 +104,35 @@ public class RegisterWeatherDataUI {
                 LocalDate.parse(input, formatter);
                 return input;
             } catch (DateTimeParseException e) {
-                System.out.println("Invalid date format. Use YYYY-MM-DD (e.g., 2026-05-17).");
+                ConsoleStyle.printWarning("Invalid date format. Use YYYY-MM-DD (e.g., 2026-05-17).");
             }
         }
     }
 
     private String askRequiredText(final String label, final String errorMessage) {
         while (true) {
-            System.out.print(label + ": ");
+            ConsoleStyle.printPrompt(label + ": ");
             final String value = scanner.nextLine();
 
             if (value != null && !value.isBlank()) {
                 return value.trim();
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
     private String askParameter() {
         while (true) {
-            System.out.println("Weather parameter:");
-            System.out.println("1 - Temperature");
-            System.out.println("2 - Wind Speed");
-            System.out.println("3 - Wind Direction");
-            System.out.println("4 - Pressure");
-            System.out.println("5 - Humidity");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Weather parameter",
+                    ConsoleStyle.option(1, "Temperature"),
+                    ConsoleStyle.option(2, "Wind Speed"),
+                    ConsoleStyle.option(3, "Wind Direction"),
+                    ConsoleStyle.option(4, "Pressure"),
+                    ConsoleStyle.option(5, "Humidity")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
 
@@ -146,7 +148,7 @@ public class RegisterWeatherDataUI {
                 case "5":
                     return "HUMIDITY";
                 default:
-                    System.out.println("Invalid parameter option.");
+                    ConsoleStyle.printWarning("Invalid parameter option.");
             }
         }
     }
@@ -191,18 +193,18 @@ public class RegisterWeatherDataUI {
         final Map<String, String> units = PARAMETER_UNITS.get(parameter);
 
         while (true) {
-            System.out.println("Unit:");
+            ConsoleStyle.printSection("Unit");
             for (final Map.Entry<String, String> entry : units.entrySet()) {
-                System.out.println(entry.getKey() + " - " + entry.getValue());
+                System.out.println(ConsoleStyle.option(Integer.parseInt(entry.getKey()), entry.getValue()));
             }
-            System.out.print("Option: ");
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
             if (units.containsKey(option)) {
                 return units.get(option);
             }
 
-            System.out.println("Invalid unit option.");
+            ConsoleStyle.printWarning("Invalid unit option.");
         }
     }
 
@@ -235,11 +237,11 @@ public class RegisterWeatherDataUI {
 
     private double askDouble(final String label, final String errorMessage, final double min, final double max) {
         while (true) {
-            System.out.print(label + ": ");
+            ConsoleStyle.printPrompt(label + ": ");
             final String input = scanner.nextLine().trim();
 
             if (input.isBlank()) {
-                System.out.println(label + " is required.");
+                ConsoleStyle.printWarning(label + " is required.");
                 continue;
             }
 
@@ -248,9 +250,9 @@ public class RegisterWeatherDataUI {
                 if (value >= min && value <= max) {
                     return value;
                 }
-                System.out.println(errorMessage);
+                ConsoleStyle.printWarning(errorMessage);
             } catch (NumberFormatException e) {
-                System.out.println(errorMessage);
+                ConsoleStyle.printWarning(errorMessage);
             }
         }
     }
@@ -259,25 +261,25 @@ public class RegisterWeatherDataUI {
         final List<String> areas = controller.airControlAreas();
 
         if (areas.isEmpty()) {
-            System.out.println("No air control areas are registered.");
-            System.out.println("The weather measurement cannot be registered until an air control area exists.");
+            ConsoleStyle.printWarning("No air control areas are registered.");
+            ConsoleStyle.printWarning("The weather measurement cannot be registered until an air control area exists.");
             return null;
         }
 
         if (areas.size() == 1) {
             final String selectedArea = areas.getFirst();
-            System.out.println("Selected air control area: " + selectedArea);
+            ConsoleStyle.printSuccess("Selected air control area: " + selectedArea);
             return areaCodeFrom(selectedArea);
         }
 
-        System.out.println("Air control areas:");
+        ConsoleStyle.printSection("Air control areas");
 
         for (int i = 0; i < areas.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, areas.get(i));
+            System.out.println(ConsoleStyle.option(i + 1, areas.get(i)));
         }
 
         while (true) {
-            System.out.print("Choose air control area: ");
+            ConsoleStyle.printPrompt("Choose air control area: ");
             final String input = scanner.nextLine().trim();
 
             try {
@@ -289,7 +291,7 @@ public class RegisterWeatherDataUI {
                 // Fall through to the validation message below.
             }
 
-            System.out.println("Invalid option. Please choose a listed number.");
+            ConsoleStyle.printWarning("Invalid option. Please choose a listed number.");
         }
     }
 
@@ -312,8 +314,8 @@ public class RegisterWeatherDataUI {
                 return new double[]{latitude, longitude};
             }
 
-            System.out.println("Coordinates are outside the selected air control area.");
-            System.out.println("Please enter coordinates inside " + areaCode + ".");
+            ConsoleStyle.printWarning("Coordinates are outside the selected air control area.");
+            ConsoleStyle.printWarning("Please enter coordinates inside " + areaCode + ".");
         }
     }
 }

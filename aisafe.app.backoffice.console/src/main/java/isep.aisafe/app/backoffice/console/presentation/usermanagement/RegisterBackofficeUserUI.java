@@ -1,6 +1,7 @@
 package isep.aisafe.app.backoffice.console.presentation.usermanagement;
 
 import eapli.framework.infrastructure.authz.domain.model.Role;
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.usermanagement.RegisterBackofficeUserController;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
 
@@ -26,8 +27,7 @@ public class RegisterBackofficeUserUI {
     }
 
     public void show() {
-        System.out.println();
-        System.out.println("Register Backoffice User");
+        ConsoleStyle.printSection("Register Backoffice User");
 
         final String username = askRequiredText("Username", "Username is required.");
         final String password = askRequiredText("Password", "Password is required.");
@@ -47,22 +47,22 @@ public class RegisterBackofficeUserUI {
                     roles
             );
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid user data: " + e.getMessage());
+            ConsoleStyle.printError("Invalid user data: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Could not register user. The username or email may already exist.");
+            ConsoleStyle.printError("Could not register user. The username or email may already exist.");
         }
     }
 
     private String askRequiredText(final String label, final String errorMessage) {
         while (true) {
-            System.out.print(label + ": ");
+            ConsoleStyle.printPrompt(label + ": ");
             final String value = scanner.nextLine();
 
             if (value != null && !value.isBlank()) {
                 return value.trim();
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
@@ -74,16 +74,18 @@ public class RegisterBackofficeUserUI {
                 return email;
             }
 
-            System.out.println("Email format is invalid.");
+            ConsoleStyle.printWarning("Email format is invalid.");
         }
     }
 
     private Set<Role> askRole(final Scanner scanner) {
         while (true) {
-            System.out.println("Role:");
-            System.out.println("1 - Admin");
-            System.out.println("2 - Backoffice Operator");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Role",
+                    ConsoleStyle.option(1, "Admin"),
+                    ConsoleStyle.option(2, "Backoffice Operator")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine();
 
@@ -95,7 +97,7 @@ public class RegisterBackofficeUserUI {
                 return Set.of(AisafeRoles.BACKOFFICE_OPERATOR);
             }
 
-            System.out.println("Invalid role option.");
+            ConsoleStyle.printWarning("Invalid role option.");
         }
     }
 }

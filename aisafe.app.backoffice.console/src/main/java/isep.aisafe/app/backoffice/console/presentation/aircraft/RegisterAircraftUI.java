@@ -1,6 +1,7 @@
 package isep.aisafe.app.backoffice.console.presentation.aircraft;
 
 import isep.aisafe.application.aircraft.RegisterAircraftController;
+import isep.aisafe.app.common.console.ConsoleStyle;
 
 import java.time.Year;
 import java.util.List;
@@ -36,7 +37,7 @@ public class RegisterAircraftUI {
     public void show() {
         try {
             System.out.println();
-            System.out.println("Register Aircraft");
+            ConsoleStyle.printSection("Register Aircraft");
 
             final String registration = readAircraftRegistration();
             final String registrationCountry = readCountry();
@@ -76,9 +77,9 @@ public class RegisterAircraftUI {
                     engineModelParts[1]
             );
 
-            System.out.println("Aircraft registered successfully.");
+            ConsoleStyle.printSuccess("Aircraft registered successfully.");
         } catch (RuntimeException e) {
-            System.out.println("Could not register aircraft: " + e.getMessage());
+            ConsoleStyle.printError("Could not register aircraft: " + e.getMessage());
         }
     }
 
@@ -91,43 +92,47 @@ public class RegisterAircraftUI {
 
             if (registration.matches("[A-Z0-9][A-Z0-9-]{1,9}")) {
                 if (controller.aircraftRegistrationExists(registration)) {
-                    System.out.println("Aircraft registration already exists. Please enter a different registration.");
+                    ConsoleStyle.printWarning(
+                            "Aircraft registration already exists. Please enter a different registration."
+                    );
                     continue;
                 }
 
                 return registration;
             }
 
-            System.out.println("Invalid aircraft registration. Use 2 to 10 letters, digits or hyphens.");
+            ConsoleStyle.printWarning("Invalid aircraft registration. Use 2 to 10 letters, digits or hyphens.");
         }
     }
 
     private String readRequiredText(final String prompt, final String errorMessage) {
         while (true) {
-            System.out.print(prompt);
+            ConsoleStyle.printPrompt(prompt);
             final String value = scanner.nextLine().trim();
 
             if (!value.isBlank()) {
                 return value;
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
     private String readCountry() {
         while (true) {
-            System.out.println("Registration country:");
-            System.out.println("1 - Portugal");
-            System.out.println("2 - Spain");
-            System.out.println("3 - France");
-            System.out.println("4 - Germany");
-            System.out.println("5 - Ireland");
-            System.out.println("6 - United Kingdom");
-            System.out.println("7 - United States");
-            System.out.println("8 - Brazil");
-            System.out.println("9 - Other");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Registration Country",
+                    ConsoleStyle.option(1, "Portugal"),
+                    ConsoleStyle.option(2, "Spain"),
+                    ConsoleStyle.option(3, "France"),
+                    ConsoleStyle.option(4, "Germany"),
+                    ConsoleStyle.option(5, "Ireland"),
+                    ConsoleStyle.option(6, "United Kingdom"),
+                    ConsoleStyle.option(7, "United States"),
+                    ConsoleStyle.option(8, "Brazil"),
+                    ConsoleStyle.option(9, "Other")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
 
@@ -159,17 +164,19 @@ public class RegisterAircraftUI {
                 return readRequiredText("Other country: ", "Country is required.");
             }
 
-            System.out.println("Invalid option. Choose a number between 1 and 9.");
+            ConsoleStyle.printWarning("Invalid option. Choose a number between 1 and 9.");
         }
     }
 
     private String readOperationalStatus() {
         while (true) {
-            System.out.println("Operational status:");
-            System.out.println("1 - ACTIVE");
-            System.out.println("2 - IN_MAINTENANCE");
-            System.out.println("3 - DECOMMISSIONED");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Operational Status",
+                    ConsoleStyle.option(1, "ACTIVE"),
+                    ConsoleStyle.option(2, "IN_MAINTENANCE"),
+                    ConsoleStyle.option(3, "DECOMMISSIONED")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
 
@@ -183,7 +190,7 @@ public class RegisterAircraftUI {
                 return "DECOMMISSIONED";
             }
 
-            System.out.println("Invalid option. Choose 1, 2 or 3.");
+            ConsoleStyle.printWarning("Invalid option. Choose 1, 2 or 3.");
         }
     }
 
@@ -195,7 +202,7 @@ public class RegisterAircraftUI {
                 return value;
             }
 
-            System.out.println("Invalid value. It must be greater than zero.");
+            ConsoleStyle.printWarning("Invalid value. It must be greater than zero.");
         }
     }
 
@@ -209,7 +216,7 @@ public class RegisterAircraftUI {
                 return value;
             }
 
-            System.out.println("Invalid manufacture year. Enter a year between 1903 and " + currentYear + ".");
+            ConsoleStyle.printWarning("Invalid manufacture year. Enter a year between 1903 and " + currentYear + ".");
         }
     }
 
@@ -225,11 +232,11 @@ public class RegisterAircraftUI {
             }
 
             if (totalSeats == 0) {
-                System.out.println("Cabin configuration must have at least one seat. Please enter the seats again.");
+                ConsoleStyle.printWarning("Cabin configuration must have at least one seat. Please enter the seats again.");
                 continue;
             }
 
-            System.out.println(
+            ConsoleStyle.printWarning(
                     "Total seats (" + totalSeats + ") exceed the passenger capacity of "
                             + aircraftModelDesignator + " (" + passengerCapacity + ")."
             );
@@ -244,10 +251,12 @@ public class RegisterAircraftUI {
 
     private boolean readCabinCapacityAction() {
         while (true) {
-            System.out.println("What do you want to do?");
-            System.out.println("1 - Enter seats again");
-            System.out.println("2 - Choose another aircraft model");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Cabin Capacity",
+                    ConsoleStyle.option(1, "Enter seats again"),
+                    ConsoleStyle.option(2, "Choose another aircraft model")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
 
@@ -258,7 +267,7 @@ public class RegisterAircraftUI {
                 return false;
             }
 
-            System.out.println("Invalid option. Choose 1 or 2.");
+            ConsoleStyle.printWarning("Invalid option. Choose 1 or 2.");
         }
     }
 
@@ -270,7 +279,7 @@ public class RegisterAircraftUI {
                 return value;
             }
 
-            System.out.println("Invalid number of seats. Value cannot be negative.");
+            ConsoleStyle.printWarning("Invalid number of seats. Value cannot be negative.");
         }
     }
 
@@ -296,13 +305,13 @@ public class RegisterAircraftUI {
 
     private String readAircraftModelOptionFromList(final List<String> options) {
         while (true) {
-            System.out.println("Aircraft model:");
+            ConsoleStyle.printSection("Aircraft Model");
 
             for (int i = 0; i < options.size(); i++) {
                 final String aircraftModelDesignator = options.get(i);
 
-                System.out.println((i + 1) + " - " + aircraftModelDesignator);
-                System.out.println("    " + controller.aircraftModelDescription(aircraftModelDesignator));
+                System.out.println(ConsoleStyle.option(i + 1, aircraftModelDesignator));
+                System.out.println("    " + ConsoleStyle.muted(controller.aircraftModelDescription(aircraftModelDesignator)));
             }
 
             final int selectedOption = readInt("Option: ");
@@ -311,7 +320,7 @@ public class RegisterAircraftUI {
                 return options.get(selectedOption - 1);
             }
 
-            System.out.println("Invalid option. Choose a number between 1 and " + options.size() + ".");
+            ConsoleStyle.printWarning("Invalid option. Choose a number between 1 and " + options.size() + ".");
         }
     }
 
@@ -320,16 +329,16 @@ public class RegisterAircraftUI {
             final List<String> options) {
 
         while (true) {
-            System.out.println("Certified engine model:");
+            ConsoleStyle.printSection("Certified Engine Model");
 
             for (int i = 0; i < options.size(); i++) {
                 final String engineModelDesignator = options.get(i);
 
-                System.out.println((i + 1) + " - " + engineModelDesignator);
-                System.out.println("    " + controller.certifiedEngineModelDescription(
+                System.out.println(ConsoleStyle.option(i + 1, engineModelDesignator));
+                System.out.println("    " + ConsoleStyle.muted(controller.certifiedEngineModelDescription(
                         aircraftModelDesignator,
                         engineModelDesignator
-                ));
+                )));
             }
 
             final int selectedOption = readInt("Option: ");
@@ -338,16 +347,16 @@ public class RegisterAircraftUI {
                 return options.get(selectedOption - 1);
             }
 
-            System.out.println("Invalid option. Choose a number between 1 and " + options.size() + ".");
+            ConsoleStyle.printWarning("Invalid option. Choose a number between 1 and " + options.size() + ".");
         }
     }
 
     private String readOptionFromList(final String title, final List<String> options) {
         while (true) {
-            System.out.println(title);
+            ConsoleStyle.printSection(title);
 
             for (int i = 0; i < options.size(); i++) {
-                System.out.println((i + 1) + " - " + options.get(i));
+                System.out.println(ConsoleStyle.option(i + 1, options.get(i)));
             }
 
             final int selectedOption = readInt("Option: ");
@@ -356,7 +365,7 @@ public class RegisterAircraftUI {
                 return options.get(selectedOption - 1);
             }
 
-            System.out.println("Invalid option. Choose a number between 1 and " + options.size() + ".");
+            ConsoleStyle.printWarning("Invalid option. Choose a number between 1 and " + options.size() + ".");
         }
     }
 
@@ -372,12 +381,12 @@ public class RegisterAircraftUI {
 
     private int readInt(final String prompt) {
         while (true) {
-            System.out.print(prompt);
+            ConsoleStyle.printPrompt(prompt);
 
             try {
                 return Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Invalid number. Please enter an integer value.");
+                ConsoleStyle.printWarning("Invalid number. Please enter an integer value.");
             }
         }
     }

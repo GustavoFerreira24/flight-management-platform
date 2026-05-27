@@ -1,6 +1,7 @@
 package isep.aisafe.app.backoffice.console.presentation.aircraft;
 
 import isep.aisafe.aircraft.domain.Aircraft;
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.aircraft.DecommissionAircraftController;
 
 import java.util.List;
@@ -35,36 +36,34 @@ public class DecommissionAircraftUI {
      */
     public void show() {
         try {
-            System.out.println();
-            System.out.println("Decommission Aircraft");
+            ConsoleStyle.printSection("Decommission Aircraft");
 
             final List<Aircraft> aircraft = controller.decommissionableAircraft();
 
             if (aircraft.isEmpty()) {
-                System.out.println("No active aircraft are available for decommissioning.");
+                ConsoleStyle.printWarning("No active aircraft are available for decommissioning.");
                 return;
             }
 
-            System.out.println("Active aircraft available for decommissioning:");
+            ConsoleStyle.printSection("Active aircraft available for decommissioning");
             for (int i = 0; i < aircraft.size(); i++) {
                 final Aircraft candidate = aircraft.get(i);
-                System.out.printf(
-                        "%d - %s | %s | %s%n",
+                System.out.println(ConsoleStyle.option(
                         i + 1,
-                        candidate.registration(),
-                        candidate.aircraftModel().designator(),
-                        candidate.operationalStatus()
-                );
+                        candidate.registration() + " | "
+                                + candidate.aircraftModel().designator() + " | "
+                                + candidate.operationalStatus()
+                ));
             }
 
-            System.out.print("Aircraft registration number: ");
+            ConsoleStyle.printPrompt("Aircraft registration number: ");
             final String registration = scanner.nextLine();
 
             controller.decommissionAircraft(registration);
 
-            System.out.println("Aircraft decommissioned successfully.");
+            ConsoleStyle.printSuccess("Aircraft decommissioned successfully.");
         } catch (RuntimeException e) {
-            System.out.println("Could not decommission aircraft: " + e.getMessage());
+            ConsoleStyle.printError("Could not decommission aircraft: " + e.getMessage());
         }
     }
 }

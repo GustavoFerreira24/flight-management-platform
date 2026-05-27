@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.customercollaborator;
 
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.customercollaborator.RegisterCustomerCollaboratorController;
 
 import java.util.Scanner;
@@ -25,8 +26,7 @@ public class RegisterCustomerCollaboratorUI {
     }
 
     public void show() {
-        System.out.println();
-        System.out.println("Register Customer Collaborator");
+        ConsoleStyle.printSection("Register Customer Collaborator");
 
         final String customerType = askCustomerType();
         final String customerCode = "1".equals(customerType) ? askIataCode() : askAreaCode();
@@ -55,24 +55,24 @@ public class RegisterCustomerCollaboratorUI {
                 );
             }
 
-            System.out.println("Customer collaborator registered successfully.");
+            ConsoleStyle.printSuccess("Customer collaborator registered successfully.");
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid customer collaborator data: " + e.getMessage());
+            ConsoleStyle.printError("Invalid customer collaborator data: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Could not register customer collaborator. The email or system user may already exist.");
+            ConsoleStyle.printError("Could not register customer collaborator. The email or system user may already exist.");
         }
     }
 
     private String askRequiredText(final String label, final String errorMessage) {
         while (true) {
-            System.out.print(label + ": ");
+            ConsoleStyle.printPrompt(label + ": ");
             final String value = scanner.nextLine();
 
             if (value != null && !value.isBlank()) {
                 return value.trim();
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
@@ -84,7 +84,7 @@ public class RegisterCustomerCollaboratorUI {
                 return email;
             }
 
-            System.out.println("Email format is invalid.");
+            ConsoleStyle.printWarning("Email format is invalid.");
         }
     }
 
@@ -96,16 +96,18 @@ public class RegisterCustomerCollaboratorUI {
                 return value;
             }
 
-            System.out.println(label + " must contain only letters, spaces, hyphens or apostrophes.");
+            ConsoleStyle.printWarning(label + " must contain only letters, spaces, hyphens or apostrophes.");
         }
     }
 
     private String askCustomerType() {
         while (true) {
-            System.out.println("Customer type:");
-            System.out.println("1 - Air Transport Company");
-            System.out.println("2 - Air Control Area");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Customer type",
+                    ConsoleStyle.option(1, "Air Transport Company"),
+                    ConsoleStyle.option(2, "Air Control Area")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
 
@@ -113,7 +115,7 @@ public class RegisterCustomerCollaboratorUI {
                 return option;
             }
 
-            System.out.println("Invalid customer type option.");
+            ConsoleStyle.printWarning("Invalid customer type option.");
         }
     }
 
@@ -128,7 +130,7 @@ public class RegisterCustomerCollaboratorUI {
                 return value;
             }
 
-            System.out.println("Invalid IATA code. It must have exactly 2 letters.");
+            ConsoleStyle.printWarning("Invalid IATA code. It must have exactly 2 letters.");
         }
     }
 
@@ -143,7 +145,7 @@ public class RegisterCustomerCollaboratorUI {
                 return value;
             }
 
-            System.out.println("Invalid area code. Use 2 to 10 letters or digits.");
+            ConsoleStyle.printWarning("Invalid area code. Use 2 to 10 letters or digits.");
         }
     }
 }

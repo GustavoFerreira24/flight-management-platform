@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.aircraftmodel;
 
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.aircraftmodel.ManageAircraftModelController;
 
 import java.util.ArrayList;
@@ -27,10 +28,9 @@ public class RegisterAircraftModelUI {
 
     public void show() {
         try {
-            System.out.println();
-            System.out.println("Register Aircraft Model");
+            ConsoleStyle.printSection("Register Aircraft Model");
 
-            System.out.print("Model name: ");
+            ConsoleStyle.printPrompt("Model name: ");
             final String modelName = scanner.nextLine();
 
             final String manufacturer = selectOption("Manufacturer", MANUFACTURERS);
@@ -72,31 +72,31 @@ public class RegisterAircraftModelUI {
                     certifiedEngineDesignators
             );
 
-            System.out.println("Aircraft model registered successfully.");
+            ConsoleStyle.printSuccess("Aircraft model registered successfully.");
         } catch (RuntimeException e) {
-            System.out.println("Could not register aircraft model: " + e.getMessage());
+            ConsoleStyle.printError("Could not register aircraft model: " + e.getMessage());
         }
     }
 
     private static double readDouble(final Scanner scanner, final String prompt) {
-        System.out.print(prompt);
+        ConsoleStyle.printPrompt(prompt);
         return Double.parseDouble(scanner.nextLine());
     }
 
     private static int readInt(final Scanner scanner, final String prompt) {
-        System.out.print(prompt);
+        ConsoleStyle.printPrompt(prompt);
         return Integer.parseInt(scanner.nextLine());
     }
 
     private String selectOption(final String label, final List<String> options) {
-        System.out.println(label + ":");
+        ConsoleStyle.printSection(label);
 
         for (int i = 0; i < options.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, options.get(i));
+            System.out.println(ConsoleStyle.option(i + 1, options.get(i)));
         }
 
         while (true) {
-            System.out.print("Option: ");
+            ConsoleStyle.printPrompt("Option: ");
             final String input = scanner.nextLine().trim();
 
             try {
@@ -104,7 +104,7 @@ public class RegisterAircraftModelUI {
                 if (selected >= 1 && selected <= options.size()) {
                     final String value = options.get(selected - 1);
                     if ("OTHER".equals(value)) {
-                        System.out.print("Enter " + label.toLowerCase() + ": ");
+                        ConsoleStyle.printPrompt("Enter " + label.toLowerCase() + ": ");
                         return scanner.nextLine();
                     }
 
@@ -114,7 +114,7 @@ public class RegisterAircraftModelUI {
                 // Fall through to the validation message below.
             }
 
-            System.out.println("Invalid option. Please choose a listed number.");
+            ConsoleStyle.printWarning("Invalid option. Please choose a listed number.");
         }
     }
 
@@ -125,14 +125,14 @@ public class RegisterAircraftModelUI {
             throw new IllegalStateException("No compatible engine models are registered for motorization " + motorization + ".");
         }
 
-        System.out.println("Certified engine models:");
+        ConsoleStyle.printSection("Certified engine models");
 
         for (int i = 0; i < compatibleEngineDesignators.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, compatibleEngineDesignators.get(i));
+            System.out.println(ConsoleStyle.option(i + 1, compatibleEngineDesignators.get(i)));
         }
 
         while (true) {
-            System.out.print("Options (comma-separated): ");
+            ConsoleStyle.printPrompt("Options (comma-separated): ");
             final String input = scanner.nextLine().trim();
             final Set<String> selectedEngineDesignators = new LinkedHashSet<>();
             boolean invalidOption = false;
@@ -160,7 +160,7 @@ public class RegisterAircraftModelUI {
                 return new ArrayList<>(selectedEngineDesignators);
             }
 
-            System.out.println("Invalid option. Please choose at least one listed number.");
+            ConsoleStyle.printWarning("Invalid option. Please choose at least one listed number.");
         }
     }
 }

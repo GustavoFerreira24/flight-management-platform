@@ -27,17 +27,15 @@ public abstract class AisafeBaseApplication {
     }
 
     protected void printHeader() {
-        System.out.println(SEPARATOR_HR);
-        System.out.println(appTitle() + " " + Application.VERSION);
-        System.out.println(Application.COPYRIGHT);
-        System.out.println(SEPARATOR_HR);
+        ConsoleStyle.printMenu(
+                appTitle() + " " + Application.VERSION,
+                Application.COPYRIGHT
+        );
     }
 
     protected void printFooter() {
         System.out.println();
-        System.out.println(SEPARATOR_HR);
-        System.out.println(appGoodbye());
-        System.out.println(SEPARATOR_HR);
+        ConsoleStyle.printMenu("Session Closed", appGoodbye());
     }
 
     protected abstract void configureAuthz();

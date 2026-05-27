@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.enginemodel;
 
+import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.enginemodel.RegisterEngineModelController;
 
 import java.util.List;
@@ -30,10 +31,9 @@ public class RegisterEngineModelUI {
 
     public void show() {
         try {
-            System.out.println();
-            System.out.println("Register Engine Model");
+            ConsoleStyle.printSection("Register Engine Model");
 
-            System.out.print("Model name: ");
+            ConsoleStyle.printPrompt("Model name: ");
             final String modelName = scanner.nextLine();
 
             final String manufacturer = selectOption("Manufacturer", MANUFACTURERS);
@@ -56,26 +56,26 @@ public class RegisterEngineModelUI {
                     tsfc
             );
 
-            System.out.println("Engine model registered successfully.");
+            ConsoleStyle.printSuccess("Engine model registered successfully.");
         } catch (RuntimeException e) {
-            System.out.println("Could not register engine model: " + e.getMessage());
+            ConsoleStyle.printError("Could not register engine model: " + e.getMessage());
         }
     }
 
     private double readDouble(final String prompt) {
-        System.out.print(prompt);
+        ConsoleStyle.printPrompt(prompt);
         return Double.parseDouble(scanner.nextLine());
     }
 
     private String selectOption(final String label, final List<String> options) {
-        System.out.println(label + ":");
+        ConsoleStyle.printSection(label);
 
         for (int i = 0; i < options.size(); i++) {
-            System.out.printf("%d - %s%n", i + 1, options.get(i));
+            System.out.println(ConsoleStyle.option(i + 1, options.get(i)));
         }
 
         while (true) {
-            System.out.print("Option: ");
+            ConsoleStyle.printPrompt("Option: ");
             final String input = scanner.nextLine().trim();
 
             try {
@@ -83,7 +83,7 @@ public class RegisterEngineModelUI {
                 if (selected >= 1 && selected <= options.size()) {
                     final String value = options.get(selected - 1);
                     if ("OTHER".equals(value)) {
-                        System.out.print("Enter " + label.toLowerCase() + ": ");
+                        ConsoleStyle.printPrompt("Enter " + label.toLowerCase() + ": ");
                         return scanner.nextLine();
                     }
 
@@ -93,7 +93,7 @@ public class RegisterEngineModelUI {
                 // Fall through to the validation message below.
             }
 
-            System.out.println("Invalid option. Please choose a listed number.");
+            ConsoleStyle.printWarning("Invalid option. Please choose a listed number.");
         }
     }
 }

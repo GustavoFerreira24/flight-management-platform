@@ -1,6 +1,7 @@
 package isep.aisafe.app.backoffice.console.presentation.airtransportcompany;
 
 import isep.aisafe.application.aircompany.AirCompanyConfigurationController;
+import isep.aisafe.app.common.console.ConsoleStyle;
 
 import java.util.Scanner;
 
@@ -34,7 +35,7 @@ public class RegisterAirTransportCompanyUI {
     public void show() {
         try {
             System.out.println();
-            System.out.println("Register Air Transport Company");
+            ConsoleStyle.printSection("Register Air Transport Company");
 
             final String name = readRequiredText("Company name: ", "Company name is required.");
             final String country = readCountry();
@@ -48,38 +49,40 @@ public class RegisterAirTransportCompanyUI {
                     icaoCode
             );
 
-            System.out.println("Air transport company registered successfully.");
+            ConsoleStyle.printSuccess("Air transport company registered successfully.");
         } catch (RuntimeException e) {
-            System.out.println("Could not register air transport company: " + e.getMessage());
+            ConsoleStyle.printError("Could not register air transport company: " + e.getMessage());
         }
     }
 
     private String readRequiredText(final String prompt, final String errorMessage) {
         while (true) {
-            System.out.print(prompt);
+            ConsoleStyle.printPrompt(prompt);
             final String value = scanner.nextLine().trim();
 
             if (!value.isBlank()) {
                 return value;
             }
 
-            System.out.println(errorMessage);
+            ConsoleStyle.printWarning(errorMessage);
         }
     }
 
     private String readCountry() {
         while (true) {
-            System.out.println("Country:");
-            System.out.println("1 - Portugal");
-            System.out.println("2 - Spain");
-            System.out.println("3 - France");
-            System.out.println("4 - Germany");
-            System.out.println("5 - Ireland");
-            System.out.println("6 - United Kingdom");
-            System.out.println("7 - United States");
-            System.out.println("8 - Brazil");
-            System.out.println("9 - Other");
-            System.out.print("Option: ");
+            ConsoleStyle.printMenu(
+                    "Country",
+                    ConsoleStyle.option(1, "Portugal"),
+                    ConsoleStyle.option(2, "Spain"),
+                    ConsoleStyle.option(3, "France"),
+                    ConsoleStyle.option(4, "Germany"),
+                    ConsoleStyle.option(5, "Ireland"),
+                    ConsoleStyle.option(6, "United Kingdom"),
+                    ConsoleStyle.option(7, "United States"),
+                    ConsoleStyle.option(8, "Brazil"),
+                    ConsoleStyle.option(9, "Other")
+            );
+            ConsoleStyle.printPrompt("Option: ");
 
             final String option = scanner.nextLine().trim();
 
@@ -111,7 +114,7 @@ public class RegisterAirTransportCompanyUI {
                 return readRequiredText("Other country: ", "Country is required.");
             }
 
-            System.out.println("Invalid option. Choose a number between 1 and 9.");
+            ConsoleStyle.printWarning("Invalid option. Choose a number between 1 and 9.");
         }
     }
 
@@ -125,7 +128,7 @@ public class RegisterAirTransportCompanyUI {
                 return value;
             }
 
-            System.out.println("Invalid IATA code. It must have exactly 2 letters.");
+            ConsoleStyle.printWarning("Invalid IATA code. It must have exactly 2 letters.");
         }
     }
 
@@ -139,7 +142,7 @@ public class RegisterAirTransportCompanyUI {
                 return value;
             }
 
-            System.out.println("Invalid ICAO code. It must have 2 or 3 letters.");
+            ConsoleStyle.printWarning("Invalid ICAO code. It must have 2 or 3 letters.");
         }
     }
 }
