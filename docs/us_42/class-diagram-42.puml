@@ -1,0 +1,214 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class ImportBulkWeatherDataUI <<UI>> {
+    - controller : ImportBulkWeatherDataController
+    - scanner : Scanner
+    + show() : void
+    - printCsvFormatInformation() : void
+    - askCsvFilePath() : Path
+    - printResult(result : BulkWeatherImportResult) : void
+    - printRejectedRecords(result : BulkWeatherImportResult) : void
+    - safeMessage(exception : Exception) : String
+}
+
+note right of ImportBulkWeatherDataUI
+  Accepts only non-blank .csv paths.
+  Displays read, imported and rejected counts.
+  Catches validation, IO and runtime failures
+  so the console does not crash.
+end note
+
+class ImportBulkWeatherDataController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - weatherDataRepository : WeatherDataRepository
+    - airControlAreaRepository : AirControlAreaRepository
+    - importerFactory : WeatherDataImporterFactory
+    + importFromFile(file : Path) : BulkWeatherImportResult
+    + importFromFile(file : Path, importer : WeatherDataImporter) : BulkWeatherImportResult
+    - persist(importedMeasurement : ImportedWeatherMeasurement) : void
+    - ensureReadableFile(file : Path) : void
+    - weatherDataRepository() : WeatherDataRepository
+    - airControlAreaRepository() : AirControlAreaRepository
+}
+
+note right of ImportBulkWeatherDataController
+  Coordinates the bulk import workflow.
+  File parsing is delegated to WeatherDataImporter.
+  Persistence and business validation are delegated
+  to RegisterWeatherDataController.
+end note
+
+interface WeatherDataImporter {
+    + importFrom(file : Path) : List<ImportedWeatherMeasurement>
+}
+
+class CsvWeatherDataImporter <<Importer>> {
+    - {static} EXPECTED_FIELD_COUNT : int
+    - {static} EXPECTED_HEADER : String[]
+    + importFrom(file : Path) : List<ImportedWeatherMeasurement>
+    - ensureExpectedHeader(headerLine : String) : void
+    - parseMeasurement(line : String, sourceLine : int) : ImportedWeatherMeasurement
+    - parseDouble(value : String, sourceLine : int, fieldName : String) : double
+    - split(line : String) : String[]
+}
+
+note bottom of CsvWeatherDataImporter
+  Expected header:
+  day,areaCode,providerName,providerType,
+  parameter,value,unit,altitude,latitude,longitude
+  Blank lines are ignored and fields are trimmed.
+end note
+
+class WeatherDataImporterFactory <<Factory>> {
+    + importerFor(file : Path) : WeatherDataImporter
+}
+
+class ImportedWeatherMeasurement <<DTO>> {
+    - sourceLine : int
+    - day : String
+    - areaCode : String
+    - providerName : String
+    - providerType : String
+    - parameter : String
+    - value : double
+    - unit : String
+    - altitude : double
+    - latitude : double
+    - longitude : double
+    + sourceLine() : int
+    + day() : String
+    + areaCode() : String
+    + providerName() : String
+    + providerType() : String
+    + parameter() : String
+    + value() : double
+    + unit() : String
+    + altitude() : double
+    + latitude() : double
+    + longitude() : double
+}
+
+class BulkWeatherImportResult <<Value Object>> {
+    - readRecords : int
+    - importedRecords : int
+    - errors : List<BulkWeatherImportError>
+    + {static} valueOf(readRecords : int, importedRecords : int, errors : List<BulkWeatherImportError>) : BulkWeatherImportResult
+    + readRecords() : int
+    + importedRecords() : int
+    + errors() : List<BulkWeatherImportError>
+    + isFullyImported() : boolean
+    + hasErrors() : boolean
+}
+
+class BulkWeatherImportError <<Value Object>> {
+    - sourceLine : int
+    - message : String
+    + {static} valueOf(sourceLine : int, message : String) : BulkWeatherImportError
+    + sourceLine() : int
+    + message() : String
+}
+
+class RegisterWeatherDataController <<Controller>> {
+    + registerWeatherMeasurement(day : String, areaCode : String, providerName : String, providerType : String, parameter : String, value : double, unit : String, altitude : double, latitude : double, longitude : double) : WeatherData
+    + registerWeatherMeasurement(day : String, areaCode : String, parameter : String, value : double, unit : String, altitude : double, latitude : double, longitude : double) : WeatherData
+}
+
+class WeatherData <<Aggregate Root>> {
+    - id : WeatherDataId
+    - day : LocalDate
+    - airControlAreaCode : AirControlAreaCode
+    - measurements : List<WeatherMeasurement>
+    + addMeasurement(provider, parameter, value, unit, altitude, coordinates) : void
+    + measurements() : List<WeatherMeasurement>
+}
+
+class WeatherMeasurement <<Value Object>> {
+    - provider : WeatherProvider
+    - parameter : WeatherParameter
+    - value : double
+    - unit : WeatherUnit
+    - altitude : double
+    - coordinates : WeatherCoordinates
+}
+
+class WeatherProvider <<Value Object>> {
+    - name : String
+    - type : WeatherProviderType
+    + {static} valueOf(name : String, type : WeatherProviderType) : WeatherProvider
+}
+
+class WeatherProviderType <<Value Object>>
+class WeatherParameter <<Value Object>>
+class WeatherUnit <<Value Object>>
+class WeatherCoordinates <<Value Object>>
+class WeatherDataId <<Value Object>>
+class AirControlAreaCode <<Value Object>>
+
+interface WeatherDataRepository {
+    + findByDayAndAirControlArea(day : LocalDate, code : AirControlAreaCode) : Optional<WeatherData>
+}
+
+interface AirControlAreaRepository {
+    + findByCode(code : AirControlAreaCode) : Optional<AirControlArea>
+}
+
+class AirControlArea <<Aggregate Root>> {
+    + geographicBoundary() : GeographicBoundary
+}
+
+class GeographicBoundary <<Value Object>> {
+    + contains(latitude : double, longitude : double) : boolean
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+    + authenticatedUsername() : String
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} WEATHER_DATA_MANAGEMENT : Role[]
+}
+
+ImportBulkWeatherDataUI --> ImportBulkWeatherDataController
+ImportBulkWeatherDataUI --> BulkWeatherImportResult
+ImportBulkWeatherDataUI --> BulkWeatherImportError
+
+ImportBulkWeatherDataController --> AisafeAuthorizationService
+ImportBulkWeatherDataController --> AisafePermissions
+ImportBulkWeatherDataController --> WeatherDataImporterFactory
+ImportBulkWeatherDataController --> WeatherDataImporter
+ImportBulkWeatherDataController --> ImportedWeatherMeasurement
+ImportBulkWeatherDataController --> BulkWeatherImportResult
+ImportBulkWeatherDataController --> BulkWeatherImportError
+ImportBulkWeatherDataController --> RegisterWeatherDataController
+ImportBulkWeatherDataController --> WeatherDataRepository
+ImportBulkWeatherDataController --> AirControlAreaRepository
+
+WeatherDataImporterFactory --> CsvWeatherDataImporter
+WeatherDataImporter <|.. CsvWeatherDataImporter
+CsvWeatherDataImporter --> ImportedWeatherMeasurement
+BulkWeatherImportResult *-- BulkWeatherImportError
+
+RegisterWeatherDataController --> AisafeAuthorizationService
+RegisterWeatherDataController --> AisafePermissions
+RegisterWeatherDataController --> WeatherDataRepository
+RegisterWeatherDataController --> AirControlAreaRepository
+RegisterWeatherDataController --> WeatherData
+
+WeatherData *-- WeatherDataId
+WeatherData *-- AirControlAreaCode
+WeatherData "1" *-- "0..*" WeatherMeasurement
+WeatherMeasurement *-- WeatherProvider
+WeatherMeasurement *-- WeatherParameter
+WeatherMeasurement *-- WeatherUnit
+WeatherMeasurement *-- WeatherCoordinates
+WeatherProvider *-- WeatherProviderType
+
+WeatherDataRepository --> WeatherData
+AirControlAreaRepository --> AirControlArea
+AirControlArea *-- GeographicBoundary
+AirControlArea *-- AirControlAreaCode
+
+@enduml
