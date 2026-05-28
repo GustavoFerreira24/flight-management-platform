@@ -147,7 +147,7 @@ class RegisterWeatherDataControllerTest {
         );
 
         assertEquals("meteo.provider@aisafe.com", weatherData.measurements().getFirst().provider().name());
-        assertEquals("AUTHENTICATED_PROVIDER", weatherData.measurements().getFirst().provider().type().toString());
+        assertEquals("MANUAL_INPUT", weatherData.measurements().getFirst().provider().type().toString());
     }
 
     @Test

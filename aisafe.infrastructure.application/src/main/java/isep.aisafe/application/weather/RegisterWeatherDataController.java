@@ -78,7 +78,7 @@ public class RegisterWeatherDataController {
                 day,
                 areaCode,
                 authz.authenticatedUsername(),
-                "AUTHENTICATED_PROVIDER",
+                "MANUAL_INPUT",
                 parameter,
                 value,
                 unit,

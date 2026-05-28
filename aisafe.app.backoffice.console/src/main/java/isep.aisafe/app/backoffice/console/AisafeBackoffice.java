@@ -9,6 +9,7 @@ import isep.aisafe.app.backoffice.console.presentation.airport.RegisterAirportUI
 import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import isep.aisafe.app.backoffice.console.presentation.customercollaborator.RegisterCustomerCollaboratorUI;
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
+import isep.aisafe.app.backoffice.console.presentation.weather.ImportBulkWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCustomerCollaboratorsUI;
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.RegisterWeatherDataUI;
@@ -239,7 +240,8 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         ConsoleStyle.printMenu(
                 "Weather Management Console",
                 ConsoleStyle.option(1, "Register Weather Data                          (US41)"),
-                ConsoleStyle.option(2, "Logout")
+                ConsoleStyle.option(2, "Import Bulk Weather Data                       (US42)"),
+                ConsoleStyle.option(3, "Logout")
         );
         ConsoleStyle.printPrompt("Option: ");
 
@@ -251,6 +253,11 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("2".equals(option)) {
+            executeMenuAction(() -> new ImportBulkWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("3".equals(option)) {
             ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
