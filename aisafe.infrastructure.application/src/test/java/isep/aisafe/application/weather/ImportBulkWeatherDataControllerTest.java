@@ -70,6 +70,12 @@ class ImportBulkWeatherDataControllerTest {
                 weatherDataRepository,
                 null
         ));
+        assertThrows(NullPointerException.class, () -> new ImportBulkWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository,
+                null
+        ));
     }
 
     /**
@@ -334,10 +340,45 @@ class ImportBulkWeatherDataControllerTest {
         )));
     }
 
+    /**
+     * Purpose: verify importer factory integration.
+     * Scenario: import a weather data file without passing an importer explicitly.
+     * Expected output: the controller selects the importer from the factory and persists the record.
+     */
+    @Test
+    void ensureImporterFactoryIsUsedWhenImporterIsNotProvided() throws IOException {
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final InMemoryAirControlAreaRepository airControlAreaRepository = airControlAreaRepository();
+        final ImportBulkWeatherDataController controller = new ImportBulkWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository,
+                new StubWeatherDataImporterFactory(List.of(measurement(2, "2027-01-16", "temperature", 18.5, "C", 38.72, -9.14)))
+        );
+
+        final BulkWeatherImportResult result = controller.importFromFile(readableFile());
+
+        assertTrue(result.isFullyImported());
+        assertArrayEquals(AisafePermissions.WEATHER_DATA_MANAGEMENT, authz.requestedRoles());
+        assertEquals(1, weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2027, 1, 16),
+                AirControlAreaCode.valueOf("LISACC")
+        ).orElseThrow().measurements().size());
+    }
+
     private ImportBulkWeatherDataController controller(
             final CapturingAuthorizationService authz,
             final InMemoryWeatherDataRepository weatherDataRepository) {
 
+        return new ImportBulkWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository()
+        );
+    }
+
+    private InMemoryAirControlAreaRepository airControlAreaRepository() {
         final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
         airControlAreaRepository.save(new AirControlArea(
                 AirControlAreaCode.valueOf("LISACC"),
@@ -345,12 +386,7 @@ class ImportBulkWeatherDataControllerTest {
                 GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
                 MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
         ));
-
-        return new ImportBulkWeatherDataController(
-                authz,
-                weatherDataRepository,
-                airControlAreaRepository
-        );
+        return airControlAreaRepository;
     }
 
     private Path readableFile() throws IOException {
@@ -413,5 +449,19 @@ class ImportBulkWeatherDataControllerTest {
                 latitude,
                 longitude
         );
+    }
+
+    private static final class StubWeatherDataImporterFactory extends WeatherDataImporterFactory {
+
+        private final List<ImportedWeatherMeasurement> measurements;
+
+        private StubWeatherDataImporterFactory(final List<ImportedWeatherMeasurement> measurements) {
+            this.measurements = measurements;
+        }
+
+        @Override
+        public WeatherDataImporter importerFor(final Path file) {
+            return ignored -> measurements;
+        }
     }
 }
