@@ -8,29 +8,10 @@ The implementation bridges the gap between the existing backend domain model and
 
 ### 1.1 List of issues
 
-Analysis:
-
-- 1 - Identify required weather measurement data and validation rules
-- 2 - Identify supported weather parameters and compatible units
-- 3 - Define authorization rules for weather data registration
-- 4 - Define parameter-specific value ranges
-
-Design:
-
-- 5 - Design weather data registration UI flow
-- 6 - Design parameter and unit menu strategy
-- 7 - Document weather data registration
-
-Implement:
-
-- 1 - Implement `RegisterWeatherDataUI` with immediate per-field validation
-- 2 - Implement `RegisterWeatherDataController` with authorization and boundary checks
-- 3 - Integrate Weather Person login into `AisafeBackoffice` main menu
-- 4 - Bootstrap initial Weather Person user
-
-Test:
-
-- 5 - Add controller tests for all acceptance criteria
+- US041.1 – Implement Weather Data Registration
+- US041.2 – Validate Weather Data
+- US041.3 – Add Weather Data Registration Tests
+- US041.4 – Document Weather Data Registration
 
 ## 2. Requirements
 
@@ -38,14 +19,12 @@ Test:
 
 **Acceptance Criteria:**
 
-- US041.1 The system must allow a Weather Person to register a weather measurement with: date, air control area code, provider name, provider type, weather parameter, measurement value, unit, altitude, latitude and longitude.
-- US041.2 Each measurement must be associated with exactly one air control area.
-- US041.3 Supported weather parameters are: `TEMPERATURE`, `WIND_SPEED`, `WIND_DIRECTION`, `PRESSURE` and `HUMIDITY`.
-- US041.4 Each parameter has specific valid value ranges and compatible units enforced at both UI and domain level.
-- US041.5 Multiple measurements for the same day and air control area are grouped into a single `WeatherData` aggregate.
-- US041.6 Measurement coordinates must fall within the geographic boundary of the selected air control area.
-- US041.7 Registration is only accessible to users with the `WEATHER_PERSON` role.
-- US041.8 Invalid input must be rejected immediately with a clear error message.
+- AC1 - Weather Person can successfully register weather data for a specific air control area 
+- AC2 - Weather data is associated with exactly one air control area 
+- AC3 - Weather data attributes (e.g., wind, temperature, etc.) are validated before persistence 
+- AC4 - Weather data can vary within the air control area (e.g., by location or altitude) 
+- AC5 - All required weather data is correctly stored in the system 
+- AC6 - Unit and/or integration tests validate weather data registration behaviour
 
 **Dependencies/References:**
 
@@ -86,7 +65,7 @@ Weather data registration requires two layers of validation:
 
 **Authorization:** The `WEATHER_DATA_MANAGEMENT` permission is restricted to `WEATHER_PERSON`. The check is the first action inside `registerWeatherMeasurement()`.
 
-**Weather Person creation:** A Weather Person user is not created by the `RegisterWeatherDataUI`. It must be created beforehand — either via bootstrap (`weather@aisafe.com`, password `Password1`) or by the Admin/Backoffice Operator through US031/US061. The Weather Person then logs in via the dedicated "Weather Person login" option in the main menu.
+**Weather Person creation:** A Weather Person user is not created by the `RegisterWeatherDataUI`. It must be created beforehand — either via bootstrap (`ipma@aisafe.com`, password `Password1`) or by the Admin/Backoffice Operator through US031/US061. The Weather Person then logs in via the dedicated "Weather Person login" option in the main menu.
 
 ## 4. Design
 
@@ -116,43 +95,43 @@ Repositories are resolved lazily from `PersistenceContext` in the production con
 
 **Test 1:** Valid weather measurement is authorized, persisted and returned.
 
-**Refers to Acceptance Criteria:** US041.1, US041.2, US041.3, US041.4, US041.7
+**Refers to Acceptance Criteria:** AC1, AC2, AC3, AC4, AC5
 
 Implemented in `RegisterWeatherDataControllerTest.ensureValidWeatherMeasurementIsRegistered`.
 
 **Test 2:** Two measurements for the same day and area reuse the same aggregate.
 
-**Refers to Acceptance Criteria:** US041.5
+**Refers to Acceptance Criteria:** AC5
 
 Implemented in `RegisterWeatherDataControllerTest.ensureExistingWeatherDataAggregateIsReused`.
 
 **Test 3:** Unknown air control area code is rejected.
 
-**Refers to Acceptance Criteria:** US041.2, US041.8
+**Refers to Acceptance Criteria:** AC2, AC3
 
 Implemented in `RegisterWeatherDataControllerTest.ensureUnknownAirControlAreaIsRejected`.
 
 **Test 4:** Measurement value outside parameter range is rejected.
 
-**Refers to Acceptance Criteria:** US041.4, US041.8
+**Refers to Acceptance Criteria:** AC3
 
 Implemented in `RegisterWeatherDataControllerTest.ensureInvalidWeatherMeasurementIsRejected`.
 
 **Test 5:** Blank required fields are rejected.
 
-**Refers to Acceptance Criteria:** US041.1, US041.8
+**Refers to Acceptance Criteria:** AC3, AC5
 
 Implemented in `RegisterWeatherDataControllerTest.ensureRequiredWeatherRegistrationFieldsAreRejected`.
 
 **Test 6:** Coordinates outside the air control area boundary are rejected.
 
-**Refers to Acceptance Criteria:** US041.6, US041.8
+**Refers to Acceptance Criteria:** AC2, AC3, AC4
 
 Implemented in `RegisterWeatherDataControllerTest.ensureCoordinatesOutsideAirControlAreaAreRejected`.
 
 **Test 7:** Authorization failure stops registration before any persistence.
 
-**Refers to Acceptance Criteria:** US041.7
+**Refers to Acceptance Criteria:** AC1
 
 Implemented in `RegisterWeatherDataControllerTest.ensureAuthorizationFailureStopsRegistration`.
 
@@ -180,7 +159,7 @@ Main implementation artifacts:
 - `WeatherDataId`: composite value object (day + area code) used as the aggregate identity.
 - `WeatherDataRepository`: repository abstraction with `findByDayAndAirControlArea()` for aggregate reuse.
 - `AisafeBackoffice`: updated main menu with option 4 "Weather Person login" and dedicated `showWeatherPersonOptions()` method.
-- `AisafeBootstrapper`: creates the initial Weather Person user (`weather@aisafe.com`, password `Password1`, role `WEATHER_PERSON`).
+- `AisafeBootstrapper`: creates the initial Weather Person user (`ipma@aisafe.com`, password `Password1`, role `WEATHER_PERSON`).
 
 ## 6. Integration/Demonstration
 
@@ -190,9 +169,9 @@ The Weather Person user must exist before logging in. The bootstrap process crea
 
 | Field    | Value                  |
 |----------|------------------------|
-| Username | `weather`              |
+| Username | `ipma`                 |
 | Password | `Password1`            |
-| Email    | `weather@aisafe.com`   |
+| Email    | `ipma@aisafe.com`      |
 | Role     | `WEATHER_PERSON`       |
 
 Alternatively, an Admin or Backoffice Operator can create a Weather Person via the user registration flow (US030/US061).
@@ -214,7 +193,7 @@ AISafe Console Login
 5 - Exit
 
 Option: 4
-Username/Email: weather
+Username/Email: ipma
 Password: Password1
 ```
 

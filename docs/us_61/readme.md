@@ -8,47 +8,25 @@ The implemented customer types are air transport companies and air control areas
 
 ### 1.1 List of issues
 
-Analysis:
-
-- 1 - Identify customer collaborator data
-- 2 - Identify supported customer types
-- 3 - Define collaborator-to-customer association rules
-- 4 - Define system-user role mapping for collaborator types
-
-Design:
-
-- 5 - Design customer collaborator aggregate
-- 6 - Design customer reference value object
-- 7 - Document customer collaborator registration
-
-Implement:
-
-- 1 - Implement customer collaborator aggregate and value objects
-- 2 - Implement repository abstraction and persistence implementations
-- 3 - Implement customer collaborator registration controller
-- 4 - Implement customer collaborator registration UI
-- 5 - Integrate collaborator registration with framework user management
-- 6 - Bootstrap initial customer collaborators
-
-Test:
-
-- 7 - Add domain, repository, controller and bootstrap tests
-
+- US061.1 – Implement Customer Collaborator Registration
+- US061.2 – Associate Collaborator with Customer 
+- US061.3 – Create Collaborator as System User 
+- US061.4 – Implement Collaborator Bootstrap Process 
+- US061.5 – Add Collaborator Registration Tests 
+- US061.6 – Document Collaborator Registration 
 ## 2. Requirements
 
 **US061** As a Backoffice Operator, I want to register customer collaborators, associating each collaborator with exactly one customer and creating the corresponding system user.
 
 **Acceptance Criteria:**
 
-- US061.1 The system must allow registering a customer collaborator with first name, last name and email.
-- US061.2 A collaborator must be associated with exactly one existing customer.
-- US061.3 Supported customer types are air transport companies and air control areas.
-- US061.4 Collaborator email must be unique and must identify the collaborator aggregate.
-- US061.5 A collaborator must also be registered as a system user.
-- US061.6 The system username must be derived from the collaborator email.
-- US061.7 Air transport company collaborators receive the `AIR_TRANSPORT_COMPANY_COLLABORATOR` role.
-- US061.8 Air control area collaborators receive the `FLIGHT_CONTROL_OPERATOR` role by default. Weather Persons associated with an air control area receive the `WEATHER_PERSON` role and must be created via the bootstrap process or a dedicated registration flow (see Observations).
-- US061.9 The registration must be available through a bootstrap process.
+- AC1 - Backoffice Operator can successfully register a collaborator for a customer
+- AC2 - Collaborator is associated with exactly one customer (air transport company or air control area)
+- AC3 - Each collaborator is created as a distinct system user
+- AC4 - Collaborator data (e.g., identity, email, roles) is validated and persisted
+- AC5 - No validation is required to match collaborator email with customer domain
+- AC6 - Bootstrap process creates collaborators successfully
+- AC7 - Unit and/or integration tests validate collaborator registration behaviour
 
 **Dependencies/References:**
 
@@ -93,39 +71,45 @@ The `RegisterCustomerCollaboratorUI` is the console entry point for backoffice o
 
 **Test 1:** Valid collaborator registration for an air transport company is accepted and persisted.
 
-**Refers to Acceptance Criteria:** US061.1, US061.2, US061.3, US061.5, US061.6, US061.7
+**Refers to Acceptance Criteria:** AC1, AC2, AC3, AC4, AC5, AC7
 
 Implemented in `RegisterCustomerCollaboratorControllerTest.ensureCollaboratorIsRegisteredForAirTransportCompany`.
 
 **Test 2:** Valid collaborator registration for an air control area is accepted and persisted.
 
-**Refers to Acceptance Criteria:** US061.1, US061.2, US061.3, US061.5, US061.6, US061.8
+**Refers to Acceptance Criteria:** AC1, AC2, AC3, AC4, AC5, AC7
 
 Implemented in `RegisterCustomerCollaboratorControllerTest.ensureCollaboratorIsRegisteredForAirControlArea`.
 
 **Test 3:** Duplicate collaborator emails are rejected.
 
-**Refers to Acceptance Criteria:** US061.4
+**Refers to Acceptance Criteria:** AC4
 
 Implemented in `RegisterCustomerCollaboratorControllerTest.ensureDuplicateCollaboratorEmailIsRejected` and `InMemoryCustomerCollaboratorRepositoryTest`.
 
 **Test 4:** Unknown customer identifiers are rejected.
 
-**Refers to Acceptance Criteria:** US061.2, US061.3
+**Refers to Acceptance Criteria:** AC2, AC4
 
 Implemented in `RegisterCustomerCollaboratorControllerTest.ensureUnknownAirTransportCompanyIsRejected` and `ensureUnknownAirControlAreaIsRejected`.
 
 **Test 5:** Invalid collaborator data and blank initial passwords are rejected.
 
-**Refers to Acceptance Criteria:** US061.1, US061.5
+**Refers to Acceptance Criteria:** AC4
 
 Implemented in `RegisterCustomerCollaboratorControllerTest.ensureInvalidCollaboratorDataIsRejected` and `ensureBlankInitialPasswordIsRejected`.
 
 **Test 6:** Customer collaborator aggregate invariants are enforced.
 
-**Refers to Acceptance Criteria:** US061.1, US061.2, US061.4, US061.6
+**Refers to Acceptance Criteria:** AC2, AC4
 
 Implemented in `CustomerCollaboratorTest`, `CollaboratorEmailTest`, `CustomerReferenceTest` and `SystemUsernameTest`.
+
+**Test 7:** Customer collaborator bootstrap helper creates missing collaborators and avoids duplicate creation.
+
+**Refers to Acceptance Criteria:** AC6, AC7
+
+Implemented in `AisafeBootstrapperTest.ensureCustomerCollaboratorIsBootstrappedWhenMissing` and `AisafeBootstrapperTest.ensureCustomerCollaboratorBootstrapIsIdempotent`.
 
 ## 5. Implementation
 
@@ -177,7 +161,7 @@ The bootstrap creates two initial collaborators:
 
 The collaborators are created during `AisafeBootstrapper.bootstrap()` if they do not already exist.
 
-A `WEATHER_PERSON` user (`weather@aisafe.com`) is also created during bootstrap directly via the framework user service. This user is associated with the `WEATHER_PERSON` role and supports US041 (Register Weather Data).
+A `WEATHER_PERSON` user (`ipma@aisafe.com`) is also created during bootstrap directly via the framework user service. This user is associated with the `WEATHER_PERSON` role and supports US041 (Register Weather Data) and US042 (Import Bulk Weather Data).
 
 ## 7. Observations
 
