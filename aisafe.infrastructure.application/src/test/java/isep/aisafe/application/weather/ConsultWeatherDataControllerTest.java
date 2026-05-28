@@ -115,12 +115,12 @@ class ConsultWeatherDataControllerTest {
     }
 
     /**
-     * Purpose: verify that consultation only returns matching weather data.
-     * Scenario: weather data exists for another day or another air control area.
-     * Expected output: no weather data is returned for the selected filters.
+     * Purpose: verify date-based filtering.
+     * Scenario: weather data exists for the selected area but another day.
+     * Expected output: no weather data is returned for the requested day.
      */
     @Test
-    void ensureConsultationReturnsEmptyWhenNoWeatherDataMatches() {
+    void ensureConsultationFiltersByDay() {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
@@ -136,7 +136,31 @@ class ConsultWeatherDataControllerTest {
 
         // Act / Assert
         assertTrue(controller.consultWeatherData("2027-01-12", "CONACC").isEmpty());
-        assertTrue(controller.consultWeatherData("2027-01-11", "ALTACC").isEmpty());
+        assertArrayEquals(AisafePermissions.WEATHER_DATA_CONSULTATION, authz.requestedRoles());
+    }
+
+    /**
+     * Purpose: verify area-based filtering.
+     * Scenario: weather data exists for the selected day but another air control area.
+     * Expected output: no weather data is returned for the requested air control area.
+     */
+    @Test
+    void ensureConsultationFiltersByAirControlArea() {
+        // Arrange
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        weatherDataRepository.save(weatherData(
+                LocalDate.of(2027, 1, 13),
+                AirControlAreaCode.valueOf("CONACC")
+        ));
+        final ConsultWeatherDataController controller = new ConsultWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository()
+        );
+
+        // Act / Assert
+        assertTrue(controller.consultWeatherData("2027-01-13", "ALTACC").isEmpty());
         assertArrayEquals(AisafePermissions.WEATHER_DATA_CONSULTATION, authz.requestedRoles());
     }
 
@@ -179,11 +203,26 @@ class ConsultWeatherDataControllerTest {
         );
 
         // Act / Assert
-        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData(null, "CONACC"));
-        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData(" ", "CONACC"));
-        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData("2027/01/10", "CONACC"));
-        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData("2027-01-10", null));
-        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData("2027-01-10", " "));
+        assertEquals("Weather data day is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.consultWeatherData(null, "CONACC")
+        ).getMessage());
+        assertEquals("Weather data day is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.consultWeatherData(" ", "CONACC")
+        ).getMessage());
+        assertEquals("Weather data day must use ISO date format YYYY-MM-DD.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.consultWeatherData("2027/01/10", "CONACC")
+        ).getMessage());
+        assertEquals("Air control area code is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.consultWeatherData("2027-01-10", null)
+        ).getMessage());
+        assertEquals("Air control area code is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.consultWeatherData("2027-01-10", " ")
+        ).getMessage());
     }
 
     /**
