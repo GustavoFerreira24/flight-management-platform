@@ -3,6 +3,7 @@ package isep.aisafe.application.weather;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.weatherdata.domain.WeatherData;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
@@ -19,6 +20,7 @@ public class ConsultWeatherDataController {
 
     private final AisafeAuthorizationService authz;
     private final WeatherDataRepository weatherDataRepository;
+    private final AirControlAreaRepository airControlAreaRepository;
 
     /**
      * Creates the controller with the default AISafe authorization service.
@@ -26,19 +28,23 @@ public class ConsultWeatherDataController {
     public ConsultWeatherDataController() {
         authz = new AisafeAuthorizationService();
         weatherDataRepository = null;
+        airControlAreaRepository = null;
     }
 
     ConsultWeatherDataController(final AisafeAuthorizationService authz) {
         this.authz = Objects.requireNonNull(authz, "authz cannot be null");
         weatherDataRepository = null;
+        airControlAreaRepository = null;
     }
 
     ConsultWeatherDataController(
             final AisafeAuthorizationService authz,
-            final WeatherDataRepository weatherDataRepository) {
+            final WeatherDataRepository weatherDataRepository,
+            final AirControlAreaRepository airControlAreaRepository) {
 
         this.authz = Objects.requireNonNull(authz, "authz cannot be null");
         this.weatherDataRepository = Objects.requireNonNull(weatherDataRepository, "weatherDataRepository cannot be null");
+        this.airControlAreaRepository = Objects.requireNonNull(airControlAreaRepository, "airControlAreaRepository cannot be null");
     }
 
     /**
@@ -61,10 +67,13 @@ public class ConsultWeatherDataController {
         ensureNotBlank(day, "Weather data day is required.");
         ensureNotBlank(areaCode, "Air control area code is required.");
 
-        return weatherDataRepository().findByDayAndAirControlArea(
-                parseDay(day),
-                AirControlAreaCode.valueOf(areaCode)
-        );
+        final LocalDate measurementDay = parseDay(day);
+        final AirControlAreaCode airControlAreaCode = AirControlAreaCode.valueOf(areaCode);
+
+        airControlAreaRepository().findByCode(airControlAreaCode)
+                .orElseThrow(() -> new IllegalArgumentException("Air control area not found."));
+
+        return weatherDataRepository().findByDayAndAirControlArea(measurementDay, airControlAreaCode);
     }
 
     private LocalDate parseDay(final String day) {
@@ -87,5 +96,13 @@ public class ConsultWeatherDataController {
         }
 
         return PersistenceContext.repositories().weatherData();
+    }
+
+    private AirControlAreaRepository airControlAreaRepository() {
+        if (airControlAreaRepository != null) {
+            return airControlAreaRepository;
+        }
+
+        return PersistenceContext.repositories().airControlAreas();
     }
 }

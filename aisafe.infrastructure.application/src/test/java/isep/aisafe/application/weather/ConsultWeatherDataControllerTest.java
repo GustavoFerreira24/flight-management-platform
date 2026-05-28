@@ -1,6 +1,11 @@
 package isep.aisafe.application.weather;
 
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.InMemoryAirControlAreaRepository;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.support.CapturingAuthorizationService;
 import isep.aisafe.weatherdata.domain.InMemoryWeatherDataRepository;
@@ -58,14 +63,22 @@ class ConsultWeatherDataControllerTest {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final InMemoryAirControlAreaRepository airControlAreaRepository = airControlAreaRepository();
 
         // Act / Assert
         assertThrows(NullPointerException.class, () -> new ConsultWeatherDataController(
                 null,
-                weatherDataRepository
+                weatherDataRepository,
+                airControlAreaRepository
         ));
         assertThrows(NullPointerException.class, () -> new ConsultWeatherDataController(
                 authz,
+                null,
+                airControlAreaRepository
+        ));
+        assertThrows(NullPointerException.class, () -> new ConsultWeatherDataController(
+                authz,
+                weatherDataRepository,
                 null
         ));
     }
@@ -85,7 +98,11 @@ class ConsultWeatherDataControllerTest {
                 AirControlAreaCode.valueOf("CONACC")
         );
         weatherDataRepository.save(expectedWeatherData);
-        final ConsultWeatherDataController controller = new ConsultWeatherDataController(authz, weatherDataRepository);
+        final ConsultWeatherDataController controller = new ConsultWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository()
+        );
 
         // Act
         final Optional<WeatherData> weatherData = controller.consultWeatherData("2027-01-10", "CONACC");
@@ -111,7 +128,11 @@ class ConsultWeatherDataControllerTest {
                 LocalDate.of(2027, 1, 11),
                 AirControlAreaCode.valueOf("CONACC")
         ));
-        final ConsultWeatherDataController controller = new ConsultWeatherDataController(authz, weatherDataRepository);
+        final ConsultWeatherDataController controller = new ConsultWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository()
+        );
 
         // Act / Assert
         assertTrue(controller.consultWeatherData("2027-01-12", "CONACC").isEmpty());
@@ -132,7 +153,8 @@ class ConsultWeatherDataControllerTest {
         authz.throwOnAuthorization(failure);
         final ConsultWeatherDataController controller = new ConsultWeatherDataController(
                 authz,
-                new InMemoryWeatherDataRepository()
+                new InMemoryWeatherDataRepository(),
+                airControlAreaRepository()
         );
 
         // Act / Assert
@@ -140,6 +162,50 @@ class ConsultWeatherDataControllerTest {
                 "2026-06-01",
                 "LISACC"
         )));
+    }
+
+    /**
+     * Purpose: verify filter input validation.
+     * Scenario: consultation is requested with missing or malformed filters.
+     * Expected output: invalid filters are rejected with clear exceptions.
+     */
+    @Test
+    void ensureInvalidConsultationFiltersAreRejected() {
+        // Arrange
+        final ConsultWeatherDataController controller = new ConsultWeatherDataController(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository(),
+                airControlAreaRepository()
+        );
+
+        // Act / Assert
+        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData(null, "CONACC"));
+        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData(" ", "CONACC"));
+        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData("2027/01/10", "CONACC"));
+        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData("2027-01-10", null));
+        assertThrows(IllegalArgumentException.class, () -> controller.consultWeatherData("2027-01-10", " "));
+    }
+
+    /**
+     * Purpose: verify air control area existence validation.
+     * Scenario: consultation is requested for an area code that is not registered.
+     * Expected output: the consultation is rejected before returning weather data.
+     */
+    @Test
+    void ensureUnknownAirControlAreaIsRejected() {
+        // Arrange
+        final ConsultWeatherDataController controller = new ConsultWeatherDataController(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository(),
+                airControlAreaRepository()
+        );
+
+        // Act / Assert
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.consultWeatherData("2027-01-10", "UNKACC")
+        );
+        assertEquals("Air control area not found.", exception.getMessage());
     }
 
     private WeatherData weatherData(final LocalDate day, final AirControlAreaCode airControlAreaCode) {
@@ -153,5 +219,21 @@ class ConsultWeatherDataControllerTest {
                 WeatherCoordinates.valueOf(38.72, -9.14)
         );
         return weatherData;
+    }
+
+    private InMemoryAirControlAreaRepository airControlAreaRepository() {
+        final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
+        airControlAreaRepository.save(airControlArea("CONACC"));
+        airControlAreaRepository.save(airControlArea("ALTACC"));
+        return airControlAreaRepository;
+    }
+
+    private AirControlArea airControlArea(final String code) {
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(code),
+                code + " Area Control Centre",
+                GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
+        );
     }
 }
