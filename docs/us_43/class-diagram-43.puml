@@ -1,0 +1,122 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class ConsultWeatherDataUI <<UI>> {
+    - controller : ConsultWeatherDataController
+    - scanner : Scanner
+    + show() : void
+    - askRequiredText(prompt : String) : String
+    - printWeatherData(weatherData : WeatherData) : void
+    - safeMessage(exception : Exception) : String
+}
+
+note right of ConsultWeatherDataUI
+  Collects day and air control area code.
+  Presents weather measurements or a no-data message.
+  Catches validation and runtime exceptions.
+end note
+
+class ConsultWeatherDataController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - weatherDataRepository : WeatherDataRepository
+    - airControlAreaRepository : AirControlAreaRepository
+    + execute() : void
+    + consultWeatherData(day : String, areaCode : String) : Optional<WeatherData>
+    - parseDay(day : String) : LocalDate
+    - ensureNotBlank(value : String, message : String) : void
+    - weatherDataRepository() : WeatherDataRepository
+    - airControlAreaRepository() : AirControlAreaRepository
+}
+
+note right of ConsultWeatherDataController
+  Requires WEATHER_DATA_CONSULTATION.
+  Validates required filters, ISO date format
+  and air control area existence before querying.
+end note
+
+interface WeatherDataRepository {
+    + findByDayAndAirControlArea(day : LocalDate, code : AirControlAreaCode) : Optional<WeatherData>
+}
+
+interface AirControlAreaRepository {
+    + findByCode(code : AirControlAreaCode) : Optional<AirControlArea>
+}
+
+class WeatherData <<Aggregate Root>> {
+    - id : WeatherDataId
+    - day : LocalDate
+    - airControlAreaCode : AirControlAreaCode
+    - measurements : List<WeatherMeasurement>
+    + day() : LocalDate
+    + airControlAreaCode() : AirControlAreaCode
+    + measurements() : List<WeatherMeasurement>
+}
+
+class WeatherMeasurement <<Value Object>> {
+    - provider : WeatherProvider
+    - parameter : WeatherParameter
+    - value : double
+    - unit : WeatherUnit
+    - altitude : double
+    - coordinates : WeatherCoordinates
+    + provider() : WeatherProvider
+    + parameter() : WeatherParameter
+    + value() : double
+    + unit() : WeatherUnit
+    + altitude() : double
+    + coordinates() : WeatherCoordinates
+}
+
+class WeatherProvider <<Value Object>> {
+    - name : String
+    - type : WeatherProviderType
+    + name() : String
+    + type() : WeatherProviderType
+}
+
+class WeatherProviderType <<Value Object>>
+class WeatherParameter <<Value Object>>
+class WeatherUnit <<Value Object>>
+class WeatherCoordinates <<Value Object>> {
+    + latitude() : double
+    + longitude() : double
+}
+class WeatherDataId <<Value Object>>
+class AirControlAreaCode <<Value Object>>
+
+class AirControlArea <<Aggregate Root>>
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} WEATHER_DATA_CONSULTATION : Role[]
+}
+
+ConsultWeatherDataUI --> ConsultWeatherDataController
+ConsultWeatherDataUI --> WeatherData
+ConsultWeatherDataUI --> WeatherMeasurement
+
+ConsultWeatherDataController --> AisafeAuthorizationService
+ConsultWeatherDataController --> AisafePermissions
+ConsultWeatherDataController --> WeatherDataRepository
+ConsultWeatherDataController --> AirControlAreaRepository
+ConsultWeatherDataController --> AirControlAreaCode
+ConsultWeatherDataController --> WeatherData
+
+WeatherDataRepository --> WeatherData
+AirControlAreaRepository --> AirControlArea
+AirControlArea *-- AirControlAreaCode
+
+WeatherData *-- WeatherDataId
+WeatherData *-- AirControlAreaCode
+WeatherData "1" *-- "0..*" WeatherMeasurement
+WeatherMeasurement *-- WeatherProvider
+WeatherMeasurement *-- WeatherParameter
+WeatherMeasurement *-- WeatherUnit
+WeatherMeasurement *-- WeatherCoordinates
+WeatherProvider *-- WeatherProviderType
+
+@enduml

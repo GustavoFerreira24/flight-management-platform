@@ -9,6 +9,8 @@ import isep.aisafe.app.backoffice.console.presentation.airport.RegisterAirportUI
 import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import isep.aisafe.app.backoffice.console.presentation.customercollaborator.RegisterCustomerCollaboratorUI;
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
+import isep.aisafe.app.backoffice.console.presentation.weather.ConsultWeatherDataUI;
+import isep.aisafe.app.backoffice.console.presentation.weather.ImportBulkWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCustomerCollaboratorsUI;
 import isep.aisafe.app.backoffice.console.presentation.usermanagement.RegisterBackofficeUserUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.RegisterWeatherDataUI;
@@ -108,6 +110,13 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         if (authz.authenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT)) {
             while (showWeatherPersonOptions(scanner)) {
                 // Keep the authenticated weather person session open until logout.
+            }
+            return;
+        }
+
+        if (authz.authenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_CONSULTATION)) {
+            while (showWeatherConsultationOptions(scanner)) {
+                // Keep the authenticated weather consultation session open until logout.
             }
             return;
         }
@@ -239,7 +248,9 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         ConsoleStyle.printMenu(
                 "Weather Management Console",
                 ConsoleStyle.option(1, "Register Weather Data                          (US41)"),
-                ConsoleStyle.option(2, "Logout")
+                ConsoleStyle.option(2, "Import Bulk Weather Data                       (US42)"),
+                ConsoleStyle.option(3, "Consult Weather Data                           (US43)"),
+                ConsoleStyle.option(4, "Logout")
         );
         ConsoleStyle.printPrompt("Option: ");
 
@@ -247,6 +258,40 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
 
         if ("1".equals(option)) {
             executeMenuAction(() -> new RegisterWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("2".equals(option)) {
+            executeMenuAction(() -> new ImportBulkWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("3".equals(option)) {
+            executeMenuAction(() -> new ConsultWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("4".equals(option)) {
+            ConsoleStyle.printInfo("Returning to login menu.");
+            return false;
+        }
+
+        ConsoleStyle.printWarning("Unknown option.");
+        return true;
+    }
+
+    private boolean showWeatherConsultationOptions(final Scanner scanner) {
+        ConsoleStyle.printMenu(
+                "Weather Consultation Console",
+                ConsoleStyle.option(1, "Consult Weather Data                           (US43)"),
+                ConsoleStyle.option(2, "Logout")
+        );
+        ConsoleStyle.printPrompt("Option: ");
+
+        final String option = scanner.nextLine();
+
+        if ("1".equals(option)) {
+            executeMenuAction(() -> new ConsultWeatherDataUI(scanner).show());
             return true;
         }
 

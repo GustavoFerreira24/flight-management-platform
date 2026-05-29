@@ -59,8 +59,8 @@ public class AisafeBootstrapper {
                 "Backoffice", "User", "backoffice@aisafe.com",
                 Set.of(AisafeRoles.BACKOFFICE_OPERATOR));
 
-        register(userService, "weather", "Password1",
-                "Weather", "Person", "weather@aisafe.com",
+        register(userService, "ipma", "Password1",
+                "IPMA", "Provider", "ipma@aisafe.com",
                 Set.of(AisafeRoles.WEATHER_PERSON));
 
         register(userService, "fco", "Password1",

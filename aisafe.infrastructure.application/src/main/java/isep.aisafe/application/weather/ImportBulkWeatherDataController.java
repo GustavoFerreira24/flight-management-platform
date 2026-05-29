@@ -21,6 +21,7 @@ public class ImportBulkWeatherDataController {
     private final AisafeAuthorizationService authz;
     private final WeatherDataRepository weatherDataRepository;
     private final AirControlAreaRepository airControlAreaRepository;
+    private final WeatherDataImporterFactory importerFactory;
 
     /**
      * Creates the controller with production authorization and persistence services.
@@ -29,6 +30,7 @@ public class ImportBulkWeatherDataController {
         authz = new AisafeAuthorizationService();
         weatherDataRepository = null;
         airControlAreaRepository = null;
+        importerFactory = new WeatherDataImporterFactory();
     }
 
     ImportBulkWeatherDataController(
@@ -39,6 +41,30 @@ public class ImportBulkWeatherDataController {
         this.authz = Objects.requireNonNull(authz, "authz cannot be null");
         this.weatherDataRepository = Objects.requireNonNull(weatherDataRepository, "weatherDataRepository cannot be null");
         this.airControlAreaRepository = Objects.requireNonNull(airControlAreaRepository, "airControlAreaRepository cannot be null");
+        importerFactory = new WeatherDataImporterFactory();
+    }
+
+    ImportBulkWeatherDataController(
+            final AisafeAuthorizationService authz,
+            final WeatherDataRepository weatherDataRepository,
+            final AirControlAreaRepository airControlAreaRepository,
+            final WeatherDataImporterFactory importerFactory) {
+
+        this.authz = Objects.requireNonNull(authz, "authz cannot be null");
+        this.weatherDataRepository = Objects.requireNonNull(weatherDataRepository, "weatherDataRepository cannot be null");
+        this.airControlAreaRepository = Objects.requireNonNull(airControlAreaRepository, "airControlAreaRepository cannot be null");
+        this.importerFactory = Objects.requireNonNull(importerFactory, "importerFactory cannot be null");
+    }
+
+    /**
+     * Imports weather data records from a readable file using the importer selected for its format.
+     *
+     * @param file import file to read
+     * @return import result with persisted and rejected record counts
+     * @throws IOException when the import file cannot be read by the selected importer
+     */
+    public BulkWeatherImportResult importFromFile(final Path file) throws IOException {
+        return importFromFile(file, importerFactory.importerFor(file));
     }
 
     /**

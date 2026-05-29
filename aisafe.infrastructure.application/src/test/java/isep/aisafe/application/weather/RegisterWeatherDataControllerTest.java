@@ -147,7 +147,7 @@ class RegisterWeatherDataControllerTest {
         );
 
         assertEquals("meteo.provider@aisafe.com", weatherData.measurements().getFirst().provider().name());
-        assertEquals("AUTHENTICATED_PROVIDER", weatherData.measurements().getFirst().provider().type().toString());
+        assertEquals("MANUAL_INPUT", weatherData.measurements().getFirst().provider().type().toString());
     }
 
     @Test
@@ -300,6 +300,30 @@ class RegisterWeatherDataControllerTest {
         assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
                 "2026-06-06", "LISACC", "Manual Station", "Manual", "temperature", 18.5, " ", 1200, 38.72, -9.14
         ));
+        assertTrue(weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2026, 6, 6),
+                AirControlAreaCode.valueOf("LISACC")
+        ).isEmpty());
+    }
+
+    /**
+     * Purpose: verify weather data date format validation.
+     * Scenario: submit a date that does not follow ISO local date format.
+     * Expected output: an IllegalArgumentException with clear feedback is thrown and no weather data is persisted.
+     */
+    @Test
+    void ensureInvalidWeatherDataDateIsRejectedWithClearFeedback() {
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "06/06/2026", "LISACC", "Manual Station", "Manual", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+
+        assertEquals("Weather data day must use ISO date format YYYY-MM-DD.", exception.getMessage());
         assertTrue(weatherDataRepository.findByDayAndAirControlArea(
                 LocalDate.of(2026, 6, 6),
                 AirControlAreaCode.valueOf("LISACC")

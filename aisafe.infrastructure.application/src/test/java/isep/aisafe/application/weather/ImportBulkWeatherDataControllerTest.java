@@ -70,6 +70,12 @@ class ImportBulkWeatherDataControllerTest {
                 weatherDataRepository,
                 null
         ));
+        assertThrows(NullPointerException.class, () -> new ImportBulkWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository,
+                null
+        ));
     }
 
     /**
@@ -173,6 +179,112 @@ class ImportBulkWeatherDataControllerTest {
     }
 
     /**
+     * Purpose: verify imported required weather attributes validation.
+     * Scenario: imported records have blank day, provider, parameter and unit values.
+     * Expected output: each invalid record is rejected with clear feedback and nothing is persisted.
+     */
+    @Test
+    void ensureRequiredImportedWeatherAttributesAreReported() throws IOException {
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final ImportBulkWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+        final Path file = readableFile();
+        final WeatherDataImporter importer = fixedImporter(List.of(
+                importedMeasurement(2, " ", "LISACC", "IPMA", "STATION", "temperature", 18.5, "C", 1200, 38.72, -9.14),
+                importedMeasurement(3, "2027-01-13", "LISACC", " ", "STATION", "temperature", 18.5, "C", 1200, 38.72, -9.14),
+                importedMeasurement(4, "2027-01-13", "LISACC", "IPMA", "STATION", " ", 18.5, "C", 1200, 38.72, -9.14),
+                importedMeasurement(5, "2027-01-13", "LISACC", "IPMA", "STATION", "temperature", 18.5, " ", 1200, 38.72, -9.14)
+        ));
+
+        final BulkWeatherImportResult result = controller.importFromFile(file, importer);
+
+        assertEquals(4, result.readRecords());
+        assertEquals(0, result.importedRecords());
+        assertEquals(4, result.errors().size());
+        assertEquals("Weather data day is required.", result.errors().get(0).message());
+        assertEquals("Weather provider name is required.", result.errors().get(1).message());
+        assertEquals("Weather parameter is required.", result.errors().get(2).message());
+        assertEquals("Weather unit is required.", result.errors().get(3).message());
+        assertTrue(weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2027, 1, 13),
+                AirControlAreaCode.valueOf("LISACC")
+        ).isEmpty());
+    }
+
+    /**
+     * Purpose: verify imported weather date validation.
+     * Scenario: an imported record has a malformed ISO date.
+     * Expected output: the record is rejected with clear feedback and no data is persisted.
+     */
+    @Test
+    void ensureInvalidImportedWeatherDateIsReported() throws IOException {
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final ImportBulkWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+        final WeatherDataImporter importer = fixedImporter(List.of(importedMeasurement(
+                2, "01-13-2027", "LISACC", "IPMA", "STATION", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        )));
+
+        final BulkWeatherImportResult result = controller.importFromFile(readableFile(), importer);
+
+        assertEquals(1, result.readRecords());
+        assertEquals(0, result.importedRecords());
+        assertEquals(2, result.errors().getFirst().sourceLine());
+        assertEquals("Weather data day must use ISO date format YYYY-MM-DD.", result.errors().getFirst().message());
+    }
+
+    /**
+     * Purpose: verify imported weather source validation.
+     * Scenario: an imported record has blank provider type.
+     * Expected output: the record is rejected with clear feedback.
+     */
+    @Test
+    void ensureInvalidImportedWeatherSourceIsReported() throws IOException {
+        final ImportBulkWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository()
+        );
+        final WeatherDataImporter importer = fixedImporter(List.of(importedMeasurement(
+                2, "2027-01-14", "LISACC", "IPMA", " ", "temperature", 18.5, "C", 1200, 38.72, -9.14
+        )));
+
+        final BulkWeatherImportResult result = controller.importFromFile(readableFile(), importer);
+
+        assertEquals(0, result.importedRecords());
+        assertEquals("Weather provider type is required.", result.errors().getFirst().message());
+    }
+
+    /**
+     * Purpose: verify imported weather domain validation.
+     * Scenario: imported records violate value range, unit compatibility and coordinate range rules.
+     * Expected output: invalid records are reported individually.
+     */
+    @Test
+    void ensureInvalidImportedWeatherDomainValuesAreReported() throws IOException {
+        final ImportBulkWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository()
+        );
+        final WeatherDataImporter importer = fixedImporter(List.of(
+                importedMeasurement(2, "2027-01-15", "LISACC", "IPMA", "STATION", "humidity", 150, "PERCENT", 1200, 38.72, -9.14),
+                importedMeasurement(3, "2027-01-15", "LISACC", "IPMA", "STATION", "temperature", 18.5, "M/S", 1200, 38.72, -9.14),
+                importedMeasurement(4, "2027-01-15", "LISACC", "IPMA", "STATION", "temperature", 18.5, "C", 1200, 95.0, -9.14)
+        ));
+
+        final BulkWeatherImportResult result = controller.importFromFile(readableFile(), importer);
+
+        assertEquals(3, result.readRecords());
+        assertEquals(0, result.importedRecords());
+        assertEquals("Humidity must be between 0 and 100 percent.", result.errors().get(0).message());
+        assertEquals("Weather unit is not compatible with parameter.", result.errors().get(1).message());
+        assertEquals("Weather coordinates must be inside the air control area.", result.errors().get(2).message());
+    }
+
+    /**
      * Purpose: verify import file validation.
      * Scenario: call the import flow with a missing file.
      * Expected output: an IllegalArgumentException is thrown before the importer is invoked.
@@ -228,10 +340,45 @@ class ImportBulkWeatherDataControllerTest {
         )));
     }
 
+    /**
+     * Purpose: verify importer factory integration.
+     * Scenario: import a weather data file without passing an importer explicitly.
+     * Expected output: the controller selects the importer from the factory and persists the record.
+     */
+    @Test
+    void ensureImporterFactoryIsUsedWhenImporterIsNotProvided() throws IOException {
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final InMemoryAirControlAreaRepository airControlAreaRepository = airControlAreaRepository();
+        final ImportBulkWeatherDataController controller = new ImportBulkWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository,
+                new StubWeatherDataImporterFactory(List.of(measurement(2, "2027-01-16", "temperature", 18.5, "C", 38.72, -9.14)))
+        );
+
+        final BulkWeatherImportResult result = controller.importFromFile(readableFile());
+
+        assertTrue(result.isFullyImported());
+        assertArrayEquals(AisafePermissions.WEATHER_DATA_MANAGEMENT, authz.requestedRoles());
+        assertEquals(1, weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2027, 1, 16),
+                AirControlAreaCode.valueOf("LISACC")
+        ).orElseThrow().measurements().size());
+    }
+
     private ImportBulkWeatherDataController controller(
             final CapturingAuthorizationService authz,
             final InMemoryWeatherDataRepository weatherDataRepository) {
 
+        return new ImportBulkWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository()
+        );
+    }
+
+    private InMemoryAirControlAreaRepository airControlAreaRepository() {
         final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
         airControlAreaRepository.save(new AirControlArea(
                 AirControlAreaCode.valueOf("LISACC"),
@@ -239,12 +386,7 @@ class ImportBulkWeatherDataControllerTest {
                 GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
                 MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
         ));
-
-        return new ImportBulkWeatherDataController(
-                authz,
-                weatherDataRepository,
-                airControlAreaRepository
-        );
+        return airControlAreaRepository;
     }
 
     private Path readableFile() throws IOException {
@@ -279,5 +421,47 @@ class ImportBulkWeatherDataControllerTest {
                 latitude,
                 longitude
         );
+    }
+
+    private ImportedWeatherMeasurement importedMeasurement(
+            final int sourceLine,
+            final String day,
+            final String areaCode,
+            final String providerName,
+            final String providerType,
+            final String parameter,
+            final double value,
+            final String unit,
+            final double altitude,
+            final double latitude,
+            final double longitude) {
+
+        return new ImportedWeatherMeasurement(
+                sourceLine,
+                day,
+                areaCode,
+                providerName,
+                providerType,
+                parameter,
+                value,
+                unit,
+                altitude,
+                latitude,
+                longitude
+        );
+    }
+
+    private static final class StubWeatherDataImporterFactory extends WeatherDataImporterFactory {
+
+        private final List<ImportedWeatherMeasurement> measurements;
+
+        private StubWeatherDataImporterFactory(final List<ImportedWeatherMeasurement> measurements) {
+            this.measurements = measurements;
+        }
+
+        @Override
+        public WeatherDataImporter importerFor(final Path file) {
+            return ignored -> measurements;
+        }
     }
 }
