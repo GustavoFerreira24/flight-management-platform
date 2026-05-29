@@ -1,0 +1,39 @@
+========================================
+      SIMULATION REPORT
+      Generated: 2026-05-29 22:54:58
+========================================
+
+SUMMARY
+-------
+Total Flights   : 3
+Completed       : 3
+Terminated      : 0
+Violations      : 1
+Validation      : FAILED
+
+========================================
+FLIGHT EXECUTION STATUS
+========================================
+[FLIGHT 101]  Status: COMPLETED
+[FLIGHT 202]  Status: COMPLETED
+[FLIGHT 303]  Status: COMPLETED
+
+========================================
+SAFETY VIOLATION EVENTS
+========================================
+[VIOLATION #1]
+  Type              : PREDICTED
+  Step              : 2 (t=2s)
+  Detected at step  : 1 (t=1s)
+  Flights           : 101 <-> 202
+  Horizontal Dist.  : 0.0 m
+  Vertical Dist.    : 0.0 m
+  Flight 101 position (at detection) : lat=41.4129 lon=-8.5552 alt=669.0 m
+  Flight 101 velocity (at detection) : vlat=0.1500 vlon=0.1300 valt=600.0 m/s
+  Flight 202 position (at detection) : lat=41.7129 lon=-8.2952 alt=1769.0 m
+  Flight 202 velocity (at detection) : vlat=-0.1500 vlon=-0.1300 valt=-500.0 m/s
+
+========================================
+FINAL RESULT: *** FAILED ***
+========================================
+
