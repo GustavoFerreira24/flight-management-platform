@@ -55,6 +55,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US83 — Flight DSL Specification and Validation
 - [Flight DSL Specification](./us_83/flight-dsl.md)
 
+#### US121 — Create a Flight Plan from a File
+- [Flight Plan File Import](./us_121/implementation-notes.md)
+
 ##### Aggregates Documentation
 - [Flight Aggregate](./us_11/Aggregates/FlightAggregate.md)
 - [Flight Route Aggregate](./us_11/Aggregates/FlightRouteAggregate.md)
