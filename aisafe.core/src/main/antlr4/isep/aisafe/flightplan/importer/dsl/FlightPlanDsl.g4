@@ -1,11 +1,11 @@
 grammar FlightPlanDsl;
 
 flightPlanFile
-    : flightBlock EOF
+    : flightBlock+ EOF
     ;
 
 flightBlock
-    : FLIGHT flightIdentifier flightType LBRACE flightMetadata* legBlock+ RBRACE
+    : FLIGHT flightIdentifier flightType LBRACE (flightMetadata | loadStatement)* legBlock+ RBRACE
     ;
 
 flightIdentifier
@@ -29,6 +29,10 @@ aircraftStatement
 
 pilotStatement
     : PILOT pilotIdentifier SEMI
+    ;
+
+loadStatement
+    : LOAD number unit? SEMI
     ;
 
 aircraftRegistration
@@ -56,7 +60,17 @@ routeStatement
     ;
 
 segmentStatement
-    : SEGMENT coordinate ARROW coordinate altitudeClause? widthClause? windClause? SEMI
+    : SEGMENT coordinate ARROW coordinate speedClause? altitudeClause? widthClause? windClause? SEMI
+    ;
+
+speedClause
+    : SPEED number speedUnit?
+    ;
+
+speedUnit
+    : UNIT
+    | WIND_UNIT
+    | KNOTS
     ;
 
 altitudeClause
@@ -94,6 +108,7 @@ number
 
 unit
     : UNIT
+    | KNOTS
     ;
 
 windUnit
@@ -117,6 +132,9 @@ ALTITUDE    : A L T I T U D E;
 WIDTH       : W I D T H;
 WIND        : W I N D;
 DEG         : D E G;
+LOAD        : L O A D;
+SPEED       : S P E E D;
+KNOTS       : K N O T S;
 
 DATE_TIME   : DIGIT DIGIT DIGIT DIGIT '-' DIGIT DIGIT '-' DIGIT DIGIT 'T' DIGIT DIGIT ':' DIGIT DIGIT;
 DATE        : DIGIT DIGIT DIGIT DIGIT '-' DIGIT DIGIT '-' DIGIT DIGIT;

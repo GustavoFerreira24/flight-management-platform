@@ -10,15 +10,15 @@ public final class FlightPlanParseResult {
 
     private final List<FlightPlanDslError> errors;
     private final String parseTree;
-    private final DslFlightPlan flightPlan;
+    private final List<DslFlightPlan> flightPlans;
 
     private FlightPlanParseResult(
             final List<FlightPlanDslError> errors,
             final String parseTree,
-            final DslFlightPlan flightPlan) {
+            final List<DslFlightPlan> flightPlans) {
         this.errors = List.copyOf(Objects.requireNonNull(errors, "errors cannot be null"));
         this.parseTree = parseTree;
-        this.flightPlan = flightPlan;
+        this.flightPlans = flightPlans == null ? List.of() : List.copyOf(flightPlans);
     }
 
     /**
@@ -28,22 +28,33 @@ public final class FlightPlanParseResult {
      * @return a successful result
      */
     public static FlightPlanParseResult success(final String parseTree) {
-        return success(parseTree, null);
+        return success(parseTree, List.of());
     }
 
     /**
      * Creates a successful parsing result with an internal DSL representation.
      *
      * @param parseTree the generated parse tree as text
+     * @param flightPlans the internal flight plan representations
+     * @return a successful result
+     */
+    public static FlightPlanParseResult success(final String parseTree, final List<DslFlightPlan> flightPlans) {
+        return new FlightPlanParseResult(
+                List.of(),
+                Objects.requireNonNull(parseTree, "parseTree cannot be null"),
+                flightPlans
+        );
+    }
+
+    /**
+     * Creates a successful parsing result with a single internal DSL representation.
+     *
+     * @param parseTree the generated parse tree as text
      * @param flightPlan the internal flight plan representation
      * @return a successful result
      */
     public static FlightPlanParseResult success(final String parseTree, final DslFlightPlan flightPlan) {
-        return new FlightPlanParseResult(
-                List.of(),
-                Objects.requireNonNull(parseTree, "parseTree cannot be null"),
-                flightPlan
-        );
+        return success(parseTree, flightPlan == null ? List.of() : List.of(flightPlan));
     }
 
     /**
@@ -93,6 +104,15 @@ public final class FlightPlanParseResult {
      * @return the parsed flight plan, or null when validation failed
      */
     public DslFlightPlan flightPlan() {
-        return flightPlan;
+        return flightPlans.isEmpty() ? null : flightPlans.getFirst();
+    }
+
+    /**
+     * Returns all internal DSL representations when validation succeeds.
+     *
+     * @return immutable list of parsed flight plans
+     */
+    public List<DslFlightPlan> flightPlans() {
+        return flightPlans;
     }
 }
