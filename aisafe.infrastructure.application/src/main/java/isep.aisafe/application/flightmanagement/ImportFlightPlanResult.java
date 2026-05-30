@@ -12,20 +12,28 @@ import java.util.Optional;
  */
 public final class ImportFlightPlanResult {
 
-    private final ImportedFlightPlan importedFlightPlan;
+    private final List<ImportedFlightPlan> importedFlightPlans;
     private final List<FlightPlanDslError> errors;
 
     private ImportFlightPlanResult(
-            final ImportedFlightPlan importedFlightPlan,
+            final List<ImportedFlightPlan> importedFlightPlans,
             final List<FlightPlanDslError> errors) {
 
-        this.importedFlightPlan = importedFlightPlan;
+        this.importedFlightPlans = List.copyOf(Objects.requireNonNull(importedFlightPlans, "importedFlightPlans cannot be null"));
         this.errors = List.copyOf(Objects.requireNonNull(errors, "errors cannot be null"));
     }
 
     public static ImportFlightPlanResult success(final ImportedFlightPlan importedFlightPlan) {
+        return success(List.of(Objects.requireNonNull(importedFlightPlan, "importedFlightPlan cannot be null")));
+    }
+
+    public static ImportFlightPlanResult success(final List<ImportedFlightPlan> importedFlightPlans) {
+        if (Objects.requireNonNull(importedFlightPlans, "importedFlightPlans cannot be null").isEmpty()) {
+            throw new IllegalArgumentException("importedFlightPlans cannot be empty for an import success");
+        }
+
         return new ImportFlightPlanResult(
-                Objects.requireNonNull(importedFlightPlan, "importedFlightPlan cannot be null"),
+                importedFlightPlans,
                 List.of()
         );
     }
@@ -35,15 +43,19 @@ public final class ImportFlightPlanResult {
             throw new IllegalArgumentException("errors cannot be empty for an import failure");
         }
 
-        return new ImportFlightPlanResult(null, errors);
+        return new ImportFlightPlanResult(List.of(), errors);
     }
 
     public boolean isImported() {
-        return importedFlightPlan != null;
+        return !importedFlightPlans.isEmpty();
     }
 
     public Optional<ImportedFlightPlan> importedFlightPlan() {
-        return Optional.ofNullable(importedFlightPlan);
+        return importedFlightPlans.isEmpty() ? Optional.empty() : Optional.of(importedFlightPlans.getFirst());
+    }
+
+    public List<ImportedFlightPlan> importedFlightPlans() {
+        return importedFlightPlans;
     }
 
     public List<FlightPlanDslError> errors() {

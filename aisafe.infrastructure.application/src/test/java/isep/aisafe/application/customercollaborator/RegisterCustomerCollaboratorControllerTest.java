@@ -5,7 +5,10 @@ import eapli.framework.infrastructure.authz.domain.model.Role;
 import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
 import isep.aisafe.aircontrolarea.domain.InMemoryAirControlAreaRepository;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.Country;
 import isep.aisafe.airtransportcompany.domain.IATACode;
@@ -317,7 +320,9 @@ class RegisterCustomerCollaboratorControllerTest {
                 new InMemoryAirControlAreaRepository();
         airControlAreas.save(new AirControlArea(
                 AirControlAreaCode.valueOf("LISACC"),
-                "Lisbon Area Control Centre"
+                "Lisbon Area Control Centre",
+                GeographicBoundary.valueOf(-90, 90, -180, 180),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
         ));
 
         return new CustomerRepositories(airTransportCompanies, airControlAreas);

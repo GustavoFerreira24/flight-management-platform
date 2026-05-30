@@ -44,23 +44,6 @@ public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serial
     }
 
     /**
-     * Creates an air control area with only code and name.
-     *
-     * This constructor is kept for compatibility with existing code.
-     *
-     * @param code the air control area code
-     * @param name the air control area name
-     */
-    public AirControlArea(final AirControlAreaCode code, final String name) {
-        this(
-                code,
-                name,
-                GeographicBoundary.valueOf(-90, 90, -180, 180),
-                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
-        );
-    }
-
-    /**
      * Creates an air control area.
      *
      * @param code the air control area code
