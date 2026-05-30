@@ -1,9 +1,8 @@
 package isep.aisafe.application.weather;
 
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
-import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
-import isep.aisafe.infrastructure.authz.AisafePermissions;
-import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.infrastructure.authz.*;
+import isep.aisafe.infrastructure.persistence.*;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 
 import java.io.IOException;

@@ -11,6 +11,7 @@ import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
 import isep.aisafe.flightroute.domain.FlightRouteRepository;
 import isep.aisafe.manufacturer.domain.ManufacturerRepository;
+import isep.aisafe.pilot.domain.PilotRepository;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 
 /**
@@ -109,5 +110,12 @@ public interface RepositoryFactory {
      * @return weather data repository
      */
     WeatherDataRepository weatherData();
+
+    /**
+     * Returns the repository for the pilot aggregates.
+     *
+     * @return pilot repository
+     */
+    PilotRepository pilots();
 
 }

@@ -9,7 +9,7 @@ import isep.aisafe.app.backoffice.console.presentation.airport.RegisterAirportUI
 import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import isep.aisafe.app.backoffice.console.presentation.customercollaborator.RegisterCustomerCollaboratorUI;
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
-import isep.aisafe.app.backoffice.console.presentation.flightroute.RegisterFlightRouteUI;
+import isep.aisafe.app.backoffice.console.presentation.pilot.ManagePilotsUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ConsultWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ImportBulkWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCustomerCollaboratorsUI;
@@ -215,7 +215,7 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
                 ConsoleStyle.option(1, "Register Aircraft                              (US70)"),
                 ConsoleStyle.option(2, "Decommission Aircraft                          (US71)"),
                 ConsoleStyle.option(3, "List Aircraft Fleet                            (US72)"),
-                ConsoleStyle.option(4, "Register Flight Route                          (US73)"),
+                ConsoleStyle.option(4, "Manage Pilots                             (US75-US77)"),
                 ConsoleStyle.option(5, "Logout")
         );
         ConsoleStyle.printPrompt("Option: ");
@@ -238,7 +238,7 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("4".equals(option)) {
-            executeMenuAction(() -> new RegisterFlightRouteUI(scanner).show());
+            executeMenuAction(() -> new ManagePilotsUI(scanner).show());
             return true;
         }
 
