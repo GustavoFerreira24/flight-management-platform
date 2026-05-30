@@ -12,8 +12,12 @@ typedef struct {
     int owner;
     char start_names[MAX_FLIGHTS][HYBRID_SYNC_NAME_LENGTH];
     char updates_ready_name[HYBRID_SYNC_NAME_LENGTH];
+    char parent_step_ready_name[HYBRID_SYNC_NAME_LENGTH];
+    char parent_step_done_name[HYBRID_SYNC_NAME_LENGTH];
     sem_t *start_step[MAX_FLIGHTS];
     sem_t *updates_ready;
+    sem_t *parent_step_ready;
+    sem_t *parent_step_done;
 } hybrid_sync_t;
 
 int hybrid_sync_create(hybrid_sync_t *sync, const char *prefix, int flight_count);
@@ -27,6 +31,14 @@ int hybrid_sync_wait_start(hybrid_sync_t *sync, int flight_index);
 int hybrid_sync_mark_update_ready(hybrid_sync_t *sync);
 
 int hybrid_sync_wait_for_updates(hybrid_sync_t *sync, int update_count);
+
+int hybrid_sync_mark_parent_step_ready(hybrid_sync_t *sync);
+
+int hybrid_sync_wait_parent_step_ready(hybrid_sync_t *sync);
+
+int hybrid_sync_mark_parent_step_done(hybrid_sync_t *sync);
+
+int hybrid_sync_wait_parent_step_done(hybrid_sync_t *sync);
 
 void hybrid_sync_close(hybrid_sync_t *sync);
 
