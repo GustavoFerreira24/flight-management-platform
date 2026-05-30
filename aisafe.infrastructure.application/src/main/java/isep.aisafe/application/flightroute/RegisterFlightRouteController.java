@@ -15,9 +15,8 @@ import isep.aisafe.flightroute.domain.FlightRoute;
 import isep.aisafe.flightroute.domain.FlightRouteRepository;
 import isep.aisafe.flightroute.domain.FlightRouteType;
 import isep.aisafe.flightroute.domain.RouteDesignator;
-import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
-import isep.aisafe.infrastructure.authz.AisafePermissions;
-import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.infrastructure.authz.*;
+import isep.aisafe.infrastructure.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
