@@ -11,7 +11,6 @@ import java.util.Set;
 
 public class RegisterAircraftModelUI {
 
-    private static final List<String> MANUFACTURERS = List.of("AIRBUS", "BOEING", "EMBRAER", "ATR", "BOMBARDIER", "OTHER");
     private static final List<String> AIRCRAFT_TYPES = List.of("PASSENGER", "CARGO", "MIXED");
     private static final List<String> MOTORIZATIONS = List.of("TURBOFAN", "TURBOPROP", "TURBOJET", "PISTON");
 
@@ -33,7 +32,7 @@ public class RegisterAircraftModelUI {
             ConsoleStyle.printPrompt("Model name: ");
             final String modelName = scanner.nextLine();
 
-            final String manufacturer = selectOption("Manufacturer", MANUFACTURERS);
+            final String manufacturer = selectManufacturer();
 
             final String type = selectOption("Type", AIRCRAFT_TYPES);
 
@@ -116,6 +115,16 @@ public class RegisterAircraftModelUI {
 
             ConsoleStyle.printWarning("Invalid option. Please choose a listed number.");
         }
+    }
+
+    private String selectManufacturer() {
+        final List<String> manufacturers = controller.aircraftManufacturerDesignators();
+
+        if (manufacturers.isEmpty()) {
+            throw new IllegalStateException("No aircraft manufacturers are registered.");
+        }
+
+        return selectOption("Manufacturer", manufacturers);
     }
 
     private List<String> selectCertifiedEngineModels(final String motorization) {

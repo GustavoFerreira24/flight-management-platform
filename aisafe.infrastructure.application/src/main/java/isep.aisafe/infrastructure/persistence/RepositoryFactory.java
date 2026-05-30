@@ -9,6 +9,7 @@ import isep.aisafe.airport.domain.AirportRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
+import isep.aisafe.manufacturer.domain.ManufacturerRepository;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 
 /**
@@ -51,6 +52,13 @@ public interface RepositoryFactory {
      * @return engine model repository
      */
     EngineModelRepository engineModels();
+
+    /**
+     * Returns the repository for manufacturer aggregates.
+     *
+     * @return manufacturer repository
+     */
+    ManufacturerRepository manufacturers();
 
     /**
      * Returns the repository for air transport company aggregates.

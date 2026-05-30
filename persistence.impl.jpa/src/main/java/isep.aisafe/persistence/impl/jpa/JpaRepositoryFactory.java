@@ -9,6 +9,7 @@ import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
 import isep.aisafe.infrastructure.persistence.RepositoryFactory;
+import isep.aisafe.manufacturer.domain.ManufacturerRepository;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
@@ -46,6 +47,11 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public EngineModelRepository engineModels() {
         return new JpaEngineModelRepository(Application.settings().persistenceUnitName());
+    }
+
+    @Override
+    public ManufacturerRepository manufacturers() {
+        return new JpaManufacturerRepository(Application.settings().persistenceUnitName());
     }
 
     @Override
