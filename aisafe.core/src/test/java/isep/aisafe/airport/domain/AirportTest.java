@@ -2,6 +2,9 @@ package isep.aisafe.airport.domain;
 
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.airtransportcompany.domain.Country;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +15,7 @@ class AirportTest {
     @Test
     void ensureAirportWithCorrectDataIsCreated() {
         final AirControlAreaCode areaCode = AirControlAreaCode.valueOf("LPPTFIR");
-        final AirControlArea area = new AirControlArea(areaCode, "Lisbon Control");
+        final AirControlArea area = airControlArea(areaCode);
 
         final Airport airport = new Airport(
                 AirportICAOCode.valueOf("LPPT"),
@@ -43,7 +46,7 @@ class AirportTest {
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
-                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+                airControlArea(AirControlAreaCode.valueOf("LPPTFIR"))
         ));
     }
 
@@ -57,7 +60,7 @@ class AirportTest {
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
-                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+                airControlArea(AirControlAreaCode.valueOf("LPPTFIR"))
         ));
     }
 
@@ -71,7 +74,7 @@ class AirportTest {
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
-                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+                airControlArea(AirControlAreaCode.valueOf("LPPTFIR"))
         ));
     }
 
@@ -85,7 +88,7 @@ class AirportTest {
                 "Town",
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
-                new AirControlArea(AirControlAreaCode.valueOf("LPPTFIR"), "Lisbon Control")
+                airControlArea(AirControlAreaCode.valueOf("LPPTFIR"))
         ));
     }
 
@@ -101,5 +104,14 @@ class AirportTest {
                 new Elevation(114.0),
                 null
         ));
+    }
+
+    private AirControlArea airControlArea(final AirControlAreaCode areaCode) {
+        return new AirControlArea(
+                areaCode,
+                "Lisbon Control",
+                GeographicBoundary.valueOf(-90, 90, -180, 180),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
+        );
     }
 }
