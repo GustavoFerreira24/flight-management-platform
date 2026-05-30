@@ -36,11 +36,43 @@ int hybrid_sync_create(hybrid_sync_t *sync, const char *prefix, int flight_count
         return -1;
     }
 
+    if (snprintf(sync->parent_step_ready_name,
+                 sizeof(sync->parent_step_ready_name),
+                 "%spr",
+                 prefix) >= (int) sizeof(sync->parent_step_ready_name)) {
+        return -1;
+    }
+
+    if (snprintf(sync->parent_step_done_name,
+                 sizeof(sync->parent_step_done_name),
+                 "%spd",
+                 prefix) >= (int) sizeof(sync->parent_step_done_name)) {
+        return -1;
+    }
+
     sem_unlink(sync->updates_ready_name);
     sync->updates_ready = sem_open(sync->updates_ready_name, O_CREAT | O_EXCL, 0600, 0);
     if (sync->updates_ready == SEM_FAILED) {
         perror("sem_open updates_ready");
         sync->updates_ready = NULL;
+        return -1;
+    }
+
+    sem_unlink(sync->parent_step_ready_name);
+    sync->parent_step_ready = sem_open(sync->parent_step_ready_name, O_CREAT | O_EXCL, 0600, 0);
+    if (sync->parent_step_ready == SEM_FAILED) {
+        perror("sem_open parent_step_ready");
+        sync->parent_step_ready = NULL;
+        hybrid_sync_close(sync);
+        return -1;
+    }
+
+    sem_unlink(sync->parent_step_done_name);
+    sync->parent_step_done = sem_open(sync->parent_step_done_name, O_CREAT | O_EXCL, 0600, 0);
+    if (sync->parent_step_done == SEM_FAILED) {
+        perror("sem_open parent_step_done");
+        sync->parent_step_done = NULL;
+        hybrid_sync_close(sync);
         return -1;
     }
 
@@ -131,6 +163,48 @@ int hybrid_sync_wait_for_updates(hybrid_sync_t *sync, int update_count) {
     return 0;
 }
 
+int hybrid_sync_mark_parent_step_ready(hybrid_sync_t *sync) {
+    if (sync == NULL || sync->parent_step_ready == NULL) {
+        return -1;
+    }
+
+    if (sem_post(sync->parent_step_ready) == -1) {
+        perror("sem_post parent_step_ready");
+        return -1;
+    }
+
+    return 0;
+}
+
+int hybrid_sync_wait_parent_step_ready(hybrid_sync_t *sync) {
+    if (sync == NULL || sync->parent_step_ready == NULL) {
+        return -1;
+    }
+
+    return wait_for_semaphore(sync->parent_step_ready);
+}
+
+int hybrid_sync_mark_parent_step_done(hybrid_sync_t *sync) {
+    if (sync == NULL || sync->parent_step_done == NULL) {
+        return -1;
+    }
+
+    if (sem_post(sync->parent_step_done) == -1) {
+        perror("sem_post parent_step_done");
+        return -1;
+    }
+
+    return 0;
+}
+
+int hybrid_sync_wait_parent_step_done(hybrid_sync_t *sync) {
+    if (sync == NULL || sync->parent_step_done == NULL) {
+        return -1;
+    }
+
+    return wait_for_semaphore(sync->parent_step_done);
+}
+
 void hybrid_sync_close(hybrid_sync_t *sync) {
     if (sync == NULL) {
         return;
@@ -154,5 +228,23 @@ void hybrid_sync_close(hybrid_sync_t *sync) {
 
     if (sync->owner && sync->updates_ready_name[0] != '\0') {
         sem_unlink(sync->updates_ready_name);
+    }
+
+    if (sync->parent_step_ready != NULL) {
+        sem_close(sync->parent_step_ready);
+        sync->parent_step_ready = NULL;
+    }
+
+    if (sync->owner && sync->parent_step_ready_name[0] != '\0') {
+        sem_unlink(sync->parent_step_ready_name);
+    }
+
+    if (sync->parent_step_done != NULL) {
+        sem_close(sync->parent_step_done);
+        sync->parent_step_done = NULL;
+    }
+
+    if (sync->owner && sync->parent_step_done_name[0] != '\0') {
+        sem_unlink(sync->parent_step_done_name);
     }
 }
