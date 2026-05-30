@@ -2,6 +2,9 @@ package isep.aisafe.flightroute.domain;
 
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.airport.domain.Airport;
 import isep.aisafe.airport.domain.AirportIATACode;
 import isep.aisafe.airport.domain.AirportICAOCode;
@@ -83,7 +86,16 @@ class InMemoryFlightRouteRepositoryTest {
                 town,
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
-                new AirControlArea(AirControlAreaCode.valueOf(icao + "FIR"), name + " Control")
+                airControlArea(icao, name)
+        );
+    }
+
+    private AirControlArea airControlArea(final String icao, final String name) {
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(icao + "FIR"),
+                name + " Control",
+                GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
+                MinimumFuelRequirement.valueOf(5000.0, FuelUnit.valueOf("KG"))
         );
     }
 
