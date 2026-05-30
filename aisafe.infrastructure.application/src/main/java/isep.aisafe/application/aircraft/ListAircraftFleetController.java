@@ -129,7 +129,7 @@ public class ListAircraftFleetController {
         return new AircraftFleetEntry(
                 aircraft.registration().toString(),
                 modelParts[0],
-                modelParts[1],
+                aircraft.aircraftModel().manufacturer().designator().toString(),
                 aircraft.cabinConfiguration().totalSeats(),
                 aircraft.aircraftModel().passengerCapacity(),
                 aircraft.manufactureYear(),
