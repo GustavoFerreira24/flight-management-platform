@@ -33,14 +33,16 @@ public final class FlightPlanDslCli {
             return;
         }
 
-        final DslFlightPlan flightPlan = result.flightPlan();
-
         System.out.println("Result with Visitor:");
-        System.out.printf("Flight: %s (%s)%n", flightPlan.identifier(), flightPlan.type());
-        flightPlan.aircraftRegistration().ifPresent(aircraft -> System.out.printf("Aircraft: %s%n", aircraft));
-        flightPlan.pilotIdentifier().ifPresent(pilot -> System.out.printf("Pilot: %s%n", pilot));
-        System.out.printf("Legs: %d%n", flightPlan.legs().size());
-        printLegs(flightPlan);
+        for (DslFlightPlan flightPlan : result.flightPlans()) {
+            System.out.printf("Flight: %s (%s)%n", flightPlan.identifier(), flightPlan.type());
+            flightPlan.aircraftRegistration().ifPresent(aircraft -> System.out.printf("Aircraft: %s%n", aircraft));
+            flightPlan.pilotIdentifier().ifPresent(pilot -> System.out.printf("Pilot: %s%n", pilot));
+            flightPlan.load().ifPresent(load -> System.out.printf(Locale.ROOT, "Load: %.2f %s%n", load.value(), load.unit()));
+            System.out.printf("Legs: %d%n", flightPlan.legs().size());
+            printLegs(flightPlan);
+            System.out.println("---");
+        }
         System.out.println("Parse tree:");
         System.out.println(result.parseTree());
     }
@@ -71,6 +73,10 @@ public final class FlightPlanDslCli {
                 segment.end().latitude(),
                 segment.end().longitude());
 
+        segment.speed().ifPresent(speed -> System.out.printf(Locale.ROOT,
+                "      Speed: %.2f %s%n",
+                speed.value(),
+                speed.unit()));
         segment.altitudeSlot().ifPresent(altitude -> System.out.printf(Locale.ROOT,
                 "      Altitude: %.2f - %.2f %s%n",
                 altitude.minimum(),
