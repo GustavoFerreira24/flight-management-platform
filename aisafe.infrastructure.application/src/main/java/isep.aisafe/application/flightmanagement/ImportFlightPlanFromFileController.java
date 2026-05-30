@@ -13,10 +13,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Application use case for US081: import a flight plan from a Core Flight DSL file.
+ * Application use case for US121: import valid flight plans from a Flight DSL file.
  */
 public class ImportFlightPlanFromFileController {
 
@@ -49,8 +51,8 @@ public class ImportFlightPlanFromFileController {
     /**
      * Validates and imports a flight plan file.
      *
-     * @param file the Core Flight DSL file to import
-     * @return success with the imported flight plan, or failure with validation errors
+     * @param file the Flight DSL file to import
+     * @return success with all imported flight plans, or failure with validation errors
      * @throws IOException when the file cannot be read
      */
     public ImportFlightPlanResult importFromFile(final Path file) throws IOException {
@@ -63,13 +65,15 @@ public class ImportFlightPlanFromFileController {
             return ImportFlightPlanResult.failure(parseResult.errors());
         }
 
-        final ImportedFlightPlan importedFlightPlan = ImportedFlightPlan.from(
-                parseResult.flightPlan(),
-                file.toAbsolutePath().normalize(),
-                LocalDateTime.now(clock)
-        );
+        final Path sourceFile = file.toAbsolutePath().normalize();
+        final LocalDateTime importedAt = LocalDateTime.now(clock);
+        final List<ImportedFlightPlan> importedFlightPlans = new ArrayList<>();
 
-        return ImportFlightPlanResult.success(repository.save(importedFlightPlan));
+        for (var flightPlan : parseResult.flightPlans()) {
+            importedFlightPlans.add(repository.save(ImportedFlightPlan.from(flightPlan, sourceFile, importedAt)));
+        }
+
+        return ImportFlightPlanResult.success(importedFlightPlans);
     }
 
     public Iterable<ImportedFlightPlan> importedFlightPlans() {

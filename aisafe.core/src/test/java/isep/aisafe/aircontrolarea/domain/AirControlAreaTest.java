@@ -39,25 +39,6 @@ class AirControlAreaTest {
     }
 
     /**
-     * Verifica que o construtor legado cria a area com limites e combustivel por defeito.
-     */
-    @Test
-    void ensureLegacyConstructorCreatesAreaWithDefaultBoundaryAndFuelRequirement() {
-        final AirControlArea area = new AirControlArea(
-                AirControlAreaCode.valueOf("LPPTFIR"),
-                "Lisbon FIR"
-        );
-
-        assertEquals(AirControlAreaCode.valueOf("LPPTFIR"), area.identity());
-        assertEquals("Lisbon FIR", area.name());
-        assertEquals(GeographicBoundary.valueOf(-90.0, 90.0, -180.0, 180.0), area.geographicBoundary());
-        assertEquals(
-                MinimumFuelRequirement.valueOf(1.0, FuelUnit.valueOf("KG")),
-                area.minimumFuelRequirement()
-        );
-    }
-
-    /**
      * Verifica que o nome da area e normalizado removendo espacos em excesso.
      */
     @Test

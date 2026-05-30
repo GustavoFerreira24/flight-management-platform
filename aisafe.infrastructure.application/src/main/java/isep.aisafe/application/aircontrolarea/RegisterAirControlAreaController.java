@@ -9,6 +9,8 @@ import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import eapli.framework.validations.Preconditions;
+
 
 /**
  * Controller for registering air control areas.
@@ -39,13 +41,8 @@ public class RegisterAirControlAreaController {
             final AisafeAuthorizationService authz,
             final AirControlAreaRepository airControlAreaRepository) {
 
-        if (authz == null) {
-            throw new IllegalArgumentException("Authorization service cannot be null.");
-        }
-
-        if (airControlAreaRepository == null) {
-            throw new IllegalArgumentException("Air control area repository cannot be null.");
-        }
+        Preconditions.nonNull(authz, "Authorization service cannot be null.");
+        Preconditions.nonNull(airControlAreaRepository, "Air control area repository cannot be null.");
 
         this.authz = authz;
         this.airControlAreaRepository = airControlAreaRepository;
