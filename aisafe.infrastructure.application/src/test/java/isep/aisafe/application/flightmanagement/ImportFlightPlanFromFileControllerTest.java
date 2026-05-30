@@ -63,6 +63,7 @@ class ImportFlightPlanFromFileControllerTest {
         // Assert
         assertTrue(result.isImported());
         assertTrue(result.errors().isEmpty());
+        assertEquals(1, result.importedFlightPlans().size());
         assertEquals(1, repository.count());
         assertArrayEquals(AisafePermissions.FLIGHT_PLAN_MANAGEMENT, authz.requestedRoles());
 
@@ -75,6 +76,55 @@ class ImportFlightPlanFromFileControllerTest {
         assertEquals(file.toAbsolutePath().normalize(), importedFlightPlan.sourceFile());
         assertEquals(LocalDateTime.of(2026, 5, 16, 10, 15, 30), importedFlightPlan.importedAt());
         assertTrue(repository.findByIdentifier("TP123").isPresent());
+    }
+
+    @Test
+    void ensureValidFileWithSeveralFlightPlansImportsAndStoresAllOfThem() throws IOException {
+        // Arrange
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        final InMemoryImportedFlightPlanRepository repository = new InMemoryImportedFlightPlanRepository();
+        final ImportFlightPlanFromFileController controller = controller(authz, repository);
+        final Path file = writeFlightPlan("valid-multiple-flight-plans.fpl", """
+                flight TP123 regular {
+                  aircraft CS-TXA;
+                  pilot pilot01;
+                  load 15000 kg;
+                  leg {
+                    departure OPO at 2026-05-10T10:00;
+                    arrival LIS at 2026-05-10T11:00;
+                    route OPO -> LIS;
+                    segment (41.0,-8.0) -> (38.0,-9.0) speed 450 knots altitude [1000,2000] m width 10 km wind 90 deg 12 m/s;
+                    fuel 5000 kg;
+                  }
+                }
+
+                flight TP124 charter {
+                  load 12000 kg;
+                  leg {
+                    departure LIS at 2026-05-10T13:00;
+                    arrival MAD at 2026-05-10T14:30;
+                    route LIS -> MAD;
+                    segment (38.0,-9.0) -> (40.0,-3.0) speed 220 m/s;
+                    fuel 4000 kg;
+                  }
+                }
+                """);
+
+        // Act
+        final ImportFlightPlanResult result = controller.importFromFile(file);
+
+        // Assert
+        assertTrue(result.isImported());
+        assertTrue(result.errors().isEmpty());
+        assertEquals(2, result.importedFlightPlans().size());
+        assertEquals(2, repository.count());
+        assertEquals("TP123", result.importedFlightPlan().orElseThrow().identifier());
+        assertTrue(repository.findByIdentifier("TP123").isPresent());
+        assertTrue(repository.findByIdentifier("TP124").isPresent());
+        assertEquals(15000.0, repository.findByIdentifier("TP123").orElseThrow().dslFlightPlan().load().orElseThrow().value());
+        assertEquals(220.0, repository.findByIdentifier("TP124").orElseThrow()
+                .dslFlightPlan().legs().getFirst().segments().getFirst().speed().orElseThrow().value());
+        assertArrayEquals(AisafePermissions.FLIGHT_PLAN_MANAGEMENT, authz.requestedRoles());
     }
 
     @Test
@@ -100,6 +150,7 @@ class ImportFlightPlanFromFileControllerTest {
 
         // Assert
         assertFalse(result.isImported());
+        assertTrue(result.importedFlightPlans().isEmpty());
         assertFalse(result.errors().isEmpty());
         assertEquals(List.of(FlightPlanDslErrorType.SEMANTIC), result.errors().stream().map(error -> error.type()).distinct().toList());
         assertEquals(0, repository.count());

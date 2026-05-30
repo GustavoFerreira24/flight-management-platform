@@ -2,6 +2,9 @@ package isep.aisafe.airport.domain;
 
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,7 +16,9 @@ class AirportBuilderTest {
         final AirportBuilder builder = new AirportBuilder();
         final AirControlArea area = new AirControlArea(
                 AirControlAreaCode.valueOf("LPPTFIR"),
-                "Lisbon"
+                "Lisbon",
+                GeographicBoundary.valueOf(-90, 90, -180, 180),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
         );
 
         final Airport airport = builder
