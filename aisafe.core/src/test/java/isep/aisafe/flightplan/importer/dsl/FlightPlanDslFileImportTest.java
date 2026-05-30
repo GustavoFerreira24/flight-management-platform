@@ -185,7 +185,8 @@ class FlightPlanDslFileImportTest {
         final List<Path> validFiles = List.of(
                 resourcePath("/flightplan/valid/simple-direct-flight.fpl"),
                 resourcePath("/flightplan/valid/complex-multi-leg-flight.fpl"),
-                resourcePath("/flightplan/valid/comments-and-mixed-case.fpl")
+                resourcePath("/flightplan/valid/comments-and-mixed-case.fpl"),
+                resourcePath("/flightplan/valid/sprint3-multiple-flights.fpl")
         );
 
         for (Path validFile : validFiles) {

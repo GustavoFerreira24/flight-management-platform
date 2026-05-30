@@ -7,8 +7,14 @@ import java.util.Optional;
 
 final class FlightPlanAstBuilder extends FlightPlanDslBaseVisitor<Object> {
 
-    DslFlightPlan build(final FlightPlanDslParser.FlightPlanFileContext context) {
-        return (DslFlightPlan) visit(context.flightBlock());
+    List<DslFlightPlan> build(final FlightPlanDslParser.FlightPlanFileContext context) {
+        final List<DslFlightPlan> flightPlans = new ArrayList<>();
+
+        for (FlightPlanDslParser.FlightBlockContext flightBlockContext : context.flightBlock()) {
+            flightPlans.add((DslFlightPlan) visit(flightBlockContext));
+        }
+
+        return flightPlans;
     }
 
     @Override
@@ -24,6 +30,7 @@ final class FlightPlanAstBuilder extends FlightPlanDslBaseVisitor<Object> {
                 ctx.flightType().getText(),
                 aircraftRegistration(ctx),
                 pilotIdentifier(ctx),
+                load(ctx),
                 legs,
                 location(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine())
         );
@@ -70,6 +77,8 @@ final class FlightPlanAstBuilder extends FlightPlanDslBaseVisitor<Object> {
     public DslSegment visitSegmentStatement(final FlightPlanDslParser.SegmentStatementContext ctx) {
         final DslCoordinate start = (DslCoordinate) visit(ctx.coordinate(0));
         final DslCoordinate end = (DslCoordinate) visit(ctx.coordinate(1));
+        final Optional<DslQuantity> speed = Optional.ofNullable(ctx.speedClause())
+                .map(speedContext -> (DslQuantity) visit(speedContext));
         final Optional<DslAltitudeSlot> altitudeSlot = Optional.ofNullable(ctx.altitudeClause())
                 .map(altitudeContext -> (DslAltitudeSlot) visit(altitudeContext));
         final Optional<DslQuantity> width = Optional.ofNullable(ctx.widthClause())
@@ -80,9 +89,28 @@ final class FlightPlanAstBuilder extends FlightPlanDslBaseVisitor<Object> {
         return new DslSegment(
                 start,
                 end,
+                speed,
                 altitudeSlot,
                 width,
                 wind,
+                location(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine())
+        );
+    }
+
+    @Override
+    public DslQuantity visitSpeedClause(final FlightPlanDslParser.SpeedClauseContext ctx) {
+        return new DslQuantity(
+                number(ctx.number()),
+                ctx.speedUnit() == null ? "" : ctx.speedUnit().getText(),
+                location(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine())
+        );
+    }
+
+    @Override
+    public DslQuantity visitLoadStatement(final FlightPlanDslParser.LoadStatementContext ctx) {
+        return new DslQuantity(
+                number(ctx.number()),
+                ctx.unit() == null ? "" : ctx.unit().getText(),
                 location(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine())
         );
     }
@@ -175,5 +203,13 @@ final class FlightPlanAstBuilder extends FlightPlanDslBaseVisitor<Object> {
         }
 
         return null;
+    }
+
+    private DslQuantity load(final FlightPlanDslParser.FlightBlockContext context) {
+        if (context.loadStatement().isEmpty()) {
+            return null;
+        }
+
+        return (DslQuantity) visit(context.loadStatement().getFirst());
     }
 }

@@ -361,4 +361,112 @@ class FlightPlanDslSyntaxValidatorTest {
         assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Wind speed unit")));
         assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Fuel unit")));
     }
+
+    @Test
+    void ensureSprint3ExtensionsProduceInternalRepresentation() {
+        // Arrange
+        final String source = """
+                flight TP123 regular {
+                  aircraft CS-TXA;
+                  pilot pilot01;
+                  load 15000 kg;
+                  leg {
+                    departure OPO at 2026-05-10T10:00;
+                    arrival LIS at 2026-05-10T11:00;
+                    route OPO -> LIS;
+                    segment (41.0,-8.0) -> (38.0,-9.0) speed 450 knots altitude [1000,2000] m width 10 km wind 90 deg 12 m/s;
+                    fuel 5000 kg;
+                  }
+                }
+
+                flight TP124 charter {
+                  load 12000 kg;
+                  leg {
+                    departure LIS at 2026-05-10T13:00;
+                    arrival MAD at 2026-05-10T14:30;
+                    route LIS -> MAD;
+                    segment (38.0,-9.0) -> (40.0,-3.0) speed 220 m/s;
+                    fuel 4000 kg;
+                  }
+                }
+                """;
+
+        // Act
+        final FlightPlanParseResult result = validator.validate(source);
+
+        // Assert
+        assertTrue(result.isValid(), () -> "Errors: " + result.errors());
+        assertEquals(2, result.flightPlans().size());
+        assertEquals("TP123", result.flightPlan().identifier());
+        assertEquals(15000.0, result.flightPlans().getFirst().load().orElseThrow().value());
+        assertEquals("kg", result.flightPlans().getFirst().load().orElseThrow().unit());
+        assertEquals(450.0, result.flightPlans().getFirst().legs().getFirst().segments().getFirst().speed().orElseThrow().value());
+        assertEquals("knots", result.flightPlans().getFirst().legs().getFirst().segments().getFirst().speed().orElseThrow().unit());
+        assertEquals(220.0, result.flightPlans().get(1).legs().getFirst().segments().getFirst().speed().orElseThrow().value());
+        assertEquals("m/s", result.flightPlans().get(1).legs().getFirst().segments().getFirst().speed().orElseThrow().unit());
+    }
+
+    @Test
+    void ensureFlightIdentifiersAreUniqueWithinFile() {
+        // Arrange
+        final String source = """
+                flight TP123 regular {
+                  leg {
+                    departure OPO at 2026-05-10T10:00;
+                    arrival LIS at 2026-05-10T11:00;
+                    route OPO -> LIS;
+                    segment (41.0,-8.0) -> (38.0,-9.0);
+                    fuel 5000 kg;
+                  }
+                }
+
+                flight TP123 charter {
+                  leg {
+                    departure MAD at 2026-05-10T12:00;
+                    arrival CDG at 2026-05-10T14:00;
+                    route MAD -> CDG;
+                    segment (40.0,-3.0) -> (49.0,2.0);
+                    fuel 5000 kg;
+                  }
+                }
+                """;
+
+        // Act
+        final FlightPlanParseResult result = validator.validate(source);
+
+        // Assert
+        assertFalse(result.isValid());
+        assertEquals(List.of(FlightPlanDslErrorType.SEMANTIC), result.errors().stream().map(FlightPlanDslError::type).distinct().toList());
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("unique within the file")));
+    }
+
+    @Test
+    void ensureLoadAndSpeedAreValidatedSemantically() {
+        // Arrange
+        final String source = """
+                flight TP123 regular {
+                  load -1 l;
+                  load 100 kg;
+                  leg {
+                    departure OPO at 2026-05-10T10:00;
+                    arrival LIS at 2026-05-10T11:00;
+                    route OPO -> LIS;
+                    segment (41.0,-8.0) -> (38.0,-9.0) speed 0 km;
+                    fuel 5000 kg;
+                  }
+                }
+                """;
+
+        // Act
+        final FlightPlanParseResult result = validator.validate(source);
+
+        // Assert
+        assertFalse(result.isValid());
+        assertEquals(List.of(FlightPlanDslErrorType.SEMANTIC), result.errors().stream().map(FlightPlanDslError::type).distinct().toList());
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Load quantity")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Load unit")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("at most one load")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Speed value")));
+        assertTrue(result.errors().stream().anyMatch(error -> error.message().contains("Speed unit")));
+    }
 }

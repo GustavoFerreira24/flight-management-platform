@@ -15,10 +15,18 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
     private static final Set<String> ALTITUDE_UNITS = Set.of("m", "ft");
     private static final Set<String> WIDTH_UNITS = Set.of("m", "km", "nm");
     private static final Set<String> WIND_SPEED_UNITS = Set.of("m/s");
+    private static final Set<String> SPEED_UNITS = Set.of("knots", "m/s");
     private static final Set<String> FUEL_UNITS = Set.of("kg", "l");
+    private static final Set<String> LOAD_UNITS = Set.of("kg");
 
     private final List<FlightPlanDslError> errors = new ArrayList<>();
     private final List<LegSummary> legs = new ArrayList<>();
+    private final Set<String> flightIdentifiers = new HashSet<>();
+
+    @Override
+    public void enterFlightBlock(final FlightPlanDslParser.FlightBlockContext ctx) {
+        legs.clear();
+    }
 
     @Override
     public void exitLegBlock(final FlightPlanDslParser.LegBlockContext ctx) {
@@ -55,7 +63,9 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
     @Override
     public void exitFlightBlock(final FlightPlanDslParser.FlightBlockContext ctx) {
         validateFlightDesignator(ctx.flightIdentifier());
+        validateFlightIdentifierUniqueness(ctx.flightIdentifier());
         validateFlightMetadata(ctx);
+        validateFlightLoad(ctx);
         validateLegSequence();
         validateAirportRevisits();
     }
@@ -129,6 +139,30 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
     }
 
     @Override
+    public void exitLoadStatement(final FlightPlanDslParser.LoadStatementContext ctx) {
+        if (number(ctx.number()) <= 0) {
+            addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
+                    "Load quantity must be positive.");
+        }
+
+        if (ctx.unit() != null) {
+            validateUnit(ctx.unit(), LOAD_UNITS, "Load unit must be kg.");
+        }
+    }
+
+    @Override
+    public void exitSpeedClause(final FlightPlanDslParser.SpeedClauseContext ctx) {
+        if (number(ctx.number()) <= 0) {
+            addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
+                    "Speed value must be positive.");
+        }
+
+        if (ctx.speedUnit() != null) {
+            validateUnit(ctx.speedUnit(), SPEED_UNITS, "Speed unit must be knots or m/s.");
+        }
+    }
+
+    @Override
     public void exitFuelStatement(final FlightPlanDslParser.FuelStatementContext ctx) {
         if (number(ctx.number()) <= 0) {
             addError(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
@@ -152,6 +186,15 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
         if (!identifier.matches(FLIGHT_DESIGNATOR_PATTERN)) {
             addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
                     "Flight designator must match format xxn(n)(n)(n)(a), for example TP123 or TP123A.");
+        }
+    }
+
+    private void validateFlightIdentifierUniqueness(final FlightPlanDslParser.FlightIdentifierContext context) {
+        final String identifier = context.getText();
+
+        if (!flightIdentifiers.add(identifier)) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
+                    "Flight identifier must be unique within the file.");
         }
     }
 
@@ -179,6 +222,13 @@ final class FlightPlanSemanticValidator extends FlightPlanDslBaseListener {
         if (pilotCount > 1) {
             addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
                     "Flight plan can declare at most one pilot.");
+        }
+    }
+
+    private void validateFlightLoad(final FlightPlanDslParser.FlightBlockContext context) {
+        if (context.loadStatement().size() > 1) {
+            addError(context.getStart().getLine(), context.getStart().getCharPositionInLine(),
+                    "Flight plan can declare at most one load.");
         }
     }
 
