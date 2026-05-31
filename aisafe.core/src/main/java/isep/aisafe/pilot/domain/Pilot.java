@@ -2,6 +2,7 @@ package isep.aisafe.pilot.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.domain.model.DomainEntities;
+import isep.aisafe.airtransportcompany.domain.IATACode;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -23,6 +24,10 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
     })
     private Certification certification;
 
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "CompanyIATACode", nullable = false))
+    private IATACode companyIATACode;
+
     /**
      * Required by ORM.
      */
@@ -39,7 +44,8 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
     public Pilot(
             final PilotID id,
             final Certification certification,
-            final PilotStatus pilotStatus) {
+            final PilotStatus pilotStatus,
+            final IATACode companyIATACode) {
 
         if (id == null) {
             throw new IllegalArgumentException("Pilot ID cannot be null.");
@@ -53,9 +59,14 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
             throw new IllegalArgumentException("Pilot certification cannot be null.");
         }
 
+        if (companyIATACode == null) {
+            throw new IllegalArgumentException("Company IATA code cannot be null.");
+        }
+
         this.id = id;
         this.pilotStatus = pilotStatus;
         this.certification = certification;
+        this.companyIATACode = companyIATACode;
     }
 
     @Override
@@ -98,11 +109,6 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
         this.pilotStatus = pilotStatus.activate();
     }
 
-    @Override
-    public int hashCode() {
-        return DomainEntities.hashCode(this);
-    }
-
     /**
      * Deactivates the pilot
      */
@@ -117,6 +123,15 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
      */
     public Certification certification() {
         return certification;
+    }
+
+    public IATACode companyIATACode() {
+        return companyIATACode;
+    }
+
+    @Override
+    public int hashCode() {
+        return DomainEntities.hashCode(this);
     }
 }
 
