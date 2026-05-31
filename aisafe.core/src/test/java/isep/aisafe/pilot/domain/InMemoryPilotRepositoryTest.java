@@ -1,5 +1,6 @@
 package isep.aisafe.pilot.domain;
 
+import isep.aisafe.airtransportcompany.domain.IATACode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.Optional;
@@ -18,7 +19,8 @@ class InMemoryPilotRepositoryTest {
         final PilotID pilotID = PilotID.valueOf(id);
         final Certification certification = new Certification("01-01-2020", "01-01-2099");
         final PilotStatus status = PilotStatus.valueOf(certification);
-        return new Pilot(pilotID, certification, status);
+        final IATACode companyCode = IATACode.valueOf("TP");
+        return new Pilot(pilotID, certification, status, companyCode);
     }
 
     @Test

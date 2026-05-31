@@ -1,5 +1,6 @@
 package isep.aisafe.pilot.domain;
 
+import isep.aisafe.airtransportcompany.domain.IATACode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,15 +18,20 @@ class PilotTest {
         return PilotStatus.valueOf(certification);
     }
 
+    private IATACode validCompany() {
+        return IATACode.valueOf("TP");
+    }
+
     @Test
     void ensurePilotIsCreatedSuccessfully() {
         // Arrange
         final PilotID id = validID();
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
 
         // Act
-        final Pilot pilot = new Pilot(id, certification, status);
+        final Pilot pilot = new Pilot(id, certification, status, company);
 
         // Assert
         assertNotNull(pilot);
@@ -37,7 +43,8 @@ class PilotTest {
         final PilotID id = validID();
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
-        final Pilot pilot = new Pilot(id, certification, status);
+        final IATACode company = validCompany();
+        final Pilot pilot = new Pilot(id, certification, status, company);
 
         // Act
         final PilotID result = pilot.identity();
@@ -51,10 +58,11 @@ class PilotTest {
         // Arrange
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(null, certification, status));
+                () -> new Pilot(null, certification, status, company));
     }
 
     @Test
@@ -63,10 +71,11 @@ class PilotTest {
         final PilotID id = validID();
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(id, null, status));
+                () -> new Pilot(id, null, status, company));
     }
 
     @Test
@@ -74,16 +83,29 @@ class PilotTest {
         // Arrange
         final PilotID id = validID();
         final Certification certification = validCertification();
+        final IATACode company = validCompany();
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(id, certification, null));
+                () -> new Pilot(id, certification, null, company));
+    }
+
+    @Test
+    void ensurePilotRejectsNullCompany() {
+        // Arrange
+        final PilotID id = validID();
+        final Certification certification = validCertification();
+        final PilotStatus status = validStatus(certification);
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new Pilot(id, certification, null, null));
     }
 
     @Test
     void ensurePilotDeactivateChangesStatusToInvalid() {
         // Arrange
-        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()));
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany());
 
         // Act
         pilot.deactivate();
@@ -96,7 +118,7 @@ class PilotTest {
     void ensurePilotActivateChangesStatusToValid() {
         // Arrange
         final Certification expiredCertification = new Certification("01-01-2020", "01-01-2021");
-        final Pilot pilot = new Pilot(validID(), expiredCertification, validStatus(expiredCertification));
+        final Pilot pilot = new Pilot(validID(), expiredCertification, validStatus(expiredCertification), validCompany());
 
         // Act
         pilot.activate();
@@ -108,7 +130,7 @@ class PilotTest {
     @Test
     void ensurePilotSameAsReturnsTrueForSamePilot() {
         // Arrange
-        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()));
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany());
 
         // Act
         final boolean result = pilot.sameAs(pilot);
@@ -120,8 +142,8 @@ class PilotTest {
     @Test
     void ensurePilotSameAsReturnsFalseForDifferentPilot() {
         // Arrange
-        final Pilot pilot1 = new Pilot(PilotID.valueOf("ABC"), validCertification(), validStatus(validCertification()));
-        final Pilot pilot2 = new Pilot(PilotID.valueOf("DEF"), validCertification(), validStatus(validCertification()));
+        final Pilot pilot1 = new Pilot(PilotID.valueOf("ABC"), validCertification(), validStatus(validCertification()), validCompany());
+        final Pilot pilot2 = new Pilot(PilotID.valueOf("DEF"), validCertification(), validStatus(validCertification()), validCompany());
 
         // Act
         final boolean result = pilot1.sameAs(pilot2);
@@ -134,7 +156,7 @@ class PilotTest {
     void ensurePilotIDMethodReturnsCorrectID() {
         // Arrange
         final PilotID id = validID();
-        final Pilot pilot = new Pilot(id, validCertification(), validStatus(validCertification()));
+        final Pilot pilot = new Pilot(id, validCertification(), validStatus(validCertification()), validCompany());
 
         // Act
         final PilotID result = pilot.pilotID();
@@ -146,7 +168,7 @@ class PilotTest {
     @Test
     void ensurePilotHashCodeIsConsistent() {
         // Arrange
-        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()));
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany());
 
         // Act
         final int first = pilot.hashCode();
@@ -160,12 +182,25 @@ class PilotTest {
     void ensurePilotCertificationReturnsCorrectCertification() {
         // Arrange
         final Certification certification = validCertification();
-        final Pilot pilot = new Pilot(validID(), certification, validStatus(certification));
+        final Pilot pilot = new Pilot(validID(), certification, validStatus(certification), validCompany());
 
         // Act
         final Certification result = pilot.certification();
 
         // Assert
         assertEquals(certification, result);
+    }
+
+    @Test
+    void ensurePilotCompanyIATACodeReturnsCorrectIATACode() {
+        // Arrange
+        final IATACode company = validCompany();
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), company);
+
+        // Act
+        final IATACode result = pilot.companyIATACode();
+
+        // Assert
+        assertEquals(company, result);
     }
 }

@@ -1,30 +1,45 @@
 package isep.aisafe.application.pilot;
 
+import isep.aisafe.customercollaborator.domain.*;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.pilot.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import eapli.framework.infrastructure.authz.domain.model.Role;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class RegisterPilotControllerTest {
 
     private InMemoryPilotRepository repository;
     private RegisterPilotController controller;
+    private AisafeAuthorizationService mockAuthz;
+    private InMemoryCustomerCollaboratorRepository mockCollaboratorRepo;
 
     @BeforeEach
     void setUp() {
         repository = new InMemoryPilotRepository();
         repository.clear();
 
-        AisafeAuthorizationService mockAuthz = new AisafeAuthorizationService() {
+        mockAuthz = new AisafeAuthorizationService() {
             @Override
-            public void ensureAuthenticatedUserHasAnyOf(final Role... roles) {
-                // não faz nada nos testes
+            public void ensureAuthenticatedUserHasAnyOf(final Role... roles) {}
+
+            @Override
+            public String authenticatedUsername() {
+                return "test@test.com";
             }
         };
 
-        controller = new RegisterPilotController(mockAuthz, repository);
+        mockCollaboratorRepo = new InMemoryCustomerCollaboratorRepository();
+        mockCollaboratorRepo.save(new CustomerCollaborator(
+                "Test", "User",
+                CollaboratorEmail.valueOf("test@test.com"),
+                CustomerReference.airTransportCompany("TP"),
+                SystemUsername.valueOf("test@test.com")
+        ));
+
+        controller = new RegisterPilotController(mockAuthz, repository, mockCollaboratorRepo);
     }
 
     @Test
@@ -40,6 +55,20 @@ class RegisterPilotControllerTest {
         // Assert
         assertNotNull(result);
         assertEquals(PilotID.valueOf(id), result.identity());
+    }
+
+    @Test
+    void ensurePilotIsRegisteredWithCorrectCompany() {
+        // Arrange
+        final String id = "ABC";
+        final String issuedAt = "01-01-2020";
+        final String validUntil = "01-01-2099";
+
+        // Act
+        final Pilot result = controller.registerPilot(id, issuedAt, validUntil);
+
+        // Assert
+        assertNotNull(result.companyIATACode());
     }
 
     @Test
@@ -73,8 +102,20 @@ class RegisterPilotControllerTest {
     void ensureRegistrationRejectsInvalidDateFormat() {
         // Arrange
         final String id = "ABC";
-        final String issuedAt = "2020-01-01"; // formato errado
+        final String issuedAt = "2020-01-01";
         final String validUntil = "01-01-2099";
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.registerPilot(id, issuedAt, validUntil));
+    }
+
+    @Test
+    void ensureRegistrationRejectsValidUntilBeforeIssuedAt() {
+        // Arrange
+        final String id = "ABC";
+        final String issuedAt = "01-01-2025";
+        final String validUntil = "01-01-2020";
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
@@ -94,23 +135,74 @@ class RegisterPilotControllerTest {
     }
 
     @Test
+    void ensureRegistrationRejectsCollaboratorNotFromAirTransportCompany() {
+        // Arrange
+        final InMemoryCustomerCollaboratorRepository areaRepo =
+                new InMemoryCustomerCollaboratorRepository();
+        areaRepo.save(new CustomerCollaborator(
+                "Area", "User",
+                CollaboratorEmail.valueOf("area@test.com"),
+                CustomerReference.airControlArea("LPPO"),
+                SystemUsername.valueOf("area@test.com")
+        ));
+
+        final AisafeAuthorizationService areaAuthz = new AisafeAuthorizationService() {
+            @Override
+            public void ensureAuthenticatedUserHasAnyOf(final Role... roles) {}
+
+            @Override
+            public String authenticatedUsername() {
+                return "area@test.com";
+            }
+        };
+
+        final RegisterPilotController areaController =
+                new RegisterPilotController(areaAuthz, repository, areaRepo);
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class,
+                () -> areaController.registerPilot("ABC", "01-01-2020", "01-01-2099"));
+    }
+
+    @Test
+    void ensureRegistrationRejectsUnknownCollaborator() {
+        // Arrange
+        final AisafeAuthorizationService unknownAuthz = new AisafeAuthorizationService() {
+            @Override
+            public void ensureAuthenticatedUserHasAnyOf(final Role... roles) {}
+
+            @Override
+            public String authenticatedUsername() {
+                return "unknown@test.com";
+            }
+        };
+
+        final RegisterPilotController unknownController =
+                new RegisterPilotController(unknownAuthz, repository, mockCollaboratorRepo);
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class,
+                () -> unknownController.registerPilot("ABC", "01-01-2020", "01-01-2099"));
+    }
+
+    @Test
     void ensureControllerRejectsNullAuthz() {
-        // Arrange & Act & Assert
+        // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new RegisterPilotController(null, repository));
+                () -> new RegisterPilotController(null, repository, mockCollaboratorRepo));
     }
 
     @Test
     void ensureControllerRejectsNullRepository() {
-        // Arrange
-        AisafeAuthorizationService mockAuthz = new AisafeAuthorizationService() {
-            @Override
-            public void ensureAuthenticatedUserHasAnyOf(final Role... roles) {
-            }
-        };
-
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new RegisterPilotController(mockAuthz, null));
+                () -> new RegisterPilotController(mockAuthz, null, mockCollaboratorRepo));
+    }
+
+    @Test
+    void ensureControllerRejectsNullCollaboratorRepo() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new RegisterPilotController(mockAuthz, repository, null));
     }
 }
