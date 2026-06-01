@@ -10,35 +10,45 @@ autonumber
 actor "Backoffice Operator" as BO
 boundary ":RegisterAirControlAreaUI" as UI
 control ":RegisterAirControlAreaController" as C
+participant "authz\n:AisafeAuthorizationService" as Authz
 participant "airControlAreaRepository\n:AirControlAreaRepository" as AreaRepo
-participant "airControlArea\n:AirControlArea" as Area
 participant "areaCode\n:AirControlAreaCode" as AreaCode
 participant "boundary\n:GeographicBoundary" as Boundary
+participant "fuelUnit\n:FuelUnit" as FuelUnit
+participant "minimumFuelRequirement\n:MinimumFuelRequirement" as FuelRequirement
+participant "airControlArea\n:AirControlArea" as Area
 
 BO -> UI : request to register air control area
-UI -> BO : ask for name, area code,\nand geographic boundary
+UI -> BO : ask for area code, name,\ngeographic boundary and minimum fuel
 
 BO -> UI : submit area data
-UI -> C : registerAirControlArea(name, areaCode,\nminLatitude, maxLatitude,\nminLongitude, maxLongitude)
+UI -> C : registerAirControlArea(code, name,\nminLatitude, maxLatitude,\nminLongitude, maxLongitude,\nminimumFuelAmount, fuelUnit)
 
-C -> AreaRepo : existsByCode(areaCode)
-AreaRepo --> C : false
+C -> Authz : ensureAuthenticatedUserHasAnyOf\n(BACKOFFICE_CONFIGURATION)
+Authz --> C : authorized
 
-C -> Area ++ : create(name, areaCode,\nminLatitude, maxLatitude,\nminLongitude, maxLongitude)
+C -> AreaCode ++ : valueOf(code)
+AreaCode --> C : areaCode
 
-Area -> AreaCode ++ : create(areaCode)
-AreaCode --> Area : code created
+C -> AreaRepo : findByCode(areaCode)
+AreaRepo --> C : Optional.empty()
 
-Area -> Boundary ++ : create(minLatitude, maxLatitude,\nminLongitude, maxLongitude)
-Boundary --> Area : boundary created
+C -> Boundary ++ : valueOf(minLatitude, maxLatitude,\nminLongitude, maxLongitude)
+Boundary --> C : geographicBoundary
 
-Area -> Area : validateInternalInvariants()\n- minLatitude < maxLatitude\n- minLongitude < maxLongitude
-Area --> C : area created
+C -> FuelUnit ++ : valueOf(fuelUnit)
+FuelUnit --> C : unit
 
-C -> AreaRepo : save(area)
-AreaRepo --> C : success
+C -> FuelRequirement ++ : valueOf(minimumFuelAmount, unit)
+FuelRequirement --> C : minimumFuelRequirement
 
-C --> UI : airControlAreaCreated
+C -> Area ++ : new AirControlArea(areaCode, name,\ngeographicBoundary, minimumFuelRequirement)
+Area --> C : airControlArea
+
+C -> AreaRepo : save(airControlArea)
+AreaRepo --> C : saved airControlArea
+
+C --> UI : airControlArea
 UI --> BO : confirm air control area registration
 
 @enduml

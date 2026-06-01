@@ -52,6 +52,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US73 — Create a Flight Route
 - [Flight Route Creation](./us_73/readme.md)
 
+#### US78 — Air Transport Company Collaborator Remote Access
+- [Remote Access](./us_78/readme.md)
+
 #### US81 — Create a Flight Plan from a File
 - [Flight Plan File Import](./us_81/implementation-notes.md)
 

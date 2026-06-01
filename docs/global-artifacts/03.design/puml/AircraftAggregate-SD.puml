@@ -8,58 +8,81 @@ skinparam shadowing false
 autonumber
 
 actor "ATC Collaborator" as ATC
-boundary ":AddAircraftUI" as UI
-control ":AddAircraftController" as C
+boundary ":RegisterAircraftUI" as UI
+control ":RegisterAircraftController" as C
+participant "authz\n:AisafeAuthorizationService" as Authz
+participant "customerCollaboratorRepository\n:CustomerCollaboratorRepository" as CollaboratorRepo
+participant "airTransportCompanyRepository\n:AirTransportCompanyRepository" as CompanyRepo
+participant "aircraftRepository\n:AircraftRepository" as AircraftRepo
 participant "aircraftModelRepository\n:AircraftModelRepository" as AircraftModelRepo
 participant "engineModelRepository\n:EngineModelRepository" as EngineModelRepo
-participant "aircraftRepository\n:AircraftRepository" as AircraftRepo
 participant "aircraftVariantService\n:AircraftVariantService" as VariantService
-participant "aircraftModel\n:AircraftModel" as AircraftModel
-participant "aircraft\n:Aircraft" as Aircraft
 participant "registration\n:AircraftRegistration" as Registration
+participant "aircraftModelDesignator\n:AircraftModelDesignator" as AircraftModelDesignator
+participant "engineModelDesignator\n:EngineModelDesignator" as EngineModelDesignator
+participant "company\n:AirTransportCompany" as Company
+participant "aircraftModel\n:AircraftModel" as AircraftModel
+participant "engineModel\n:EngineModel" as EngineModel
+participant "registrationCountry\n:AircraftRegistrationCountry" as RegistrationCountry
 participant "cabinConfiguration\n:CabinConfiguration" as CabinConfiguration
-participant "country\n:Country" as Country
 participant "status\n:AircraftOperationalStatus" as Status
+participant "aircraft\n:Aircraft" as Aircraft
 
-ATC -> UI : request to add aircraft
-UI -> ATC : ask for registration, country,\ncrew size, cabin configuration,\naircraft model, engine model
+ATC -> UI : request to register aircraft
+UI -> ATC : ask for registration, country, status,\ncrew size, cabin configuration,\naircraft model and certified engine model
 
 ATC -> UI : submit aircraft data
-UI -> C : addAircraft(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModelId, engineModelId)
+UI -> C : registerAircraft(registration, country, status,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModelName, aircraftModelManufacturer,\nengineModelName, engineModelManufacturer)
 
-C -> AircraftModelRepo : findById(aircraftModelId)
+C -> Authz : ensureAuthenticatedUserHasAnyOf\n(AIR_COMPANY_CONFIGURATION)
+Authz --> C : authorized
+
+C -> Registration ++ : valueOf(registration)
+Registration --> C : aircraftRegistration
+
+C -> AircraftRepo : findByRegistration(aircraftRegistration)
+AircraftRepo --> C : Optional.empty()
+
+C -> Authz : authenticatedUsername()
+Authz --> C : username
+
+C -> CollaboratorRepo : findBySystemUsername(systemUsername)
+CollaboratorRepo --> C : customerCollaborator
+
+C -> CompanyRepo : findByIataCode(companyIataCode)
+CompanyRepo --> C : company
+
+C -> AircraftModelDesignator ++ : valueOf(aircraftModelName,\naircraftModelManufacturer)
+AircraftModelDesignator --> C : aircraftModelDesignator
+
+C -> AircraftModelRepo : findByDesignator(aircraftModelDesignator)
 AircraftModelRepo --> C : aircraftModel
 
-C -> EngineModelRepo : findById(engineModelId)
-EngineModelRepo --> C : engineModel
+C -> EngineModelDesignator ++ : valueOf(engineModelName,\nengineModelManufacturer)
+EngineModelDesignator --> C : engineModelDesignator
 
-C -> AircraftRepo : existsByRegistration(registration)
-AircraftRepo --> C : false
+C -> EngineModelRepo : findByDesignator(engineModelDesignator)
+EngineModelRepo --> C : engineModel
 
 C -> VariantService : ensureCertifiedVariant(aircraftModel, engineModel)
 VariantService --> C : certified variant accepted
 
-C -> Aircraft ++ : create(registration, country,\ncrewSize, economySeats, businessSeats, firstClassSeats,\naircraftModel, engineModel)
+C -> RegistrationCountry ++ : valueOf(country)
+RegistrationCountry --> C : registrationCountry
 
-Aircraft -> Registration ++ : create(registration)
-Registration --> Aircraft : registration created
+C -> CabinConfiguration ++ : valueOf(economySeats,\nbusinessSeats, firstClassSeats)
+CabinConfiguration --> C : cabinConfiguration
 
-Aircraft -> Country ++ : create(country)
-Country --> Aircraft : country created
+C -> Status ++ : valueOf(status)
+Status --> C : operationalStatus
 
-Aircraft -> CabinConfiguration ++ : create(economySeats,\nbusinessSeats, firstClassSeats)
-CabinConfiguration --> Aircraft : cabin configuration created
-
-Aircraft -> Status ++ : create(defaultStatus)
-Status --> Aircraft : operational status created
-
-Aircraft -> Aircraft : validateInternalInvariants()\n- total seats <= aircraftModel passenger capacity
-Aircraft --> C : aircraft created
+C -> Aircraft ++ : new Aircraft(aircraftRegistration,\nregistrationCountry, cabinConfiguration, operationalStatus,\ncrewSize, company, aircraftModel, engineModel)
+Aircraft --> C : aircraft
 
 C -> AircraftRepo : save(aircraft)
-AircraftRepo --> C : success
+AircraftRepo --> C : saved aircraft
 
-C --> UI : aircraftAdded
+C --> UI : aircraft
 UI --> ATC : confirm aircraft registration
 
 @enduml

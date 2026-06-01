@@ -9,12 +9,13 @@ autonumber
 
 actor "Backoffice Operator" as BO
 boundary ":RegisterAirTransportCompanyUI" as UI
-control ":RegisterAirTransportCompanyController" as C
+control ":AirCompanyConfigurationController" as C
+participant "authz\n:AisafeAuthorizationService" as Authz
 participant "airTransportCompanyRepository\n:AirTransportCompanyRepository" as CompanyRepo
-participant "airTransportCompany\n:AirTransportCompany" as Company
 participant "country\n:Country" as Country
 participant "iataCode\n:IATACode" as IATACode
 participant "icaoCode\n:ICAOCode" as ICAOCode
+participant "airTransportCompany\n:AirTransportCompany" as Company
 
 BO -> UI : request to register air transport company
 UI -> BO : ask for name, country,\nIATA code, and ICAO code
@@ -22,29 +23,31 @@ UI -> BO : ask for name, country,\nIATA code, and ICAO code
 BO -> UI : submit company data
 UI -> C : registerAirTransportCompany(name, country,\niataCode, icaoCode)
 
-C -> CompanyRepo : existsByIATACode(iataCode)
-CompanyRepo --> C : false
+C -> Authz : ensureAuthenticatedUserHasAnyOf\n(BACKOFFICE_CONFIGURATION)
+Authz --> C : authorized
 
-C -> CompanyRepo : existsByICAOCode(icaoCode)
-CompanyRepo --> C : false
+C -> Country ++ : valueOf(country)
+Country --> C : companyCountry
 
-C -> Company ++ : create(name)
+C -> IATACode ++ : valueOf(iataCode)
+IATACode --> C : companyIataCode
 
-Company -> Country ++ : create(country)
-Country --> Company : country created
+C -> ICAOCode ++ : valueOf(icaoCode)
+ICAOCode --> C : companyIcaoCode
 
-Company -> IATACode ++ : create(iataCode)
-IATACode --> Company : IATA code created
+C -> CompanyRepo : findByIataCode(companyIataCode)
+CompanyRepo --> C : Optional.empty()
 
-Company -> ICAOCode ++ : create(icaoCode)
-ICAOCode --> Company : ICAO code created
+C -> CompanyRepo : findByIcaoCode(companyIcaoCode)
+CompanyRepo --> C : Optional.empty()
 
-Company --> C : company created
+C -> Company ++ : new AirTransportCompany(name,\ncompanyCountry, companyIataCode, companyIcaoCode)
+Company --> C : airTransportCompany
 
-C -> CompanyRepo : save(company)
-CompanyRepo --> C : success
+C -> CompanyRepo : save(airTransportCompany)
+CompanyRepo --> C : saved airTransportCompany
 
-C --> UI : airTransportCompanyCreated
+C --> UI : airTransportCompany
 UI --> BO : confirm company registration
 
 @enduml
