@@ -1,4 +1,4 @@
-# US 043 - Consult Weather Data
+# US043 - Consult Weather Data
 
 ## 1. Context
 

@@ -10,6 +10,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -48,6 +50,10 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
     @CollectionTable(name = "FLIGHT_PLAN_WEATHER_DATA", joinColumns = @JoinColumn(name = "FLIGHT_PLAN_PK"))
     private List<WeatherDataId> weatherDataIds = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TEST_STATUS", nullable = false)
+    private FlightPlanTestStatus testStatus = FlightPlanTestStatus.NOT_TESTED;
+
     protected FlightPlan() {
     }
 
@@ -70,7 +76,15 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         final WeatherDataId weatherDataId = weatherData.identity();
         if (!weatherDataIds.contains(weatherDataId)) {
             weatherDataIds.add(weatherDataId);
+            invalidateTestIfNeeded();
         }
+    }
+
+    /**
+     * Marks this flight plan as successfully tested.
+     */
+    public void markTested() {
+        testStatus = FlightPlanTestStatus.TESTED;
     }
 
     @Override
@@ -97,5 +111,15 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
 
     public List<WeatherDataId> weatherDataIds() {
         return Collections.unmodifiableList(weatherDataIds);
+    }
+
+    public FlightPlanTestStatus testStatus() {
+        return testStatus;
+    }
+
+    private void invalidateTestIfNeeded() {
+        if (testStatus == FlightPlanTestStatus.TESTED) {
+            testStatus = FlightPlanTestStatus.VOID;
+        }
     }
 }

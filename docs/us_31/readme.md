@@ -1,4 +1,4 @@
-# US 031 - Backoffice Configuration Access
+# US031 - Backoffice Configuration Access
 
 ## 1. Context
 
