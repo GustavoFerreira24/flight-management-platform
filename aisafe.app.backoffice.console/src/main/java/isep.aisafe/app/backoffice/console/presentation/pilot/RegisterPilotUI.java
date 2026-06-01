@@ -42,37 +42,20 @@ public class RegisterPilotUI {
             final String id = scanner.nextLine();
 
             ConsoleStyle.printPrompt("CERTIFICATION");
-
+            System.out.println();
             ConsoleStyle.printPrompt("Certification Issued At (DD-MM-YYYY):");
             String issuedAtStr = scanner.nextLine().trim();
-
             ConsoleStyle.printPrompt("Certification Valid Until (DD-MM-YYYY):");
             String validUntilStr = scanner.nextLine().trim();
 
             controller.registerPilot(id, issuedAtStr, validUntilStr);
 
+            System.out.println();
+            ConsoleStyle.printInfo("Pilot " + id.trim().toUpperCase() + " registered successfully!");
+            System.out.println();
+
         } catch (Exception e) {
             ConsoleStyle.printError("Could not register airport: " + e.getMessage());
-        }
-    }
-
-    private boolean askDate(String input) {
-
-        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-        while (true) {
-
-            if (input.isBlank()) {
-                ConsoleStyle.printWarning("Date is required.");
-                return true;
-            }
-
-            try {
-                LocalDate.parse(input, formatter);
-                return false;
-            } catch (DateTimeParseException e) {
-                ConsoleStyle.printWarning("Invalid date format. Use DD-MM-YYYY (e.g., 17-05-2026).");
-            }
         }
     }
 }

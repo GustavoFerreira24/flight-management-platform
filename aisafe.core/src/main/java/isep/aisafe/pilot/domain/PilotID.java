@@ -3,10 +3,13 @@ package isep.aisafe.pilot.domain;
 import eapli.framework.domain.model.DomainEntities;
 import eapli.framework.domain.model.ValueObject;
 import isep.aisafe.airport.domain.AirportICAOCode;
+import jakarta.persistence.Embeddable;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+@Embeddable
 public class PilotID implements ValueObject, Comparable<PilotID>, Serializable {
 
     private String value;

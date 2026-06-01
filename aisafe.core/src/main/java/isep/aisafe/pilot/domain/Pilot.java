@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 
+@Entity
+@Table(name = "Pilot")
 public class Pilot implements AggregateRoot<PilotID>, Serializable {
 
     @EmbeddedId
