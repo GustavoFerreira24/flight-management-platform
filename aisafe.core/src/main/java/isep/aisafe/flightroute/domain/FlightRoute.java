@@ -11,6 +11,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 import java.io.Serializable;
@@ -47,9 +48,11 @@ public class FlightRoute implements AggregateRoot<RouteDesignator>, Serializable
     private LocalDate deactivatedFrom;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "DEPARTURE_AIRPORT_ICAO_CODE", referencedColumnName = "ICAO_CODE", nullable = false)
     private Airport departureAirport;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "DESTINATION_AIRPORT_ICAO_CODE", referencedColumnName = "ICAO_CODE", nullable = false)
     private Airport destinationAirport;
 
     @ManyToOne(optional = false)
