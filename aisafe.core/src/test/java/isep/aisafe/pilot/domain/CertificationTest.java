@@ -1,6 +1,9 @@
 package isep.aisafe.pilot.domain;
 
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CertificationTest {
@@ -91,8 +94,9 @@ class CertificationTest {
         final String validUntil = "01-01-2027";
         final Certification certification = new Certification(issuedAt, validUntil);
 
-        // Act
-        final String result = certification.issuedAtStr();
+        //Act
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        final String result = certification.issuedAt().format(formatter);
 
         // Assert
         assertEquals(issuedAt, result);
@@ -106,7 +110,8 @@ class CertificationTest {
         final Certification certification = new Certification(issuedAt, validUntil);
 
         // Act
-        final String result = certification.validUntilStr();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        final String result = certification.validUntil().format(formatter);
 
         // Assert
         assertEquals(validUntil, result);

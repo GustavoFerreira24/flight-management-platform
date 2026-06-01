@@ -22,6 +22,10 @@
         <class>isep.aisafe.aircraft.domain.Aircraft</class>
         <class>isep.aisafe.flightroute.domain.FlightRoute</class>
         <class>isep.aisafe.weatherdata.domain.WeatherData</class>
+        <class>isep.aisafe.pilot.domain.Pilot</class>
+        <class>isep.aisafe.pilot.domain.Certification</class>
+        <class>isep.aisafe.pilot.domain.PilotStatus</class>
+        <class>isep.aisafe.pilot.domain.PilotID</class>
 
 
         <properties>

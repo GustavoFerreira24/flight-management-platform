@@ -1,13 +1,16 @@
 package isep.aisafe.pilot.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+@Embeddable
 public class PilotStatus implements ValueObject {
 
-    private String pilotStatus;
+    private String value;
+    @Transient
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     /**
@@ -25,14 +28,14 @@ public class PilotStatus implements ValueObject {
      */
     public PilotStatus(Certification certification) {
 
-        LocalDate issuedAt = LocalDate.parse(certification.issuedAtStr(), formatter);
-        LocalDate validUntil = LocalDate.parse(certification.validUntilStr(), formatter);
+        LocalDate issuedAt = certification.issuedAt();
+        LocalDate validUntil = certification.validUntil();
         LocalDate hoje = LocalDate.now();
 
         if (!hoje.isBefore(issuedAt) && !hoje.isAfter(validUntil)) {
-            this.pilotStatus = "VÁLIDO";
+            this.value = "VÁLIDO";
         } else {
-            this.pilotStatus = "INVÁLIDO";
+            this.value = "INVÁLIDO";
         }
     }
 
@@ -41,7 +44,7 @@ public class PilotStatus implements ValueObject {
      * @param status the pilot status as a string, expected to be either "VÁLIDO" or "INVÁLIDO"
      */
     private PilotStatus(String status) {
-        this.pilotStatus = status;
+        this.value = status;
     }
 
     /**
@@ -62,12 +65,12 @@ public class PilotStatus implements ValueObject {
      * @throws IllegalStateException if the internal status value is neither {@code "VÁLIDO"} nor {@code "INVÁLIDO"}
      */
     public boolean isValid() {
-        if (pilotStatus.equals("VÁLIDO")) {
+        if (value.equals("VÁLIDO")) {
             return true;
-        } else if (pilotStatus.equals("INVÁLIDO")) {
+        } else if (value.equals("INVÁLIDO")) {
             return false;
         } else {
-            throw new IllegalStateException("Unexpected pilot status value: " + pilotStatus);
+            throw new IllegalStateException("Unexpected pilot status value: " + value);
         }
     }
 

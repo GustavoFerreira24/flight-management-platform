@@ -1,6 +1,8 @@
 package isep.aisafe.pilot.domain;
 
 import eapli.framework.domain.model.ValueObject;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Transient;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -14,12 +16,12 @@ import java.time.format.DateTimeParseException;
  *
  * <p>This is a {@link ValueObject} and should be treated as immutable.</p>
  */
+
+@Embeddable
 public class Certification implements ValueObject {
 
-    private String issuedAtStr;
-    private String validUntilStr;
-
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private LocalDate issuedAt;
+    private LocalDate validUntil;
 
     /**
      * Required by ORM.
@@ -36,6 +38,8 @@ public class Certification implements ValueObject {
      */
     public Certification(String issuedAtStr, String validUntilStr) {
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
         if (!askDate(issuedAtStr) || !askDate(validUntilStr)) {
             throw new IllegalArgumentException("Invalid date format. Use DD-MM-YYYY (e.g., 17-05-2026).");
         }
@@ -47,8 +51,8 @@ public class Certification implements ValueObject {
             throw new IllegalArgumentException("Valid until must be after issued at.");
         }
 
-        this.issuedAtStr = issuedAtStr;
-        this.validUntilStr = validUntilStr;
+        this.issuedAt = issuedAt;
+        this.validUntil = validUntil;
     }
 
     /**
@@ -64,6 +68,7 @@ public class Certification implements ValueObject {
         }
 
         try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             LocalDate.parse(input, formatter);
             return true;
         } catch (DateTimeParseException e) {
@@ -72,21 +77,21 @@ public class Certification implements ValueObject {
     }
 
     /**
-     * Returns the certification issue date as a string.
+     * Returns the certification issue date as a date.
      *
      * @return the issue date in {@code dd-MM-yyyy} format
      */
-    public String issuedAtStr() {
-        return issuedAtStr;
+    public LocalDate issuedAt() {
+        return issuedAt;
     }
 
     /**
-     * Returns the certification expiry date as a string.
+     * Returns the certification expiry date as a date.e.
      *
      * @return the expiry date in {@code dd-MM-yyyy} format
      */
-    public String validUntilStr() {
-        return validUntilStr;
+    public LocalDate validUntil() {
+        return validUntil;
     }
 
     /**
@@ -97,6 +102,8 @@ public class Certification implements ValueObject {
      */
     @Override
     public String toString() {
-        return "Certification Issued At: " + issuedAtStr + "\nCertification Valid Until: " + validUntilStr;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        return "Certification Issued At: " + issuedAt.format(formatter) +
+                "\nCertification Valid Until: " + validUntil.format(formatter);
     }
 }
