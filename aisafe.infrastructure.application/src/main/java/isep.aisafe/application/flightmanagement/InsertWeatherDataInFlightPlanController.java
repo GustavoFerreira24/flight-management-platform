@@ -5,6 +5,7 @@ import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
 import isep.aisafe.flightplan.domain.FlightPlanRepository;
 import isep.aisafe.flightplan.domain.InMemoryFlightPlanRepository;
+import isep.aisafe.flightplan.domain.PilotIdentifier;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
@@ -12,6 +13,7 @@ import isep.aisafe.weatherdata.domain.WeatherData;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 /**
@@ -54,7 +56,7 @@ public class InsertWeatherDataInFlightPlanController {
      * Authorizes access to the insertion use case.
      */
     public void execute() {
-        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_MANAGEMENT);
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_WEATHER_DATA_INSERTION);
     }
 
     /**
@@ -70,19 +72,46 @@ public class InsertWeatherDataInFlightPlanController {
             final String weatherDataDay,
             final String airControlAreaCode) {
 
-        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_MANAGEMENT);
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_WEATHER_DATA_INSERTION);
+
+        ensureNotBlank(flightPlanIdentifier, "Flight plan identifier is required.");
+        ensureNotBlank(weatherDataDay, "Weather data day is required.");
+        ensureNotBlank(airControlAreaCode, "Air control area code is required.");
 
         final FlightPlanIdentifier identifier = FlightPlanIdentifier.valueOf(flightPlanIdentifier);
         final FlightPlan flightPlan = flightPlanRepository.findByIdentifier(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("Flight plan not found."));
 
-        final LocalDate day = LocalDate.parse(weatherDataDay);
+        ensureFlightPlanBelongsToAuthenticatedPilot(flightPlan);
+
+        final LocalDate day = parseDay(weatherDataDay);
         final AirControlAreaCode areaCode = AirControlAreaCode.valueOf(airControlAreaCode);
         final WeatherData weatherData = weatherDataRepository().findByDayAndAirControlArea(day, areaCode)
                 .orElseThrow(() -> new IllegalArgumentException("Weather data not found."));
 
         flightPlan.addWeatherData(weatherData);
         return flightPlanRepository.save(flightPlan);
+    }
+
+    private void ensureFlightPlanBelongsToAuthenticatedPilot(final FlightPlan flightPlan) {
+        final PilotIdentifier authenticatedPilot = PilotIdentifier.valueOf(authz.authenticatedUsername());
+        if (!flightPlan.pilotIdentifier().equals(authenticatedPilot)) {
+            throw new IllegalArgumentException("Flight plan does not belong to authenticated pilot.");
+        }
+    }
+
+    private LocalDate parseDay(final String weatherDataDay) {
+        try {
+            return LocalDate.parse(weatherDataDay);
+        } catch (DateTimeParseException ex) {
+            throw new IllegalArgumentException("Weather data day must use ISO date format YYYY-MM-DD.", ex);
+        }
+    }
+
+    private void ensureNotBlank(final String value, final String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     private WeatherDataRepository weatherDataRepository() {
