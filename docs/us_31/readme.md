@@ -10,23 +10,12 @@ The implementation creates a small authorization entry point that is reused by c
 
 Analysis:
 
-- 1 - Identify backoffice configuration authorization rules
-- 2 - Identify roles allowed to execute configuration actions
-
-Design:
-
-- 3 - Design protected configuration entry point
-- 4 - Document backoffice configuration access
-
-Implement:
-
-- 1 - Implement backoffice configuration permission
-- 2 - Implement backoffice configuration controller
-- 3 - Integrate permission checks through the AISafe authorization service
-
-Test:
-
-- 4 - Add backoffice configuration authorization tests
+- US031.1 - Implement backoffice user registration
+- US031.2 - Validate and persist registered user data
+- US031.3 - Assign roles and permissions during user creation
+- US031.4 - Implement bootstrap process for initial users
+- US031.5 - Add user registration and bootstrap tests
+- US031.6 - Document user registration and bootstrap setup
 
 ## 2. Requirements
 
@@ -34,10 +23,12 @@ Test:
 
 **Acceptance Criteria:**
 
-- US031.1 The system must provide a protected entry point for backoffice configuration actions.
-- US031.2 Only users with the Backoffice Operator role can execute backoffice configuration actions.
-- US031.3 The authorization rule must be centralized and reusable by configuration use cases.
-- US031.4 Authorization failures must be propagated and must stop execution.
+- AC1 - Administrators can successfully register new users in the system
+- AC2 - User data (e.g., identity, roles, credentials) is validated and persisted correctly
+- AC3 - Bootstrap process creates initial users successfully
+- AC4 - Registered users can authenticate successfully in the system
+- AC5 - Roles and permissions are correctly assigned during registration
+- AC6 - Unit and/or integration tests validate user registration and bootstrap behaviour
 
 **Dependencies/References:**
 

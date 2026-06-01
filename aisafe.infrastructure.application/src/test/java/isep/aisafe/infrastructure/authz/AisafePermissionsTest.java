@@ -56,6 +56,15 @@ class AisafePermissionsTest {
     }
 
     @Test
+    void ensureFlightPlanWeatherDataInsertionPermissionsAreCorrect() {
+        // Arrange / Act / Assert
+        assertArrayEquals(
+                new Object[] { AisafeRoles.PILOT },
+                AisafePermissions.FLIGHT_PLAN_WEATHER_DATA_INSERTION
+        );
+    }
+
+    @Test
     void ensureFlightControlPermissionsAreCorrect() {
         // Arrange / Act / Assert
         assertArrayEquals(
