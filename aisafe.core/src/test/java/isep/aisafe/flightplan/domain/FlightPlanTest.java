@@ -29,6 +29,7 @@ class FlightPlanTest {
         assertEquals(FlightPlanIdentifier.valueOf("TP123"), flightPlan.identity());
         assertEquals(PilotIdentifier.valueOf("pilot01"), flightPlan.pilotIdentifier());
         assertTrue(flightPlan.weatherDataIds().isEmpty());
+        assertEquals(FlightPlanTestStatus.NOT_TESTED, flightPlan.testStatus());
     }
 
     /**
@@ -48,6 +49,63 @@ class FlightPlanTest {
         // Assert
         assertEquals(1, flightPlan.weatherDataIds().size());
         assertEquals(weatherData.identity(), flightPlan.weatherDataIds().get(0));
+        assertEquals(FlightPlanTestStatus.NOT_TESTED, flightPlan.testStatus());
+    }
+
+    /**
+     * Purpose: verify flight plan test status mutation.
+     * Scenario: mark a flight plan as tested.
+     * Expected output: the flight plan exposes the tested status.
+     */
+    @Test
+    void ensureFlightPlanCanBeMarkedAsTested() {
+        // Arrange
+        final FlightPlan flightPlan = flightPlan();
+
+        // Act
+        flightPlan.markTested();
+
+        // Assert
+        assertEquals(FlightPlanTestStatus.TESTED, flightPlan.testStatus());
+    }
+
+    /**
+     * Purpose: verify previous test invalidation when weather data changes.
+     * Scenario: add new weather data to a previously tested flight plan.
+     * Expected output: the previous test status becomes void.
+     */
+    @Test
+    void ensureAddingWeatherDataVoidsPreviousTest() {
+        // Arrange
+        final FlightPlan flightPlan = flightPlan();
+        flightPlan.markTested();
+
+        // Act
+        flightPlan.addWeatherData(weatherData());
+
+        // Assert
+        assertEquals(FlightPlanTestStatus.VOID, flightPlan.testStatus());
+    }
+
+    /**
+     * Purpose: verify duplicate weather data does not invalidate an unchanged flight plan.
+     * Scenario: add already associated weather data to a tested flight plan.
+     * Expected output: the test status remains tested because no weather data was added.
+     */
+    @Test
+    void ensureDuplicateWeatherDataDoesNotVoidPreviousTest() {
+        // Arrange
+        final FlightPlan flightPlan = flightPlan();
+        final WeatherData weatherData = weatherData();
+        flightPlan.addWeatherData(weatherData);
+        flightPlan.markTested();
+
+        // Act
+        flightPlan.addWeatherData(weatherData);
+
+        // Assert
+        assertEquals(FlightPlanTestStatus.TESTED, flightPlan.testStatus());
+        assertEquals(1, flightPlan.weatherDataIds().size());
     }
 
     /**

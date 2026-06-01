@@ -3,6 +3,7 @@ package isep.aisafe.application.flightmanagement;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
+import isep.aisafe.flightplan.domain.FlightPlanTestStatus;
 import isep.aisafe.flightplan.domain.InMemoryFlightPlanRepository;
 import isep.aisafe.flightplan.domain.PilotIdentifier;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
@@ -118,6 +119,37 @@ class InsertWeatherDataInFlightPlanControllerTest {
                 .orElseThrow()
                 .weatherDataIds()
                 .size());
+    }
+
+    /**
+     * Purpose: verify previous flight plan test invalidation through the use case.
+     * Scenario: weather data is inserted in a previously tested flight plan.
+     * Expected output: the updated and persisted flight plan has a void test status.
+     */
+    @Test
+    void ensureWeatherDataInsertionVoidsPreviousFlightPlanTest() {
+        // Arrange
+        final InMemoryFlightPlanRepository flightPlanRepository = new InMemoryFlightPlanRepository();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final FlightPlan flightPlan = flightPlan();
+        final WeatherData weatherData = weatherData();
+        flightPlan.markTested();
+        flightPlanRepository.save(flightPlan);
+        weatherDataRepository.save(weatherData);
+        final InsertWeatherDataInFlightPlanController controller = new InsertWeatherDataInFlightPlanController(
+                new CapturingAuthorizationService(),
+                flightPlanRepository,
+                weatherDataRepository
+        );
+
+        // Act
+        final FlightPlan updatedFlightPlan = controller.insertWeatherData("TP123", "2027-01-10", "CONACC");
+
+        // Assert
+        assertEquals(FlightPlanTestStatus.VOID, updatedFlightPlan.testStatus());
+        assertEquals(FlightPlanTestStatus.VOID, flightPlanRepository.findByIdentifier(FlightPlanIdentifier.valueOf("TP123"))
+                .orElseThrow()
+                .testStatus());
     }
 
     /**

@@ -1,4 +1,4 @@
-# US 041 - Register Weather Data
+# US041 - Register Weather Data
 
 ## 1. Context
 

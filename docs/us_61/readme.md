@@ -1,4 +1,4 @@
-# US 061 - Register Customer Collaborators
+# US061 - Register Customer Collaborators
 
 ## 1. Context
 
