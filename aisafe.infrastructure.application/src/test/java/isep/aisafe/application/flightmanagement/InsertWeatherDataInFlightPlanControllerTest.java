@@ -36,10 +36,10 @@ class InsertWeatherDataInFlightPlanControllerTest {
     /**
      * Purpose: verify the permission required by the insertion entry point.
      * Scenario: execute the controller with a capturing authorization fake.
-     * Expected output: flight plan management permission is requested.
+     * Expected output: flight plan weather data insertion permission is requested.
      */
     @Test
-    void ensureExecuteRequiresFlightPlanManagementPermission() {
+    void ensureExecuteRequiresFlightPlanWeatherDataInsertionPermission() {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InsertWeatherDataInFlightPlanController controller = new InsertWeatherDataInFlightPlanController(
@@ -52,7 +52,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
         controller.execute();
 
         // Assert
-        assertArrayEquals(AisafePermissions.FLIGHT_PLAN_MANAGEMENT, authz.requestedRoles());
+        assertArrayEquals(AisafePermissions.FLIGHT_PLAN_WEATHER_DATA_INSERTION, authz.requestedRoles());
     }
 
     /**
@@ -110,7 +110,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
         final FlightPlan updatedFlightPlan = controller.insertWeatherData("TP123", "2027-01-10", "CONACC");
 
         // Assert
-        assertArrayEquals(AisafePermissions.FLIGHT_PLAN_MANAGEMENT, authz.requestedRoles());
+        assertArrayEquals(AisafePermissions.FLIGHT_PLAN_WEATHER_DATA_INSERTION, authz.requestedRoles());
         assertSame(flightPlan, updatedFlightPlan);
         assertEquals(1, updatedFlightPlan.weatherDataIds().size());
         assertEquals(weatherData.identity(), updatedFlightPlan.weatherDataIds().get(0));
@@ -161,6 +161,84 @@ class InsertWeatherDataInFlightPlanControllerTest {
         assertEquals("Weather data not found.", assertThrows(
                 IllegalArgumentException.class,
                 () -> controller.insertWeatherData("TP123", "2027-01-10", "CONACC")
+        ).getMessage());
+    }
+
+    /**
+     * Purpose: verify flight plan ownership validation.
+     * Scenario: authenticated pilot tries to update another pilot's flight plan.
+     * Expected output: the operation is rejected before associating weather data.
+     */
+    @Test
+    void ensureFlightPlanFromAnotherPilotIsRejected() {
+        // Arrange
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        authz.authenticatedUsername("pilot02");
+        final InMemoryFlightPlanRepository flightPlanRepository = new InMemoryFlightPlanRepository();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        flightPlanRepository.save(flightPlan());
+        weatherDataRepository.save(weatherData());
+        final InsertWeatherDataInFlightPlanController controller = new InsertWeatherDataInFlightPlanController(
+                authz,
+                flightPlanRepository,
+                weatherDataRepository
+        );
+
+        // Act / Assert
+        assertEquals("Flight plan does not belong to authenticated pilot.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData("TP123", "2027-01-10", "CONACC")
+        ).getMessage());
+        assertTrue(flightPlanRepository.findByIdentifier(FlightPlanIdentifier.valueOf("TP123"))
+                .orElseThrow()
+                .weatherDataIds()
+                .isEmpty());
+    }
+
+    /**
+     * Purpose: verify insertion input validation.
+     * Scenario: weather data insertion is requested with missing or malformed filters.
+     * Expected output: invalid input is rejected with clear messages.
+     */
+    @Test
+    void ensureInvalidInsertionInputsAreRejected() {
+        // Arrange
+        final InMemoryFlightPlanRepository flightPlanRepository = new InMemoryFlightPlanRepository();
+        flightPlanRepository.save(flightPlan());
+        final InsertWeatherDataInFlightPlanController controller = new InsertWeatherDataInFlightPlanController(
+                new CapturingAuthorizationService(),
+                flightPlanRepository,
+                new InMemoryWeatherDataRepository()
+        );
+
+        // Act / Assert
+        assertEquals("Flight plan identifier is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData(null, "2027-01-10", "CONACC")
+        ).getMessage());
+        assertEquals("Flight plan identifier is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData(" ", "2027-01-10", "CONACC")
+        ).getMessage());
+        assertEquals("Weather data day is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData("TP123", null, "CONACC")
+        ).getMessage());
+        assertEquals("Weather data day is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData("TP123", " ", "CONACC")
+        ).getMessage());
+        assertEquals("Weather data day must use ISO date format YYYY-MM-DD.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData("TP123", "2027/01/10", "CONACC")
+        ).getMessage());
+        assertEquals("Air control area code is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData("TP123", "2027-01-10", null)
+        ).getMessage());
+        assertEquals("Air control area code is required.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.insertWeatherData("TP123", "2027-01-10", " ")
         ).getMessage());
     }
 

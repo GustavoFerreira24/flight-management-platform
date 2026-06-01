@@ -12,6 +12,7 @@ public class CapturingAuthorizationService extends AisafeAuthorizationService {
     private Role[] requestedRoles;
     private int calls;
     private RuntimeException exceptionToThrow;
+    private String authenticatedUsername = "pilot01";
 
     public CapturingAuthorizationService() {
         super(new StubAuthorizationService());
@@ -36,6 +37,15 @@ public class CapturingAuthorizationService extends AisafeAuthorizationService {
 
     public void throwOnAuthorization(final RuntimeException exceptionToThrow) {
         this.exceptionToThrow = exceptionToThrow;
+    }
+
+    @Override
+    public String authenticatedUsername() {
+        return authenticatedUsername;
+    }
+
+    public void authenticatedUsername(final String authenticatedUsername) {
+        this.authenticatedUsername = authenticatedUsername;
     }
 
     private static final class StubAuthorizationService extends AuthorizationService {
