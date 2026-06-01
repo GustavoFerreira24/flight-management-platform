@@ -160,7 +160,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
         // Act / Assert
         assertEquals("Weather data not found.", assertThrows(
                 IllegalArgumentException.class,
-                () -> controller.insertWeatherData("TP123", "2027-01-10", "CONACC")
+                () -> controller.insertWeatherData("TP123", "2099-12-31", "NOACC")
         ).getMessage());
     }
 
