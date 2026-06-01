@@ -14,6 +14,7 @@ The implemented customer types are air transport companies and air control areas
 - US061.4 – Implement Collaborator Bootstrap Process 
 - US061.5 – Add Collaborator Registration Tests 
 - US061.6 – Document Collaborator Registration 
+
 ## 2. Requirements
 
 **US061** As a Backoffice Operator, I want to register customer collaborators, associating each collaborator with exactly one customer and creating the corresponding system user.
