@@ -8,27 +8,13 @@ The implementation uses the eAPLI framework user management service for the actu
 
 ### 1.1 List of issues
 
-Analysis:
+- US030.1 - Setup authentication framework and base configuration
+- US030.2 - Implement user authentication (login)
+- US030.3 - Implement role-based authorization mechanism
+- US030.4 - Protect application use cases with authorization checks
+- US030.5 - Add authentication and authorization tests
+- US030.6 - Document authentication and authorization setup
 
-- 1 - Identify required backoffice user data
-- 2 - Define supported AISafe roles
-- 3 - Define authorization rules for user registration
-
-Design:
-
-- 4 - Design backoffice user registration flow
-- 5 - Document backoffice user registration
-
-Implement:
-
-- 1 - Implement AISafe roles and permissions
-- 2 - Implement backoffice user registration controller
-- 3 - Implement backoffice user registration UI
-- 4 - Implement user registration validation
-
-Test:
-
-- 5 - Add user registration controller and validator tests
 
 ## 2. Requirements
 
@@ -36,12 +22,12 @@ Test:
 
 **Acceptance Criteria:**
 
-- US030.1 The system must allow an authorized Administrator to register a new backoffice user.
-- US030.2 The system must collect username, password, first name, last name, email and role.
-- US030.3 The user must be created through the system user management service.
-- US030.4 Mandatory fields and email format must be validated before registration.
-- US030.5 At least one valid AISafe role must be assigned.
-- US030.6 Unauthorized actors must not be able to register users.
+- AC1 - Users can authenticate successfully using the implemented authentication mechanism
+- AC2 - Authorization rules are enforced based on user roles
+- AC3 - Users can only access system functionalities according to their assigned permissions
+- AC4 - Authentication and authorization are correctly integrated across the application layer
+- AC5 - Unit and/or integration tests validate authentication and authorization behaviour
+
 
 **Dependencies/References:**
 
