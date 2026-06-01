@@ -10,6 +10,8 @@ import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
 import isep.aisafe.flightroute.domain.FlightRouteRepository;
 import isep.aisafe.infrastructure.persistence.RepositoryFactory;
+import isep.aisafe.manufacturer.domain.ManufacturerRepository;
+import isep.aisafe.pilot.domain.PilotRepository;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
@@ -50,6 +52,11 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     }
 
     @Override
+    public ManufacturerRepository manufacturers() {
+        return new JpaManufacturerRepository(Application.settings().persistenceUnitName());
+    }
+
+    @Override
     public AirTransportCompanyRepository airTransportCompanies() {
         return new JpaAirTransportCompanyRepository(Application.settings().persistenceUnitName());
     }
@@ -82,6 +89,11 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public WeatherDataRepository weatherData() {
         return new JpaWeatherDataRepository(Application.settings().persistenceUnitName());
+    }
+
+    @Override
+    public PilotRepository pilots() {
+        return new JpaPilotRepository(Application.settings().persistenceUnitName());
     }
 
 }

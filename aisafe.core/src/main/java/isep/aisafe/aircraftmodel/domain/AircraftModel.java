@@ -4,6 +4,7 @@ import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.validations.Preconditions;
 import isep.aisafe.enginemodel.domain.EngineModel;
 import isep.aisafe.enginemodel.domain.EngineModelDesignator;
+import isep.aisafe.manufacturer.domain.Manufacturer;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Version;
 import java.io.Serializable;
@@ -43,6 +45,9 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "MOTORIZATION"))
     private AircraftModelMotorization motorization;
+
+    @ManyToOne(optional = false)
+    private Manufacturer manufacturer;
 
     private double maxRange;
     private double emptyWeight;
@@ -79,7 +84,50 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
             final int passengerCapacity,
             final Collection<EngineModel> certifiedEngineModels) {
 
+        this(
+                designator,
+                AircraftModelManufacturer.from(designator),
+                type,
+                motorization,
+                maxRange,
+                emptyWeight,
+                mtow,
+                mzfw,
+                maxFuelCapacity,
+                serviceCeiling,
+                cruiseSpeed,
+                wingArea,
+                dragCoefficient,
+                liftCoefficient,
+                passengerCapacity,
+                certifiedEngineModels
+        );
+    }
+
+    public AircraftModel(
+            final AircraftModelDesignator designator,
+            final Manufacturer manufacturer,
+            final AircraftModelType type,
+            final AircraftModelMotorization motorization,
+            final double maxRange,
+            final double emptyWeight,
+            final double mtow,
+            final double mzfw,
+            final double maxFuelCapacity,
+            final double serviceCeiling,
+            final double cruiseSpeed,
+            final double wingArea,
+            final double dragCoefficient,
+            final double liftCoefficient,
+            final int passengerCapacity,
+            final Collection<EngineModel> certifiedEngineModels) {
+
         Preconditions.nonNull(designator, "Aircraft model designator cannot be null.");
+        Preconditions.nonNull(manufacturer, "Aircraft model manufacturer cannot be null.");
+        Preconditions.ensure(
+                manufacturer.canManufactureAircraftModels(),
+                "Manufacturer is not certified as an aircraft manufacturer."
+        );
         Preconditions.nonNull(type, "Aircraft model type cannot be null.");
         Preconditions.nonNull(motorization, "Aircraft model motorization cannot be null.");
         ensurePositive(maxRange, "Maximum range");
@@ -95,6 +143,7 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
         Preconditions.isPositive(passengerCapacity, "Passenger capacity must be greater than zero.");
 
         this.designator = designator;
+        this.manufacturer = manufacturer;
         this.type = type;
         this.motorization = motorization;
         this.maxRange = maxRange;
@@ -167,6 +216,10 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
         return designator;
     }
 
+    public Manufacturer manufacturer() {
+        return manufacturer;
+    }
+
     public int passengerCapacity() {
         return passengerCapacity;
     }
@@ -225,5 +278,23 @@ public class AircraftModel implements AggregateRoot<AircraftModelDesignator>, Se
         }
 
         return false;
+    }
+
+    private static final class AircraftModelManufacturer {
+
+        private AircraftModelManufacturer() {
+        }
+
+        private static Manufacturer from(final AircraftModelDesignator designator) {
+            if (designator == null) {
+                return Manufacturer.referenceFromText("UNKNOWN");
+            }
+
+            final String[] parts = designator.toString().split("\\s*\\|\\s*", 2);
+            if (parts.length == 2) {
+                return Manufacturer.referenceFromText(parts[1]);
+            }
+            return Manufacturer.referenceFromText("UNKNOWN");
+        }
     }
 }

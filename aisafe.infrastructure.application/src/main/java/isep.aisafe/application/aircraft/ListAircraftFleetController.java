@@ -10,9 +10,8 @@ import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.CustomerType;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
-import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
-import isep.aisafe.infrastructure.authz.AisafePermissions;
-import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.infrastructure.authz.*;
+import isep.aisafe.infrastructure.persistence.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -129,7 +128,7 @@ public class ListAircraftFleetController {
         return new AircraftFleetEntry(
                 aircraft.registration().toString(),
                 modelParts[0],
-                modelParts[1],
+                aircraft.aircraftModel().manufacturer().designator().toString(),
                 aircraft.cabinConfiguration().totalSeats(),
                 aircraft.aircraftModel().passengerCapacity(),
                 aircraft.manufactureYear(),

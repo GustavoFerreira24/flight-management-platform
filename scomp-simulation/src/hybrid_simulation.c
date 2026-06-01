@@ -343,6 +343,7 @@ static int collect_shared_updates_for_step(hybrid_context_t *context, int step) 
 static void finish_scheduler(hybrid_context_t *context) {
     context->shared->stop_requested = 1;
     hybrid_sync_release_all(context->sync);
+    hybrid_sync_mark_parent_step_ready(context->sync);
 
     pthread_mutex_lock(&context->threads.mutex);
     context->threads.scheduler_finished = 1;
@@ -385,12 +386,20 @@ static void *scheduler_thread_main(void *argument) {
         pthread_mutex_lock(&context->threads.mutex);
         context->threads.last_completed_step = step;
         pthread_cond_broadcast(&context->threads.step_completed_cond);
+        pthread_mutex_unlock(&context->threads.mutex);
 
-        while (context->threads.last_safety_processed_step < step && !hybrid_stop_requested) {
-            pthread_cond_wait(&context->threads.safety_done_cond, &context->threads.mutex);
+        if (hybrid_sync_mark_parent_step_ready(context->sync) == -1) {
+            request_hybrid_stop(context);
+            break;
         }
 
-        pthread_mutex_unlock(&context->threads.mutex);
+        if (hybrid_sync_wait_parent_step_done(context->sync) == -1) {
+            request_hybrid_stop(context);
+            break;
+        }
+
+        printf("hybrid timestep %d parent-thread semaphore lockstep complete\n", step);
+        fflush(stdout);
 
         if (!hybrid_stop_requested && step < SIMULATION_STEPS - 1) {
             wait_for_next_timestep();
@@ -472,13 +481,12 @@ static void *safety_thread_main(void *argument) {
     hybrid_context_t *context = argument;
 
     while (1) {
-        pthread_mutex_lock(&context->threads.mutex);
-
-        while (context->threads.last_completed_step <=
-               context->threads.last_safety_processed_step &&
-               !context->threads.scheduler_finished) {
-            pthread_cond_wait(&context->threads.step_completed_cond, &context->threads.mutex);
+        if (hybrid_sync_wait_parent_step_ready(context->sync) == -1) {
+            request_hybrid_stop(context);
+            break;
         }
+
+        pthread_mutex_lock(&context->threads.mutex);
 
         if (context->threads.scheduler_finished &&
             context->threads.last_completed_step <= context->threads.last_safety_processed_step) {
@@ -486,6 +494,11 @@ static void *safety_thread_main(void *argument) {
             pthread_cond_broadcast(&context->threads.report_cond);
             pthread_mutex_unlock(&context->threads.mutex);
             break;
+        }
+
+        if (context->threads.last_completed_step <= context->threads.last_safety_processed_step) {
+            pthread_mutex_unlock(&context->threads.mutex);
+            continue;
         }
 
         const int step = context->threads.last_safety_processed_step + 1;
@@ -497,6 +510,11 @@ static void *safety_thread_main(void *argument) {
         context->threads.last_safety_processed_step = step;
         pthread_cond_signal(&context->threads.safety_done_cond);
         pthread_mutex_unlock(&context->threads.mutex);
+
+        if (hybrid_sync_mark_parent_step_done(context->sync) == -1) {
+            request_hybrid_stop(context);
+            break;
+        }
     }
 
     return NULL;
@@ -608,16 +626,9 @@ int run_hybrid_simulation(const flight_plan_t flights[], int flight_count) {
         return -1;
     }
 
-    if (pthread_create(&scheduler_thread, NULL, scheduler_thread_main, &context) != 0) {
+    if (pthread_create(&safety_thread, NULL, safety_thread_main, &context) != 0) {
         request_hybrid_stop(&context);
     } else {
-        scheduler_started = 1;
-    }
-
-    if (!hybrid_stop_requested &&
-        pthread_create(&safety_thread, NULL, safety_thread_main, &context) != 0) {
-        request_hybrid_stop(&context);
-    } else if (!hybrid_stop_requested) {
         safety_started = 1;
     }
 
@@ -626,6 +637,13 @@ int run_hybrid_simulation(const flight_plan_t flights[], int flight_count) {
         request_hybrid_stop(&context);
     } else if (!hybrid_stop_requested) {
         report_started = 1;
+    }
+
+    if (!hybrid_stop_requested &&
+        pthread_create(&scheduler_thread, NULL, scheduler_thread_main, &context) != 0) {
+        request_hybrid_stop(&context);
+    } else if (!hybrid_stop_requested) {
+        scheduler_started = 1;
     }
 
     if (scheduler_started) {

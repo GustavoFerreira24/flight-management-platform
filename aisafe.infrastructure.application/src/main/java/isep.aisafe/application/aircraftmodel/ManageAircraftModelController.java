@@ -8,9 +8,11 @@ import isep.aisafe.aircraftmodel.domain.AircraftModelType;
 import isep.aisafe.enginemodel.domain.EngineModel;
 import isep.aisafe.enginemodel.domain.EngineModelDesignator;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
-import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
-import isep.aisafe.infrastructure.authz.AisafePermissions;
-import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.infrastructure.authz.*;
+import isep.aisafe.infrastructure.persistence.*;
+import isep.aisafe.manufacturer.domain.Manufacturer;
+import isep.aisafe.manufacturer.domain.ManufacturerDesignator;
+import isep.aisafe.manufacturer.domain.ManufacturerRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,28 +22,39 @@ public class ManageAircraftModelController {
     private final AisafeAuthorizationService authz;
     private final AircraftModelRepository aircraftModelRepository;
     private final EngineModelRepository engineModelRepository;
+    private final ManufacturerRepository manufacturerRepository;
 
     public ManageAircraftModelController() {
         this(
                 new AisafeAuthorizationService(),
                 PersistenceContext.repositories().aircraftModels(),
-                PersistenceContext.repositories().engineModels()
+                PersistenceContext.repositories().engineModels(),
+                PersistenceContext.repositories().manufacturers()
         );
     }
 
     public ManageAircraftModelController(
             final AircraftModelRepository aircraftModelRepository,
             final EngineModelRepository engineModelRepository) {
-        this(new AisafeAuthorizationService(), aircraftModelRepository, engineModelRepository);
+        this(new AisafeAuthorizationService(), aircraftModelRepository, engineModelRepository, null);
     }
 
     public ManageAircraftModelController(
             final AisafeAuthorizationService authz,
             final AircraftModelRepository aircraftModelRepository,
             final EngineModelRepository engineModelRepository) {
+        this(authz, aircraftModelRepository, engineModelRepository, null);
+    }
+
+    public ManageAircraftModelController(
+            final AisafeAuthorizationService authz,
+            final AircraftModelRepository aircraftModelRepository,
+            final EngineModelRepository engineModelRepository,
+            final ManufacturerRepository manufacturerRepository) {
         this.authz = authz;
         this.aircraftModelRepository = aircraftModelRepository;
         this.engineModelRepository = engineModelRepository;
+        this.manufacturerRepository = manufacturerRepository;
     }
 
     public AircraftModel registerAircraftModel(
@@ -64,7 +77,11 @@ public class ManageAircraftModelController {
 
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
 
-        final AircraftModelDesignator designator = AircraftModelDesignator.valueOf(modelName, manufacturer);
+        final Manufacturer aircraftManufacturer = aircraftManufacturer(manufacturer);
+        final AircraftModelDesignator designator = AircraftModelDesignator.valueOf(
+                modelName,
+                aircraftManufacturer.identity().toString()
+        );
 
         if (aircraftModelRepository.findByDesignator(designator).isPresent()) {
             throw new IllegalArgumentException("Aircraft model already exists.");
@@ -89,6 +106,7 @@ public class ManageAircraftModelController {
 
         final AircraftModel aircraftModel = new AircraftModel(
                 designator,
+                aircraftManufacturer,
                 AircraftModelType.valueOf(type),
                 AircraftModelMotorization.valueOf(motorization),
                 maxRange,
@@ -108,6 +126,25 @@ public class ManageAircraftModelController {
         return aircraftModelRepository.save(aircraftModel);
     }
 
+    public List<String> aircraftManufacturerDesignators() {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
+
+        final List<String> designators = new ArrayList<>();
+
+        if (manufacturerRepository == null) {
+            return designators;
+        }
+
+        for (final Manufacturer manufacturer : manufacturerRepository.findAll()) {
+            if (manufacturer.canManufactureAircraftModels()) {
+                designators.add(manufacturer.designator().toString());
+            }
+        }
+
+        designators.sort(String::compareTo);
+        return designators;
+    }
+
     public List<String> compatibleEngineModelDesignators(final String motorization) {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
 
@@ -122,5 +159,16 @@ public class ManageAircraftModelController {
 
         compatibleEngineDesignators.sort(String::compareTo);
         return compatibleEngineDesignators;
+    }
+
+    private Manufacturer aircraftManufacturer(final String manufacturerDesignator) {
+        final ManufacturerDesignator designator = ManufacturerDesignator.valueOf(manufacturerDesignator);
+
+        if (manufacturerRepository == null) {
+            return Manufacturer.referenceFromText(manufacturerDesignator);
+        }
+
+        return manufacturerRepository.findByDesignator(designator)
+                .orElseThrow(() -> new IllegalArgumentException("Manufacturer was not found."));
     }
 }

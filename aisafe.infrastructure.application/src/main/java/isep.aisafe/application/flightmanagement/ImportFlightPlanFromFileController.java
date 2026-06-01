@@ -5,8 +5,7 @@ import isep.aisafe.flightplan.importer.ImportedFlightPlanRepository;
 import isep.aisafe.flightplan.importer.InMemoryImportedFlightPlanRepository;
 import isep.aisafe.flightplan.importer.dsl.FlightPlanDslSyntaxValidator;
 import isep.aisafe.flightplan.importer.dsl.FlightPlanParseResult;
-import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
-import isep.aisafe.infrastructure.authz.AisafePermissions;
+import isep.aisafe.infrastructure.authz.*;
 
 import java.io.IOException;
 import java.nio.file.Files;

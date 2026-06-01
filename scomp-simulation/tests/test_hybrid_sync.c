@@ -23,6 +23,8 @@ static void test_creates_named_semaphores(void) {
     assert(sync.start_step[0] != NULL);
     assert(sync.start_step[1] != NULL);
     assert(sync.updates_ready != NULL);
+    assert(sync.parent_step_ready != NULL);
+    assert(sync.parent_step_done != NULL);
 
     hybrid_sync_close(&sync);
 }
@@ -45,6 +47,11 @@ static void test_release_and_wait_cycle(void) {
     assert(hybrid_sync_mark_update_ready(&sync) == 0);
     assert(hybrid_sync_mark_update_ready(&sync) == 0);
     assert(hybrid_sync_wait_for_updates(&sync, 2) == 0);
+
+    assert(hybrid_sync_mark_parent_step_ready(&sync) == 0);
+    assert(hybrid_sync_wait_parent_step_ready(&sync) == 0);
+    assert(hybrid_sync_mark_parent_step_done(&sync) == 0);
+    assert(hybrid_sync_wait_parent_step_done(&sync) == 0);
 
     hybrid_sync_close(&sync);
 }

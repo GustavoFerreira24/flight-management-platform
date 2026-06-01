@@ -3,6 +3,9 @@ package isep.aisafe.application.flightroute;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.airport.domain.Airport;
 import isep.aisafe.airport.domain.AirportIATACode;
 import isep.aisafe.airport.domain.AirportICAOCode;
@@ -272,7 +275,12 @@ class RegisterFlightRouteControllerTest {
                 town,
                 new GpsCoordinates(38.7, -9.1),
                 new Elevation(114.0),
-                new AirControlArea(AirControlAreaCode.valueOf(icao + "FIR"), name + " Control")
+                new AirControlArea(
+                        AirControlAreaCode.valueOf(icao + "FIR"),
+                        name + " Control",
+                        GeographicBoundary.valueOf(-90, 90, -180, 180),
+                        MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
+                )
         );
     }
 

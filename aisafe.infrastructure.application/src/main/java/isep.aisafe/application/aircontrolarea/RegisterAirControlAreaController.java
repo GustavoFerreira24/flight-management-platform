@@ -6,9 +6,8 @@ import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.aircontrolarea.domain.FuelUnit;
 import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
 import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
-import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
-import isep.aisafe.infrastructure.authz.AisafePermissions;
-import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.infrastructure.authz.*;
+import isep.aisafe.infrastructure.persistence.*;
 import eapli.framework.validations.Preconditions;
 
 

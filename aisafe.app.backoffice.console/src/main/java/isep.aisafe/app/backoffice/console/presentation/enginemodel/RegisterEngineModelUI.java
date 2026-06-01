@@ -8,13 +8,6 @@ import java.util.Scanner;
 
 public class RegisterEngineModelUI {
 
-    private static final List<String> MANUFACTURERS = List.of(
-            "CFM INTERNATIONAL",
-            "PRATT & WHITNEY",
-            "ROLLS-ROYCE",
-            "GENERAL ELECTRIC",
-            "OTHER"
-    );
     private static final List<String> ENGINE_TYPES = List.of("TURBOFAN", "TURBOPROP", "TURBOJET", "PISTON");
     private static final List<String> FUEL_TYPES = List.of("JET A-1", "AVGAS 100LL", "SAF", "DIESEL");
 
@@ -36,7 +29,7 @@ public class RegisterEngineModelUI {
             ConsoleStyle.printPrompt("Model name: ");
             final String modelName = scanner.nextLine();
 
-            final String manufacturer = selectOption("Manufacturer", MANUFACTURERS);
+            final String manufacturer = selectManufacturer();
 
             final String engineType = selectOption("Engine type", ENGINE_TYPES);
 
@@ -95,5 +88,15 @@ public class RegisterEngineModelUI {
 
             ConsoleStyle.printWarning("Invalid option. Please choose a listed number.");
         }
+    }
+
+    private String selectManufacturer() {
+        final List<String> manufacturers = controller.engineManufacturerDesignators();
+
+        if (manufacturers.isEmpty()) {
+            throw new IllegalStateException("No engine manufacturers are registered.");
+        }
+
+        return selectOption("Manufacturer", manufacturers);
     }
 }

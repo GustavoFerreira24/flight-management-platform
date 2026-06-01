@@ -11,6 +11,7 @@
         <class>eapli.framework.infrastructure.authz.domain.model.SystemUser</class>
         <class>eapli.framework.infrastructure.authz.domain.model.RoleSet</class>
         <class>eapli.framework.infrastructure.authz.domain.model.RoleAssignment</class>
+        <class>isep.aisafe.manufacturer.domain.Manufacturer</class>
         <class>isep.aisafe.enginemodel.domain.EngineModel</class>
         <class>isep.aisafe.aircraftmodel.domain.AircraftModel</class>
         <class>isep.aisafe.aircraftmodel.domain.AircraftVariant</class>
@@ -21,6 +22,10 @@
         <class>isep.aisafe.aircraft.domain.Aircraft</class>
         <class>isep.aisafe.flightroute.domain.FlightRoute</class>
         <class>isep.aisafe.weatherdata.domain.WeatherData</class>
+        <class>isep.aisafe.pilot.domain.Pilot</class>
+        <class>isep.aisafe.pilot.domain.Certification</class>
+        <class>isep.aisafe.pilot.domain.PilotStatus</class>
+        <class>isep.aisafe.pilot.domain.PilotID</class>
 
 
         <properties>
@@ -29,7 +34,7 @@
             <property name="jakarta.persistence.jdbc.user" value="sa"/>
             <property name="jakarta.persistence.jdbc.password" value=""/>
 
-            <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
             <property name="eclipselink.logging.level" value="INFO"/>
         </properties>
     </persistence-unit>

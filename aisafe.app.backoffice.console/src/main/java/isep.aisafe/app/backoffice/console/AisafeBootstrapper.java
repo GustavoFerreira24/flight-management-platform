@@ -40,6 +40,10 @@ import isep.aisafe.enginemodel.domain.EngineModelRepository;
 import isep.aisafe.enginemodel.domain.EngineType;
 import isep.aisafe.enginemodel.domain.FuelType;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.manufacturer.domain.Manufacturer;
+import isep.aisafe.manufacturer.domain.ManufacturerDesignator;
+import isep.aisafe.manufacturer.domain.ManufacturerRepository;
+import isep.aisafe.manufacturer.domain.ManufacturerType;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
 
 import java.util.List;
@@ -70,18 +74,48 @@ public class AisafeBootstrapper {
         bootstrapAirTransportCompanies();
         bootstrapAirControlAreas();
         bootstrapAirports();
+        bootstrapManufacturers();
         bootstrapCustomerCollaborators(userService);
         bootstrapAircraftAndEngineModels();
         bootstrapDemoAircraftFleet();
     }
 
+    private static void bootstrapManufacturers() {
+        final ManufacturerRepository repository = PersistenceContext.repositories().manufacturers();
+
+        registerManufacturerIfMissing(repository, "Airbus", "AIRBUS", "France", "AIRCRAFT");
+        registerManufacturerIfMissing(repository, "Boeing", "BOEING", "USA", "AIRCRAFT");
+        registerManufacturerIfMissing(repository, "Embraer", "EMBRAER", "Brazil", "AIRCRAFT");
+        registerManufacturerIfMissing(repository, "ATR", "ATR", "France", "AIRCRAFT");
+        registerManufacturerIfMissing(repository, "Bombardier", "BOMBARDIER", "Canada", "AIRCRAFT");
+        registerManufacturerIfMissing(repository, "CFM International", "CFM INTERNATIONAL", "USA", "ENGINE");
+        registerManufacturerIfMissing(repository, "Pratt Whitney", "PRATT WHITNEY", "USA", "ENGINE");
+        registerManufacturerIfMissing(repository, "Rolls Royce", "ROLLS ROYCE", "UK", "ENGINE");
+        registerManufacturerIfMissing(repository, "General Electric", "GENERAL ELECTRIC", "USA", "ENGINE");
+    }
+
     private static void bootstrapAircraftAndEngineModels() {
         final EngineModelRepository engineModelRepository = PersistenceContext.repositories().engineModels();
         final AircraftModelRepository aircraftModelRepository = PersistenceContext.repositories().aircraftModels();
+        final ManufacturerRepository manufacturerRepository = PersistenceContext.repositories().manufacturers();
+
+        final Manufacturer cfmInternational = manufacturerRepository
+                .findByDesignator(ManufacturerDesignator.valueOf("CFM INTERNATIONAL"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: CFM International manufacturer not found"));
+        final Manufacturer generalElectric = manufacturerRepository
+                .findByDesignator(ManufacturerDesignator.valueOf("GENERAL ELECTRIC"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: General Electric manufacturer not found"));
+        final Manufacturer airbus = manufacturerRepository
+                .findByDesignator(ManufacturerDesignator.valueOf("AIRBUS"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: Airbus manufacturer not found"));
+        final Manufacturer boeing = manufacturerRepository
+                .findByDesignator(ManufacturerDesignator.valueOf("BOEING"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: Boeing manufacturer not found"));
 
         final EngineModel cfmLeap = registerEngineModelIfMissing(
                 engineModelRepository,
-                EngineModelDesignator.valueOf("LEAP-1A", "CFM International"),
+                EngineModelDesignator.valueOf("LEAP-1A", cfmInternational.identity().toString()),
+                cfmInternational,
                 EngineType.valueOf("TURBOFAN"),
                 FuelType.valueOf("JET A-1"),
                 120.0,
@@ -91,7 +125,8 @@ public class AisafeBootstrapper {
 
         final EngineModel ge90b = registerEngineModelIfMissing(
                 engineModelRepository,
-                EngineModelDesignator.valueOf("GE 90B", "General Electric"),
+                EngineModelDesignator.valueOf("GE 90B", generalElectric.identity().toString()),
+                generalElectric,
                 EngineType.valueOf("TURBOFAN"),
                 FuelType.valueOf("JET A-1"),
                 0.84,
@@ -99,11 +134,15 @@ public class AisafeBootstrapper {
                 0.00016
         );
 
-        final AircraftModelDesignator a320neo = AircraftModelDesignator.valueOf("A320neo", "Airbus");
+        final AircraftModelDesignator a320neo = AircraftModelDesignator.valueOf(
+                "A320neo",
+                airbus.identity().toString()
+        );
 
         if (aircraftModelRepository.findByDesignator(a320neo).isEmpty()) {
             final AircraftModel aircraftModel = new AircraftModel(
                     a320neo,
+                    airbus,
                     AircraftModelType.valueOf("PASSENGER"),
                     AircraftModelMotorization.valueOf("TURBOFAN"),
                     6300,
@@ -124,11 +163,15 @@ public class AisafeBootstrapper {
             System.out.println("Bootstrapped aircraft model: " + a320neo);
         }
 
-        final AircraftModelDesignator boeing777 = AircraftModelDesignator.valueOf("777-200ER", "Boeing");
+        final AircraftModelDesignator boeing777 = AircraftModelDesignator.valueOf(
+                "777-200ER",
+                boeing.identity().toString()
+        );
 
         if (aircraftModelRepository.findByDesignator(boeing777).isEmpty()) {
             final AircraftModel aircraftModel = new AircraftModel(
                     boeing777,
+                    boeing,
                     AircraftModelType.valueOf("PASSENGER"),
                     AircraftModelMotorization.valueOf("TURBOFAN"),
                     14200,
@@ -153,6 +196,7 @@ public class AisafeBootstrapper {
     private static EngineModel registerEngineModelIfMissing(
             final EngineModelRepository repository,
             final EngineModelDesignator designator,
+            final Manufacturer manufacturer,
             final EngineType engineType,
             final FuelType fuelType,
             final double power,
@@ -162,6 +206,7 @@ public class AisafeBootstrapper {
         return repository.findByDesignator(designator).orElseGet(() -> {
             final EngineModel engineModel = new EngineModel(
                     designator,
+                    manufacturer,
                     engineType,
                     fuelType,
                     power,
@@ -173,6 +218,31 @@ public class AisafeBootstrapper {
             System.out.println("Bootstrapped engine model: " + designator);
             return savedEngineModel;
         });
+    }
+
+    private static Manufacturer registerManufacturerIfMissing(
+            final ManufacturerRepository repository,
+            final String name,
+            final String designator,
+            final String country,
+            final String type) {
+
+        final ManufacturerDesignator manufacturerDesignator = ManufacturerDesignator.valueOf(designator);
+
+        if (repository.findByDesignator(manufacturerDesignator).isPresent()) {
+            return repository.findByDesignator(manufacturerDesignator).get();
+        }
+
+        final Manufacturer manufacturer = new Manufacturer(
+                name,
+                manufacturerDesignator,
+                Country.valueOf(country),
+                ManufacturerType.valueOf(type)
+        );
+
+        final Manufacturer savedManufacturer = repository.save(manufacturer);
+        System.out.println("Bootstrapped manufacturer: " + manufacturerDesignator);
+        return savedManufacturer;
     }
 
     private static void register(
@@ -514,10 +584,10 @@ public class AisafeBootstrapper {
         final EngineModelRepository engineModelRepository = PersistenceContext.repositories().engineModels();
 
         final AircraftModel aircraftModel = aircraftModelRepository
-                .findByDesignator(AircraftModelDesignator.valueOf("777-200ER", "Boeing"))
+                .findByDesignator(AircraftModelDesignator.valueOf("777-200ER", "BOEING"))
                 .orElseThrow(() -> new IllegalStateException("Bootstrap: Boeing 777-200ER model not found"));
         final EngineModel engineModel = engineModelRepository
-                .findByDesignator(EngineModelDesignator.valueOf("GE 90B", "General Electric"))
+                .findByDesignator(EngineModelDesignator.valueOf("GE 90B", "GENERAL ELECTRIC"))
                 .orElseThrow(() -> new IllegalStateException("Bootstrap: GE 90B engine model not found"));
 
         final AirTransportCompany airEuropa = companyRepository
