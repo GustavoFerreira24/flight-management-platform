@@ -28,10 +28,6 @@ public class RegisterEngineModelController {
         );
     }
 
-    public RegisterEngineModelController(final EngineModelRepository engineModelRepository) {
-        this(new AisafeAuthorizationService(), engineModelRepository, null);
-    }
-
     RegisterEngineModelController(
             final AisafeAuthorizationService authz,
             final EngineModelRepository engineModelRepository) {
