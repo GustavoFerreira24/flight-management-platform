@@ -67,7 +67,9 @@ If parsing fails structurally, the import is rejected with a clear message. If i
 
 ### 4.1. Realization
 
-![US42 class diagram](class-diagram-42.svg "US42 Class Diagram")
+![US42 class diagram](diagrams/class-diagram-42.svg "US42 Class Diagram")
+
+![US42 sequence diagram](diagrams/sequence-diagram-42.svg "US42 Sequence Diagram")
 
 The `ImportBulkWeatherDataUI` is available from the Weather Person Backoffice menu. It asks for a CSV file path, validates that the path input is non-blank and uses a `.csv` extension, then delegates the import to `ImportBulkWeatherDataController`.
 

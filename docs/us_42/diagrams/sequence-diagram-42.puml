@@ -1,0 +1,90 @@
+@startuml
+title US042 - Import Bulk Weather Data
+
+actor "Weather Person" as WeatherPerson
+participant "ImportBulkWeatherDataUI" as UI
+participant "ImportBulkWeatherDataController" as Controller
+participant "AisafeAuthorizationService" as Authz
+participant "WeatherDataImporterFactory" as Factory
+participant "CsvWeatherDataImporter" as Importer
+participant "RegisterWeatherDataController" as RegisterController
+participant "AirControlAreaRepository" as AreaRepo
+participant "WeatherDataRepository" as WeatherRepo
+participant "WeatherData" as WeatherData
+
+WeatherPerson -> UI : show()
+activate UI
+UI -> UI : print CSV format information
+UI -> WeatherPerson : ask CSV file path
+WeatherPerson --> UI : csv path
+UI -> UI : validate non-blank .csv path
+
+UI -> Controller : importFromFile(file)
+activate Controller
+Controller -> Factory : importerFor(file)
+activate Factory
+Factory --> Controller : CsvWeatherDataImporter
+deactivate Factory
+
+Controller -> Authz : ensureAuthenticatedUserHasAnyOf(WEATHER_DATA_MANAGEMENT)
+Controller -> Controller : ensureReadableFile(file)
+
+Controller -> Importer : importFrom(file)
+activate Importer
+Importer -> Importer : read lines
+Importer -> Importer : validate header
+loop each non-blank CSV data line
+    Importer -> Importer : parse fields and numeric values
+    Importer -> Importer : create ImportedWeatherMeasurement
+end
+Importer --> Controller : List<ImportedWeatherMeasurement>
+deactivate Importer
+
+loop each imported measurement
+    Controller -> RegisterController : registerWeatherMeasurement(...)
+    activate RegisterController
+    RegisterController -> Authz : ensureAuthenticatedUserHasAnyOf(WEATHER_DATA_MANAGEMENT)
+    RegisterController -> RegisterController : validate required fields and ISO day
+    RegisterController -> AreaRepo : findByCode(areaCode)
+    activate AreaRepo
+    AreaRepo --> RegisterController : Optional<AirControlArea>
+    deactivate AreaRepo
+
+    alt area not found or coordinates outside area
+        RegisterController --> Controller : IllegalArgumentException
+        Controller -> Controller : add BulkWeatherImportError(sourceLine, message)
+    else valid area and weather values
+        RegisterController -> WeatherRepo : findByDayAndAirControlArea(day, areaCode)
+        activate WeatherRepo
+        WeatherRepo --> RegisterController : Optional<WeatherData>
+        deactivate WeatherRepo
+
+        alt weather aggregate exists
+            RegisterController -> WeatherData : addMeasurement(...)
+        else weather aggregate does not exist
+            RegisterController -> RegisterController : new WeatherData(day, areaCode)
+            RegisterController -> WeatherData : addMeasurement(...)
+        end
+
+        RegisterController -> WeatherRepo : save(weatherData)
+        activate WeatherRepo
+        WeatherRepo --> RegisterController : persisted WeatherData
+        deactivate WeatherRepo
+        RegisterController --> Controller : WeatherData
+        Controller -> Controller : increment persisted count
+    end
+    deactivate RegisterController
+end
+
+Controller -> Controller : create BulkWeatherImportResult
+Controller --> UI : BulkWeatherImportResult
+deactivate Controller
+
+UI -> UI : print read/imported/rejected counts
+opt rejected records exist
+    UI -> UI : print rejected source lines and messages
+end
+UI --> WeatherPerson : result feedback
+deactivate UI
+
+@enduml
