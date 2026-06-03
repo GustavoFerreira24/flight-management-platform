@@ -1,0 +1,87 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class InsertWeatherDataInFlightPlanController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - flightPlanRepository : FlightPlanRepository
+    - weatherDataRepository : WeatherDataRepository
+    + execute() : void
+    + insertWeatherData(flightPlanIdentifier : String, weatherDataDay : String, airControlAreaCode : String) : FlightPlan
+    - ensureFlightPlanBelongsToAuthenticatedPilot(flightPlan : FlightPlan) : void
+    - parseDay(weatherDataDay : String) : LocalDate
+    - ensureNotBlank(value : String, message : String) : void
+    - weatherDataRepository() : WeatherDataRepository
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+    + authenticatedUsername() : String
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} FLIGHT_PLAN_WEATHER_DATA_INSERTION : Role[]
+}
+
+interface FlightPlanRepository {
+    + findByIdentifier(identifier : FlightPlanIdentifier) : Optional<FlightPlan>
+    + save(flightPlan : FlightPlan) : FlightPlan
+}
+
+class InMemoryFlightPlanRepository <<Repository>>
+
+interface WeatherDataRepository {
+    + findByDayAndAirControlArea(day : LocalDate, code : AirControlAreaCode) : Optional<WeatherData>
+}
+
+class FlightPlan <<Aggregate Root>> {
+    - identifier : FlightPlanIdentifier
+    - pilotIdentifier : PilotIdentifier
+    - weatherDataIds : List<WeatherDataId>
+    - testStatus : FlightPlanTestStatus
+    + addWeatherData(weatherData : WeatherData) : void
+    + markTested() : void
+    + testStatus() : FlightPlanTestStatus
+    + weatherDataIds() : List<WeatherDataId>
+    + pilotIdentifier() : PilotIdentifier
+}
+
+class FlightPlanIdentifier <<Value Object>>
+class PilotIdentifier <<Value Object>>
+enum FlightPlanTestStatus {
+    NOT_TESTED
+    TESTED
+    VOID
+}
+
+class WeatherData <<Aggregate Root>> {
+    + identity() : WeatherDataId
+    + day() : LocalDate
+    + airControlAreaCode() : AirControlAreaCode
+}
+
+class WeatherDataId <<Value Object>>
+class AirControlAreaCode <<Value Object>>
+
+InsertWeatherDataInFlightPlanController --> AisafeAuthorizationService
+InsertWeatherDataInFlightPlanController --> AisafePermissions
+InsertWeatherDataInFlightPlanController --> FlightPlanRepository
+InsertWeatherDataInFlightPlanController --> WeatherDataRepository
+InsertWeatherDataInFlightPlanController --> FlightPlanIdentifier
+InsertWeatherDataInFlightPlanController --> PilotIdentifier
+InsertWeatherDataInFlightPlanController --> AirControlAreaCode
+InsertWeatherDataInFlightPlanController --> FlightPlan
+InsertWeatherDataInFlightPlanController --> WeatherData
+
+InMemoryFlightPlanRepository ..|> FlightPlanRepository
+FlightPlanRepository --> FlightPlan
+WeatherDataRepository --> WeatherData
+
+FlightPlan *-- FlightPlanIdentifier
+FlightPlan *-- PilotIdentifier
+FlightPlan *-- FlightPlanTestStatus
+FlightPlan "1" *-- "0..*" WeatherDataId
+WeatherData *-- WeatherDataId
+WeatherData *-- AirControlAreaCode
+
+@enduml

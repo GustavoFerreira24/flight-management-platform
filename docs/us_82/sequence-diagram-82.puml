@@ -1,0 +1,62 @@
+@startuml
+title US082 - Insert Weather Data in Flight Plan
+
+actor Pilot
+participant "InsertWeatherDataInFlightPlanController" as Controller
+participant "AisafeAuthorizationService" as Authz
+participant "FlightPlanRepository" as FlightPlanRepo
+participant "WeatherDataRepository" as WeatherRepo
+participant "FlightPlan" as FlightPlan
+
+Pilot -> Controller : insertWeatherData(flightPlanId, day, areaCode)
+activate Controller
+
+Controller -> Authz : ensureAuthenticatedUserHasAnyOf(FLIGHT_PLAN_WEATHER_DATA_INSERTION)
+Controller -> Controller : validate required input
+Controller -> Controller : parse day and create value objects
+
+Controller -> FlightPlanRepo : findByIdentifier(identifier)
+activate FlightPlanRepo
+FlightPlanRepo --> Controller : Optional<FlightPlan>
+deactivate FlightPlanRepo
+
+alt flight plan not found
+    Controller --> Pilot : IllegalArgumentException("Flight plan not found.")
+else flight plan found
+    Controller -> Authz : authenticatedUsername()
+    Authz --> Controller : username
+    Controller -> FlightPlan : pilotIdentifier()
+    FlightPlan --> Controller : PilotIdentifier
+
+    alt authenticated pilot does not own flight plan
+        Controller --> Pilot : IllegalArgumentException("Flight plan does not belong to authenticated pilot.")
+    else authenticated pilot owns flight plan
+        Controller -> WeatherRepo : findByDayAndAirControlArea(day, areaCode)
+        activate WeatherRepo
+        WeatherRepo --> Controller : Optional<WeatherData>
+        deactivate WeatherRepo
+
+        alt weather data not found
+            Controller --> Pilot : IllegalArgumentException("Weather data not found.")
+        else weather data found
+            Controller -> FlightPlan : addWeatherData(weatherData)
+            activate FlightPlan
+            FlightPlan -> FlightPlan : add WeatherDataId if new
+            opt previous status is TESTED and weather data is new
+                FlightPlan -> FlightPlan : testStatus = VOID
+            end
+            FlightPlan --> Controller : updated aggregate
+            deactivate FlightPlan
+
+            Controller -> FlightPlanRepo : save(flightPlan)
+            activate FlightPlanRepo
+            FlightPlanRepo --> Controller : updated FlightPlan
+            deactivate FlightPlanRepo
+            Controller --> Pilot : updated FlightPlan
+        end
+    end
+end
+
+deactivate Controller
+
+@enduml
