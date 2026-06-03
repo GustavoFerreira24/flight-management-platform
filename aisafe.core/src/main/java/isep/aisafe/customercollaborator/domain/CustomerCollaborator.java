@@ -2,12 +2,16 @@ package isep.aisafe.customercollaborator.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.validations.Preconditions;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 
 import java.io.Serializable;
@@ -16,7 +20,8 @@ import java.io.Serializable;
  * Represents a collaborator registered for a customer.
  *
  * <p>The collaborator is always associated with exactly one customer and one distinct
- * system user. The system username is currently the collaborator email.</p>
+ * system user. The customer can be either an air transport company or an air control area.
+ * The system username is currently the collaborator email.</p>
  */
 @Entity
 public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, Serializable {
@@ -40,8 +45,13 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
     @AttributeOverride(name = "value", column = @Column(name = "EMAIL", nullable = false, unique = true))
     private CollaboratorEmail email;
 
-    @Embedded
-    private CustomerReference customerReference;
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "AIR_TRANSPORT_COMPANY_IATA_CODE", referencedColumnName = "IATA_CODE")
+    private AirTransportCompany airTransportCompany;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "AIR_CONTROL_AREA_CODE", referencedColumnName = "AREA_CODE")
+    private AirControlArea airControlArea;
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "SYSTEM_USERNAME", nullable = false, unique = true))
@@ -59,26 +69,60 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
      * @param firstName collaborator first name
      * @param lastName collaborator last name
      * @param email collaborator email
-     * @param customerReference customer associated with the collaborator
+     * @param airTransportCompany air transport company associated with the collaborator
      * @param systemUsername username of the system user associated with the collaborator
      */
     public CustomerCollaborator(
             final String firstName,
             final String lastName,
             final CollaboratorEmail email,
-            final CustomerReference customerReference,
+            final AirTransportCompany airTransportCompany,
+            final SystemUsername systemUsername) {
+
+        this(firstName, lastName, email, airTransportCompany, null, systemUsername);
+    }
+
+    /**
+     * Creates a customer collaborator associated with an air control area.
+     *
+     * @param firstName collaborator first name
+     * @param lastName collaborator last name
+     * @param email collaborator email
+     * @param airControlArea air control area associated with the collaborator
+     * @param systemUsername username of the system user associated with the collaborator
+     */
+    public CustomerCollaborator(
+            final String firstName,
+            final String lastName,
+            final CollaboratorEmail email,
+            final AirControlArea airControlArea,
+            final SystemUsername systemUsername) {
+
+        this(firstName, lastName, email, null, airControlArea, systemUsername);
+    }
+
+    public CustomerCollaborator(
+            final String firstName,
+            final String lastName,
+            final CollaboratorEmail email,
+            final AirTransportCompany airTransportCompany,
+            final AirControlArea airControlArea,
             final SystemUsername systemUsername) {
 
         ensureNotBlank(firstName, "Collaborator first name is required.");
         ensureNotBlank(lastName, "Collaborator last name is required.");
         Preconditions.nonNull(email, "Collaborator email is required.");
-        Preconditions.nonNull(customerReference, "Customer collaborator must be associated with a customer.");
+        Preconditions.ensure(
+                (airTransportCompany != null) != (airControlArea != null),
+                "Customer collaborator must be associated with exactly one customer."
+        );
         Preconditions.nonNull(systemUsername, "Collaborator system username is required.");
 
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.email = email;
-        this.customerReference = customerReference;
+        this.airTransportCompany = airTransportCompany;
+        this.airControlArea = airControlArea;
         this.systemUsername = systemUsername;
         this.active = true;
     }
@@ -130,12 +174,29 @@ public class CustomerCollaborator implements AggregateRoot<CollaboratorEmail>, S
     }
 
     /**
-     * Returns customer associated with the collaborator
+     * Returns air transport company associated with the collaborator.
      *
-     * @return customer associated with the collaborator
+     * @return air transport company associated with the collaborator, or null if not applicable
      */
-    public CustomerReference customerReference() {
-        return customerReference;
+    public AirTransportCompany airTransportCompany() {
+        return airTransportCompany;
+    }
+
+    /**
+     * Returns air control area associated with the collaborator.
+     *
+     * @return air control area associated with the collaborator, or null if not applicable
+     */
+    public AirControlArea airControlArea() {
+        return airControlArea;
+    }
+
+    public boolean isAssociatedWithAirTransportCompany() {
+        return airTransportCompany != null;
+    }
+
+    public boolean isAssociatedWithAirControlArea() {
+        return airControlArea != null;
     }
 
     /**

@@ -1,6 +1,8 @@
 package isep.aisafe.customercollaborator.domain;
 
 import eapli.framework.infrastructure.repositories.impl.inmemory.InMemoryDomainRepository;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +26,28 @@ public class InMemoryCustomerCollaboratorRepository
     }
 
     @Override
-    public List<CustomerCollaborator> findByCustomerReference(final CustomerReference reference) {
+    public List<CustomerCollaborator> findByAirTransportCompany(final AirTransportCompany airTransportCompany) {
 
         List<CustomerCollaborator> result = new ArrayList<>();
 
         for (CustomerCollaborator collaborator : data().values()) {
 
-            if (collaborator.customerReference().equals(reference)) {
+            if (airTransportCompany.equals(collaborator.airTransportCompany())) {
+                result.add(collaborator);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<CustomerCollaborator> findByAirControlArea(final AirControlArea airControlArea) {
+
+        List<CustomerCollaborator> result = new ArrayList<>();
+
+        for (CustomerCollaborator collaborator : data().values()) {
+
+            if (airControlArea.equals(collaborator.airControlArea())) {
                 result.add(collaborator);
             }
         }

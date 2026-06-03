@@ -11,6 +11,11 @@ import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
 import isep.aisafe.aircraftmodel.domain.AircraftModelType;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.Country;
 import isep.aisafe.airtransportcompany.domain.IATACode;
@@ -18,7 +23,6 @@ import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.airtransportcompany.domain.InMemoryAirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.enginemodel.domain.EngineModel;
@@ -112,7 +116,7 @@ class DecommissionAircraftControllerTest {
 
         fixture.company = company("List Air", "Portugal", "QZ", "QZA");
         fixture.companyRepository.save(fixture.company);
-        fixture.collaboratorRepository.save(companyCollaborator(fixture.authz.username(), "QZ"));
+        fixture.collaboratorRepository.save(companyCollaborator(fixture.authz.username(), fixture.company));
 
         final Aircraft activeAircraft = aircraft("CS-LA1", fixture.company);
         final Aircraft pendingAircraft = aircraft("CS-LA2", fixture.company);
@@ -155,7 +159,7 @@ class DecommissionAircraftControllerTest {
                 "Area",
                 "Collaborator",
                 CollaboratorEmail.valueOf("area.collaborator@aisafe.com"),
-                CustomerReference.airControlArea("LISACC"),
+                area("LISACC"),
                 SystemUsername.valueOf("area.collaborator@aisafe.com")
         ));
 
@@ -163,19 +167,6 @@ class DecommissionAircraftControllerTest {
                 fixture.controller().decommissionAircraft("CS-Y71"));
 
         assertEquals("Authenticated collaborator is not associated with an air transport company.", result.getMessage());
-    }
-
-    @Test
-    void ensureAssociatedAirTransportCompanyMustExist() {
-        final Fixture fixture = new Fixture("missing.company@aisafe.com");
-
-        fixture.aircraftRepository.save(aircraft("CS-MCO", company("TAP Air Portugal", "Portugal", "TP", "TAP")));
-        fixture.collaboratorRepository.save(companyCollaborator("missing.company@aisafe.com", "ZZ"));
-
-        final IllegalStateException result = assertThrows(IllegalStateException.class, () ->
-                fixture.controller().decommissionAircraft("CS-MCO"));
-
-        assertEquals("Associated air transport company was not found.", result.getMessage());
     }
 
     @Test
@@ -237,13 +228,22 @@ class DecommissionAircraftControllerTest {
         ));
     }
 
-    private static CustomerCollaborator companyCollaborator(final String username, final String companyIataCode) {
+    private static CustomerCollaborator companyCollaborator(final String username, final AirTransportCompany company) {
         return new CustomerCollaborator(
                 "Test",
                 "Collaborator",
                 CollaboratorEmail.valueOf(username),
-                CustomerReference.airTransportCompany(companyIataCode),
+                company,
                 SystemUsername.valueOf(username)
+        );
+    }
+
+    private static AirControlArea area(final String code) {
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(code),
+                "Test Area " + code,
+                GeographicBoundary.valueOf(35.0, 45.0, -15.0, -5.0),
+                MinimumFuelRequirement.valueOf(1000, FuelUnit.valueOf("KG"))
         );
     }
 
@@ -333,7 +333,7 @@ class DecommissionAircraftControllerTest {
             company = company("TAP Air Portugal", "Portugal", "TP", "TAP");
 
             companyRepository.save(company);
-            collaboratorRepository.save(companyCollaborator(authz.username(), "TP"));
+            collaboratorRepository.save(companyCollaborator(authz.username(), company));
         }
 
         void bootstrapValidCompanyCollaboratorAndAircraft(final String registration) {

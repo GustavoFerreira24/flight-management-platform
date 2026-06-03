@@ -236,6 +236,26 @@ package "AirTransportCompany Aggregate" {
 
 }
 
+package "CustomerCollaborator Aggregate" {
+
+    class CustomerCollaborator <<Aggregate Root>> {
+        firstName
+        lastName
+        active
+    }
+
+    class CollaboratorEmail <<Value Object>> {
+        value
+    }
+
+    class SystemUsername <<Value Object>> {
+        value
+    }
+
+    CustomerCollaborator *-- CollaboratorEmail
+    CustomerCollaborator *-- SystemUsername
+}
+
 
 package "User Aggregate" {
 
@@ -512,6 +532,9 @@ AircraftVariant "*" --> "1" EngineModel
 
 
 Aircraft "*" --> "1" AirTransportCompany
+
+CustomerCollaborator "*" --> "0..1" AirTransportCompany
+CustomerCollaborator "*" --> "0..1" AirControlArea
 
 
 Pilot "*" --> "1" User

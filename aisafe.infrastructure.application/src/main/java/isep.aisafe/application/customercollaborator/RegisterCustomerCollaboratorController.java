@@ -5,12 +5,13 @@ import eapli.framework.infrastructure.authz.application.UserManagementService;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
@@ -92,14 +93,15 @@ public class RegisterCustomerCollaboratorController {
 
         final IATACode customerIataCode = IATACode.valueOf(iataCode);
 
-        airTransportCompanyRepository.findByIataCode(customerIataCode)
+        final AirTransportCompany airTransportCompany = airTransportCompanyRepository.findByIataCode(customerIataCode)
                 .orElseThrow(() -> new IllegalArgumentException("Air transport company customer not found."));
 
         return registerCollaborator(
                 firstName,
                 lastName,
                 email,
-                CustomerReference.airTransportCompany(customerIataCode.toString()),
+                airTransportCompany,
+                null,
                 initialPassword,
                 Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
         );
@@ -124,14 +126,15 @@ public class RegisterCustomerCollaboratorController {
 
         final AirControlAreaCode customerAreaCode = AirControlAreaCode.valueOf(areaCode);
 
-        airControlAreaRepository.findByCode(customerAreaCode)
+        final AirControlArea airControlArea = airControlAreaRepository.findByCode(customerAreaCode)
                 .orElseThrow(() -> new IllegalArgumentException("Air control area customer not found."));
 
         return registerCollaborator(
                 firstName,
                 lastName,
                 email,
-                CustomerReference.airControlArea(customerAreaCode.toString()),
+                null,
+                airControlArea,
                 initialPassword,
                 Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
@@ -141,7 +144,8 @@ public class RegisterCustomerCollaboratorController {
             final String firstName,
             final String lastName,
             final String email,
-            final CustomerReference customerReference,
+            final AirTransportCompany airTransportCompany,
+            final AirControlArea airControlArea,
             final String initialPassword,
             final Set<Role> systemUserRoles) {
 
@@ -164,7 +168,8 @@ public class RegisterCustomerCollaboratorController {
                 firstName,
                 lastName,
                 collaboratorEmail,
-                customerReference,
+                airTransportCompany,
+                airControlArea,
                 systemUsername
         );
 

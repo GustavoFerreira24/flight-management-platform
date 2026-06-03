@@ -3,6 +3,8 @@ package isep.aisafe.persistence.impl.jpa;
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.repositories.impl.jpa.JpaAutoTxRepository;
 import isep.aisafe.Application;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.customercollaborator.domain.*;
 import jakarta.persistence.TypedQuery;
 
@@ -43,17 +45,33 @@ class JpaCustomerCollaboratorRepository
     }
 
     @Override
-    public List<CustomerCollaborator> findByCustomerReference(
-            final CustomerReference reference) {
+    public List<CustomerCollaborator> findByAirTransportCompany(
+            final AirTransportCompany airTransportCompany) {
 
         TypedQuery<CustomerCollaborator> query =
                 entityManager().createQuery(
                         "SELECT c FROM CustomerCollaborator c " +
-                                "WHERE c.customerReference = :reference",
+                                "WHERE c.airTransportCompany = :airTransportCompany",
                         CustomerCollaborator.class
                 );
 
-        query.setParameter("reference", reference);
+        query.setParameter("airTransportCompany", airTransportCompany);
+
+        return query.getResultList();
+    }
+
+    @Override
+    public List<CustomerCollaborator> findByAirControlArea(
+            final AirControlArea airControlArea) {
+
+        TypedQuery<CustomerCollaborator> query =
+                entityManager().createQuery(
+                        "SELECT c FROM CustomerCollaborator c " +
+                                "WHERE c.airControlArea = :airControlArea",
+                        CustomerCollaborator.class
+                );
+
+        query.setParameter("airControlArea", airControlArea);
 
         return query.getResultList();
     }

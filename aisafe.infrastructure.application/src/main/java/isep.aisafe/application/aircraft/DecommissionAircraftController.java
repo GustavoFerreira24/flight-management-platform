@@ -5,11 +5,8 @@ import isep.aisafe.aircraft.domain.AircraftRegistration;
 import isep.aisafe.aircraft.domain.AircraftRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
-import isep.aisafe.airtransportcompany.domain.IATACode;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
-import isep.aisafe.customercollaborator.domain.CustomerType;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
@@ -133,18 +130,12 @@ public class DecommissionAircraftController {
                 .findBySystemUsername(systemUsername)
                 .orElseThrow(() -> new IllegalStateException("Authenticated user is not a customer collaborator."));
 
-        final CustomerReference customerReference = collaborator.customerReference();
-
-        if (customerReference.customerType() != CustomerType.AIR_TRANSPORT_COMPANY) {
+        if (!collaborator.isAssociatedWithAirTransportCompany()) {
             throw new IllegalStateException(
                     "Authenticated collaborator is not associated with an air transport company."
             );
         }
 
-        final IATACode companyIataCode = IATACode.valueOf(customerReference.customerIdentity());
-
-        return airTransportCompanyRepository
-                .findByIataCode(companyIataCode)
-                .orElseThrow(() -> new IllegalStateException("Associated air transport company was not found."));
+        return collaborator.airTransportCompany();
     }
 }

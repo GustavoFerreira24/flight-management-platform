@@ -22,39 +22,27 @@ class CustomerCollaborator <<Aggregate Root>> {
     - firstName : String
     - lastName : String
     - email : CollaboratorEmail
-    - customerReference : CustomerReference
+    - airTransportCompany : AirTransportCompany
+    - airControlArea : AirControlArea
     - systemUsername : SystemUsername
     - active : boolean
 
     + firstName() : String
     + lastName() : String
     + email() : CollaboratorEmail
-    + customerReference() : CustomerReference
+    + airTransportCompany() : AirTransportCompany
+    + airControlArea() : AirControlArea
     + systemUsername() : SystemUsername
     + isActive() : boolean
     + disable() : void
     + enable() : void
 }
 
-class CustomerReference <<Value Object>> {
-    - customerType : CustomerType
-    - customerIdentity : String
-
-    + airTransportCompany(iataCode : String) : CustomerReference
-    + airControlArea(areaCode : String) : CustomerReference
-    + customerType() : CustomerType
-    + customerIdentity() : String
-}
-
-enum CustomerType <<Enumeration>> {
-    AIR_TRANSPORT_COMPANY
-    AIR_CONTROL_AREA
-}
-
 interface CustomerCollaboratorRepository <<Repository>> {
     + findByEmail(email : CollaboratorEmail) : Optional<CustomerCollaborator>
     + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
-    + findByCustomerReference(customerReference : CustomerReference) : List<CustomerCollaborator>
+    + findByAirTransportCompany(company : AirTransportCompany) : List<CustomerCollaborator>
+    + findByAirControlArea(area : AirControlArea) : List<CustomerCollaborator>
 }
 
 interface AirTransportCompanyRepository <<Repository>> {
@@ -70,6 +58,9 @@ class AisafeAuthorizationService <<Service>> {
     + ensureAuthenticatedUserHasAnyOf(roles...) : void
 }
 
+class AirTransportCompany <<Aggregate Root>>
+class AirControlArea <<Aggregate Root>>
+
 ' ---------------- RELATIONSHIPS ----------------
 
 ListCustomerCollaboratorsUI --> ListCustomerCollaboratorsController
@@ -81,8 +72,8 @@ ListCustomerCollaboratorsController --> AirControlAreaRepository
 
 ListCustomerCollaboratorsController ..> CustomerCollaborator
 
-CustomerCollaborator *-- CustomerReference
-CustomerReference --> CustomerType
+CustomerCollaborator "*" --> "0..1" AirTransportCompany
+CustomerCollaborator "*" --> "0..1" AirControlArea
 
 CustomerCollaboratorRepository ..> CustomerCollaborator
 

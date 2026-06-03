@@ -1,5 +1,14 @@
 package isep.aisafe.customercollaborator.domain;
 
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
+import isep.aisafe.airtransportcompany.domain.Country;
+import isep.aisafe.airtransportcompany.domain.IATACode;
+import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -22,7 +31,7 @@ class InMemoryCustomerCollaboratorRepositoryTest {
                 "Customer",
                 "Collaborator",
                 email,
-                CustomerReference.airTransportCompany("TP"),
+                airTransportCompany("TP", "TAP"),
                 SystemUsername.valueOf("collaborator@aisafe.com")
         );
 
@@ -48,7 +57,7 @@ class InMemoryCustomerCollaboratorRepositoryTest {
                 "Customer",
                 "Collaborator",
                 CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                CustomerReference.airTransportCompany("TP"),
+                airTransportCompany("TP", "TAP"),
                 systemUsername
         );
 
@@ -60,23 +69,20 @@ class InMemoryCustomerCollaboratorRepositoryTest {
     }
 
     @Test
-    void ensureFindByCustomerReferenceOnlyReturnsMatchingReference() {
+    void ensureFindByAirTransportCompanyOnlyReturnsMatchingCompany() {
 
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
 
-        final CustomerReference tpRef =
-                CustomerReference.airTransportCompany("TP");
-
-        final CustomerReference frRef =
-                CustomerReference.airTransportCompany("FR");
+        final AirTransportCompany tpCompany = airTransportCompany("TP", "TAP");
+        final AirTransportCompany frCompany = airTransportCompany("FR", "RYR");
 
         final CustomerCollaborator tpCollaborator =
                 new CustomerCollaborator(
                         "John",
                         "Doe",
                         CollaboratorEmail.valueOf("john@tp.com"),
-                        tpRef,
+                        tpCompany,
                         SystemUsername.valueOf("john@tp.com")
                 );
 
@@ -85,7 +91,7 @@ class InMemoryCustomerCollaboratorRepositoryTest {
                         "Jane",
                         "Doe",
                         CollaboratorEmail.valueOf("jane@fr.com"),
-                        frRef,
+                        frCompany,
                         SystemUsername.valueOf("jane@fr.com")
                 );
 
@@ -93,38 +99,38 @@ class InMemoryCustomerCollaboratorRepositoryTest {
         repository.save(frCollaborator);
 
         final List<CustomerCollaborator> result =
-                repository.findByCustomerReference(tpRef);
+                repository.findByAirTransportCompany(tpCompany);
 
         assertEquals(1, result.size());
         assertTrue(result.contains(tpCollaborator));
     }
 
     @Test
-    void ensureFindByCustomerReferenceReturnsEmptyWhenRepositoryIsEmpty() {
+    void ensureFindByAirTransportCompanyReturnsEmptyWhenRepositoryIsEmpty() {
 
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
 
         final List<CustomerCollaborator> result =
-                repository.findByCustomerReference(
-                        CustomerReference.airTransportCompany("TP")
-                );
+                repository.findByAirTransportCompany(airTransportCompany("TP", "TAP"));
 
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void ensureCustomerReferenceTypesAreNotMixed() {
+    void ensureCustomerAssociationsAreNotMixed() {
 
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
+
+        final AirTransportCompany tpCompany = airTransportCompany("TP", "TAP");
 
         final CustomerCollaborator transportCollaborator =
                 new CustomerCollaborator(
                         "John",
                         "Doe",
                         CollaboratorEmail.valueOf("john@tp.com"),
-                        CustomerReference.airTransportCompany("TP"),
+                        tpCompany,
                         SystemUsername.valueOf("john@tp.com")
                 );
 
@@ -133,7 +139,7 @@ class InMemoryCustomerCollaboratorRepositoryTest {
                         "Jane",
                         "Doe",
                         CollaboratorEmail.valueOf("jane@tp.com"),
-                        CustomerReference.airControlArea("LISACC"),
+                        airControlArea("LISACC"),
                         SystemUsername.valueOf("jane@tp.com")
                 );
 
@@ -141,12 +147,67 @@ class InMemoryCustomerCollaboratorRepositoryTest {
         repository.save(controlAreaCollaborator);
 
         final List<CustomerCollaborator> result =
-                repository.findByCustomerReference(
-                        CustomerReference.airTransportCompany("TP")
-                );
+                repository.findByAirTransportCompany(tpCompany);
 
         assertEquals(1, result.size());
         assertTrue(result.contains(transportCollaborator));
         assertFalse(result.contains(controlAreaCollaborator));
+    }
+
+    @Test
+    void ensureFindByAirControlAreaOnlyReturnsMatchingArea() {
+
+        final InMemoryCustomerCollaboratorRepository repository =
+                new InMemoryCustomerCollaboratorRepository();
+
+        final AirControlArea lisacc = airControlArea("LISACC");
+        final AirControlArea lppo = airControlArea("LPPO");
+
+        final CustomerCollaborator lisaccCollaborator =
+                new CustomerCollaborator(
+                        "John",
+                        "Doe",
+                        CollaboratorEmail.valueOf("john@lisacc.com"),
+                        lisacc,
+                        SystemUsername.valueOf("john@lisacc.com")
+                );
+
+        final CustomerCollaborator lppoCollaborator =
+                new CustomerCollaborator(
+                        "Jane",
+                        "Doe",
+                        CollaboratorEmail.valueOf("jane@lppo.com"),
+                        lppo,
+                        SystemUsername.valueOf("jane@lppo.com")
+                );
+
+        repository.save(lisaccCollaborator);
+        repository.save(lppoCollaborator);
+
+        final List<CustomerCollaborator> result =
+                repository.findByAirControlArea(lisacc);
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains(lisaccCollaborator));
+    }
+
+    private AirTransportCompany airTransportCompany(final String iataCode, final String icaoCode) {
+
+        return new AirTransportCompany(
+                "Test Company " + iataCode,
+                Country.valueOf("Portugal"),
+                IATACode.valueOf(iataCode),
+                ICAOCode.valueOf(icaoCode)
+        );
+    }
+
+    private AirControlArea airControlArea(final String code) {
+
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(code),
+                "Test Area " + code,
+                GeographicBoundary.valueOf(35.0, 45.0, -15.0, -5.0),
+                MinimumFuelRequirement.valueOf(1000, FuelUnit.valueOf("KG"))
+        );
     }
 }

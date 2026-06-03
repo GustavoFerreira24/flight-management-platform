@@ -37,12 +37,7 @@ This requirement depends on existing customer aggregates: `AirTransportCompany` 
 
 The collaborator belongs to the customer collaboration domain and is represented by the `CustomerCollaborator` aggregate root. The aggregate identity is the collaborator email.
 
-The collaborator must refer to different types of customers. Instead of coupling the aggregate directly to multiple customer aggregate classes, the implementation uses `CustomerReference`, an embedded value object composed of:
-
-- `CustomerType`, identifying the type of customer.
-- `customerIdentity`, storing the customer business identity.
-
-For air transport companies, the customer identity is the company IATA code. For air control areas, the customer identity is the air control area code.
+The collaborator is associated directly with exactly one existing customer aggregate: either an `AirTransportCompany` or an `AirControlArea`. The aggregate keeps both optional associations and enforces that exactly one of them is present.
 
 The `CustomerCollaborator` aggregate also manages the collaborator's active status through an `active` boolean field. This supports US064 (disable collaborator) and US062 (list active collaborators) without requiring separate aggregates.
 
@@ -50,7 +45,7 @@ Important invariants are enforced in the domain and application layers:
 
 - First name and last name are mandatory and must contain only letters, spaces, hyphens or apostrophes.
 - Collaborator email is mandatory, valid, normalized and unique.
-- Each collaborator must have exactly one customer reference.
+- Each collaborator must be associated with exactly one customer aggregate.
 - Each collaborator must have one system username.
 - The referenced customer must already exist.
 - The system username is the normalized (lowercase) collaborator email.
@@ -62,7 +57,7 @@ Important invariants are enforced in the domain and application layers:
 
 ![US61 class diagram](class-diagram-61.svg "US61 Class Diagram")
 
-The `RegisterCustomerCollaboratorController` exposes separate methods for air transport company collaborators and air control area collaborators. Each method validates the customer identifier, checks that the customer exists, builds a `CustomerReference`, and delegates to the common registration flow.
+The `RegisterCustomerCollaboratorController` exposes separate methods for air transport company collaborators and air control area collaborators. Each method validates the customer identifier, checks that the customer exists, obtains the corresponding aggregate, and delegates to the common registration flow.
 
 The common registration flow checks backoffice configuration permission, validates collaborator data, enforces email uniqueness, persists the `CustomerCollaborator`, and creates a matching framework system user with the role required by the customer type.
 
@@ -104,7 +99,7 @@ Implemented in `RegisterCustomerCollaboratorControllerTest.ensureInvalidCollabor
 
 **Refers to Acceptance Criteria:** AC2, AC4
 
-Implemented in `CustomerCollaboratorTest`, `CollaboratorEmailTest`, `CustomerReferenceTest` and `SystemUsernameTest`.
+Implemented in `CustomerCollaboratorTest`, `CollaboratorEmailTest` and `SystemUsernameTest`.
 
 **Test 7:** Customer collaborator bootstrap helper creates missing collaborators and avoids duplicate creation.
 
@@ -119,9 +114,7 @@ Main implementation artifacts:
 - `CustomerCollaborator`: aggregate root representing a collaborator associated with one customer. Includes `active` flag with `disable()`, `enable()` and `isActive()` methods to support collaborator lifecycle management (US062, US064).
 - `CollaboratorEmail`: value object for collaborator identity and email normalization (lowercased).
 - `SystemUsername`: value object for the linked system username (lowercased).
-- `CustomerReference`: value object identifying the associated customer by type and identity string.
-- `CustomerType`: enum for supported customer types (`AIR_TRANSPORT_COMPANY`, `AIR_CONTROL_AREA`).
-- `CustomerCollaboratorRepository`: repository abstraction with three lookups: by email, by system username, and by customer reference.
+- `CustomerCollaboratorRepository`: repository abstraction with lookups by email, by system username, by air transport company, and by air control area.
 - `InMemoryCustomerCollaboratorRepository`: in-memory repository implementation.
 - `JpaCustomerCollaboratorRepository`: JPA repository implementation.
 - `RegisterCustomerCollaboratorController`: application controller for registering collaborators.
@@ -172,4 +165,4 @@ A `WEATHER_PERSON` user (`ipma@aisafe.com`) is also created during bootstrap dir
 
 **Weather Person and air control areas:** The `registerCollaboratorForAirControlArea` controller method currently assigns the `FLIGHT_CONTROL_OPERATOR` role. A `WEATHER_PERSON` collaborator associated with an air control area (required for US041) is created during bootstrap directly via the framework user service, not through the collaborator controller. If the UI needs to support interactive registration of Weather Person collaborators in the future, the controller and UI should be extended with a dedicated method or a role-selection step for air control area collaborators.
 
-**Repository findByCustomerReference:** The `CustomerCollaboratorRepository` exposes a `findByCustomerReference()` method in addition to `findByEmail()` and `findBySystemUsername()`. This method supports listing collaborators by customer (US062) and is used internally by the bootstrap idempotency checks.
+**Repository customer lookup:** The `CustomerCollaboratorRepository` exposes `findByAirTransportCompany()` and `findByAirControlArea()` in addition to `findByEmail()` and `findBySystemUsername()`. These methods support listing collaborators by customer (US062) and customer-scoped lifecycle operations.

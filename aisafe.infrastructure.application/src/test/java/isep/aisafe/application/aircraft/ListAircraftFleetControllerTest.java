@@ -18,7 +18,6 @@ import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.airtransportcompany.domain.InMemoryAirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.enginemodel.domain.EngineModel;
@@ -213,7 +212,7 @@ class ListAircraftFleetControllerTest {
                 "Test",
                 "Collaborator",
                 CollaboratorEmail.valueOf(username),
-                CustomerReference.airTransportCompany(companyIataCode),
+                company("Test Company " + companyIataCode, "Portugal", companyIataCode, "TST"),
                 SystemUsername.valueOf(username)
         );
     }

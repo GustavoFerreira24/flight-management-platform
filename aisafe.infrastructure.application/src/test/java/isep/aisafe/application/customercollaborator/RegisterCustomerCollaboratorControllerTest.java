@@ -16,8 +16,6 @@ import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.airtransportcompany.domain.InMemoryAirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
-import isep.aisafe.customercollaborator.domain.CustomerType;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.support.CapturingAuthorizationService;
@@ -85,8 +83,8 @@ class RegisterCustomerCollaboratorControllerTest {
         assertEquals("Collaborator", collaborator.lastName());
         assertEquals("registered.company.collaborator@aisafe.com", collaborator.email().toString());
         assertEquals("registered.company.collaborator@aisafe.com", collaborator.systemUsername().toString());
-        assertEquals(CustomerType.AIR_TRANSPORT_COMPANY, collaborator.customerReference().customerType());
-        assertEquals("TP", collaborator.customerReference().customerIdentity());
+        assertEquals(IATACode.valueOf("TP"), collaborator.airTransportCompany().iataCode());
+        assertNull(collaborator.airControlArea());
         assertEquals("registered.company.collaborator@aisafe.com", userService.username);
         assertEquals("Password1", userService.password);
         assertEquals(Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR), userService.roles);
@@ -125,7 +123,8 @@ class RegisterCustomerCollaboratorControllerTest {
         );
 
         // Assert
-        assertEquals(CustomerReference.airControlArea("LISACC"), collaborator.customerReference());
+        assertEquals(AirControlAreaCode.valueOf("LISACC"), collaborator.airControlArea().code());
+        assertNull(collaborator.airTransportCompany());
         assertEquals(Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR), userService.roles);
         assertTrue(repository.findByEmail(
                 CollaboratorEmail.valueOf("registered.area.collaborator@aisafe.com")

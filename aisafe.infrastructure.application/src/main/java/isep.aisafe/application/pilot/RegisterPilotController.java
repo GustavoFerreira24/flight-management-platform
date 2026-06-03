@@ -1,16 +1,13 @@
 package isep.aisafe.application.pilot;
 
 import isep.aisafe.airtransportcompany.domain.IATACode;
-import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
-import isep.aisafe.customercollaborator.domain.CustomerType;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.infrastructure.authz.*;
 import isep.aisafe.infrastructure.persistence.*;
 import isep.aisafe.pilot.domain.*;
 import isep.aisafe.pilot.domain.PilotRepository;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
-import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 
 import java.time.format.DateTimeFormatter;
 
@@ -81,11 +78,11 @@ public class RegisterPilotController {
         CustomerCollaborator collaborator = collaboratorRepo.findBySystemUsername(username)
                 .orElseThrow(() -> new IllegalStateException("Authenticated user is not a customer collaborator."));
 
-        if (collaborator.customerReference().customerType() != CustomerType.AIR_TRANSPORT_COMPANY) {
+        if (!collaborator.isAssociatedWithAirTransportCompany()) {
             throw new IllegalStateException("Authenticated user is not associated with an air transport company.");
         }
 
-        IATACode companyIATACode = IATACode.valueOf(collaborator.customerReference().customerIdentity());
+        IATACode companyIATACode = collaborator.airTransportCompany().iataCode();
 
         Pilot pilot = new Pilot(pilotID, certification, pilotStatus, companyIATACode);
 

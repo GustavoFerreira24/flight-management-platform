@@ -21,32 +21,22 @@ class CustomerCollaborator <<Aggregate Root>> {
     - firstName : String
     - lastName : String
     - email : CollaboratorEmail
-    - customerReference : CustomerReference
+    - airTransportCompany : AirTransportCompany
+    - airControlArea : AirControlArea
     - systemUsername : SystemUsername
     - active : boolean
     + identity() : CollaboratorEmail
     + firstName() : String
     + lastName() : String
     + email() : CollaboratorEmail
-    + customerReference() : CustomerReference
+    + airTransportCompany() : AirTransportCompany
+    + airControlArea() : AirControlArea
+    + isAssociatedWithAirTransportCompany() : boolean
+    + isAssociatedWithAirControlArea() : boolean
     + systemUsername() : SystemUsername
     + isActive() : boolean
     + disable() : void
     + enable() : void
-}
-
-class CustomerReference <<Value Object>> {
-    - customerType : CustomerType
-    - customerIdentity : String
-    + {static} airTransportCompany(iataCode : String) : CustomerReference
-    + {static} airControlArea(areaCode : String) : CustomerReference
-    + customerType() : CustomerType
-    + customerIdentity() : String
-}
-
-enum CustomerType {
-    AIR_TRANSPORT_COMPANY
-    AIR_CONTROL_AREA
 }
 
 class CollaboratorEmail <<Value Object>> {
@@ -80,7 +70,8 @@ class AisafePermissions <<Permissions>> {
 interface CustomerCollaboratorRepository {
     + findByEmail(email : CollaboratorEmail) : Optional<CustomerCollaborator>
     + findBySystemUsername(username : SystemUsername) : Optional<CustomerCollaborator>
-    + findByCustomerReference(ref : CustomerReference) : List<CustomerCollaborator>
+    + findByAirTransportCompany(company : AirTransportCompany) : List<CustomerCollaborator>
+    + findByAirControlArea(area : AirControlArea) : List<CustomerCollaborator>
 }
 
 interface AirTransportCompanyRepository
@@ -97,7 +88,7 @@ note bottom of RegisterCustomerCollaboratorController
 end note
 
 note bottom of CustomerCollaboratorRepository
-  findByCustomerReference() supports
+  Customer-based lookup supports
   US062 (list collaborators) and
   US064 (disable collaborator).
 end note
@@ -113,9 +104,9 @@ RegisterCustomerCollaboratorController --> AisafeRoles
 RegisterCustomerCollaboratorController --> AisafePermissions
 
 CustomerCollaborator *-- CollaboratorEmail
-CustomerCollaborator *-- CustomerReference
 CustomerCollaborator *-- SystemUsername
-CustomerReference *-- CustomerType
+CustomerCollaborator "*" --> "0..1" AirTransportCompany
+CustomerCollaborator "*" --> "0..1" AirControlArea
 AirTransportCompanyRepository --> AirTransportCompany
 AirControlAreaRepository --> AirControlArea
 

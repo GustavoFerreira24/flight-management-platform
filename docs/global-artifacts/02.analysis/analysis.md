@@ -37,6 +37,11 @@ Identified by unique IATA (2 letters) and ICAO (2–3 letters) codes.
 Manages aircraft, flight routes, collaborators, and pilots.  
 Owns and is responsible for flight routes — a route's name includes the company's initials (e.g. TP123), confirming ownership (US060, US073, forum Q&A).
 
+### <span style="color:#70AD47">Customer Collaborator</span>
+Identified by a unique collaborator email.  
+Represents a person registered to act on behalf of exactly one customer: either an Air Transport Company or an Air Control Area (US061).  
+Has an active/inactive lifecycle used by customer collaborator management stories.
+
 ### <span style="color:#70AD47">Aircraft</span>
 Identified by a unique registration number, globally unique.  
 Has an operational status (active/decommissioned) and cabin configuration.  
@@ -135,6 +140,12 @@ Value Objects represent descriptive concepts. They:
 Defined by latitude and longitude.  
 Used to represent airport locations, segment endpoints, and weather measurement locations.  
 Reused across multiple domain concepts.
+
+### <span style="color:#70AD47">CollaboratorEmail</span>
+Represents the normalized email used as the identity of a Customer Collaborator.
+
+### <span style="color:#70AD47">SystemUsername</span>
+Represents the normalized username of the system user linked to a Customer Collaborator.
 
 ### <span style="color:#70AD47">IATACode</span>
 Three-letter airport or company identifier with strict format constraints.  

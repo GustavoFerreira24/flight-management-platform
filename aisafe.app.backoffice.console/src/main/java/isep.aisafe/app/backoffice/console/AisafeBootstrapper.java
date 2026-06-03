@@ -32,7 +32,6 @@ import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.enginemodel.domain.EngineModel;
 import isep.aisafe.enginemodel.domain.EngineModelDesignator;
@@ -349,6 +348,10 @@ public class AisafeBootstrapper {
     private static void bootstrapCustomerCollaborators(final UserManagementService userService) {
         final CustomerCollaboratorRepository collaboratorRepository =
                 PersistenceContext.repositories().customerCollaborators();
+        final AirTransportCompanyRepository airTransportCompanyRepository =
+                PersistenceContext.repositories().airTransportCompanies();
+        final AirControlAreaRepository airControlAreaRepository =
+                PersistenceContext.repositories().airControlAreas();
 
         registerCustomerCollaboratorIfMissing(
                 userService,
@@ -357,7 +360,8 @@ public class AisafeBootstrapper {
                 "Collaborator",
                 "tap.collaborator@aisafe.com",
                 "Password1",
-                CustomerReference.airTransportCompany("TP"),
+                airTransportCompanyByIata(airTransportCompanyRepository, "TP"),
+                null,
                 Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
         );
 
@@ -368,7 +372,8 @@ public class AisafeBootstrapper {
                 "Controller",
                 "lisacc.collaborator@aisafe.com",
                 "Password1",
-                CustomerReference.airControlArea("LISACC"),
+                null,
+                airControlAreaByCode(airControlAreaRepository, "LISACC"),
                 Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
 
@@ -379,7 +384,8 @@ public class AisafeBootstrapper {
                 "Collaborator",
                 "ryanair.collaborator@aisafe.com",
                 "Password1",
-                CustomerReference.airTransportCompany("FR"),
+                airTransportCompanyByIata(airTransportCompanyRepository, "FR"),
+                null,
                 Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
         );
 
@@ -390,9 +396,26 @@ public class AisafeBootstrapper {
                 "Collaborator",
                 "aireuropa.collaborator@aisafe.com",
                 "Password1",
-                CustomerReference.airTransportCompany("UX"),
+                airTransportCompanyByIata(airTransportCompanyRepository, "UX"),
+                null,
                 Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
         );
+    }
+
+    private static AirTransportCompany airTransportCompanyByIata(
+            final AirTransportCompanyRepository repository,
+            final String iataCode) {
+
+        return repository.findByIataCode(IATACode.valueOf(iataCode))
+                .orElseThrow(() -> new IllegalStateException("Bootstrapped air transport company not found: " + iataCode));
+    }
+
+    private static AirControlArea airControlAreaByCode(
+            final AirControlAreaRepository repository,
+            final String areaCode) {
+
+        return repository.findByCode(AirControlAreaCode.valueOf(areaCode))
+                .orElseThrow(() -> new IllegalStateException("Bootstrapped air control area not found: " + areaCode));
     }
 
     /**
@@ -404,7 +427,8 @@ public class AisafeBootstrapper {
      * @param lastName collaborator last name
      * @param email collaborator email and system username
      * @param password initial system-user password
-     * @param customerReference existing customer associated with the collaborator
+     * @param airTransportCompany existing air transport company associated with the collaborator
+     * @param airControlArea existing air control area associated with the collaborator
      * @param roles system-user roles
      * @return existing or newly created customer collaborator
      */
@@ -415,7 +439,8 @@ public class AisafeBootstrapper {
             final String lastName,
             final String email,
             final String password,
-            final CustomerReference customerReference,
+            final AirTransportCompany airTransportCompany,
+            final AirControlArea airControlArea,
             final Set<Role> roles) {
 
         final CollaboratorEmail collaboratorEmail = CollaboratorEmail.valueOf(email);
@@ -429,7 +454,8 @@ public class AisafeBootstrapper {
                 firstName,
                 lastName,
                 collaboratorEmail,
-                customerReference,
+                airTransportCompany,
+                airControlArea,
                 systemUsername
         );
 

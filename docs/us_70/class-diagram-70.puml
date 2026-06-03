@@ -97,18 +97,10 @@ class EngineModel <<Aggregate Root>> {
 
 class CustomerCollaborator <<Aggregate Root>> {
     - email : CollaboratorEmail
-    - customerReference : CustomerReference
+    - airTransportCompany : AirTransportCompany
     - systemUsername : SystemUsername
     + identity() : CollaboratorEmail
-    + customerReference() : CustomerReference
-}
-
-class CustomerReference <<Value Object>> {
-    - customerType : CustomerType
-    - customerIdentity : String
-    + airTransportCompany(customerIdentity : String) : CustomerReference
-    + customerType() : CustomerType
-    + customerIdentity() : String
+    + airTransportCompany() : AirTransportCompany
 }
 
 class IATACode <<Value Object>>
@@ -118,7 +110,6 @@ class EngineModelDesignator <<Value Object>>
 class AircraftVariant <<Entity>>
 class CollaboratorEmail <<Value Object>>
 class SystemUsername <<Value Object>>
-enum CustomerType
 
 interface AircraftRepository <<Repository>> {
     + findByRegistration(registration : AircraftRegistration) : Optional<Aircraft>
@@ -167,9 +158,8 @@ AircraftModel *-- AircraftModelDesignator
 AircraftModel *-- "1..*" AircraftVariant
 EngineModel *-- EngineModelDesignator
 CustomerCollaborator *-- CollaboratorEmail
-CustomerCollaborator *-- CustomerReference
 CustomerCollaborator *-- SystemUsername
-CustomerReference *-- CustomerType
+CustomerCollaborator "*" --> "0..1" AirTransportCompany
 
 AircraftRepository ..> Aircraft
 AircraftModelRepository ..> AircraftModel

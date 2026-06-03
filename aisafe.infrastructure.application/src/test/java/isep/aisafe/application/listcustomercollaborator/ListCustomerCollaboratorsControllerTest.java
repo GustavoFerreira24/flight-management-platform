@@ -29,16 +29,10 @@ class ListCustomerCollaboratorsControllerTest {
         fixture.bootstrapAirTransportCompany("TP");
 
         final CustomerCollaborator active =
-                fixture.registerCollaborator(
-                        "john@test.com",
-                        CustomerReference.airTransportCompany("TP")
-                );
+                fixture.registerCompanyCollaborator("john@test.com", "TP");
 
         final CustomerCollaborator inactive =
-                fixture.registerCollaborator(
-                        "inactive@test.com",
-                        CustomerReference.airTransportCompany("TP")
-                );
+                fixture.registerCompanyCollaborator("inactive@test.com", "TP");
 
         inactive.disable();
 
@@ -73,16 +67,10 @@ class ListCustomerCollaboratorsControllerTest {
         fixture.bootstrapAirControlArea("LISACC");
 
         final CustomerCollaborator active =
-                fixture.registerCollaborator(
-                        "controller@test.com",
-                        CustomerReference.airControlArea("LISACC")
-                );
+                fixture.registerAreaCollaborator("controller@test.com", "LISACC");
 
         final CustomerCollaborator inactive =
-                fixture.registerCollaborator(
-                        "active.controller@test.com",
-                        CustomerReference.airControlArea("LISACC")
-                );
+                fixture.registerAreaCollaborator("active.controller@test.com", "LISACC");
 
         inactive.disable();
 
@@ -161,16 +149,34 @@ class ListCustomerCollaboratorsControllerTest {
             areaRepository.save(area);
         }
 
-        CustomerCollaborator registerCollaborator(
+        CustomerCollaborator registerCompanyCollaborator(
                 final String email,
-                final CustomerReference reference) {
+                final String iata) {
 
             final CustomerCollaborator collaborator =
                     new CustomerCollaborator(
                             "John",
                             "Doe",
                             CollaboratorEmail.valueOf(email),
-                            reference,
+                            companyRepository.ofIdentity(IATACode.valueOf(iata)).orElseThrow(),
+                            SystemUsername.valueOf(email)
+                    );
+
+            collaboratorRepository.save(collaborator);
+
+            return collaborator;
+        }
+
+        CustomerCollaborator registerAreaCollaborator(
+                final String email,
+                final String areaCode) {
+
+            final CustomerCollaborator collaborator =
+                    new CustomerCollaborator(
+                            "John",
+                            "Doe",
+                            CollaboratorEmail.valueOf(email),
+                            areaRepository.ofIdentity(AirControlAreaCode.valueOf(areaCode)).orElseThrow(),
                             SystemUsername.valueOf(email)
                     );
 

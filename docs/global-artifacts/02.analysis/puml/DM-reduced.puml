@@ -62,6 +62,10 @@ package "AirTransportCompany Aggregate" {
     class AirTransportCompany <<Aggregate Root>>
 }
 
+package "CustomerCollaborator Aggregate" {
+    class CustomerCollaborator <<Aggregate Root>>
+}
+
 package "User Aggregate" {
     class User <<Aggregate Root>>
 }
@@ -125,6 +129,9 @@ FlightExecution "*" --> "1" FlightPlan
 AircraftVariant "*" --> "1" EngineModel
 Aircraft "*" --> "1" AirTransportCompany
 Aircraft "*" --> "1" AircraftModel
+
+CustomerCollaborator "*" --> "0..1" AirTransportCompany
+CustomerCollaborator "*" --> "0..1" AirControlArea
 
 Pilot "*" --> "1" User
 Pilot "*" --> "1" AirTransportCompany

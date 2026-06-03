@@ -1,5 +1,7 @@
 package isep.aisafe.application.pilot;
 
+import isep.aisafe.aircontrolarea.domain.*;
+import isep.aisafe.airtransportcompany.domain.*;
 import isep.aisafe.customercollaborator.domain.*;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.pilot.domain.*;
@@ -35,7 +37,7 @@ class RegisterPilotControllerTest {
         mockCollaboratorRepo.save(new CustomerCollaborator(
                 "Test", "User",
                 CollaboratorEmail.valueOf("test@test.com"),
-                CustomerReference.airTransportCompany("TP"),
+                airTransportCompany("TP", "TAP"),
                 SystemUsername.valueOf("test@test.com")
         ));
 
@@ -142,7 +144,7 @@ class RegisterPilotControllerTest {
         areaRepo.save(new CustomerCollaborator(
                 "Area", "User",
                 CollaboratorEmail.valueOf("area@test.com"),
-                CustomerReference.airControlArea("LPPO"),
+                airControlArea("LPPO"),
                 SystemUsername.valueOf("area@test.com")
         ));
 
@@ -204,5 +206,25 @@ class RegisterPilotControllerTest {
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
                 () -> new RegisterPilotController(mockAuthz, repository, null));
+    }
+
+    private AirTransportCompany airTransportCompany(final String iataCode, final String icaoCode) {
+
+        return new AirTransportCompany(
+                "Test Company " + iataCode,
+                Country.valueOf("Portugal"),
+                IATACode.valueOf(iataCode),
+                ICAOCode.valueOf(icaoCode)
+        );
+    }
+
+    private AirControlArea airControlArea(final String code) {
+
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(code),
+                "Test Area " + code,
+                GeographicBoundary.valueOf(35.0, 45.0, -15.0, -5.0),
+                MinimumFuelRequirement.valueOf(1000, FuelUnit.valueOf("KG"))
+        );
     }
 }

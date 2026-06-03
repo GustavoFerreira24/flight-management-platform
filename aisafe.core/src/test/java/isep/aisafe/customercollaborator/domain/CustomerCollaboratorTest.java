@@ -1,5 +1,14 @@
 package isep.aisafe.customercollaborator.domain;
 
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
+import isep.aisafe.airtransportcompany.domain.Country;
+import isep.aisafe.airtransportcompany.domain.IATACode;
+import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,21 +17,21 @@ class CustomerCollaboratorTest {
 
     /**
      * Purpose: verify successful collaborator creation.
-     * Scenario: provide valid first name, last name, email and customer reference.
+     * Scenario: provide valid first name, last name, email and customer association.
      * Expected output: the collaborator stores all values and uses email as identity.
      */
     @Test
     void ensureValidCollaboratorIsCreated() {
         // Arrange
         final CollaboratorEmail email = CollaboratorEmail.valueOf("collaborator@aisafe.com");
-        final CustomerReference customerReference = CustomerReference.airTransportCompany("TP");
+        final AirTransportCompany airTransportCompany = airTransportCompany("TP", "TAP");
 
         // Act
         final CustomerCollaborator collaborator = new CustomerCollaborator(
                 "Customer",
                 "Collaborator",
                 email,
-                customerReference,
+                airTransportCompany,
                 SystemUsername.valueOf("registered.company.collaborator@aisafe.com")
         );
 
@@ -30,7 +39,8 @@ class CustomerCollaboratorTest {
         assertEquals("Customer", collaborator.firstName());
         assertEquals("Collaborator", collaborator.lastName());
         assertEquals(email, collaborator.email());
-        assertEquals(customerReference, collaborator.customerReference());
+        assertEquals(airTransportCompany, collaborator.airTransportCompany());
+        assertNull(collaborator.airControlArea());
         assertEquals(email, collaborator.identity());
     }
 
@@ -47,7 +57,7 @@ class CustomerCollaboratorTest {
                         " ",
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                        CustomerReference.airTransportCompany("TP"),
+                        airTransportCompany("TP", "TAP"),
                         SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
@@ -66,7 +76,7 @@ class CustomerCollaboratorTest {
                         "Customer",
                         " ",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                        CustomerReference.airTransportCompany("TP"),
+                        airTransportCompany("TP", "TAP"),
                         SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
@@ -85,7 +95,7 @@ class CustomerCollaboratorTest {
                         "Customer",
                         "Collaborator",
                         null,
-                        CustomerReference.airTransportCompany("TP"),
+                        airTransportCompany("TP", "TAP"),
                         SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
@@ -93,11 +103,11 @@ class CustomerCollaboratorTest {
 
     /**
      * Purpose: verify that customer association is mandatory.
-     * Scenario: create a collaborator without a customer reference.
+     * Scenario: create a collaborator without a customer association.
      * Expected output: an IllegalArgumentException is thrown.
      */
     @Test
-    void ensureNullCustomerReferenceIsRejected() {
+    void ensureNullCustomerAssociationIsRejected() {
         // Arrange / Act / Assert
         assertThrows(IllegalArgumentException.class, () ->
                 new CustomerCollaborator(
@@ -105,6 +115,22 @@ class CustomerCollaboratorTest {
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
                         null,
+                        null,
+                        SystemUsername.valueOf("collaborator@aisafe.com")
+                )
+        );
+    }
+
+    @Test
+    void ensureMultipleCustomerAssociationsAreRejected() {
+        // Arrange / Act / Assert
+        assertThrows(IllegalArgumentException.class, () ->
+                new CustomerCollaborator(
+                        "Customer",
+                        "Collaborator",
+                        CollaboratorEmail.valueOf("collaborator@aisafe.com"),
+                        airTransportCompany("TP", "TAP"),
+                        airControlArea("LISACC"),
                         SystemUsername.valueOf("collaborator@aisafe.com")
                 )
         );
@@ -123,7 +149,7 @@ class CustomerCollaboratorTest {
                         "Customer",
                         "Collaborator",
                         CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                        CustomerReference.airTransportCompany("TP"),
+                        airTransportCompany("TP", "TAP"),
                         null
                 )
         );
@@ -141,21 +167,21 @@ class CustomerCollaboratorTest {
                 "Customer",
                 "Collaborator",
                 CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                CustomerReference.airTransportCompany("TP"),
+                airTransportCompany("TP", "TAP"),
                 SystemUsername.valueOf("collaborator@aisafe.com")
         );
         final CustomerCollaborator second = new CustomerCollaborator(
                 "Other",
                 "Name",
                 CollaboratorEmail.valueOf("collaborator@aisafe.com"),
-                CustomerReference.airTransportCompany("TP"),
+                airTransportCompany("TP", "TAP"),
                 SystemUsername.valueOf("collaborator@aisafe.com")
         );
         final CustomerCollaborator third = new CustomerCollaborator(
                 "Other",
                 "Name",
                 CollaboratorEmail.valueOf("other.collaborator@aisafe.com"),
-                CustomerReference.airControlArea("LISACC"),
+                airControlArea("LISACC"),
                 SystemUsername.valueOf("other.collaborator@aisafe.com")
         );
 
@@ -201,10 +227,28 @@ class CustomerCollaboratorTest {
                 "John",
                 "Doe",
                 CollaboratorEmail.valueOf("john@test.com"),
-                CustomerReference.airTransportCompany("TP"),
+                airTransportCompany("TP", "TAP"),
                 SystemUsername.valueOf("john@test.com")
         );
     }
 
+    private AirTransportCompany airTransportCompany(final String iataCode, final String icaoCode) {
 
+        return new AirTransportCompany(
+                "Test Company " + iataCode,
+                Country.valueOf("Portugal"),
+                IATACode.valueOf(iataCode),
+                ICAOCode.valueOf(icaoCode)
+        );
+    }
+
+    private AirControlArea airControlArea(final String code) {
+
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(code),
+                "Test Area " + code,
+                GeographicBoundary.valueOf(35.0, 45.0, -15.0, -5.0),
+                MinimumFuelRequirement.valueOf(1000, FuelUnit.valueOf("KG"))
+        );
+    }
 }

@@ -19,7 +19,6 @@ import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.airtransportcompany.domain.InMemoryAirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.flightroute.domain.FlightRoute;
@@ -156,7 +155,7 @@ class RegisterFlightRouteControllerTest {
                 "Area",
                 "Collaborator",
                 CollaboratorEmail.valueOf("area.route@aisafe.com"),
-                CustomerReference.airControlArea("LISACC"),
+                area("LISACC"),
                 SystemUsername.valueOf("area.route@aisafe.com")
         ));
 
@@ -164,18 +163,6 @@ class RegisterFlightRouteControllerTest {
                 fixture.controller().registerFlightRoute("TP739", "LRAA", "LRAB"));
 
         assertEquals("Authenticated collaborator is not associated with an air transport company.", result.getMessage());
-    }
-
-    @Test
-    void ensureAssociatedAirTransportCompanyMustExist() {
-        final Fixture fixture = new Fixture("missing.route.company@aisafe.com");
-        fixture.bootstrapAirportsOnly();
-        fixture.collaboratorRepository.save(companyCollaborator("missing.route.company@aisafe.com", "ZZ"));
-
-        final IllegalStateException result = assertThrows(IllegalStateException.class, () ->
-                fixture.controller().registerFlightRoute("ZZ740", "LRAA", "LRAB"));
-
-        assertEquals("Associated air transport company was not found.", result.getMessage());
     }
 
     @Test
@@ -237,13 +224,22 @@ class RegisterFlightRouteControllerTest {
         ));
     }
 
-    private static CustomerCollaborator companyCollaborator(final String username, final String companyIataCode) {
+    private static CustomerCollaborator companyCollaborator(final String username, final AirTransportCompany company) {
         return new CustomerCollaborator(
                 "Test",
                 "Collaborator",
                 CollaboratorEmail.valueOf(username),
-                CustomerReference.airTransportCompany(companyIataCode),
+                company,
                 SystemUsername.valueOf(username)
+        );
+    }
+
+    private static AirControlArea area(final String code) {
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(code),
+                "Test Area " + code,
+                GeographicBoundary.valueOf(35.0, 45.0, -15.0, -5.0),
+                MinimumFuelRequirement.valueOf(1000, FuelUnit.valueOf("KG"))
         );
     }
 
@@ -305,7 +301,7 @@ class RegisterFlightRouteControllerTest {
         void bootstrapValidCompanyCollaboratorAndAirports() {
             company = company("TAP Air Portugal", "Portugal", "TP", "TAP");
             companyRepository.save(company);
-            collaboratorRepository.save(companyCollaborator(authz.username(), "TP"));
+            collaboratorRepository.save(companyCollaborator(authz.username(), company));
             bootstrapAirportsOnly();
         }
 

@@ -1,6 +1,8 @@
 package isep.aisafe.customercollaborator.domain;
 
 import eapli.framework.domain.repositories.DomainRepository;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +29,19 @@ public interface CustomerCollaboratorRepository
      */
     Optional<CustomerCollaborator> findBySystemUsername(SystemUsername systemUsername);
 
-        /**
-         * Finds a collaborator by the reference of the associated customer.
-         *
-         * @param customerReference reference of the customer associated with the collaborator
-         * @return matching collaborator, if one exists
-         */
-    List<CustomerCollaborator> findByCustomerReference(CustomerReference customerReference);
+    /**
+     * Finds collaborators associated with an air transport company.
+     *
+     * @param airTransportCompany air transport company associated with the collaborators
+     * @return matching collaborators
+     */
+    List<CustomerCollaborator> findByAirTransportCompany(AirTransportCompany airTransportCompany);
+
+    /**
+     * Finds collaborators associated with an air control area.
+     *
+     * @param airControlArea air control area associated with the collaborators
+     * @return matching collaborators
+     */
+    List<CustomerCollaborator> findByAirControlArea(AirControlArea airControlArea);
 }

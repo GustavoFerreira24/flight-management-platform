@@ -10,6 +10,11 @@ import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
 import isep.aisafe.aircraftmodel.domain.AircraftModelType;
 import isep.aisafe.aircraftmodel.domain.AircraftVariantService;
 import isep.aisafe.aircraftmodel.domain.InMemoryAircraftModelRepository;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
+import isep.aisafe.aircontrolarea.domain.FuelUnit;
+import isep.aisafe.aircontrolarea.domain.GeographicBoundary;
+import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.Country;
 import isep.aisafe.airtransportcompany.domain.IATACode;
@@ -17,7 +22,6 @@ import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.airtransportcompany.domain.InMemoryAirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
 import isep.aisafe.enginemodel.domain.EngineModel;
@@ -265,7 +269,7 @@ class RegisterAircraftControllerTest {
                 "Area",
                 "Collaborator",
                 CollaboratorEmail.valueOf("area.collaborator@aisafe.com"),
-                CustomerReference.airControlArea("LISACC"),
+                area("LISACC"),
                 SystemUsername.valueOf("area.collaborator@aisafe.com")
         ));
 
@@ -289,32 +293,6 @@ class RegisterAircraftControllerTest {
     /**
      * Verifica que a companhia aerea associada ao colaborador tem de existir.
      */
-    @Test
-    void ensureAssociatedAirTransportCompanyMustExist() {
-        final Fixture fixture = new Fixture("missing.company@aisafe.com");
-
-        fixture.collaboratorRepository.save(companyCollaborator(
-                "missing.company@aisafe.com",
-                "ZZ"
-        ));
-
-        final IllegalStateException result = assertThrows(IllegalStateException.class, () ->
-                fixture.controller().registerAircraft(
-                        "CS-MIS",
-                        "Portugal",
-                        6,
-                        150,
-                        12,
-                        0,
-                        "US70-A320neo",
-                        "Airbus",
-                        "US70-LEAP-1A",
-                        "CFM International"
-                ));
-
-        assertEquals("Associated air transport company was not found.", result.getMessage());
-    }
-
     /**
      * Verifica que erros de autorizacao sao propagados pelo controlador.
      */
@@ -415,13 +393,22 @@ class RegisterAircraftControllerTest {
 
 
 
-    private static CustomerCollaborator companyCollaborator(final String username, final String companyIataCode) {
+    private static CustomerCollaborator companyCollaborator(final String username, final AirTransportCompany company) {
         return new CustomerCollaborator(
                 "Test",
                 "Collaborator",
                 CollaboratorEmail.valueOf(username),
-                CustomerReference.airTransportCompany(companyIataCode),
+                company,
                 SystemUsername.valueOf(username)
+        );
+    }
+
+    private static AirControlArea area(final String code) {
+        return new AirControlArea(
+                AirControlAreaCode.valueOf(code),
+                "Test Area " + code,
+                GeographicBoundary.valueOf(35.0, 45.0, -15.0, -5.0),
+                MinimumFuelRequirement.valueOf(1000, FuelUnit.valueOf("KG"))
         );
     }
 
@@ -502,7 +489,7 @@ class RegisterAircraftControllerTest {
             companyRepository.save(company);
             engineModelRepository.save(engineModel);
             aircraftModelRepository.save(aircraftModel);
-            collaboratorRepository.save(companyCollaborator(authz.username(), "TP"));
+            collaboratorRepository.save(companyCollaborator(authz.username(), company));
         }
 
         RegisterAircraftController controller() {

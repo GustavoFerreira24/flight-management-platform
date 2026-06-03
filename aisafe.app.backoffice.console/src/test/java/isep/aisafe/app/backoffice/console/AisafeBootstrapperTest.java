@@ -19,7 +19,6 @@ import isep.aisafe.airtransportcompany.domain.IATACode;
 import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModel;
 import isep.aisafe.enginemodel.domain.EngineModelDesignator;
@@ -48,7 +47,12 @@ class AisafeBootstrapperTest {
         final FakeUserManagementService userService = new FakeUserManagementService();
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
-        final CustomerReference customerReference = CustomerReference.airTransportCompany("TP");
+        final AirTransportCompany airTransportCompany = new AirTransportCompany(
+                "TAP Air Portugal",
+                Country.valueOf("Portugal"),
+                IATACode.valueOf("TP"),
+                ICAOCode.valueOf("TAP")
+        );
 
         // Act
         final CustomerCollaborator collaborator = AisafeBootstrapper.registerCustomerCollaboratorIfMissing(
@@ -58,14 +62,16 @@ class AisafeBootstrapperTest {
                 "Collaborator",
                 "tap.collaborator@aisafe.com",
                 "Password1",
-                customerReference,
+                airTransportCompany,
+                null,
                 Set.of(AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR)
         );
 
         // Assert
         assertEquals("TAP", collaborator.firstName());
         assertEquals("Collaborator", collaborator.lastName());
-        assertEquals(customerReference, collaborator.customerReference());
+        assertEquals(airTransportCompany, collaborator.airTransportCompany());
+        assertNull(collaborator.airControlArea());
         assertEquals("tap.collaborator@aisafe.com", collaborator.systemUsername().toString());
         assertTrue(repository.findByEmail(
                 CollaboratorEmail.valueOf("tap.collaborator@aisafe.com")
@@ -87,7 +93,12 @@ class AisafeBootstrapperTest {
         final FakeUserManagementService userService = new FakeUserManagementService();
         final InMemoryCustomerCollaboratorRepository repository =
                 new InMemoryCustomerCollaboratorRepository();
-        final CustomerReference customerReference = CustomerReference.airControlArea("LISACC");
+        final AirControlArea airControlArea = new AirControlArea(
+                AirControlAreaCode.valueOf("LISACC"),
+                "Lisbon Area Control Centre",
+                GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
+                MinimumFuelRequirement.valueOf(5000.0, FuelUnit.valueOf("KG"))
+        );
 
         AisafeBootstrapper.registerCustomerCollaboratorIfMissing(
                 userService,
@@ -96,7 +107,8 @@ class AisafeBootstrapperTest {
                 "Controller",
                 "lisacc.collaborator@aisafe.com",
                 "Password1",
-                customerReference,
+                null,
+                airControlArea,
                 Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
 
@@ -108,12 +120,14 @@ class AisafeBootstrapperTest {
                 "Controller",
                 "lisacc.collaborator@aisafe.com",
                 "Password1",
-                customerReference,
+                null,
+                airControlArea,
                 Set.of(AisafeRoles.FLIGHT_CONTROL_OPERATOR)
         );
 
         // Assert
-        assertEquals(CustomerReference.airControlArea("LISACC"), existingCollaborator.customerReference());
+        assertEquals(airControlArea, existingCollaborator.airControlArea());
+        assertNull(existingCollaborator.airTransportCompany());
         assertEquals(1, userService.calls);
     }
 

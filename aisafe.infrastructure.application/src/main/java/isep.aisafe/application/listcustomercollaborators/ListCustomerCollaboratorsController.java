@@ -2,11 +2,12 @@ package isep.aisafe.application.listcustomercollaborators;
 
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
+import isep.aisafe.aircontrolarea.domain.AirControlArea;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
-import isep.aisafe.customercollaborator.domain.CustomerReference;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
@@ -87,11 +88,10 @@ public class ListCustomerCollaboratorsController {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.USER_MANAGEMENT);
 
         IATACode customerIataCode = IATACode.valueOf(iataCode);
-        airTransportCompanyRepository.findByIataCode(customerIataCode).orElseThrow(() -> new IllegalArgumentException("Air transport company not found."));
+        final AirTransportCompany airTransportCompany = airTransportCompanyRepository.findByIataCode(customerIataCode)
+                .orElseThrow(() -> new IllegalArgumentException("Air transport company not found."));
 
-        CustomerReference reference = CustomerReference.airTransportCompany(customerIataCode.toString());
-
-        return collaboratorRepository.findByCustomerReference(reference).stream().filter(CustomerCollaborator::isActive).toList();
+        return collaboratorRepository.findByAirTransportCompany(airTransportCompany).stream().filter(CustomerCollaborator::isActive).toList();
     }
 
         /**
@@ -112,10 +112,10 @@ public class ListCustomerCollaboratorsController {
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.BACKOFFICE_CONFIGURATION);
 
         AirControlAreaCode customerAreaCode = AirControlAreaCode.valueOf(areaCode);
-        airControlAreaRepository.findByCode(customerAreaCode).orElseThrow(() -> new IllegalArgumentException("Air control area not found."));
+        final AirControlArea airControlArea = airControlAreaRepository.findByCode(customerAreaCode)
+                .orElseThrow(() -> new IllegalArgumentException("Air control area not found."));
 
-        CustomerReference reference = CustomerReference.airControlArea(areaCode);
-        return collaboratorRepository.findByCustomerReference(reference).stream().filter(CustomerCollaborator::isActive).toList();
+        return collaboratorRepository.findByAirControlArea(airControlArea).stream().filter(CustomerCollaborator::isActive).toList();
 
     }
 
