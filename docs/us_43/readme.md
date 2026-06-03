@@ -51,7 +51,9 @@ This is represented by `AisafePermissions.WEATHER_DATA_CONSULTATION`.
 
 ### 4.1. Realization
 
-![US43 class diagram](class-diagram-43.svg "US43 Class Diagram")
+![US43 class diagram](diagrams/class-diagram-43.svg "US43 Class Diagram")
+
+![US43 sequence diagram](diagrams/sequence-diagram-43.svg "US43 Sequence Diagram")
 
 The `ConsultWeatherDataUI` collects the day and air control area code from the user and delegates the request to `ConsultWeatherDataController`.
 

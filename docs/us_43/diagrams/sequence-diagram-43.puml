@@ -1,0 +1,58 @@
+@startuml
+title US043 - Consult Weather Data
+
+actor "Authorized User" as User
+participant "ConsultWeatherDataUI" as UI
+participant "ConsultWeatherDataController" as Controller
+participant "AisafeAuthorizationService" as Authz
+participant "AirControlAreaRepository" as AreaRepo
+participant "WeatherDataRepository" as WeatherRepo
+participant "WeatherData" as WeatherData
+
+User -> UI : show()
+activate UI
+UI -> User : ask day (YYYY-MM-DD)
+User --> UI : day
+UI -> UI : require non-blank day
+UI -> User : ask air control area code
+User --> UI : areaCode
+UI -> UI : require non-blank areaCode
+
+UI -> Controller : consultWeatherData(day, areaCode)
+activate Controller
+Controller -> Authz : ensureAuthenticatedUserHasAnyOf(WEATHER_DATA_CONSULTATION)
+Controller -> Controller : validate required filters
+Controller -> Controller : parse LocalDate
+Controller -> Controller : AirControlAreaCode.valueOf(areaCode)
+
+Controller -> AreaRepo : findByCode(airControlAreaCode)
+activate AreaRepo
+AreaRepo --> Controller : Optional<AirControlArea>
+deactivate AreaRepo
+
+alt air control area not found
+    Controller --> UI : IllegalArgumentException("Air control area not found.")
+    UI -> UI : print validation error
+else air control area exists
+    Controller -> WeatherRepo : findByDayAndAirControlArea(day, airControlAreaCode)
+    activate WeatherRepo
+    WeatherRepo --> Controller : Optional<WeatherData>
+    deactivate WeatherRepo
+
+    alt no weather data found
+        Controller --> UI : Optional.empty()
+        UI -> UI : print no-data message
+    else weather data found
+        Controller --> UI : Optional<WeatherData>
+        UI -> WeatherData : day()
+        UI -> WeatherData : airControlAreaCode()
+        UI -> WeatherData : measurements()
+        UI -> UI : print measurements and provider details
+    end
+end
+
+deactivate Controller
+UI --> User : consultation feedback
+deactivate UI
+
+@enduml
