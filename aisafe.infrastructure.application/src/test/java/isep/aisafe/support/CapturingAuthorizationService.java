@@ -12,7 +12,7 @@ public class CapturingAuthorizationService extends AisafeAuthorizationService {
     private Role[] requestedRoles;
     private int calls;
     private RuntimeException exceptionToThrow;
-    private String authenticatedUsername = "pilot01";
+    private String authenticatedUsername = "ABC";
 
     public CapturingAuthorizationService() {
         super(new StubAuthorizationService());

@@ -2,6 +2,9 @@ package isep.aisafe.flightplan.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.validations.Preconditions;
+import isep.aisafe.aircraft.domain.Aircraft;
+import isep.aisafe.flight.domain.Flight;
+import isep.aisafe.pilot.domain.Pilot;
 import isep.aisafe.weatherdata.domain.WeatherData;
 import isep.aisafe.weatherdata.domain.WeatherDataId;
 import jakarta.persistence.AttributeOverride;
@@ -16,6 +19,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 
 import java.io.Serializable;
@@ -43,8 +47,20 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
     private FlightPlanIdentifier identifier;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "PILOT_IDENTIFIER", nullable = false))
-    private PilotIdentifier pilotIdentifier;
+    private FuelQuantity fuelQuantity;
+
+    @ManyToOne(optional = false)
+    private Flight flight;
+
+    @ManyToOne(optional = false)
+    private Aircraft aircraft;
+
+    @ManyToOne(optional = false)
+    private Pilot pilot;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", nullable = false)
+    private FlightPlanStatus status = FlightPlanStatus.DRAFT;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "FLIGHT_PLAN_WEATHER_DATA", joinColumns = @JoinColumn(name = "FLIGHT_PLAN_PK"))
@@ -57,12 +73,35 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
     protected FlightPlan() {
     }
 
-    public FlightPlan(final FlightPlanIdentifier identifier, final PilotIdentifier pilotIdentifier) {
+    public FlightPlan(
+            final FlightPlanIdentifier identifier,
+            final Flight flight,
+            final Aircraft aircraft,
+            final Pilot pilot,
+            final FuelQuantity fuelQuantity) {
+
         Preconditions.nonNull(identifier, "Flight plan identifier is required.");
-        Preconditions.nonNull(pilotIdentifier, "Pilot identifier is required.");
+        Preconditions.nonNull(flight, "Flight is required.");
+        Preconditions.nonNull(aircraft, "Aircraft is required.");
+        Preconditions.nonNull(pilot, "Pilot is required.");
+        Preconditions.nonNull(fuelQuantity, "Fuel quantity is required.");
+        Preconditions.ensure(aircraft.canBeUsedForFlights(), "Aircraft cannot be used for flights.");
+        Preconditions.ensure(
+                aircraft.company().sameAs(flight.route().company()),
+                "Aircraft must belong to the route's air transport company."
+        );
+        Preconditions.ensure(
+                pilot.companyIATACode().equals(flight.route().company().iataCode()),
+                "Pilot must belong to the route's air transport company."
+        );
+        Preconditions.ensure(pilot.pilotStatus().isValid(), "Pilot must be active.");
 
         this.identifier = identifier;
-        this.pilotIdentifier = pilotIdentifier;
+        this.flight = flight;
+        this.aircraft = aircraft;
+        this.pilot = pilot;
+        this.fuelQuantity = fuelQuantity;
+        this.status = FlightPlanStatus.DRAFT;
     }
 
     /**
@@ -105,8 +144,24 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return identifier;
     }
 
-    public PilotIdentifier pilotIdentifier() {
-        return pilotIdentifier;
+    public Flight flight() {
+        return flight;
+    }
+
+    public Aircraft aircraft() {
+        return aircraft;
+    }
+
+    public Pilot pilot() {
+        return pilot;
+    }
+
+    public FuelQuantity fuelQuantity() {
+        return fuelQuantity;
+    }
+
+    public FlightPlanStatus status() {
+        return status;
     }
 
     public List<WeatherDataId> weatherDataIds() {
