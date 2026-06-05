@@ -51,7 +51,7 @@ public class DecommissionAircraftUI {
                 System.out.println(ConsoleStyle.option(
                         i + 1,
                         candidate.registration() + " | "
-                                + candidate.aircraftModel().designator() + " | "
+                                + candidate.aircraftModelDesignator() + " | "
                                 + candidate.operationalStatus()
                 ));
             }

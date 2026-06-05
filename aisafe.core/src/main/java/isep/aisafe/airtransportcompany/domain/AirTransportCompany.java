@@ -126,11 +126,41 @@ public class AirTransportCompany implements AggregateRoot<IATACode>, Serializabl
     }
 
     /**
+     * Checks whether this company has the given IATA code.
+     *
+     * @param code the IATA code to compare
+     * @return true if the code identifies this company
+     */
+    public boolean hasIataCode(final IATACode code) {
+        return iataCode.equals(code);
+    }
+
+    /**
+     * Checks whether the given text starts with this company's IATA code.
+     *
+     * @param value text to check
+     * @return true if the text starts with the company's IATA code
+     */
+    public boolean startsWithIataCode(final String value) {
+        return value != null && value.startsWith(iataCode.toString());
+    }
+
+    /**
      * Returns the company ICAO code.
      *
      * @return the ICAO code
      */
     public ICAOCode icaoCode() {
         return icaoCode;
+    }
+
+    /**
+     * Checks whether this company has the given ICAO code.
+     *
+     * @param code the ICAO code to compare
+     * @return true if the code identifies this company
+     */
+    public boolean hasIcaoCode(final ICAOCode code) {
+        return icaoCode.equals(code);
     }
 }

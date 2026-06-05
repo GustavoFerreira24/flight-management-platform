@@ -114,7 +114,7 @@ public class RegisterWeatherDataController {
         final AirControlArea airControlArea = airControlAreaRepository().findByCode(airControlAreaCode)
                 .orElseThrow(() -> new IllegalArgumentException("Air control area not found."));
 
-        if (!airControlArea.geographicBoundary().contains(latitude, longitude)) {
+        if (!airControlArea.containsCoordinates(latitude, longitude)) {
             throw new IllegalArgumentException("Weather coordinates must be inside the air control area.");
         }
 
@@ -149,7 +149,7 @@ public class RegisterWeatherDataController {
         final List<String> areas = new ArrayList<>();
 
         for (final AirControlArea area : airControlAreaRepository().findAll()) {
-            if (area.geographicBoundary().contains(latitude, longitude)) {
+            if (area.containsCoordinates(latitude, longitude)) {
                 areas.add(area.code() + " | " + area.name());
             }
         }
@@ -194,7 +194,7 @@ public class RegisterWeatherDataController {
         final AirControlArea airControlArea = airControlAreaRepository().findByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("Air control area not found."));
 
-        return airControlArea.geographicBoundary().contains(latitude, longitude);
+        return airControlArea.containsCoordinates(latitude, longitude);
     }
 
     private void ensureNotBlank(final String value, final String message) {

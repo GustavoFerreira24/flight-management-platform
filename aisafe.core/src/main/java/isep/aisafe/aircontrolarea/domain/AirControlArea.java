@@ -95,6 +95,17 @@ public class AirControlArea implements AggregateRoot<AirControlAreaCode>, Serial
         return geographicBoundary;
     }
 
+    /**
+     * Checks whether the given coordinates belong to this air control area.
+     *
+     * @param latitude latitude to check
+     * @param longitude longitude to check
+     * @return true if the coordinates are inside this area
+     */
+    public boolean containsCoordinates(final double latitude, final double longitude) {
+        return geographicBoundary.contains(latitude, longitude);
+    }
+
     public MinimumFuelRequirement minimumFuelRequirement() {
         return minimumFuelRequirement;
     }

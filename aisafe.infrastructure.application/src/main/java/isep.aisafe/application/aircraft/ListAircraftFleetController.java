@@ -120,18 +120,18 @@ public class ListAircraftFleetController {
     }
 
     private AircraftFleetEntry toEntry(final Aircraft aircraft) {
-        final String[] modelParts = splitDesignator(aircraft.aircraftModel().designator().toString());
+        final String[] modelParts = splitDesignator(aircraft.aircraftModelDesignator());
 
         return new AircraftFleetEntry(
                 aircraft.registration().toString(),
                 modelParts[0],
-                aircraft.aircraftModel().manufacturer().designator().toString(),
-                aircraft.cabinConfiguration().totalSeats(),
-                aircraft.aircraftModel().passengerCapacity(),
+                aircraft.aircraftModelManufacturerDesignator(),
+                aircraft.totalSeats(),
+                aircraft.passengerCapacity(),
                 aircraft.manufactureYear(),
                 aircraft.ageInYears(),
                 aircraft.operationalStatus().toString(),
-                aircraft.engineModel().designator().toString()
+                aircraft.engineModelDesignator()
         );
     }
 

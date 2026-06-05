@@ -183,6 +183,15 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
         return cabinConfiguration;
     }
 
+    /**
+     * Returns the total number of passenger seats in this aircraft.
+     *
+     * @return total seats
+     */
+    public int totalSeats() {
+        return cabinConfiguration.totalSeats();
+    }
+
     public AircraftOperationalStatus operationalStatus() {
         return operationalStatus;
     }
@@ -236,7 +245,43 @@ public class Aircraft implements AggregateRoot<AircraftRegistration>, Serializab
         return aircraftModel;
     }
 
+    /**
+     * Returns the aircraft model designator as display text.
+     *
+     * @return aircraft model designator
+     */
+    public String aircraftModelDesignator() {
+        return aircraftModel.designator().toString();
+    }
+
+    /**
+     * Returns the aircraft model manufacturer designator as display text.
+     *
+     * @return manufacturer designator
+     */
+    public String aircraftModelManufacturerDesignator() {
+        return aircraftModel.manufacturer().designator().toString();
+    }
+
+    /**
+     * Returns the passenger capacity defined by the aircraft model.
+     *
+     * @return passenger capacity
+     */
+    public int passengerCapacity() {
+        return aircraftModel.passengerCapacity();
+    }
+
     public EngineModel engineModel() {
         return engineModel;
+    }
+
+    /**
+     * Returns the installed engine model designator as display text.
+     *
+     * @return engine model designator
+     */
+    public String engineModelDesignator() {
+        return engineModel.designator().toString();
     }
 }

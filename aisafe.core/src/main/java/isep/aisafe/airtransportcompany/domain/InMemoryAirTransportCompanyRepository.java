@@ -19,7 +19,7 @@ public class InMemoryAirTransportCompanyRepository
      */
     @Override
     public Optional<AirTransportCompany> findByIataCode(final IATACode iataCode) {
-        return matchOne(company -> company.iataCode().equals(iataCode));
+        return matchOne(company -> company.hasIataCode(iataCode));
     }
 
     /**
@@ -30,6 +30,6 @@ public class InMemoryAirTransportCompanyRepository
      */
     @Override
     public Optional<AirTransportCompany> findByIcaoCode(final ICAOCode icaoCode) {
-        return matchOne(company -> company.icaoCode().equals(icaoCode));
+        return matchOne(company -> company.hasIcaoCode(icaoCode));
     }
 }
