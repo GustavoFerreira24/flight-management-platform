@@ -1,5 +1,6 @@
 package isep.aisafe.application.flightmanagement;
 
+import eapli.framework.general.domain.model.EmailAddress;
 import isep.aisafe.aircontrolarea.domain.AirControlArea;
 import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.aircontrolarea.domain.FuelUnit;
@@ -40,11 +41,7 @@ import isep.aisafe.flightplan.domain.InMemoryFlightPlanRepository;
 import isep.aisafe.flightroute.domain.FlightRoute;
 import isep.aisafe.flightroute.domain.RouteDesignator;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
-import isep.aisafe.pilot.domain.Certification;
-import isep.aisafe.pilot.domain.InMemoryPilotRepository;
-import isep.aisafe.pilot.domain.Pilot;
-import isep.aisafe.pilot.domain.PilotID;
-import isep.aisafe.pilot.domain.PilotStatus;
+import isep.aisafe.pilot.domain.*;
 import isep.aisafe.support.CapturingAuthorizationService;
 import org.junit.jupiter.api.Test;
 
@@ -303,7 +300,11 @@ class CreateFlightPlanControllerTest {
                 PilotID.valueOf(id),
                 certification,
                 PilotStatus.valueOf(certification),
-                IATACode.valueOf("TP")
+                IATACode.valueOf("TP"),
+                EmailAddress.valueOf("pilot@example.com"),
+                PhoneNumber.valueOf("+351912345678"),
+                "Ben",
+                "Dover"
         );
     }
 
