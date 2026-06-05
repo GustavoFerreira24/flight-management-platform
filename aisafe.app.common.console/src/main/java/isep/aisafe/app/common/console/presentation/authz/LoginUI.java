@@ -2,7 +2,7 @@ package isep.aisafe.app.common.console.presentation.authz;
 
 import java.util.Scanner;
 import isep.aisafe.app.common.console.ConsoleStyle;
-import isep.aisafe.infrastructure.authz.CredentialHandler;
+import isep.aisafe.CredentialHandler;
 
 public class LoginUI {
 

@@ -1,5 +1,6 @@
 package isep.aisafe.pilot.domain;
 
+import eapli.framework.general.domain.model.EmailAddress;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,12 @@ class InMemoryPilotRepositoryTest {
         final Certification certification = new Certification("01-01-2020", "01-01-2099");
         final PilotStatus status = PilotStatus.valueOf(certification);
         final IATACode companyCode = IATACode.valueOf("TP");
-        return new Pilot(pilotID, certification, status, companyCode);
+        final EmailAddress email = EmailAddress.valueOf("pilot@example.com");
+        final PhoneNumber phoneNumber = PhoneNumber.valueOf("+351912345678");
+        final String firstName = "Ben";
+        final String lastName = "Dover";
+
+        return new Pilot(pilotID, certification, status, companyCode, email, phoneNumber, firstName, lastName);
     }
 
     @Test

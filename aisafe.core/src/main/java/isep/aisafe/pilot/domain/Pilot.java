@@ -2,9 +2,11 @@ package isep.aisafe.pilot.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.domain.model.DomainEntities;
+import eapli.framework.general.domain.model.EmailAddress;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import jakarta.persistence.*;
 
+import javax.management.relation.Role;
 import java.io.Serializable;
 
 @Entity
@@ -15,9 +17,19 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
     @AttributeOverride(name = "value", column = @Column(name = "PilotID", nullable = false))
     private PilotID id;
 
+    @Column(nullable = false, name = "FirstName")
+    private String firstName;
+
+    @Column(nullable = false, name = "LastName")
+    private String lastName;
+
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "PilotStatus", nullable = false))
-    private PilotStatus pilotStatus;
+    @AttributeOverride(name = "email", column = @Column(name = "Email", nullable = false))
+    private EmailAddress email;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "PhoneNumber", nullable = false))
+    private PhoneNumber phoneNumber;
 
     @Embedded
     @AttributeOverrides({
@@ -27,9 +39,12 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
     private Certification certification;
 
     @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "PilotStatus", nullable = false))
+    private PilotStatus pilotStatus;
+
+    @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "CompanyIATACode", nullable = false))
     private IATACode companyIATACode;
-
     /**
      * Required by ORM.
      */
@@ -47,7 +62,11 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
             final PilotID id,
             final Certification certification,
             final PilotStatus pilotStatus,
-            final IATACode companyIATACode) {
+            final IATACode companyIATACode,
+            final EmailAddress email,
+            final PhoneNumber phoneNumber,
+            final String firstName,
+            final String lastName) {
 
         if (id == null) {
             throw new IllegalArgumentException("Pilot ID cannot be null.");
@@ -65,10 +84,31 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
             throw new IllegalArgumentException("Company IATA code cannot be null.");
         }
 
+        if (email == null) {
+            throw new IllegalArgumentException("Email cannot be null.");
+        }
+
+        if (phoneNumber == null) {
+            throw new IllegalArgumentException("Phone number cannot be null.");
+        }
+
+        if (firstName == null) {
+            throw new IllegalArgumentException("First name cannot be null.");
+        }
+
+        if (lastName == null) {
+            throw new IllegalArgumentException("Last name cannot be null.");
+        }
+
         this.id = id;
         this.pilotStatus = pilotStatus;
         this.certification = certification;
         this.companyIATACode = companyIATACode;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+
     }
 
     @Override
@@ -127,8 +167,29 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
         return certification;
     }
 
+    /**
+     * Returns pilot companyIATACode
+     *
+     * @return pilot companyIATACode
+     */
     public IATACode companyIATACode() {
         return companyIATACode;
+    }
+
+    public EmailAddress email() {
+        return email;
+    }
+
+    public PhoneNumber phoneNumber() {
+        return phoneNumber;
+    }
+
+    public String firstName() {
+        return firstName;
+    }
+
+    public String lastName() {
+        return lastName;
     }
 
     @Override

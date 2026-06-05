@@ -3,7 +3,7 @@ package isep.aisafe.application.remoteaccess;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.authz.AuthenticationCredentialHandler;
-import isep.aisafe.infrastructure.authz.CredentialHandler;
+import isep.aisafe.CredentialHandler;
 
 /**
  * Application controller for Air Transport Company remote access commands.
