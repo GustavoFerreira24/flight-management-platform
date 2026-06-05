@@ -9,6 +9,7 @@ import isep.aisafe.app.backoffice.console.presentation.airport.RegisterAirportUI
 import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.RegisterAirTransportCompanyUI;
 import isep.aisafe.app.backoffice.console.presentation.customercollaborator.RegisterCustomerCollaboratorUI;
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
+import isep.aisafe.app.backoffice.console.presentation.flightmanagement.CreateFlightPlanUI;
 import isep.aisafe.app.backoffice.console.presentation.flightroute.RegisterFlightRouteUI;
 import isep.aisafe.app.backoffice.console.presentation.pilot.ManagePilotsUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ConsultWeatherDataUI;
@@ -112,6 +113,13 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         if (authz.authenticatedUserHasAnyOf(AisafePermissions.WEATHER_DATA_MANAGEMENT)) {
             while (showWeatherPersonOptions(scanner)) {
                 // Keep the authenticated weather person session open until logout.
+            }
+            return;
+        }
+
+        if (authz.authenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_MANAGEMENT)) {
+            while (showFlightPlanManagementOptions(scanner)) {
+                // Keep the authenticated flight-plan management session open until logout.
             }
             return;
         }
@@ -286,6 +294,36 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("4".equals(option)) {
+            ConsoleStyle.printInfo("Returning to login menu.");
+            return false;
+        }
+
+        ConsoleStyle.printWarning("Unknown option.");
+        return true;
+    }
+
+    private boolean showFlightPlanManagementOptions(final Scanner scanner) {
+        ConsoleStyle.printMenu(
+                "Flight Plan Management Console",
+                ConsoleStyle.option(1, "Create Flight Plan                            (US80)"),
+                ConsoleStyle.option(2, "Consult Weather Data                          (US43)"),
+                ConsoleStyle.option(3, "Logout")
+        );
+        ConsoleStyle.printPrompt("Option: ");
+
+        final String option = scanner.nextLine();
+
+        if ("1".equals(option)) {
+            executeMenuAction(() -> new CreateFlightPlanUI(scanner).show());
+            return true;
+        }
+
+        if ("2".equals(option)) {
+            executeMenuAction(() -> new ConsultWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("3".equals(option)) {
             ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }

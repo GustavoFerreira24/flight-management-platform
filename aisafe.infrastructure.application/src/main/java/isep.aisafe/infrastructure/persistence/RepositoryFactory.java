@@ -9,6 +9,8 @@ import isep.aisafe.airport.domain.AirportRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
+import isep.aisafe.flight.domain.FlightRepository;
+import isep.aisafe.flightplan.domain.FlightPlanRepository;
 import isep.aisafe.flightroute.domain.FlightRouteRepository;
 import isep.aisafe.manufacturer.domain.ManufacturerRepository;
 import isep.aisafe.pilot.domain.PilotRepository;
@@ -103,6 +105,20 @@ public interface RepositoryFactory {
      * @return flight route repository
      */
     FlightRouteRepository flightRoutes();
+
+    /**
+     * Returns the repository for flight aggregates.
+     *
+     * @return flight repository
+     */
+    FlightRepository flights();
+
+    /**
+     * Returns the repository for flight plan aggregates.
+     *
+     * @return flight plan repository
+     */
+    FlightPlanRepository flightPlans();
 
     /**
      * Returns the repository for weather data aggregates.
