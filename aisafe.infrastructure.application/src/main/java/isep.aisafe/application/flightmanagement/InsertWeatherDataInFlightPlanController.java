@@ -4,7 +4,6 @@ import isep.aisafe.aircontrolarea.domain.AirControlAreaCode;
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
 import isep.aisafe.flightplan.domain.FlightPlanRepository;
-import isep.aisafe.flightplan.domain.InMemoryFlightPlanRepository;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
@@ -21,8 +20,6 @@ import java.util.Objects;
  */
 public class InsertWeatherDataInFlightPlanController {
 
-    private static final FlightPlanRepository DEFAULT_FLIGHT_PLAN_REPOSITORY = new InMemoryFlightPlanRepository();
-
     private final AisafeAuthorizationService authz;
     private final FlightPlanRepository flightPlanRepository;
     private final WeatherDataRepository weatherDataRepository;
@@ -32,7 +29,7 @@ public class InsertWeatherDataInFlightPlanController {
      */
     public InsertWeatherDataInFlightPlanController() {
         authz = new AisafeAuthorizationService();
-        flightPlanRepository = DEFAULT_FLIGHT_PLAN_REPOSITORY;
+        flightPlanRepository = null;
         weatherDataRepository = null;
     }
 
@@ -79,7 +76,7 @@ public class InsertWeatherDataInFlightPlanController {
         ensureNotBlank(airControlAreaCode, "Air control area code is required.");
 
         final FlightPlanIdentifier identifier = FlightPlanIdentifier.valueOf(flightPlanIdentifier);
-        final FlightPlan flightPlan = flightPlanRepository.findByIdentifier(identifier)
+        final FlightPlan flightPlan = flightPlanRepository().findByIdentifier(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("Flight plan not found."));
 
         ensureFlightPlanBelongsToAuthenticatedPilot(flightPlan);
@@ -90,7 +87,7 @@ public class InsertWeatherDataInFlightPlanController {
                 .orElseThrow(() -> new IllegalArgumentException("Weather data not found."));
 
         flightPlan.addWeatherData(weatherData);
-        return flightPlanRepository.save(flightPlan);
+        return flightPlanRepository().save(flightPlan);
     }
 
     private void ensureFlightPlanBelongsToAuthenticatedPilot(final FlightPlan flightPlan) {
@@ -114,11 +111,18 @@ public class InsertWeatherDataInFlightPlanController {
         }
     }
 
+    private FlightPlanRepository flightPlanRepository() {
+        if (flightPlanRepository != null) {
+            return flightPlanRepository;
+        }
+        return PersistenceContext.repositories().flightPlans();
+    }
+
     private WeatherDataRepository weatherDataRepository() {
         if (weatherDataRepository != null) {
             return weatherDataRepository;
         }
-
         return PersistenceContext.repositories().weatherData();
     }
+
 }

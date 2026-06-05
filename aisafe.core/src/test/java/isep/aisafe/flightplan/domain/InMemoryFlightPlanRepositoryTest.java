@@ -82,10 +82,59 @@ class InMemoryFlightPlanRepositoryTest {
         assertTrue(result.isEmpty());
     }
 
+    /**
+     * Purpose: verify monthly/period lookup by flight departure.
+     * Scenario: save flight plans inside and outside a selected departure interval.
+     * Expected output: only flight plans departing inside the interval are returned.
+     */
+    @Test
+    void ensureFindByDepartureBetweenReturnsOnlyFlightPlansInsideInterval() {
+        // Arrange
+        final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final FlightPlan inside = flightPlan("FP010", "TP110", LocalDateTime.of(2027, 1, 10, 10, 0));
+        final FlightPlan atEnd = flightPlan("FP011", "TP111", LocalDateTime.of(2027, 2, 1, 0, 0));
+        final FlightPlan before = flightPlan("FP012", "TP112", LocalDateTime.of(2026, 12, 31, 23, 59));
+        repository.save(inside);
+        repository.save(atEnd);
+        repository.save(before);
+
+        // Act
+        final Iterable<FlightPlan> result = repository.findByDepartureBetween(
+                LocalDateTime.of(2027, 1, 1, 0, 0),
+                LocalDateTime.of(2027, 2, 1, 0, 0)
+        );
+
+        // Assert
+        assertTrue(containsSameFlightPlan(result, inside));
+        assertFalse(containsSameFlightPlan(result, atEnd));
+        assertFalse(containsSameFlightPlan(result, before));
+    }
+
+    @Test
+    void ensureFindByDepartureBetweenRejectsInvalidInterval() {
+        // Arrange
+        final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final LocalDateTime start = LocalDateTime.of(2027, 1, 1, 0, 0);
+        final LocalDateTime end = LocalDateTime.of(2027, 2, 1, 0, 0);
+
+        // Act / Assert
+        assertThrows(IllegalArgumentException.class, () -> repository.findByDepartureBetween(null, end));
+        assertThrows(IllegalArgumentException.class, () -> repository.findByDepartureBetween(start, null));
+        assertThrows(IllegalArgumentException.class, () -> repository.findByDepartureBetween(end, start));
+    }
+
     private FlightPlan flightPlan() {
+        return flightPlan("FP001", "TP123", LocalDateTime.of(2027, 1, 10, 10, 0));
+    }
+
+    private FlightPlan flightPlan(
+            final String identifier,
+            final String flightDesignator,
+            final LocalDateTime departureDateTime) {
+
         return new FlightPlan(
-                FlightPlanIdentifier.valueOf("FP001"),
-                flight(),
+                FlightPlanIdentifier.valueOf(identifier),
+                flight(flightDesignator, departureDateTime),
                 aircraft(),
                 pilot(),
                 FuelQuantity.valueOf(5000, FuelUnit.valueOf("KG"))
@@ -93,20 +142,37 @@ class InMemoryFlightPlanRepositoryTest {
     }
 
     private Flight flight() {
+        return flight("TP123", LocalDateTime.of(2027, 1, 10, 10, 0));
+    }
+
+    private Flight flight(final String designator, final LocalDateTime departureDateTime) {
         return new Flight(
-                FlightDesignator.valueOf("TP123"),
-                route(),
-                isep.aisafe.flight.domain.Departure.valueOf(LocalDateTime.of(2027, 1, 10, 10, 0))
+                FlightDesignator.valueOf(designator),
+                route(designator),
+                isep.aisafe.flight.domain.Departure.valueOf(departureDateTime)
         );
     }
 
     private FlightRoute route() {
+        return route("TP123");
+    }
+
+    private FlightRoute route(final String designator) {
         return new FlightRoute(
-                RouteDesignator.valueOf("TP123"),
+                RouteDesignator.valueOf(designator),
                 company(),
                 airport("LPPT", "LIS", "Lisbon Airport", "Lisbon"),
                 airport("LPPR", "OPO", "Porto Airport", "Porto")
         );
+    }
+
+    private boolean containsSameFlightPlan(final Iterable<FlightPlan> flightPlans, final FlightPlan expected) {
+        for (final FlightPlan flightPlan : flightPlans) {
+            if (flightPlan == expected) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Aircraft aircraft() {
