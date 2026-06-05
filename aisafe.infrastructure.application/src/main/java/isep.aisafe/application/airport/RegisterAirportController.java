@@ -123,7 +123,7 @@ public class RegisterAirportController {
         final List<String> areas = new ArrayList<>();
 
         for (final AirControlArea area : areaRepo.findAll()) {
-            if (area.geographicBoundary().contains(lat, lon)) {
+            if (area.containsCoordinates(lat, lon)) {
                 areas.add(area.code() + " | " + area.name());
             }
         }

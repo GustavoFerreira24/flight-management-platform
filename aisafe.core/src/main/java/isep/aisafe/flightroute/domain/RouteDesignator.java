@@ -56,7 +56,7 @@ public class RouteDesignator implements ValueObject, Comparable<RouteDesignator>
     public boolean belongsTo(final AirTransportCompany company) {
         Preconditions.nonNull(company, "Air transport company cannot be null.");
 
-        return value.startsWith(company.iataCode().toString());
+        return company.startsWithIataCode(value);
     }
 
     @Override
