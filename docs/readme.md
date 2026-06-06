@@ -64,6 +64,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US121 — Create a Flight Plan from a File
 - [Flight Plan File Import](./us_121/implementation-notes.md)
 
+#### US112 — Monthly Report Generation
+- [Monthly Report Generation](./us_112/readme.md)
+
 ##### Aggregates Documentation
 - [Flight Aggregate](./us_11/Aggregates/FlightAggregate.md)
 - [Flight Route Aggregate](./us_11/Aggregates/FlightRouteAggregate.md)

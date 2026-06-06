@@ -23,6 +23,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -148,12 +149,48 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return flight;
     }
 
+    /**
+     * Returns this flight plan's scheduled departure timestamp.
+     *
+     * @return departure date/time
+     */
+    public LocalDateTime flightDepartureDateTime() {
+        return flight.departure().dateTime();
+    }
+
+    /**
+     * Returns the planned flight designator as display text.
+     *
+     * @return flight designator
+     */
+    public String flightDesignator() {
+        return flight.designator().toString();
+    }
+
     public Aircraft aircraft() {
         return aircraft;
     }
 
+    /**
+     * Returns the assigned aircraft registration as display text.
+     *
+     * @return aircraft registration
+     */
+    public String aircraftRegistration() {
+        return aircraft.registration().toString();
+    }
+
     public Pilot pilot() {
         return pilot;
+    }
+
+    /**
+     * Returns the assigned pilot identifier as display text.
+     *
+     * @return pilot identifier
+     */
+    public String pilotIdentifier() {
+        return pilot.identity().toString();
     }
 
     public FuelQuantity fuelQuantity() {
@@ -166,6 +203,24 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
 
     public List<WeatherDataId> weatherDataIds() {
         return Collections.unmodifiableList(weatherDataIds);
+    }
+
+    /**
+     * Returns how many weather data records are associated with this flight plan.
+     *
+     * @return weather data count
+     */
+    public int weatherDataCount() {
+        return weatherDataIds.size();
+    }
+
+    /**
+     * Checks whether this flight plan has associated weather data.
+     *
+     * @return true when at least one weather data record is associated
+     */
+    public boolean hasWeatherData() {
+        return !weatherDataIds.isEmpty();
     }
 
     public FlightPlanTestStatus testStatus() {

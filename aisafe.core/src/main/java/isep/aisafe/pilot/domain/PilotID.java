@@ -79,4 +79,9 @@ public class PilotID implements ValueObject, Comparable<PilotID>, Serializable {
         final PilotID pilotID = (PilotID) other;
         return Objects.equals(this.value, pilotID.value);
     }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

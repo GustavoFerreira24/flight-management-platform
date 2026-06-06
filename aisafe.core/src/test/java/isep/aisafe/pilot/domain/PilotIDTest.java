@@ -66,6 +66,18 @@ class PilotIDTest {
     }
 
     @Test
+    void ensurePilotIDToStringReturnsStoredValue() {
+        // Arrange
+        final PilotID pilotID = PilotID.valueOf("abc");
+
+        // Act
+        final String result = pilotID.toString();
+
+        // Assert
+        assertEquals("ABC", result);
+    }
+
+    @Test
     void ensureTwoPilotIDsWithSameValueAreEqual() {
         // Arrange
         final PilotID first = PilotID.valueOf("ABC");
