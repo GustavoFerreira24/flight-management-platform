@@ -1,0 +1,139 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class GenerateMonthlyReportUI <<UI>> {
+    - controller : GenerateMonthlyReportController
+    - scanner : Scanner
+    + show() : void
+    - readInt(prompt : String) : int
+}
+
+class GenerateMonthlyReportController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - flightPlanRepository : FlightPlanRepository
+    - generator : MonthlyReportGenerator
+    - renderer : MonthlyReportRenderer
+    - clock : Clock
+    + execute() : void
+    + generateMonthlyReport(year : int, month : int) : MonthlyReport
+    + generateMonthlyReportText(year : int, month : int) : String
+    - reportPeriod(year : int, month : int) : YearMonth
+}
+
+class MonthlyReportGenerator <<Service>> {
+    + generate(period : YearMonth, flightPlans : Iterable<FlightPlan>, generatedAt : LocalDateTime) : MonthlyReport
+    - summarySection(flightPlans : List<FlightPlan>) : ReportSection
+    - statusSection(flightPlans : List<FlightPlan>) : ReportSection
+    - testStatusSection(flightPlans : List<FlightPlan>) : ReportSection
+    - detailsSection(flightPlans : List<FlightPlan>) : ReportSection
+}
+
+class MonthlyReportRenderer <<Service>> {
+    + render(report : MonthlyReport) : String
+}
+
+class MonthlyReport <<Value Object>> {
+    - title : String
+    - period : YearMonth
+    - generatedAt : LocalDateTime
+    - sections : List<ReportSection>
+    + title() : String
+    + period() : YearMonth
+    + generatedAt() : LocalDateTime
+    + sections() : List<ReportSection>
+}
+
+class ReportSection <<Value Object>> {
+    - title : String
+    - lines : List<String>
+    + title() : String
+    + lines() : List<String>
+}
+
+interface FlightPlanRepository <<Repository>> {
+    + findByIdentifier(identifier : FlightPlanIdentifier) : Optional<FlightPlan>
+    + findByDepartureBetween(startInclusive : LocalDateTime, endExclusive : LocalDateTime) : Iterable<FlightPlan>
+}
+
+class JpaFlightPlanRepository <<Repository>>
+class InMemoryFlightPlanRepository <<Repository>>
+
+class FlightPlan <<Aggregate Root>> {
+    - identifier : FlightPlanIdentifier
+    - flight : Flight
+    - aircraft : Aircraft
+    - pilot : Pilot
+    - fuelQuantity : FuelQuantity
+    - status : FlightPlanStatus
+    - testStatus : FlightPlanTestStatus
+    - weatherDataIds : List<WeatherDataId>
+    + identifier() : FlightPlanIdentifier
+    + flightDepartureDateTime() : LocalDateTime
+    + flightDesignator() : String
+    + aircraftRegistration() : String
+    + pilotIdentifier() : String
+    + weatherDataCount() : int
+    + hasWeatherData() : boolean
+    + status() : FlightPlanStatus
+    + testStatus() : FlightPlanTestStatus
+}
+
+class Flight <<Aggregate Root>>
+class Aircraft <<Aggregate Root>>
+class Pilot <<Aggregate Root>>
+class FlightPlanIdentifier <<Value Object>>
+class FuelQuantity <<Value Object>>
+class WeatherDataId <<Value Object>>
+
+enum FlightPlanStatus {
+    DRAFT
+    UNDER_VALIDATION
+    VALIDATED
+    REJECTED
+}
+
+enum FlightPlanTestStatus {
+    NOT_TESTED
+    TESTED
+    VOID
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} FLIGHT_CONTROL : Role[]
+}
+
+GenerateMonthlyReportUI --> GenerateMonthlyReportController
+
+GenerateMonthlyReportController --> AisafeAuthorizationService
+GenerateMonthlyReportController --> AisafePermissions
+GenerateMonthlyReportController --> FlightPlanRepository
+GenerateMonthlyReportController --> MonthlyReportGenerator
+GenerateMonthlyReportController --> MonthlyReportRenderer
+GenerateMonthlyReportController --> MonthlyReport
+
+MonthlyReportGenerator --> FlightPlan
+MonthlyReportGenerator --> MonthlyReport
+MonthlyReportGenerator --> ReportSection
+MonthlyReportRenderer --> MonthlyReport
+
+MonthlyReport *-- "1..*" ReportSection
+
+FlightPlanRepository --> FlightPlan
+JpaFlightPlanRepository ..|> FlightPlanRepository
+InMemoryFlightPlanRepository ..|> FlightPlanRepository
+
+FlightPlan *-- FlightPlanIdentifier
+FlightPlan --> Flight
+FlightPlan --> Aircraft
+FlightPlan --> Pilot
+FlightPlan *-- FuelQuantity
+FlightPlan *-- FlightPlanStatus
+FlightPlan *-- FlightPlanTestStatus
+FlightPlan "1" *-- "0..*" WeatherDataId
+
+@enduml
