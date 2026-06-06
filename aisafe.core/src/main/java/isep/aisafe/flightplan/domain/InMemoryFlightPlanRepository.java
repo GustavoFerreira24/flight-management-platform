@@ -13,11 +13,24 @@ public class InMemoryFlightPlanRepository
         extends InMemoryDomainRepository<FlightPlan, FlightPlanIdentifier>
         implements FlightPlanRepository {
 
+    /**
+     * Finds a flight plan by its business identifier.
+     *
+     * @param identifier flight plan identifier
+     * @return flight plan, if it exists
+     */
     @Override
     public Optional<FlightPlan> findByIdentifier(final FlightPlanIdentifier identifier) {
         return matchOne(flightPlan -> flightPlan.identifier().equals(identifier));
     }
 
+    /**
+     * Finds flight plans whose flight departure is inside the given date/time interval.
+     *
+     * @param startInclusive interval start, inclusive
+     * @param endExclusive interval end, exclusive
+     * @return flight plans departing inside the interval
+     */
     @Override
     public Iterable<FlightPlan> findByDepartureBetween(
             final LocalDateTime startInclusive,
@@ -31,5 +44,12 @@ public class InMemoryFlightPlanRepository
             final LocalDateTime departure = flightPlan.flight().departure().dateTime();
             return !departure.isBefore(startInclusive) && departure.isBefore(endExclusive);
         });
+    }
+
+    /**
+     * Removes all in-memory flight plans.
+     */
+    public void clear() {
+        data().clear();
     }
 }

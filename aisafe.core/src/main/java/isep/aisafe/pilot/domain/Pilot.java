@@ -165,7 +165,7 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
      * @return pilot status
      */
     public PilotStatus pilotStatus() {
-        return pilotStatus;
+        return this.pilotStatus;
     }
 
     /**
@@ -188,7 +188,7 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
      * @return pilot certification
      */
     public Certification certification() {
-        return certification;
+        return this.certification;
     }
 
     /**
@@ -197,23 +197,23 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
      * @return pilot companyIATACode
      */
     public IATACode companyIATACode() {
-        return companyIATACode;
+        return this.companyIATACode;
     }
 
     public EmailAddress email() {
-        return email;
+        return this.email;
     }
 
     public PhoneNumber phoneNumber() {
-        return phoneNumber;
+        return this.phoneNumber;
     }
 
     public String firstName() {
-        return firstName;
+        return this.firstName;
     }
 
     public String lastName() {
-        return lastName;
+        return this.lastName;
     }
 
     public Set<AircraftModelDesignator> certifiedAircraftModelsDesignators() {
@@ -237,20 +237,20 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
         if (!certifiedAircraftModels.isEmpty()) {
 
             for (AircraftModelDesignator aircraftModelDesignator : certifiedAircraftModels) {
-                certifiedAircraftModelsString += aircraftModelDesignator + "| ";
+                certifiedAircraftModelsString += aircraftModelDesignator.toString() + "|| ";
             }
 
-            if (certifiedAircraftModelsString.endsWith("| ")) {
-                certifiedAircraftModelsString = certifiedAircraftModelsString.substring(0, certifiedAircraftModelsString.length() - 2);
+            if (certifiedAircraftModelsString.endsWith("|| ")) {
+                certifiedAircraftModelsString = certifiedAircraftModelsString.substring(0, certifiedAircraftModelsString.length() - 3);
             }
         }
 
-        return "Pilot: " + firstName + " " + lastName +
+        return "Pilot " + firstName.toUpperCase() + " " + lastName.toUpperCase() +
                 "\nPilot ID: " + id +
                 "\nEmail: " + email +
                 "\nPhone Number: " + phoneNumber +
                 "\nCertification: " + certification +
-                "\nPilot Status: " + pilotStatus +
+                "\nPilot Status: " + pilotStatus.toString() +
                 "\nCompany IATA Code: " + companyIATACode +
                 "\nCertified Aircraft Models Designators: " + certifiedAircraftModelsString;
     }

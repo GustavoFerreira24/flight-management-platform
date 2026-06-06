@@ -2,11 +2,12 @@ package isep.aisafe.application.pilot;
 
 import eapli.framework.general.domain.model.EmailAddress;
 import eapli.framework.infrastructure.authz.domain.model.Role;
+import eapli.framework.infrastructure.authz.application.AuthzRegistry; // <-- Adicionado
+import eapli.framework.infrastructure.authz.application.UserManagementService; // <-- Adicionado em vez do controlador de backoffice
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.aircraftmodel.domain.AircraftModelRepository;
 import isep.aisafe.airtransportcompany.domain.IATACode;
-import isep.aisafe.application.usermanagement.RegisterBackofficeUserController;
 import isep.aisafe.application.usermanagement.UserRegistrationValidator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
@@ -28,12 +29,11 @@ public class RegisterPilotController implements RegisterPilotService {
     final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     private final UserRegistrationValidator userValidator;
-    private final RegisterBackofficeUserController backofficeUserController;
+    private final UserManagementService userService; // <-- ALTERADO: Agora usa diretamente o serviço da framework
     private final AircraftModelRepository aircraftModelRepo;
 
     /**
      * Construtor por defeito utilizado pela Interface de Utilizador (UI).
-     * Inicializa os serviços e repositórios através do contexto de persistência.
      */
     public RegisterPilotController() {
         this(
@@ -41,26 +41,23 @@ public class RegisterPilotController implements RegisterPilotService {
                 PersistenceContext.repositories().pilots(),
                 PersistenceContext.repositories().customerCollaborators(),
                 new UserRegistrationValidator(),
-                new RegisterBackofficeUserController(),
+                AuthzRegistry.userService(), // <-- ALTERADO: Vai buscar o serviço ao teu AuthzRegistry
                 PersistenceContext.repositories().aircraftModels()
         );
     }
 
     /**
-     * Construtor utilizado para testes unitários, permitindo a injeção de dependências.
-     *
-     * @param authz serviço de autorização
-     * @param pilotRepo repositório de aeroportos
+     * Construtor utilizado para testes unitários.
      */
     RegisterPilotController(
             final AisafeAuthorizationService authz,
             final PilotRepository pilotRepo,
             final CustomerCollaboratorRepository collaboratorRepo,
             final UserRegistrationValidator userValidator,
-            final RegisterBackofficeUserController backofficeUserController,
+            final UserManagementService userService, // <-- ALTERADO
             final AircraftModelRepository aircraftModelRepo) {
 
-        if (authz == null || pilotRepo == null || collaboratorRepo == null|| userValidator == null || backofficeUserController == null || aircraftModelRepo == null) {
+        if (authz == null || pilotRepo == null || collaboratorRepo == null || userValidator == null || userService == null || aircraftModelRepo == null) {
             throw new IllegalArgumentException("As dependências não podem ser nulas.");
         }
 
@@ -68,20 +65,13 @@ public class RegisterPilotController implements RegisterPilotService {
         this.pilotRepo = pilotRepo;
         this.collaboratorRepo = collaboratorRepo;
         this.userValidator = userValidator;
-        this.backofficeUserController = backofficeUserController;
+        this.userService = userService; // <-- ALTERADO
         this.aircraftModelRepo = aircraftModelRepo;
     }
 
     /**
      * Regista um novo piloto no sistema.
-     *
-     * @param id                      ID do piloto (3 números)
-     * @param issuedAtStr             a partir de quando a certificação é válida
-     * @param validUntilStr           até quando a certificação é válida
-     * @param aircraftModelDesignator
-     * @return o piloto registrado
      **/
-
     public Pilot registerPilot(
             final String id,
             final String issuedAtStr,
@@ -115,7 +105,7 @@ public class RegisterPilotController implements RegisterPilotService {
         Set<Role> roles = Set.of(AisafeRoles.PILOT);
 
         userValidator.validate(username, rawPassword, firstName, lastName, email, roles);
-        backofficeUserController.registerUser(username, rawPassword, firstName, lastName, email, roles);
+        userService.registerNewUser(username, rawPassword, firstName, lastName, email, roles);
 
         IATACode companyIATACode = collaborator.airTransportCompany().iataCode();
 
@@ -136,27 +126,37 @@ public class RegisterPilotController implements RegisterPilotService {
         Pilot pilot = new Pilot(pilotID, certification, pilotStatus, companyIATACode, emailAddress, phone, firstName, lastName, certifiedAircraftModels);
 
         return (pilotRepo.save(pilot));
-
     }
 
     private List<AircraftModelDesignator> getAircraftModels(String aircraftModelDesignator) {
+        List<String> inputs = Arrays.asList(aircraftModelDesignator.split(","));
+        List<AircraftModelDesignator> finalDesignators = new ArrayList<>();
 
-        List<String> aircraftModels= Arrays.asList(aircraftModelDesignator.split(","));
-        List<AircraftModelDesignator> aircraftModelDesignators = new ArrayList<>();
+        Iterable<AircraftModel> existingModels = aircraftModelRepo.findAll();
 
-        for (String aircraftModelStr : aircraftModels) {
-            AircraftModelDesignator designator = AircraftModelDesignator.valueOf(aircraftModelStr.trim());
-            aircraftModelDesignators.add(designator);
+        for (String inputStr : inputs) {
+            String cleanInput = inputStr.trim().toUpperCase();
+            boolean found = false;
+
+            for (AircraftModel model : existingModels) {
+                String designatorStr = model.identity().toString().toUpperCase();
+
+                if (designatorStr.equals(cleanInput) || designatorStr.startsWith(cleanInput + " ")) {
+                    finalDesignators.add(model.identity());
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                finalDesignators.add(AircraftModelDesignator.valueOf(cleanInput));
+            }
         }
 
-        return aircraftModelDesignators;
-
+        return finalDesignators;
     }
-
 
     public Iterable<AircraftModel> getAllAircraftModels() {
         return this.aircraftModelRepo.findAll();
     }
-
-
 }

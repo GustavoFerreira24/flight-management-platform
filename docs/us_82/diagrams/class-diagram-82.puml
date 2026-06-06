@@ -11,6 +11,7 @@ class InsertWeatherDataInFlightPlanController <<Controller>> {
     - ensureFlightPlanBelongsToAuthenticatedPilot(flightPlan : FlightPlan) : void
     - parseDay(weatherDataDay : String) : LocalDate
     - ensureNotBlank(value : String, message : String) : void
+    - flightPlanRepository() : FlightPlanRepository
     - weatherDataRepository() : WeatherDataRepository
 }
 
@@ -25,10 +26,12 @@ class AisafePermissions <<Permissions>> {
 
 interface FlightPlanRepository {
     + findByIdentifier(identifier : FlightPlanIdentifier) : Optional<FlightPlan>
+    + findByDepartureBetween(startInclusive : LocalDateTime, endExclusive : LocalDateTime) : Iterable<FlightPlan>
     + save(flightPlan : FlightPlan) : FlightPlan
 }
 
-class InMemoryFlightPlanRepository <<Repository>>
+class InMemoryFlightPlanRepository <<Test Repository>>
+class JpaFlightPlanRepository <<Repository>>
 
 interface WeatherDataRepository {
     + findByDayAndAirControlArea(day : LocalDate, code : AirControlAreaCode) : Optional<WeatherData>
@@ -36,18 +39,31 @@ interface WeatherDataRepository {
 
 class FlightPlan <<Aggregate Root>> {
     - identifier : FlightPlanIdentifier
-    - pilotIdentifier : PilotIdentifier
+    - flight : Flight
+    - aircraft : Aircraft
+    - pilot : Pilot
+    - fuelQuantity : FuelQuantity
+    - status : FlightPlanStatus
     - weatherDataIds : List<WeatherDataId>
     - testStatus : FlightPlanTestStatus
     + addWeatherData(weatherData : WeatherData) : void
     + markTested() : void
+    + pilot() : Pilot
     + testStatus() : FlightPlanTestStatus
     + weatherDataIds() : List<WeatherDataId>
-    + pilotIdentifier() : PilotIdentifier
 }
 
 class FlightPlanIdentifier <<Value Object>>
-class PilotIdentifier <<Value Object>>
+class Flight <<Aggregate Root>>
+class Aircraft <<Aggregate Root>>
+class Pilot <<Aggregate Root>> {
+    + identity() : PilotID
+}
+class PilotID <<Value Object>>
+class FuelQuantity <<Value Object>>
+enum FlightPlanStatus {
+    DRAFT
+}
 enum FlightPlanTestStatus {
     NOT_TESTED
     TESTED
@@ -68,19 +84,25 @@ InsertWeatherDataInFlightPlanController --> AisafePermissions
 InsertWeatherDataInFlightPlanController --> FlightPlanRepository
 InsertWeatherDataInFlightPlanController --> WeatherDataRepository
 InsertWeatherDataInFlightPlanController --> FlightPlanIdentifier
-InsertWeatherDataInFlightPlanController --> PilotIdentifier
 InsertWeatherDataInFlightPlanController --> AirControlAreaCode
 InsertWeatherDataInFlightPlanController --> FlightPlan
 InsertWeatherDataInFlightPlanController --> WeatherData
+InsertWeatherDataInFlightPlanController --> PilotID
 
 InMemoryFlightPlanRepository ..|> FlightPlanRepository
+JpaFlightPlanRepository ..|> FlightPlanRepository
 FlightPlanRepository --> FlightPlan
 WeatherDataRepository --> WeatherData
 
 FlightPlan *-- FlightPlanIdentifier
-FlightPlan *-- PilotIdentifier
+FlightPlan --> Flight
+FlightPlan --> Aircraft
+FlightPlan --> Pilot
+FlightPlan *-- FuelQuantity
+FlightPlan *-- FlightPlanStatus
 FlightPlan *-- FlightPlanTestStatus
 FlightPlan "1" *-- "0..*" WeatherDataId
+Pilot *-- PilotID
 WeatherData *-- WeatherDataId
 WeatherData *-- AirControlAreaCode
 

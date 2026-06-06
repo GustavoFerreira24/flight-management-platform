@@ -25,8 +25,10 @@ alt flight plan not found
 else flight plan found
     Controller -> Authz : authenticatedUsername()
     Authz --> Controller : username
-    Controller -> FlightPlan : pilotIdentifier()
-    FlightPlan --> Controller : PilotIdentifier
+    Controller -> FlightPlan : pilot()
+    FlightPlan --> Controller : Pilot
+    Controller -> FlightPlan : pilot().identity()
+    FlightPlan --> Controller : PilotID
 
     alt authenticated pilot does not own flight plan
         Controller --> Pilot : IllegalArgumentException("Flight plan does not belong to authenticated pilot.")

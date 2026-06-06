@@ -35,7 +35,7 @@ public class ManagePilotsUI {
                         "Manage Pilots",
                         ConsoleStyle.option(1, "Register Pilot                                 (US75)"),
                         ConsoleStyle.option(2, "List Pilot Roster                              (US76)"),
-                        ConsoleStyle.option(3, "Delete Pilot                                   (US77)"),
+                        ConsoleStyle.option(3, "Delete / Deactivate Pilot                      (US77)"),
                         ConsoleStyle.option(0, "Back                                                 ")
                 );
                 ConsoleStyle.printPrompt("Option: ");
@@ -47,10 +47,10 @@ public class ManagePilotsUI {
                         executeMenuAction(() -> new RegisterPilotUI(scanner).show());
                         break;
                     case "2":
-                        System.out.println("List pilot roster (US76) not implemented yet");
+                        executeMenuAction(() -> new ListPilotRosterUI(scanner).show());
                         break;
                     case "3":
-                        System.out.println("Delete pilot (US77) not implemented yet");
+                        executeMenuAction(() -> new DeactivatePilotUI(scanner).show());
                         break;
                     case "0":
                         keepRunning = false;
