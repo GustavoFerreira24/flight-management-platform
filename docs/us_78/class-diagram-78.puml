@@ -1,0 +1,81 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class AirCompanyRemoteAccessController <<Controller>> {
+    - credentialHandler : CredentialHandler
+    - authz : AisafeAuthorizationService
+    - operations : AirCompanyRemoteOperations
+    - authenticated : boolean
+    - username : String
+    + handle(line : String) : RemoteAccessResponse
+    + isAuthenticated() : boolean
+    + username() : String
+    - dispatch(request : RemoteAccessRequest) : RemoteAccessResponse
+    - login(request : RemoteAccessRequest) : RemoteAccessResponse
+    - logout() : RemoteAccessResponse
+}
+
+interface AirCompanyRemoteOperations {
+    + listAircraftFleet() : String
+    + registerAircraft(...) : String
+    + decommissionAircraft(registration : String) : String
+    + createFlightRoute(routeDesignator : String, departureAirportIcao : String, destinationAirportIcao : String) : String
+}
+
+class ControllerAirCompanyRemoteOperations <<Adapter>> {
+    - listAircraftFleetController : ListAircraftFleetController
+    - registerAircraftController : RegisterAircraftController
+    - decommissionAircraftController : DecommissionAircraftController
+    - registerFlightRouteController : RegisterFlightRouteController
+}
+
+class RemoteAccessRequest <<Protocol>> {
+    - command : String
+    - arguments : List<String>
+    + parse(line : String) : RemoteAccessRequest
+    + command() : String
+    + argument(index : int) : String
+    + argumentCount() : int
+}
+
+class RemoteAccessResponse <<Protocol>> {
+    - status : String
+    - payload : String
+    + ok(message : String) : RemoteAccessResponse
+    + data(payload : String) : RemoteAccessResponse
+    + error(message : String) : RemoteAccessResponse
+    + encode() : String
+}
+
+class ListAircraftFleetController <<Controller>>
+class RegisterAircraftController <<Controller>>
+class DecommissionAircraftController <<Controller>>
+class RegisterFlightRouteController <<Controller>>
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+interface CredentialHandler {
+    + authWithCredentialData(identity : String, password : String) : boolean
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} AIR_COMPANY_CONFIGURATION : Role[]
+}
+
+AirCompanyRemoteAccessController --> CredentialHandler
+AirCompanyRemoteAccessController --> AisafeAuthorizationService
+AirCompanyRemoteAccessController --> AisafePermissions
+AirCompanyRemoteAccessController --> RemoteAccessRequest
+AirCompanyRemoteAccessController --> RemoteAccessResponse
+AirCompanyRemoteAccessController --> AirCompanyRemoteOperations
+
+ControllerAirCompanyRemoteOperations ..|> AirCompanyRemoteOperations
+ControllerAirCompanyRemoteOperations --> ListAircraftFleetController
+ControllerAirCompanyRemoteOperations --> RegisterAircraftController
+ControllerAirCompanyRemoteOperations --> DecommissionAircraftController
+ControllerAirCompanyRemoteOperations --> RegisterFlightRouteController
+
+@enduml

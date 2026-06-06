@@ -74,6 +74,12 @@ The EAPLI side introduces a small remote access controller and protocol objects:
 - `AirCompanyRemoteOperations`: abstraction for the Air Transport Company Collaborator use cases exposed remotely.
 - `ControllerAirCompanyRemoteOperations`: production implementation that delegates to existing EAPLI controllers.
 
+Diagrams:
+
+- US78 class diagram: [PUML](class-diagram-78.puml) | [SVG](svg/class-diagram-78.svg)
+- US78 sequence diagram: [PUML](sequence-diagram-78.puml) | [SVG](svg/sequence-diagram-78.svg)
+- US78 global design SD: [PUML](../global-artifacts/03.design/puml/US78RemoteAccess-SD.puml) | [SVG](../global-artifacts/03.design/svg/US78RemoteAccess-SD.svg)
+
 The remote controller does not contain domain rules. It only coordinates remote command handling and delegates business behavior to the existing controllers.
 
 ## 6. Authentication and Authorization

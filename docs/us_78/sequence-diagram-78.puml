@@ -1,0 +1,48 @@
+@startuml
+title US78 - Air Transport Company Collaborator Remote Access Scenario
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "Air Transport Company Collaborator" as ATC
+boundary "Air Transport Company App\n:TCP Client" as Client
+control "server application\n:TCP Server" as Server
+control ":AirCompanyRemoteAccessController" as RemoteC
+participant ":RemoteAccessRequest" as Request
+participant "credentialHandler\n:CredentialHandler" as Credentials
+participant "authz\n:AisafeAuthorizationService" as Authz
+participant "operations\n:ControllerAirCompanyRemoteOperations" as Ops
+control ":ListAircraftFleetController" as FleetC
+
+ATC -> Client : submit remote command
+Client -> Server : TCP line\nLOGIN|username|password
+Server -> RemoteC : handle(line)
+RemoteC -> Request ++ : parse(line)
+Request --> RemoteC : request
+RemoteC -> Credentials : authWithCredentialData(username, password)
+Credentials --> RemoteC : accepted
+RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+Authz --> RemoteC : authorized
+RemoteC --> Server : OK|Authenticated as username.
+Server --> Client : TCP response
+Client --> ATC : show login success
+
+ATC -> Client : request aircraft fleet
+Client -> Server : TCP line\nLIST_FLEET
+Server -> RemoteC : handle(line)
+RemoteC -> Request ++ : parse(line)
+Request --> RemoteC : request
+RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+Authz --> RemoteC : authorized
+RemoteC -> Ops : listAircraftFleet()
+Ops -> FleetC : listAircraftFleet()
+FleetC --> Ops : fleet entries
+Ops --> RemoteC : formatted fleet data
+RemoteC --> Server : DATA|formatted fleet data
+Server --> Client : TCP response
+Client --> ATC : show fleet data
+
+@enduml
