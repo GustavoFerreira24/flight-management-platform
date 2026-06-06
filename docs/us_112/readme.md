@@ -43,7 +43,11 @@ Main classes:
 - `GenerateMonthlyReportController`: coordinates authorization, period calculation, repository query and generation.
 - `GenerateMonthlyReportUI`: console UI available in the Flight Control menu.
 
-Class diagram: [class-diagram-112.puml](class-diagram-112.puml)
+Diagrams:
+
+- US112 class diagram: [PUML](class-diagram-112.puml) | [SVG](svg/class-diagram-112.svg)
+- US112 sequence diagram: [PUML](sequence-diagram-112.puml) | [SVG](svg/sequence-diagram-112.svg)
+- US112 global design SD: [PUML](../global-artifacts/03.design/puml/US112MonthlyReportGeneration-SD.puml) | [SVG](../global-artifacts/03.design/svg/US112MonthlyReportGeneration-SD.svg)
 
 Generated sections:
 

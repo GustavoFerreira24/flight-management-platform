@@ -1,0 +1,41 @@
+@startuml
+title US112 - Monthly Report Generation Scenario
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "Flight Control Operator" as FCO
+boundary ":GenerateMonthlyReportUI" as UI
+control ":GenerateMonthlyReportController" as C
+participant "authz\n:AisafeAuthorizationService" as Authz
+participant "flightPlanRepository\n:FlightPlanRepository" as Repo
+control ":MonthlyReportGenerator" as Generator
+control ":MonthlyReportRenderer" as Renderer
+participant "report\n:MonthlyReport" as Report
+
+FCO -> UI : request monthly report
+UI -> FCO : ask for year and month
+FCO -> UI : submit year and month
+UI -> C : generateMonthlyReportText(year, month)
+
+C -> Authz : ensureAuthenticatedUserHasAnyOf(FLIGHT_CONTROL)
+Authz --> C : authorized
+
+C -> C : calculate period start/end
+C -> Repo : findByDepartureBetween(start, end)
+Repo --> C : flight plans
+
+C -> Generator : generate(period, flightPlans, generatedAt)
+Generator -> Report ++ : create(title, period, generatedAt, sections)
+Report --> Generator : report
+Generator --> C : report
+
+C -> Renderer : render(report)
+Renderer --> C : plain text report
+C --> UI : rendered report
+UI --> FCO : display monthly report
+
+@enduml
