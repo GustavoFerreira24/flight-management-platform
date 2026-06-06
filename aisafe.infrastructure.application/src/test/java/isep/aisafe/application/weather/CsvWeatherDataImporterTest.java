@@ -8,6 +8,9 @@ import isep.aisafe.aircontrolarea.domain.InMemoryAirControlAreaRepository;
 import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.support.CapturingAuthorizationService;
 import isep.aisafe.weatherdata.domain.InMemoryWeatherDataRepository;
+import isep.aisafe.weatherdata.domain.InMemoryWeatherProviderRepository;
+import isep.aisafe.weatherdata.domain.WeatherProvider;
+import isep.aisafe.weatherdata.domain.WeatherProviderType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -240,6 +243,11 @@ class CsvWeatherDataImporterTest {
     void ensureCsvImporterCanBeUsedByBulkImportController() throws IOException {
         final CsvWeatherDataImporter importer = new CsvWeatherDataImporter();
         final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final InMemoryWeatherProviderRepository weatherProviderRepository = new InMemoryWeatherProviderRepository();
+        weatherProviderRepository.save(new WeatherProvider(
+                "IPMA",
+                List.of(WeatherProviderType.valueOf("STATION"))
+        ));
         final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
         airControlAreaRepository.save(new AirControlArea(
                 AirControlAreaCode.valueOf("LISACC"),
@@ -250,7 +258,8 @@ class CsvWeatherDataImporterTest {
         final ImportBulkWeatherDataController controller = new ImportBulkWeatherDataController(
                 new CapturingAuthorizationService(),
                 weatherDataRepository,
-                airControlAreaRepository
+                airControlAreaRepository,
+                weatherProviderRepository
         );
         final Path file = writeCsv("controller-weather.csv", String.join(System.lineSeparator(),
                 HEADER,

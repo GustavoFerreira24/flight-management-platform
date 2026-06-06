@@ -4,6 +4,7 @@ import isep.aisafe.aircontrolarea.domain.AirControlAreaRepository;
 import isep.aisafe.infrastructure.authz.*;
 import isep.aisafe.infrastructure.persistence.*;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
+import isep.aisafe.weatherdata.domain.WeatherProviderRepository;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,6 +21,7 @@ public class ImportBulkWeatherDataController {
     private final AisafeAuthorizationService authz;
     private final WeatherDataRepository weatherDataRepository;
     private final AirControlAreaRepository airControlAreaRepository;
+    private final WeatherProviderRepository weatherProviderRepository;
     private final WeatherDataImporterFactory importerFactory;
 
     /**
@@ -29,17 +31,7 @@ public class ImportBulkWeatherDataController {
         authz = new AisafeAuthorizationService();
         weatherDataRepository = null;
         airControlAreaRepository = null;
-        importerFactory = new WeatherDataImporterFactory();
-    }
-
-    ImportBulkWeatherDataController(
-            final AisafeAuthorizationService authz,
-            final WeatherDataRepository weatherDataRepository,
-            final AirControlAreaRepository airControlAreaRepository) {
-
-        this.authz = Objects.requireNonNull(authz, "authz cannot be null");
-        this.weatherDataRepository = Objects.requireNonNull(weatherDataRepository, "weatherDataRepository cannot be null");
-        this.airControlAreaRepository = Objects.requireNonNull(airControlAreaRepository, "airControlAreaRepository cannot be null");
+        weatherProviderRepository = null;
         importerFactory = new WeatherDataImporterFactory();
     }
 
@@ -47,11 +39,26 @@ public class ImportBulkWeatherDataController {
             final AisafeAuthorizationService authz,
             final WeatherDataRepository weatherDataRepository,
             final AirControlAreaRepository airControlAreaRepository,
+            final WeatherProviderRepository weatherProviderRepository) {
+
+        this.authz = Objects.requireNonNull(authz, "authz cannot be null");
+        this.weatherDataRepository = Objects.requireNonNull(weatherDataRepository, "weatherDataRepository cannot be null");
+        this.airControlAreaRepository = Objects.requireNonNull(airControlAreaRepository, "airControlAreaRepository cannot be null");
+        this.weatherProviderRepository = Objects.requireNonNull(weatherProviderRepository, "weatherProviderRepository cannot be null");
+        importerFactory = new WeatherDataImporterFactory();
+    }
+
+    ImportBulkWeatherDataController(
+            final AisafeAuthorizationService authz,
+            final WeatherDataRepository weatherDataRepository,
+            final AirControlAreaRepository airControlAreaRepository,
+            final WeatherProviderRepository weatherProviderRepository,
             final WeatherDataImporterFactory importerFactory) {
 
         this.authz = Objects.requireNonNull(authz, "authz cannot be null");
         this.weatherDataRepository = Objects.requireNonNull(weatherDataRepository, "weatherDataRepository cannot be null");
         this.airControlAreaRepository = Objects.requireNonNull(airControlAreaRepository, "airControlAreaRepository cannot be null");
+        this.weatherProviderRepository = Objects.requireNonNull(weatherProviderRepository, "weatherProviderRepository cannot be null");
         this.importerFactory = Objects.requireNonNull(importerFactory, "importerFactory cannot be null");
     }
 
@@ -100,7 +107,8 @@ public class ImportBulkWeatherDataController {
         final RegisterWeatherDataController registerController = new RegisterWeatherDataController(
                 authz,
                 weatherDataRepository(),
-                airControlAreaRepository()
+                airControlAreaRepository(),
+                weatherProviderRepository()
         );
 
         registerController.registerWeatherMeasurement(
@@ -141,5 +149,13 @@ public class ImportBulkWeatherDataController {
         }
 
         return PersistenceContext.repositories().airControlAreas();
+    }
+
+    private WeatherProviderRepository weatherProviderRepository() {
+        if (weatherProviderRepository != null) {
+            return weatherProviderRepository;
+        }
+
+        return PersistenceContext.repositories().weatherProviders();
     }
 }
