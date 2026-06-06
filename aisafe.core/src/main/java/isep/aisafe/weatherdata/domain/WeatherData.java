@@ -67,6 +67,7 @@ public class WeatherData implements AggregateRoot<WeatherDataId>, Serializable {
      * Adds a measurement to this weather data aggregate.
      *
      * @param provider measurement source
+     * @param providerType acquisition type used by the provider
      * @param parameter measured weather parameter
      * @param value measured value
      * @param unit measurement unit
@@ -75,13 +76,14 @@ public class WeatherData implements AggregateRoot<WeatherDataId>, Serializable {
      */
     public void addMeasurement(
             final WeatherProvider provider,
+            final WeatherProviderType providerType,
             final WeatherParameter parameter,
             final double value,
             final WeatherUnit unit,
             final double altitude,
             final WeatherCoordinates coordinates) {
 
-        measurements.add(new WeatherMeasurement(provider, parameter, value, unit, altitude, coordinates));
+        measurements.add(new WeatherMeasurement(provider, providerType, parameter, value, unit, altitude, coordinates));
     }
 
     @Override

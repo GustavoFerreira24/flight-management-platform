@@ -9,7 +9,10 @@ import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.support.CapturingAuthorizationService;
 import isep.aisafe.weatherdata.domain.InMemoryWeatherDataRepository;
+import isep.aisafe.weatherdata.domain.InMemoryWeatherProviderRepository;
 import isep.aisafe.weatherdata.domain.WeatherData;
+import isep.aisafe.weatherdata.domain.WeatherProvider;
+import isep.aisafe.weatherdata.domain.WeatherProviderType;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -41,21 +44,31 @@ class RegisterWeatherDataControllerTest {
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
         final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
+        final InMemoryWeatherProviderRepository weatherProviderRepository = weatherProviderRepository();
 
         // Act / Assert
         assertThrows(IllegalArgumentException.class, () -> new RegisterWeatherDataController(
                 null,
                 weatherDataRepository,
-                airControlAreaRepository
+                airControlAreaRepository,
+                weatherProviderRepository
         ));
         assertThrows(IllegalArgumentException.class, () -> new RegisterWeatherDataController(
                 authz,
                 null,
-                airControlAreaRepository
+                airControlAreaRepository,
+                weatherProviderRepository
         ));
         assertThrows(IllegalArgumentException.class, () -> new RegisterWeatherDataController(
                 authz,
                 weatherDataRepository,
+                null,
+                weatherProviderRepository
+        ));
+        assertThrows(IllegalArgumentException.class, () -> new RegisterWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository,
                 null
         ));
     }
@@ -147,7 +160,7 @@ class RegisterWeatherDataControllerTest {
         );
 
         assertEquals("meteo.provider@aisafe.com", weatherData.measurements().getFirst().provider().name());
-        assertEquals("MANUAL_INPUT", weatherData.measurements().getFirst().provider().type().toString());
+        assertEquals("MANUAL_INPUT", weatherData.measurements().getFirst().providerType().toString());
     }
 
     @Test
@@ -169,7 +182,8 @@ class RegisterWeatherDataControllerTest {
         final RegisterWeatherDataController controller = new RegisterWeatherDataController(
                 authz,
                 new InMemoryWeatherDataRepository(),
-                airControlAreaRepository
+                airControlAreaRepository,
+                weatherProviderRepository()
         );
 
         final List<String> result = controller.airControlAreasContaining(40.4936, -3.56676);
@@ -228,7 +242,8 @@ class RegisterWeatherDataControllerTest {
         final RegisterWeatherDataController controller = new RegisterWeatherDataController(
                 new CapturingAuthorizationService(),
                 weatherDataRepository,
-                new InMemoryAirControlAreaRepository()
+                new InMemoryAirControlAreaRepository(),
+                weatherProviderRepository()
         );
 
         // Act / Assert
@@ -239,6 +254,58 @@ class RegisterWeatherDataControllerTest {
         assertTrue(weatherDataRepository.findByDayAndAirControlArea(
                 LocalDate.of(2026, 6, 3),
                 AirControlAreaCode.valueOf("UNKNOWN")
+        ).isEmpty());
+    }
+
+    /**
+     * Purpose: verify that providers must be pre-registered before weather data registration.
+     * Scenario: submit valid measurement data for an unknown provider.
+     * Expected output: an IllegalArgumentException is thrown and nothing is persisted.
+     */
+    @Test
+    void ensureUnknownWeatherProviderIsRejected() {
+        // Arrange
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+
+        // Act / Assert
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-03", "LISACC", "Unknown Provider", "Manual",
+                "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+        assertEquals("Weather provider not found.", exception.getMessage());
+        assertTrue(weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2026, 6, 3),
+                AirControlAreaCode.valueOf("LISACC")
+        ).isEmpty());
+    }
+
+    /**
+     * Purpose: verify that providers can only submit measurements through supported types.
+     * Scenario: submit valid measurement data with a provider type not supported by the provider.
+     * Expected output: an IllegalArgumentException is thrown and nothing is persisted.
+     */
+    @Test
+    void ensureUnsupportedWeatherProviderTypeIsRejected() {
+        // Arrange
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final RegisterWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                weatherDataRepository
+        );
+
+        // Act / Assert
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> controller.registerWeatherMeasurement(
+                "2026-06-03", "LISACC", "Manual Station", "SATELLITE",
+                "temperature", 18.5, "C", 1200, 38.72, -9.14
+        ));
+        assertEquals("Weather provider does not support the submitted provider type.", exception.getMessage());
+        assertTrue(weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2026, 6, 3),
+                AirControlAreaCode.valueOf("LISACC")
         ).isEmpty());
     }
 
@@ -395,8 +462,22 @@ class RegisterWeatherDataControllerTest {
         return new RegisterWeatherDataController(
                 authz,
                 weatherDataRepository,
-                airControlAreaRepository
+                airControlAreaRepository,
+                weatherProviderRepository()
         );
+    }
+
+    private InMemoryWeatherProviderRepository weatherProviderRepository() {
+        final InMemoryWeatherProviderRepository weatherProviderRepository = new InMemoryWeatherProviderRepository();
+        weatherProviderRepository.save(new WeatherProvider(
+                "Manual Station",
+                List.of(WeatherProviderType.valueOf("Manual"))
+        ));
+        weatherProviderRepository.save(new WeatherProvider(
+                "meteo.provider@aisafe.com",
+                List.of(WeatherProviderType.valueOf("MANUAL_INPUT"))
+        ));
+        return weatherProviderRepository;
     }
 
     private static class AuthenticatedAuthorizationService extends CapturingAuthorizationService {

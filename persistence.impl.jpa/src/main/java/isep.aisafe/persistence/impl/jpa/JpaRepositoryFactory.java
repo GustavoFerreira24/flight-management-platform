@@ -15,6 +15,7 @@ import isep.aisafe.infrastructure.persistence.RepositoryFactory;
 import isep.aisafe.manufacturer.domain.ManufacturerRepository;
 import isep.aisafe.pilot.domain.PilotRepository;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
+import isep.aisafe.weatherdata.domain.WeatherProviderRepository;
 import eapli.framework.domain.repositories.TransactionalContext;
 import eapli.framework.infrastructure.authz.domain.repositories.UserRepository;
 import eapli.framework.infrastructure.authz.repositories.impl.jpa.JpaAutoTxUserRepository;
@@ -101,6 +102,11 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public WeatherDataRepository weatherData() {
         return new JpaWeatherDataRepository(Application.settings().persistenceUnitName());
+    }
+
+    @Override
+    public WeatherProviderRepository weatherProviders() {
+        return new JpaWeatherProviderRepository(Application.settings().persistenceUnitName());
     }
 
     @Override

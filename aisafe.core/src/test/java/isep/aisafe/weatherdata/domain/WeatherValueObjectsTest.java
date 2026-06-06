@@ -111,26 +111,28 @@ class WeatherValueObjectsTest {
 
     /**
      * Purpose: verify weather provider behavior.
-     * Scenario: create providers with normalized type and same/different names.
-     * Expected output: provider exposes name/type and compares by value.
+     * Scenario: create providers with normalized names and supported types.
+     * Expected output: provider exposes its identity and supported acquisition types.
      */
     @Test
-    void ensureWeatherProviderUsesNameAndType() {
+    void ensureWeatherProviderUsesNameAndSupportedTypes() {
         // Arrange
         final WeatherProviderType type = WeatherProviderType.valueOf("manual");
-        final WeatherProvider first = WeatherProvider.valueOf(" Manual   Station ", type);
-        final WeatherProvider second = WeatherProvider.valueOf("Manual Station", type);
-        final WeatherProvider third = WeatherProvider.valueOf("Other Station", type);
+        final WeatherProvider first = new WeatherProvider(" Manual   Station ", java.util.List.of(type));
+        final WeatherProvider second = new WeatherProvider("Manual Station", java.util.List.of(type));
+        final WeatherProvider third = new WeatherProvider("Other Station", java.util.List.of(type));
 
         // Act / Assert
         assertEquals("Manual Station", first.name());
-        assertEquals(type, first.type());
-        assertEquals(first, second);
-        assertEquals(first.hashCode(), second.hashCode());
-        assertNotEquals(first, third);
+        assertEquals(WeatherProviderId.valueOf("Manual Station"), first.identity());
+        assertTrue(first.supports(type));
+        assertEquals(java.util.List.of(type), first.supportedTypes());
+        assertTrue(first.sameAs(second));
+        assertFalse(first.sameAs(third));
         assertNotEquals(first, "not a provider");
-        assertThrows(IllegalArgumentException.class, () -> WeatherProvider.valueOf(" ", type));
-        assertThrows(IllegalArgumentException.class, () -> WeatherProvider.valueOf("Station", null));
+        assertThrows(IllegalArgumentException.class, () -> new WeatherProvider(" ", java.util.List.of(type)));
+        assertThrows(IllegalArgumentException.class, () -> new WeatherProvider("Station", null));
+        assertThrows(IllegalArgumentException.class, () -> new WeatherProvider("Station", java.util.List.of()));
     }
 
     /**
