@@ -29,7 +29,7 @@ US081 and US083 deal with the Core Flight DSL import boundary used for LPROG/ANT
 
 **Dependencies/References:**
 
-This requirement depends on existing weather data from US041/US042 and on `WeatherDataRepository.findByDayAndAirControlArea(...)`. It also introduces the first dedicated `FlightPlan` domain aggregate, separate from `flightplan.importer.ImportedFlightPlan`.
+This requirement depends on existing weather data from US041/US042 and on `WeatherDataRepository.findByDayAndAirControlArea(...)`. It also depends on the persisted `FlightPlan` aggregate used by flight plan creation, separate from `flightplan.importer.ImportedFlightPlan`.
 
 ## 3. Analysis
 
@@ -58,7 +58,7 @@ The `InsertWeatherDataInFlightPlanController` coordinates the use case:
 3. Parses the weather data day using ISO local date format.
 4. Converts the flight plan identifier and air control area code into value objects.
 5. Retrieves the selected `FlightPlan` through `FlightPlanRepository`.
-6. Verifies that `FlightPlan.pilotIdentifier()` matches `AisafeAuthorizationService.authenticatedUsername()`.
+6. Verifies that `FlightPlan.pilot().identity()` matches `AisafeAuthorizationService.authenticatedUsername()`.
 7. Retrieves existing `WeatherData` through `WeatherDataRepository.findByDayAndAirControlArea(...)`.
 8. Calls `FlightPlan.addWeatherData(...)`.
 9. Saves the updated flight plan.
@@ -136,12 +136,13 @@ Implemented in `AisafePermissionsTest.ensureFlightPlanWeatherDataInsertionPermis
 
 Main implementation artifacts:
 
-- `FlightPlan`: aggregate root that stores the flight plan identifier, owner pilot identifier, associated weather data ids and test status.
+- `FlightPlan`: aggregate root that stores the flight plan identifier, flight, aircraft, pilot, fuel quantity, associated weather data ids and test status.
 - `FlightPlanIdentifier`: value object for flight plan identity.
-- `PilotIdentifier`: value object for the owning pilot identifier.
+- `Pilot`/`PilotID`: owning pilot aggregate and identifier used for ownership validation.
 - `FlightPlanTestStatus`: enum representing `NOT_TESTED`, `TESTED` and `VOID`.
 - `FlightPlanRepository`: repository abstraction for flight plan aggregates.
-- `InMemoryFlightPlanRepository`: current in-memory repository used until final persistence is introduced.
+- `InMemoryFlightPlanRepository`: in-memory repository used by tests.
+- `JpaFlightPlanRepository`: production repository used through `PersistenceContext.repositories().flightPlans()`.
 - `InsertWeatherDataInFlightPlanController`: application controller that coordinates authorization, ownership validation, weather lookup and persistence.
 - `WeatherDataRepository`: repository used to retrieve already registered/imported weather data.
 - `AisafePermissions`: defines `FLIGHT_PLAN_WEATHER_DATA_INSERTION`, restricted to `PILOT`.
@@ -164,7 +165,7 @@ Weather data day: 2027-01-10
 Air control area code: CONACC
 ```
 
-If the authenticated user is `pilot01`, the selected `FlightPlan` must have `PilotIdentifier.valueOf("pilot01")` as owner.
+If the authenticated user is `pilot01`, the selected `FlightPlan` must have a `Pilot` whose `PilotID` is `pilot01`.
 
 ### User Feedback Messages
 
@@ -182,9 +183,9 @@ Weather data not found.
 
 ## 7. Observations
 
-The current implementation intentionally keeps US082 in `flightplan.domain` and does not reuse `flightplan.importer.ImportedFlightPlan`. The importer package remains an import/DSL boundary. A future conversion from imported DSL flight plans into persisted `FlightPlan` aggregates should be explicit and should not mix importer concerns with domain behaviour.
+The current implementation intentionally keeps US082 in `flightplan.domain` and does not reuse `flightplan.importer.ImportedFlightPlan`. The importer package remains an import/DSL boundary and should not mix importer concerns with domain behaviour.
 
-The current production `FlightPlanRepository` is in-memory. Final JPA persistence can be introduced later by adding a repository factory method and a JPA repository implementation without changing the domain rule for weather data association.
+Production flight plans are persisted through `FlightPlanRepository` and `JpaFlightPlanRepository`. The in-memory repository remains useful for focused domain/application tests without changing the domain rule for weather data association.
 
 ## 8. Tests
 
