@@ -55,12 +55,14 @@ class WeatherData <<Aggregate Root>> {
 
 class WeatherMeasurement <<Value Object>> {
     - provider : WeatherProvider
+    - providerType : WeatherProviderType
     - parameter : WeatherParameter
     - value : double
     - unit : WeatherUnit
     - altitude : double
     - coordinates : WeatherCoordinates
     + provider() : WeatherProvider
+    + providerType() : WeatherProviderType
     + parameter() : WeatherParameter
     + value() : double
     + unit() : WeatherUnit
@@ -68,13 +70,14 @@ class WeatherMeasurement <<Value Object>> {
     + coordinates() : WeatherCoordinates
 }
 
-class WeatherProvider <<Value Object>> {
+class WeatherProvider <<Entity>> {
+    - identifier : WeatherProviderId
     - name : String
-    - type : WeatherProviderType
+    - supportedTypes : List<WeatherProviderType>
     + name() : String
-    + type() : WeatherProviderType
 }
 
+class WeatherProviderId <<Value Object>>
 class WeatherProviderType <<Value Object>>
 class WeatherParameter <<Value Object>>
 class WeatherUnit <<Value Object>>
@@ -114,9 +117,11 @@ WeatherData *-- WeatherDataId
 WeatherData *-- AirControlAreaCode
 WeatherData "1" *-- "0..*" WeatherMeasurement
 WeatherMeasurement *-- WeatherProvider
+WeatherMeasurement *-- WeatherProviderType
 WeatherMeasurement *-- WeatherParameter
 WeatherMeasurement *-- WeatherUnit
 WeatherMeasurement *-- WeatherCoordinates
-WeatherProvider *-- WeatherProviderType
+WeatherProvider *-- WeatherProviderId
+WeatherProvider "1" *-- "1..*" WeatherProviderType
 
 @enduml

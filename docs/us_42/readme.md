@@ -47,7 +47,7 @@ The import workflow intentionally does not duplicate business validation. Instea
 - ISO date format (`YYYY-MM-DD`);
 - air control area existence;
 - coordinates inside the air control area's geographic boundary;
-- provider name and provider type;
+- pre-registered provider name and supported provider type;
 - weather parameter support;
 - measurement value range;
 - unit compatibility;
@@ -75,11 +75,11 @@ The `ImportBulkWeatherDataUI` is available from the Weather Person Backoffice me
 
 The `ImportBulkWeatherDataController` coordinates the use case:
 
-1. Authorizes the operation with `WEATHER_DATA_MANAGEMENT`.
-2. Validates that the import path is a readable regular file.
-3. Selects an importer through `WeatherDataImporterFactory` when using `importFromFile(Path)`.
+1. Selects an importer through `WeatherDataImporterFactory` when using `importFromFile(Path)`.
+2. Authorizes the operation with `WEATHER_DATA_MANAGEMENT`.
+3. Validates that the import path is a readable regular file.
 4. Reads the external records through the selected `WeatherDataImporter`.
-5. Delegates each imported record to `RegisterWeatherDataController` for persistence and validation.
+5. Delegates each imported record to `RegisterWeatherDataController` for provider validation, persistence and domain validation.
 6. Collects per-record `IllegalArgumentException` failures as `BulkWeatherImportError` entries.
 7. Returns `BulkWeatherImportResult` with read, imported and rejected counts.
 
@@ -107,8 +107,8 @@ Fields:
 |----------------|-------------|
 | `day`          | Measurement day in ISO format `YYYY-MM-DD` |
 | `areaCode`     | Existing air control area code |
-| `providerName` | Weather data provider name, for example `IPMA` |
-| `providerType` | Source/type of data, for example `GROUND_SENSOR`, `SATELLITE`, `BALLOON` or `MANUAL_INPUT` |
+| `providerName` | Pre-registered weather data provider name, for example `IPMA` |
+| `providerType` | Acquisition method/source type used by the provider for this measurement, for example `GROUND_SENSOR`, `SATELLITE`, `BALLOON` or `MANUAL_INPUT` |
 | `parameter`    | Weather parameter, for example `TEMPERATURE`, `WIND_SPEED`, `WIND_DIRECTION`, `PRESSURE`, `HUMIDITY` |
 | `value`        | Numeric measurement value |
 | `unit`         | Measurement unit compatible with the parameter |
@@ -122,7 +122,7 @@ The import validates data at three levels:
 
 - UI validation: requires a non-blank `.csv` path and catches user-facing exceptions.
 - Importer validation: checks CSV header, field count and numeric fields.
-- Controller/domain validation: checks authorization, required data, air control area association, coordinates, provider source information, parameter, unit and value rules.
+- Controller/domain validation: checks authorization, required data, air control area association, coordinates, provider existence, provider type support, parameter, unit and value rules.
 
 Invalid CSV structure stops the import because records cannot be safely mapped. Invalid domain records are rejected individually and reported with their source line.
 
@@ -231,7 +231,7 @@ For an invalid file path, unsupported extension, malformed CSV header or unreada
 
 The current CSV parser is intentionally simple and does not support quoted commas. This is acceptable for the initial development format described by US042. Future provider-specific formats should be added as new `WeatherDataImporter` implementations instead of adding provider-specific logic to `ImportBulkWeatherDataController`.
 
-Manual weather registration uses the authenticated username as provider name and `MANUAL_INPUT` as provider type. CSV import keeps provider name and provider type from the file, allowing records such as `IPMA/SATELLITE`, `IPMA/GROUND_SENSOR` or `IPMA/BALLOON`.
+Manual weather registration uses the authenticated username as provider name and `MANUAL_INPUT` as provider type. CSV import keeps provider name and provider type from the file, allowing records such as `IPMA/SATELLITE`, `IPMA/GROUND_SENSOR` or `IPMA/BALLOON`. In both cases, the provider must already be registered and must support the submitted provider type.
 
 ## 8. Tests
 

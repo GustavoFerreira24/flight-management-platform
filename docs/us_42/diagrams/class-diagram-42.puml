@@ -24,6 +24,7 @@ class ImportBulkWeatherDataController <<Controller>> {
     - authz : AisafeAuthorizationService
     - weatherDataRepository : WeatherDataRepository
     - airControlAreaRepository : AirControlAreaRepository
+    - weatherProviderRepository : WeatherProviderRepository
     - importerFactory : WeatherDataImporterFactory
     + importFromFile(file : Path) : BulkWeatherImportResult
     + importFromFile(file : Path, importer : WeatherDataImporter) : BulkWeatherImportResult
@@ -126,6 +127,7 @@ class WeatherData <<Aggregate Root>> {
 
 class WeatherMeasurement <<Value Object>> {
     - provider : WeatherProvider
+    - providerType : WeatherProviderType
     - parameter : WeatherParameter
     - value : double
     - unit : WeatherUnit
@@ -133,12 +135,14 @@ class WeatherMeasurement <<Value Object>> {
     - coordinates : WeatherCoordinates
 }
 
-class WeatherProvider <<Value Object>> {
+class WeatherProvider <<Entity>> {
+    - identifier : WeatherProviderId
     - name : String
-    - type : WeatherProviderType
-    + {static} valueOf(name : String, type : WeatherProviderType) : WeatherProvider
+    - supportedTypes : List<WeatherProviderType>
+    + supports(providerType : WeatherProviderType) : boolean
 }
 
+class WeatherProviderId <<Value Object>>
 class WeatherProviderType <<Value Object>>
 class WeatherParameter <<Value Object>>
 class WeatherUnit <<Value Object>>
@@ -148,6 +152,10 @@ class AirControlAreaCode <<Value Object>>
 
 interface WeatherDataRepository {
     + findByDayAndAirControlArea(day : LocalDate, code : AirControlAreaCode) : Optional<WeatherData>
+}
+
+interface WeatherProviderRepository {
+    + findByIdentifier(identifier : WeatherProviderId) : Optional<WeatherProvider>
 }
 
 interface AirControlAreaRepository {
@@ -185,6 +193,7 @@ ImportBulkWeatherDataController --> BulkWeatherImportError
 ImportBulkWeatherDataController --> RegisterWeatherDataController
 ImportBulkWeatherDataController --> WeatherDataRepository
 ImportBulkWeatherDataController --> AirControlAreaRepository
+ImportBulkWeatherDataController --> WeatherProviderRepository
 
 WeatherDataImporterFactory --> CsvWeatherDataImporter
 WeatherDataImporter <|.. CsvWeatherDataImporter
@@ -195,18 +204,22 @@ RegisterWeatherDataController --> AisafeAuthorizationService
 RegisterWeatherDataController --> AisafePermissions
 RegisterWeatherDataController --> WeatherDataRepository
 RegisterWeatherDataController --> AirControlAreaRepository
+RegisterWeatherDataController --> WeatherProviderRepository
 RegisterWeatherDataController --> WeatherData
 
 WeatherData *-- WeatherDataId
 WeatherData *-- AirControlAreaCode
 WeatherData "1" *-- "0..*" WeatherMeasurement
 WeatherMeasurement *-- WeatherProvider
+WeatherMeasurement *-- WeatherProviderType
 WeatherMeasurement *-- WeatherParameter
 WeatherMeasurement *-- WeatherUnit
 WeatherMeasurement *-- WeatherCoordinates
-WeatherProvider *-- WeatherProviderType
+WeatherProvider *-- WeatherProviderId
+WeatherProvider "1" *-- "1..*" WeatherProviderType
 
 WeatherDataRepository --> WeatherData
+WeatherProviderRepository --> WeatherProvider
 AirControlAreaRepository --> AirControlArea
 AirControlArea *-- GeographicBoundary
 AirControlArea *-- AirControlAreaCode
