@@ -1,5 +1,7 @@
 package isep.aisafe.app.backoffice.console.presentation.pilot;
 
+import isep.aisafe.aircraft.domain.Aircraft;
+import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.pilot.RegisterPilotController;
 import isep.aisafe.application.pilot.RegisterPilotService;
@@ -40,7 +42,7 @@ public class RegisterPilotUI {
             ConsoleStyle.printSection("--------- PILOT REGISTRATION ----------");
 
             System.out.println();
-            System.out.println("New User's Information:");
+            System.out.println("NEW USER'S INFORMATION:");
             ConsoleStyle.printPrompt("Username: ");
             final String username = scanner.nextLine();
             ConsoleStyle.printPrompt("First Name: ");
@@ -54,21 +56,50 @@ public class RegisterPilotUI {
 
             System.out.println();
 
-            System.out.println("New Pilot's Information:");
+            System.out.println("NEW PILOT'S INFORMATION: ");
             ConsoleStyle.printPrompt("Insert Pilot ID (3 letters): ");
             final String id = scanner.nextLine();
-            ConsoleStyle.printPrompt("Select Country for Pilot Prefix:");
+            ConsoleStyle.printPrompt("Select Country for Pilot Prefix: ");
             final String countryPrefix = selectCountryPrefix();
             ConsoleStyle.printPrompt("Pilot's Phone Number: ");
             final String phoneNumber = countryPrefix + scanner.nextLine();
+
+            System.out.println();
+
             ConsoleStyle.printPrompt("Certification");
             System.out.println();
-            ConsoleStyle.printPrompt("Certification Issued At (DD-MM-YYYY):");
+            ConsoleStyle.printPrompt("Certification Issued At (DD-MM-YYYY): ");
             String issuedAtStr = scanner.nextLine().trim();
-            ConsoleStyle.printPrompt("Certification Valid Until (DD-MM-YYYY):");
+            ConsoleStyle.printPrompt("Certification Valid Until (DD-MM-YYYY): ");
             String validUntilStr = scanner.nextLine().trim();
 
+            System.out.println();
 
+            ConsoleStyle.printPrompt("How many Certified Aircraft Models does the Pilot have?: ");
+            int numberOfAircraftModels = Integer.parseInt(scanner.nextLine().trim());
+
+            Iterable<AircraftModel> aircraftModels = controller.getAllAircraftModels();
+            String aircraftModelDesignator = "";
+
+            for (int i = 0; i < numberOfAircraftModels; i++) {
+
+                int number = 1;
+
+                for (AircraftModel aircraftModel : aircraftModels) {
+
+                    ConsoleStyle.printPrompt(number + ". " + aircraftModel.designator());
+                    System.out.println();
+                    number++;
+                }
+
+                ConsoleStyle.printPrompt("Insert Aircraft Model Designator: ");
+
+                if (aircraftModelDesignator.isEmpty()) {
+                    aircraftModelDesignator = scanner.nextLine().trim();
+                } else {
+                    aircraftModelDesignator = scanner.nextLine().trim() + ",";
+                }
+            }
 
             controller.registerPilot(
                     id,
@@ -79,7 +110,8 @@ public class RegisterPilotUI {
                     lastName,
                     email,
                     password,
-                    phoneNumber
+                    phoneNumber,
+                    aircraftModelDesignator
             );
 
             System.out.println();

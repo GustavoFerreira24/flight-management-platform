@@ -103,7 +103,6 @@ public class Certification implements ValueObject {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        return "Certification Issued At: " + issuedAt.format(formatter) +
-                "\nCertification Valid Until: " + validUntil.format(formatter);
+        return "Certification Issued At: " + issuedAt.format(formatter) + " | Certification Valid Until: " + validUntil.format(formatter);
     }
 }

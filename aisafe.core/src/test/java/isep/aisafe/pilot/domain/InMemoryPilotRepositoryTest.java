@@ -1,10 +1,13 @@
 package isep.aisafe.pilot.domain;
 
 import eapli.framework.general.domain.model.EmailAddress;
+import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.Optional;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryPilotRepositoryTest {
@@ -25,8 +28,9 @@ class InMemoryPilotRepositoryTest {
         final PhoneNumber phoneNumber = PhoneNumber.valueOf("+351912345678");
         final String firstName = "Ben";
         final String lastName = "Dover";
+        final Set<AircraftModelDesignator> certifiedAircraftModels = Set.of(AircraftModelDesignator.valueOf("A320"));
 
-        return new Pilot(pilotID, certification, status, companyCode, email, phoneNumber, firstName, lastName);
+        return new Pilot(pilotID, certification, status, companyCode, email, phoneNumber, firstName, lastName, certifiedAircraftModels);
     }
 
     @Test

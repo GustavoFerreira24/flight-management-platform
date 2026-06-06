@@ -52,6 +52,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -383,7 +384,8 @@ class InsertWeatherDataInFlightPlanControllerTest {
                 EmailAddress.valueOf("pilot@example.com"),
                 PhoneNumber.valueOf("+351912345678"),
                 "Ben",
-                "Dover"
+                "Dover",
+                Set.of(AircraftModelDesignator.valueOf("A320"))
 
         );
     }

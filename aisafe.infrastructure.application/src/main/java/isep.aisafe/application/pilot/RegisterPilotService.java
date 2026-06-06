@@ -1,5 +1,6 @@
 package isep.aisafe.application.pilot;
 
+import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.pilot.domain.Pilot;
 
 public interface RegisterPilotService {
@@ -13,6 +14,8 @@ public interface RegisterPilotService {
             String lastName,
             String email,
             String rawPassword,
-            String phoneNumber
-    );
+            String phoneNumber,
+            String aircraftModelDesignator);
+
+    Iterable<AircraftModel> getAllAircraftModels();
 }
