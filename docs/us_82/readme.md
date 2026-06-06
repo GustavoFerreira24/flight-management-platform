@@ -47,9 +47,9 @@ The use case is restricted to the `PILOT` role through `AisafePermissions.FLIGHT
 
 ### 4.1. Realization
 
-![US82 class diagram](class-diagram-82.svg "US82 Class Diagram")
+![US82 class diagram](diagrams/class-diagram-82.svg "US82 Class Diagram")
 
-![US82 sequence diagram](sequence-diagram-82.svg "US82 Sequence Diagram")
+![US82 sequence diagram](diagrams/sequence-diagram-82.svg "US82 Sequence Diagram")
 
 The `InsertWeatherDataInFlightPlanController` coordinates the use case:
 
