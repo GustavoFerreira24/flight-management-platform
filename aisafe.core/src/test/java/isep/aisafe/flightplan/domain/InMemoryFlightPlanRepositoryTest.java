@@ -109,6 +109,11 @@ class InMemoryFlightPlanRepositoryTest {
         assertFalse(containsSameFlightPlan(result, before));
     }
 
+    /**
+     * Purpose: verify period lookup interval validation.
+     * Scenario: search with null boundaries or an inverted interval.
+     * Expected output: invalid intervals are rejected.
+     */
     @Test
     void ensureFindByDepartureBetweenRejectsInvalidInterval() {
         // Arrange

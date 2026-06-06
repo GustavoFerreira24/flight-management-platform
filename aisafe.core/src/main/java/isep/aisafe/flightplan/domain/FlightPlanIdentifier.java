@@ -27,6 +27,12 @@ public class FlightPlanIdentifier implements ValueObject, Comparable<FlightPlanI
         this.value = value.trim().toUpperCase();
     }
 
+    /**
+     * Creates a flight plan identifier from display text.
+     *
+     * @param value flight plan identifier text
+     * @return normalized flight plan identifier
+     */
     public static FlightPlanIdentifier valueOf(final String value) {
         return new FlightPlanIdentifier(value);
     }

@@ -10,6 +10,12 @@ import java.util.Optional;
  */
 public interface FlightPlanRepository extends DomainRepository<FlightPlanIdentifier, FlightPlan> {
 
+    /**
+     * Finds a flight plan by its business identifier.
+     *
+     * @param identifier flight plan identifier
+     * @return flight plan, if it exists
+     */
     Optional<FlightPlan> findByIdentifier(FlightPlanIdentifier identifier);
 
     /**
