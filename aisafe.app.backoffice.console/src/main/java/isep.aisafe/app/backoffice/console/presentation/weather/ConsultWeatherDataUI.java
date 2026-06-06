@@ -79,7 +79,7 @@ public class ConsultWeatherDataUI {
             System.out.println();
             System.out.println("Measurement " + index++);
             System.out.println("Provider: " + measurement.provider().name());
-            System.out.println("Provider type: " + measurement.provider().type());
+            System.out.println("Provider type: " + measurement.providerType());
             System.out.println("Parameter: " + measurement.parameter());
             System.out.println("Value: " + measurement.value() + " " + measurement.unit());
             System.out.println("Altitude: " + measurement.altitude());
