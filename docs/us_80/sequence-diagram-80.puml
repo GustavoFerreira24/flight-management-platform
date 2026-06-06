@@ -1,0 +1,74 @@
+@startuml
+title US080 - Create a Flight Plan Scenario
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "Flight Control Operator" as FCO
+boundary ":CreateFlightPlanUI" as UI
+control ":CreateFlightPlanController" as C
+participant "authz\n:AisafeAuthorizationService" as Authz
+participant "flightPlanRepository\n:FlightPlanRepository" as FlightPlanRepo
+participant "flightRepository\n:FlightRepository" as FlightRepo
+participant "aircraftRepository\n:AircraftRepository" as AircraftRepo
+participant "pilotRepository\n:PilotRepository" as PilotRepo
+participant "flight\n:Flight" as Flight
+participant "aircraft\n:Aircraft" as Aircraft
+participant "pilot\n:Pilot" as Pilot
+participant "fuelQuantity\n:FuelQuantity" as FuelQuantity
+participant "flightPlan\n:FlightPlan" as FlightPlan
+
+FCO -> UI : request flight plan creation
+UI -> FCO : ask flight plan identifier, flight designator,
+FCO -> UI : submit flight plan data
+UI -> UI : validate required text and positive fuel amount
+
+UI -> C : createFlightPlan(flightPlanId, flightDesignator,
+C -> Authz : ensureAuthenticatedUserHasAnyOf(FLIGHT_PLAN_MANAGEMENT)
+Authz --> C : authorized
+
+C -> C : FlightPlanIdentifier.valueOf(flightPlanId)
+C -> FlightPlanRepo : findByIdentifier(flightPlanIdentifier)
+FlightPlanRepo --> C : Optional<FlightPlan>
+
+alt flight plan identifier already exists
+    C --> UI : IllegalArgumentException("Flight plan identifier already exists.")
+else flight plan identifier is available
+    C -> FlightRepo : findByDesignator(FlightDesignator.valueOf(flightDesignator))
+    FlightRepo --> C : Optional<Flight>
+
+    alt flight not found
+        C --> UI : IllegalArgumentException("Flight was not found.")
+    else flight found
+        C -> AircraftRepo : findByRegistration(AircraftRegistration.valueOf(aircraftRegistration))
+        AircraftRepo --> C : Optional<Aircraft>
+
+        alt aircraft not found
+            C --> UI : IllegalArgumentException("Aircraft was not found.")
+        else aircraft found
+            C -> PilotRepo : findByCode(PilotID.valueOf(pilotId))
+            PilotRepo --> C : Optional<Pilot>
+
+            alt pilot not found
+                C --> UI : IllegalArgumentException("Pilot was not found.")
+            else pilot found
+                C -> FuelQuantity ++ : valueOf(fuelAmount, FuelUnit.valueOf(fuelUnit))
+                FuelQuantity --> C : fuelQuantity
+
+                C -> FlightPlan ++ : create(flightPlanIdentifier, flight, aircraft, pilot, fuelQuantity)
+                FlightPlan -> FlightPlan : validate flight, aircraft, pilot and company rules
+                FlightPlan --> C : draft flight plan
+
+                C -> FlightPlanRepo : save(flightPlan)
+                FlightPlanRepo --> C : saved FlightPlan
+                C --> UI : saved FlightPlan
+                UI --> FCO : success message with identity
+            end
+        end
+    end
+end
+
+@enduml
