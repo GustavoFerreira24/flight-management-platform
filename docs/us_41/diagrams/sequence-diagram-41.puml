@@ -1,0 +1,69 @@
+@startuml
+title US041 - Register Weather Data
+
+actor "Weather Person" as WeatherPerson
+participant "RegisterWeatherDataUI" as UI
+participant "RegisterWeatherDataController" as Controller
+participant "AisafeAuthorizationService" as Authz
+participant "AirControlAreaRepository" as AreaRepo
+participant "WeatherProviderRepository" as ProviderRepo
+participant "WeatherDataRepository" as WeatherRepo
+participant "WeatherData" as WeatherData
+
+WeatherPerson -> UI : show()
+activate UI
+UI -> WeatherPerson : ask day, area, provider, type,
+UI -> WeatherPerson : parameter, value, unit,
+UI -> WeatherPerson : altitude and coordinates
+WeatherPerson --> UI : registration data
+UI -> UI : validate input format and numeric ranges
+
+UI -> Controller : registerWeatherMeasurement(...)
+activate Controller
+Controller -> Authz : ensureAuthenticatedUserHasAnyOf(WEATHER_DATA_MANAGEMENT)
+Controller -> Controller : validate required fields and ISO day
+
+Controller -> AreaRepo : findByCode(areaCode)
+activate AreaRepo
+AreaRepo --> Controller : Optional<AirControlArea>
+deactivate AreaRepo
+
+alt air control area not found or coordinates outside area
+    Controller --> UI : IllegalArgumentException
+    UI -> UI : print validation error
+else valid air control area and coordinates
+    Controller -> ProviderRepo : findByIdentifier(providerName)
+    activate ProviderRepo
+    ProviderRepo --> Controller : Optional<WeatherProvider>
+    deactivate ProviderRepo
+
+    alt provider not found or provider type not supported
+        Controller --> UI : IllegalArgumentException
+        UI -> UI : print validation error
+    else registered provider supports submitted type
+        Controller -> WeatherRepo : findByDayAndAirControlArea(day, areaCode)
+        activate WeatherRepo
+        WeatherRepo --> Controller : Optional<WeatherData>
+        deactivate WeatherRepo
+
+        alt weather aggregate exists
+            Controller -> WeatherData : addMeasurement(provider, providerType, ...)
+        else weather aggregate does not exist
+            Controller -> Controller : new WeatherData(day, areaCode)
+            Controller -> WeatherData : addMeasurement(provider, providerType, ...)
+        end
+
+        Controller -> WeatherRepo : save(weatherData)
+        activate WeatherRepo
+        WeatherRepo --> Controller : persisted WeatherData
+        deactivate WeatherRepo
+        Controller --> UI : WeatherData
+        UI -> UI : print success feedback
+    end
+end
+
+deactivate Controller
+UI --> WeatherPerson : registration feedback
+deactivate UI
+
+@enduml

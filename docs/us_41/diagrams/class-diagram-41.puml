@@ -32,6 +32,7 @@ class RegisterWeatherDataController <<Controller>> {
     - ensureNotBlank(value : String, message : String) : void
     - weatherDataRepository() : WeatherDataRepository
     - airControlAreaRepository() : AirControlAreaRepository
+    - weatherProviderRepository() : WeatherProviderRepository
 }
 
 note right of RegisterWeatherDataController
@@ -46,7 +47,7 @@ class WeatherData <<Aggregate Root>> {
     - day : LocalDate
     - airControlAreaCode : AirControlAreaCode
     - measurements : List<WeatherMeasurement>
-    + addMeasurement(provider, parameter, value, unit, altitude, coordinates) : void
+    + addMeasurement(provider, providerType, parameter, value, unit, altitude, coordinates) : void
     + identity() : WeatherDataId
     + day() : LocalDate
     + airControlAreaCode() : AirControlAreaCode
@@ -55,12 +56,14 @@ class WeatherData <<Aggregate Root>> {
 
 class WeatherMeasurement <<Value Object>> {
     - provider : WeatherProvider
+    - providerType : WeatherProviderType
     - parameter : WeatherParameter
     - value : double
     - unit : WeatherUnit
     - altitude : double
     - coordinates : WeatherCoordinates
     + provider() : WeatherProvider
+    + providerType() : WeatherProviderType
     + parameter() : WeatherParameter
     + value() : double
     + unit() : WeatherUnit
@@ -84,13 +87,15 @@ class WeatherDataId <<Value Object>> {
     + {static} valueOf(day : LocalDate, areaCode : AirControlAreaCode) : WeatherDataId
 }
 
-class WeatherProvider <<Value Object>> {
+class WeatherProvider <<Entity>> {
+    - identifier : WeatherProviderId
     - name : String
-    - type : WeatherProviderType
-    + {static} valueOf(name : String, type : WeatherProviderType) : WeatherProvider
+    - supportedTypes : List<WeatherProviderType>
     + name() : String
-    + type() : WeatherProviderType
+    + supports(providerType : WeatherProviderType) : boolean
 }
+
+class WeatherProviderId <<Value Object>>
 
 class WeatherProviderType <<Value Object>> {
     - value : String
@@ -133,6 +138,10 @@ interface WeatherDataRepository {
     + findByDayAndAirControlArea(day : LocalDate, code : AirControlAreaCode) : Optional<WeatherData>
 }
 
+interface WeatherProviderRepository {
+    + findByIdentifier(identifier : WeatherProviderId) : Optional<WeatherProvider>
+}
+
 interface AirControlAreaRepository {
     + findByCode(code : AirControlAreaCode) : Optional<AirControlArea>
 }
@@ -160,6 +169,7 @@ RegisterWeatherDataController --> AisafeAuthorizationService
 RegisterWeatherDataController --> AisafePermissions
 RegisterWeatherDataController --> WeatherDataRepository
 RegisterWeatherDataController --> AirControlAreaRepository
+RegisterWeatherDataController --> WeatherProviderRepository
 RegisterWeatherDataController --> WeatherData
 RegisterWeatherDataController --> WeatherProvider
 RegisterWeatherDataController --> WeatherProviderType
@@ -172,12 +182,15 @@ WeatherData *-- AirControlAreaCode
 WeatherData "1" *-- "0..*" WeatherMeasurement
 
 WeatherMeasurement *-- WeatherProvider
+WeatherMeasurement *-- WeatherProviderType
 WeatherMeasurement *-- WeatherParameter
 WeatherMeasurement *-- WeatherUnit
 WeatherMeasurement *-- WeatherCoordinates
-WeatherProvider *-- WeatherProviderType
+WeatherProvider *-- WeatherProviderId
+WeatherProvider "1" *-- "1..*" WeatherProviderType
 
 WeatherDataRepository --> WeatherData
+WeatherProviderRepository --> WeatherProvider
 AirControlAreaRepository --> AirControlArea
 AirControlArea *-- GeographicBoundary
 AirControlArea *-- AirControlAreaCode
