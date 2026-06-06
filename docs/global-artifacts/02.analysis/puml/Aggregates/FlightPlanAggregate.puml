@@ -27,7 +27,7 @@ hide methods
         scheduledArrival
     }
 
-    class FlightPlanID <<Value Object>> {
+    class FlightPlanIdentifier <<Value Object>> {
         value
     }
 
@@ -35,7 +35,7 @@ hide methods
         value
     }
 
-    class FuelQty <<Value Object>> {
+    class FuelQuantity <<Value Object>> {
         amount
     }
 
@@ -44,9 +44,9 @@ hide methods
     }
 
 
-    FlightPlan *-- FuelQty
-    FlightPlan *-- FlightPlanID
+    FlightPlan *-- FuelQuantity
+    FlightPlan *-- FlightPlanIdentifier
     FlightPlan *-- FlightPlanStatus
-    FuelQty *-- FuelUnit
+    FuelQuantity *-- FuelUnit
 
 @enduml

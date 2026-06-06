@@ -17,7 +17,7 @@ The system must ensure that the flight plan is created with a valid initial stat
 
 - <span style="color:#70AD47">Positive Fuel Quantity</span>
 
-  A `FlightPlan` must always contain a `FuelQty` with a strictly positive amount.
+  A `FlightPlan` must always contain a `FuelQuantity` with a strictly positive amount.
 
 
 - <span style="color:#70AD47">Valid Initial Status</span>
@@ -34,7 +34,7 @@ The system must ensure that the flight plan is created with a valid initial stat
 - <span style="color:#70AD47">Aggregate Root Responsibility</span>
 
   `FlightPlan` is the Aggregate Root and the single entry point for creating a new flight plan.  
-  It encapsulates the creation of `FlightPlanStatus` and `FuelQty`, ensuring that these internal objects cannot exist independently outside the aggregate.
+  It encapsulates the creation of `FlightPlanStatus` and `FuelQuantity`, ensuring that these internal objects cannot exist independently outside the aggregate.
 
 
 - <span style="color:#70AD47">Internal Consistency Enforcement</span>
@@ -57,5 +57,5 @@ The system must ensure that the flight plan is created with a valid initial stat
 
 - <span style="color:#70AD47">Encapsulation of Internal State</span>
 
-  External components do not manipulate `FuelQty` or `FlightPlanStatus` directly.  
+  External components do not manipulate `FuelQuantity` or `FlightPlanStatus` directly.  
   They interact only with `FlightPlan`, which preserves the consistency of the aggregate and clearly defines its boundary.

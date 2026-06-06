@@ -29,6 +29,7 @@ class WeatherData <<Aggregate Root>> {
     class WeatherMeasurement <<Value Object>> {
         value
         altitude
+        providerType
     }
 
     class WeatherProvider <<Entity>> {
@@ -52,10 +53,11 @@ class WeatherData <<Aggregate Root>> {
             longitude
     }
 
-    WeatherData --> WeatherProvider
     WeatherData *-- WeatherMeasurement
+    WeatherMeasurement --> WeatherProvider
+    WeatherMeasurement --> WeatherProviderType
     WeatherMeasurement *-- Coordinates
-    WeatherProvider *-- WeatherProviderType
+    WeatherProvider "1" *-- "1..*" WeatherProviderType
     WeatherMeasurement *-- WeatherParameter
     WeatherParameter *-- WeatherUnit
 

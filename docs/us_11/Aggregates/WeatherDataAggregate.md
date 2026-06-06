@@ -8,7 +8,7 @@ A Weather Person provides the measurement data, including the day, the target ai
 
 The system first identifies the weather provider and then checks whether weather data for that same day and air control area already exists. If it exists, the new measurement is added to the existing `WeatherData` aggregate. Otherwise, a new `WeatherData` aggregate is created for that day and area, and the measurement is then added.
 
-Each measurement is recorded together with its coordinates and validated before the aggregate is persisted. The aggregate ensures that all stored measurements remain consistent with the same day and air control area, while allowing multiple measurements for different locations and altitudes within that area.
+Each measurement is recorded together with its provider, acquisition type, coordinates and altitude, and is validated before the aggregate is persisted. The aggregate ensures that all stored measurements remain consistent with the same day and air control area, while allowing multiple measurements for different locations and altitudes within that area.
 
 This scenario shows that the aggregate is responsible for keeping together the weather information that changes together and must remain consistent as a whole.
 
@@ -32,7 +32,7 @@ This scenario shows that the aggregate is responsible for keeping together the w
   Each `WeatherMeasurement` must define a valid parameter, a valid unit for that parameter, a valid altitude, and valid coordinates.
 
 - <span style="color:#70AD47">Every measurement must have an identified source</span>  
-  Each `WeatherMeasurement` must be associated with a `WeatherProvider`, so that the origin of the measurement is known.
+  Each `WeatherMeasurement` must be associated with a pre-registered `WeatherProvider` and one supported `WeatherProviderType`, so that the origin and acquisition method of the measurement are known.
 
 - <span style="color:#70AD47">Measurements only exist within weather data</span>  
   `WeatherMeasurement` objects do not have an independent lifecycle outside the `WeatherData` aggregate.
@@ -56,5 +56,5 @@ This is justified by the fact that weather conditions are not necessarily unifor
 
 - <span style="color:#70AD47">Support for provider-based data origin</span>
 
-Measurements may come from external providers, and the system must support multiple weather data sources.  
-Associating each measurement with its provider preserves traceability and keeps the aggregate aligned with future bulk import and provider aggregation scenarios.
+Measurements may come from external providers, and the system must support multiple weather data sources and acquisition methods.  
+Associating each measurement with its provider and provider type preserves traceability and keeps the aggregate aligned with future bulk import and provider aggregation scenarios.

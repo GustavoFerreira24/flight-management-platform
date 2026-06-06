@@ -328,5 +328,5 @@ This design also supports US058, which prohibits removing an engine model from a
 
 The requirements state that testing a flight plan involves verifying that the aircraft carries enough fuel and meets minimum altitude requirements. The minimum quantity of fuel is defined as the quantity of fuel the aircraft must have **at the end of the flight**, and this value is set by the air control area of the destination airport (Section 3.1.4).
 
-This makes `MinimumFuelRequirement` a domain concept belonging to `AirControlArea`, not a technical detail. It is modelled as a Value Object within the `AirControlArea` aggregate, composed of a numeric amount and a `FuelUnit`, consistent with how `FuelQty` is modelled elsewhere in the domain.
+This makes `MinimumFuelRequirement` a domain concept belonging to `AirControlArea`, not a technical detail. It is modelled as a Value Object within the `AirControlArea` aggregate, composed of a numeric amount and a `FuelUnit`, consistent with how `FuelQuantity` is modelled elsewhere in the domain.
 

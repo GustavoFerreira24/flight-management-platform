@@ -19,7 +19,7 @@ participant "aircraft\n:Aircraft" as Aircraft
 participant "pilot\n:Pilot" as Pilot
 participant "flightPlan\n:FlightPlan" as FlightPlan
 participant "flightPlanStatus\n:FlightPlanStatus" as FlightPlanStatus
-participant "fuelQty\n:FuelQty" as FuelQty
+participant "fuelQuantity\n:FuelQuantity" as FuelQuantity
 participant "fuelUnit\n:FuelUnit" as FuelUnit
 
 P -> UI : request to create flight plan
@@ -42,11 +42,11 @@ C -> FlightPlan ++ : create(flight, aircraft, pilot,\nplannedDeparture, schedule
 FlightPlan -> FlightPlanStatus ++ : create(DRAFT)
 FlightPlanStatus --> FlightPlan : status created
 
-FlightPlan -> FuelQty ++ : create(fuelAmount)
-FuelQty --> FlightPlan : fuel quantity created
+FlightPlan -> FuelQuantity ++ : create(fuelAmount)
+FuelQuantity --> FlightPlan : fuel quantity created
 
-FuelQty -> FuelUnit ++ : create(fuelUnit)
-FuelUnit --> FuelQty : fuel unit created
+FuelQuantity -> FuelUnit ++ : create(fuelUnit)
+FuelUnit --> FuelQuantity : fuel unit created
 
 FlightPlan -> FlightPlan : validateInternalInvariants()\n- fuel quantity > 0\n- initial status is valid
 FlightPlan --> C : flight plan created
