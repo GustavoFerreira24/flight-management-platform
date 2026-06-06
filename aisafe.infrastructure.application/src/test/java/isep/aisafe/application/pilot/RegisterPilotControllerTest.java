@@ -4,6 +4,9 @@ import eapli.framework.general.domain.model.EmailAddress;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.aircontrolarea.domain.*;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
+import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
+import isep.aisafe.aircraftmodel.domain.AircraftModelMotorization;
+import isep.aisafe.aircraftmodel.domain.AircraftModelType;
 import isep.aisafe.aircraftmodel.domain.InMemoryAircraftModelRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.Country;
@@ -44,6 +47,7 @@ class RegisterPilotControllerTest {
         repository.clear();
         mockEngineModelRepo = new InMemoryEngineModelRepository();
         mockAircraftModelRepo = new InMemoryAircraftModelRepository(); // Mova para aqui!
+        mockAircraftModelRepo.save(aircraftModel(engineModel()));
         mockCollaboratorRepo = new InMemoryCustomerCollaboratorRepository();
 
         mockAuthz = new AisafeAuthorizationService() {
@@ -385,6 +389,37 @@ class RegisterPilotControllerTest {
                 "Test Area " + code,
                 GeographicBoundary.valueOf(35.0, 45.0, -15.0, -5.0),
                 MinimumFuelRequirement.valueOf(1000, FuelUnit.valueOf("KG"))
+        );
+    }
+
+    private AircraftModel aircraftModel(final EngineModel engineModel) {
+        return new AircraftModel(
+                AircraftModelDesignator.valueOf("A320"),
+                AircraftModelType.valueOf("PASSENGER"),
+                AircraftModelMotorization.valueOf("TURBOFAN"),
+                6300,
+                44500,
+                79000,
+                64500,
+                27200,
+                12000,
+                833,
+                122.6,
+                0.024,
+                0.62,
+                186,
+                List.of(engineModel)
+        );
+    }
+
+    private EngineModel engineModel() {
+        return new EngineModel(
+                EngineModelDesignator.valueOf("LEAP-1A", "CFM International"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                120.0,
+                140.0,
+                0.60
         );
     }
 }
