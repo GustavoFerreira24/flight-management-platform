@@ -55,6 +55,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US78 — Air Transport Company Collaborator Remote Access
 - [Remote Access](./us_78/readme.md)
 
+#### US86 — Pilot Remote Access
+- [Pilot Remote Access](./us_86/readme.md)
+
 #### US81 — Create a Flight Plan from a File
 - [Flight Plan File Import](./us_81/implementation-notes.md)
 

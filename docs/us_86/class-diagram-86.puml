@@ -1,0 +1,89 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class PilotRemoteAccessController <<Controller>> {
+    - credentialHandler : CredentialHandler
+    - authz : AisafeAuthorizationService
+    - operations : PilotRemoteOperations
+    - authenticated : boolean
+    - username : String
+    + handle(line : String) : RemoteAccessResponse
+    + isAuthenticated() : boolean
+    + username() : String
+    - dispatch(request : RemoteAccessRequest) : RemoteAccessResponse
+    - login(request : RemoteAccessRequest) : RemoteAccessResponse
+    - logout() : RemoteAccessResponse
+    - requireAuthenticated(request : RemoteAccessRequest, expectedArguments : int) : void
+}
+
+interface PilotRemoteOperations {
+    + consultWeatherData(day : String, airControlAreaCode : String) : String
+    + insertWeatherData(flightPlanIdentifier : String, weatherDataDay : String, airControlAreaCode : String) : String
+}
+
+class ControllerPilotRemoteOperations <<Adapter>> {
+    - consultWeatherDataController : ConsultWeatherDataController
+    - insertWeatherDataInFlightPlanController : InsertWeatherDataInFlightPlanController
+    + consultWeatherData(day : String, airControlAreaCode : String) : String
+    + insertWeatherData(flightPlanIdentifier : String, weatherDataDay : String, airControlAreaCode : String) : String
+}
+
+class RemoteAccessRequest <<Protocol>> {
+    - command : String
+    - arguments : List<String>
+    + parse(line : String) : RemoteAccessRequest
+    + command() : String
+    + argument(index : int) : String
+    + argumentCount() : int
+}
+
+class RemoteAccessResponse <<Protocol>> {
+    - status : String
+    - payload : String
+    + ok(message : String) : RemoteAccessResponse
+    + data(payload : String) : RemoteAccessResponse
+    + error(message : String) : RemoteAccessResponse
+    + encode() : String
+}
+
+class ConsultWeatherDataController <<Controller>> {
+    + consultWeatherData(day : String, areaCode : String) : Optional<WeatherData>
+}
+
+class InsertWeatherDataInFlightPlanController <<Controller>> {
+    + insertWeatherData(flightPlanIdentifier : String, weatherDataDay : String, airControlAreaCode : String) : FlightPlan
+}
+
+class WeatherData <<Aggregate Root>>
+class FlightPlan <<Aggregate Root>>
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+interface CredentialHandler {
+    + authWithCredentialData(identity : String, password : String) : boolean
+}
+
+class AisafeRoles <<Roles>> {
+    + {static} PILOT : Role
+}
+
+PilotRemoteAccessController --> CredentialHandler
+PilotRemoteAccessController --> AisafeAuthorizationService
+PilotRemoteAccessController --> AisafeRoles
+PilotRemoteAccessController --> RemoteAccessRequest
+PilotRemoteAccessController --> RemoteAccessResponse
+PilotRemoteAccessController --> PilotRemoteOperations
+
+ControllerPilotRemoteOperations ..|> PilotRemoteOperations
+ControllerPilotRemoteOperations --> ConsultWeatherDataController
+ControllerPilotRemoteOperations --> InsertWeatherDataInFlightPlanController
+ControllerPilotRemoteOperations --> WeatherData
+ControllerPilotRemoteOperations --> FlightPlan
+
+ConsultWeatherDataController --> WeatherData
+InsertWeatherDataInFlightPlanController --> FlightPlan
+
+@enduml
