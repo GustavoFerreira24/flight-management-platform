@@ -70,7 +70,11 @@ Main classes:
 - `RemoteAccessRequest`: parses protocol lines.
 - `RemoteAccessResponse`: represents `OK`, `ERROR` and `DATA` responses.
 
-Class diagram: [class-diagram-86.puml](class-diagram-86.puml)
+Diagrams:
+
+- US86 class diagram: [PUML](class-diagram-86.puml) | [SVG](svg/class-diagram-86.svg)
+- US86 sequence diagram: [PUML](sequence-diagram-86.puml) | [SVG](svg/sequence-diagram-86.svg)
+- US86 global design SD: [PUML](../global-artifacts/03.design/puml/US86PilotRemoteAccess-SD.puml) | [SVG](../global-artifacts/03.design/svg/US86PilotRemoteAccess-SD.svg)
 
 The remote controller does not implement domain rules. It authenticates, checks remote session state, verifies Pilot authorization and delegates business behavior to existing controllers.
 

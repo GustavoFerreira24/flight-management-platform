@@ -1,0 +1,51 @@
+@startuml
+title US86 - Pilot Remote Access Scenario
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "Pilot" as Pilot
+boundary "Air Transport Company App\n:TCP Client" as Client
+control "server application\n:TCP Server" as Server
+control ":PilotRemoteAccessController" as RemoteC
+participant ":RemoteAccessRequest" as Request
+participant "credentialHandler\n:CredentialHandler" as Credentials
+participant "authz\n:AisafeAuthorizationService" as Authz
+participant "operations\n:ControllerPilotRemoteOperations" as Ops
+control ":InsertWeatherDataInFlightPlanController" as InsertC
+participant "flightPlan\n:FlightPlan" as FlightPlan
+
+Pilot -> Client : submit remote command
+Client -> Server : TCP line\nLOGIN|pilotId|password
+Server -> RemoteC : handle(line)
+RemoteC -> Request ++ : parse(line)
+Request --> RemoteC : request
+RemoteC -> Credentials : authWithCredentialData(pilotId, password)
+Credentials --> RemoteC : accepted
+RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(PILOT)
+Authz --> RemoteC : authorized
+RemoteC --> Server : OK|Authenticated as pilotId.
+Server --> Client : TCP response
+Client --> Pilot : show login success
+
+Pilot -> Client : insert weather data in flight plan
+Client -> Server : TCP line\nINSERT_WEATHER_DATA|flightPlanId|day|areaCode
+Server -> RemoteC : handle(line)
+RemoteC -> Request ++ : parse(line)
+Request --> RemoteC : request
+RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(PILOT)
+Authz --> RemoteC : authorized
+RemoteC -> Ops : insertWeatherData(flightPlanId, day, areaCode)
+Ops -> InsertC : insertWeatherData(flightPlanId, day, areaCode)
+InsertC -> FlightPlan : addWeatherData(weatherData)
+FlightPlan --> InsertC : weather data associated
+InsertC --> Ops : updated flightPlan
+Ops --> RemoteC : formatted success message
+RemoteC --> Server : OK|formatted success message
+Server --> Client : TCP response
+Client --> Pilot : show operation result
+
+@enduml
