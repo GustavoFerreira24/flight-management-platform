@@ -13,6 +13,7 @@ import isep.aisafe.app.backoffice.console.presentation.flightmanagement.CreateFl
 import isep.aisafe.app.backoffice.console.presentation.flightroute.RegisterFlightRouteUI;
 import isep.aisafe.app.backoffice.console.presentation.pilot.ManagePilotsUI;
 import isep.aisafe.app.backoffice.console.presentation.report.GenerateMonthlyReportUI;
+import isep.aisafe.app.backoffice.console.presentation.report.GenerateSimulationReportUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ConsultWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ImportBulkWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCustomerCollaboratorsUI;
@@ -344,9 +345,10 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         ConsoleStyle.printMenu(
                 "Flight Control Console",
                 ConsoleStyle.option(1, "Create Flight Plan                            (US80)"),
-                ConsoleStyle.option(2, "Generate Monthly Report                       (US112)"),
-                ConsoleStyle.option(3, "Consult Weather Data                          (US43)"),
-                ConsoleStyle.option(4, "Logout")
+                ConsoleStyle.option(2, "Generate Simulation Report                    (US111)"),
+                ConsoleStyle.option(3, "Generate Monthly Report                       (US112)"),
+                ConsoleStyle.option(4, "Consult Weather Data                          (US43)"),
+                ConsoleStyle.option(5, "Logout")
         );
         ConsoleStyle.printPrompt("Option: ");
 
@@ -358,16 +360,21 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("2".equals(option)) {
-            executeMenuAction(() -> new GenerateMonthlyReportUI(scanner).show());
+            executeMenuAction(() -> new GenerateSimulationReportUI(scanner).show());
             return true;
         }
 
         if ("3".equals(option)) {
-            executeMenuAction(() -> new ConsultWeatherDataUI(scanner).show());
+            executeMenuAction(() -> new GenerateMonthlyReportUI(scanner).show());
             return true;
         }
 
         if ("4".equals(option)) {
+            executeMenuAction(() -> new ConsultWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("5".equals(option)) {
             ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }

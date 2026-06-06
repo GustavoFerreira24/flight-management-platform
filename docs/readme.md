@@ -67,6 +67,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US121 — Create a Flight Plan from a File
 - [Flight Plan File Import](./us_121/implementation-notes.md)
 
+#### US111 — Generate a Simulation Report
+- [Simulation Report Generation](./us_111/readme.md)
+
 #### US112 — Monthly Report Generation
 - [Monthly Report Generation](./us_112/readme.md)
 
