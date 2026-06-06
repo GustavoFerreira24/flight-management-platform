@@ -1,0 +1,103 @@
+@startuml
+title US073 - Create a Flight Route Scenario
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "Air Transport Company Collaborator" as ATC
+boundary ":RegisterFlightRouteUI" as UI
+control ":RegisterFlightRouteController" as C
+participant "authz\n:AisafeAuthorizationService" as Authz
+participant "airportRepository\n:AirportRepository" as AirportRepo
+participant "flightRouteRepository\n:FlightRouteRepository" as RouteRepo
+participant "customerCollaboratorRepository\n:CustomerCollaboratorRepository" as CollaboratorRepo
+participant "collaborator\n:CustomerCollaborator" as Collaborator
+participant "company\n:AirTransportCompany" as Company
+participant "departureAirport\n:Airport" as DepartureAirport
+participant "destinationAirport\n:Airport" as DestinationAirport
+participant "route\n:FlightRoute" as Route
+
+ATC -> UI : request route registration
+UI -> C : airportOptions()
+C -> Authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+Authz --> C : authorized
+C -> AirportRepo : findAll()
+AirportRepo --> C : airports
+C --> UI : sorted airport labels
+UI --> ATC : display available airports
+
+UI -> ATC : ask route designator
+ATC -> UI : submit route designator
+UI -> UI : validate designator format
+UI -> C : routeDesignatorExists(routeDesignator)
+C -> Authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+Authz --> C : authorized
+C -> RouteRepo : findByRouteDesignator(RouteDesignator.valueOf(routeDesignator))
+RouteRepo --> C : Optional<FlightRoute>
+
+alt route designator already exists
+    C --> UI : true
+    UI --> ATC : ask for another designator
+else route designator is available
+    C --> UI : false
+    UI -> ATC : ask departure and destination ICAO codes
+    ATC -> UI : submit ICAO codes
+    UI -> UI : validate ICAO format
+
+    UI -> C : registerFlightRoute(routeDesignator, departureIcao, destinationIcao)
+    C -> C : registerFlightRoute(routeDesignator, REGULAR, departureIcao, destinationIcao)
+    C -> Authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+    Authz --> C : authorized
+    C -> C : RouteDesignator.valueOf(routeDesignator)
+    C -> RouteRepo : findByRouteDesignator(routeDesignator)
+    RouteRepo --> C : Optional<FlightRoute>
+
+    alt duplicate detected during submit
+        C --> UI : IllegalArgumentException("Flight route designator already exists.")
+    else route designator remains available
+        C -> Authz : authenticatedUsername()
+        Authz --> C : username
+        C -> CollaboratorRepo : findBySystemUsername(SystemUsername.valueOf(username))
+        CollaboratorRepo --> C : Optional<CustomerCollaborator>
+
+        alt authenticated user is not a customer collaborator
+            C --> UI : IllegalStateException("Authenticated user is not a customer collaborator.")
+        else collaborator found
+            C -> Collaborator : isAssociatedWithAirTransportCompany()
+            Collaborator --> C : associated
+
+            alt collaborator has no company
+                C --> UI : IllegalStateException("Authenticated collaborator is not associated with an air transport company.")
+            else collaborator has company
+                C -> Collaborator : airTransportCompany()
+                Collaborator --> C : company
+
+                C -> AirportRepo : findByIcaoCode(departureIcao)
+                AirportRepo --> C : Optional<Airport>
+
+                alt departure airport not found
+                    C --> UI : IllegalArgumentException("Departure airport was not found.")
+                else departure airport found
+                    C -> AirportRepo : findByIcaoCode(destinationIcao)
+                    AirportRepo --> C : Optional<Airport>
+
+                    alt destination airport not found
+                        C --> UI : IllegalArgumentException("Destination airport was not found.")
+                    else destination airport found
+                        C -> Route ++ : create(routeDesignator, REGULAR, company, departureAirport, destinationAirport)
+                        Route --> C : active route
+                        C -> RouteRepo : save(route)
+                        RouteRepo --> C : saved FlightRoute
+                        C --> UI : saved FlightRoute
+                        UI --> ATC : success message
+                    end
+                end
+            end
+        end
+    end
+end
+
+@enduml
