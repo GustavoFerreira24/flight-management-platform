@@ -1,0 +1,108 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class GenerateSimulationReportUI <<UI>> {
+    - controller : GenerateSimulationReportController
+    - scanner : Scanner
+    + show() : void
+    - readFlightResults() : List<SimulationFlightResult>
+    - readSafetyViolations() : List<SimulationSafetyViolation>
+    - readYesNo(prompt : String) : boolean
+    - readNonNegativeInt(prompt : String) : int
+    - readDateTime(prompt : String) : LocalDateTime
+    - readTextWithDefault(prompt : String, defaultValue : String) : String
+    - readRequiredText(prompt : String) : String
+}
+
+class GenerateSimulationReportController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - generator : SimulationReportGenerator
+    - renderer : SimulationReportRenderer
+    - fileWriter : SimulationReportFileWriter
+    - clock : Clock
+    + execute() : void
+    + generateSimulationReport(simulationIdentifier : String, passedValidation : boolean, flightResults : Iterable<SimulationFlightResult>, safetyViolations : Iterable<SimulationSafetyViolation>) : SimulationReport
+    + generateSimulationReportText(simulationIdentifier : String, passedValidation : boolean, flightResults : Iterable<SimulationFlightResult>, safetyViolations : Iterable<SimulationSafetyViolation>) : String
+    + generateSimulationReportFile(simulationIdentifier : String, passedValidation : boolean, flightResults : Iterable<SimulationFlightResult>, safetyViolations : Iterable<SimulationSafetyViolation>, outputDirectory : Path) : Path
+}
+
+class SimulationReportGenerator <<Service>> {
+    + generate(simulationIdentifier : String, passedValidation : boolean, flightResults : Iterable<SimulationFlightResult>, safetyViolations : Iterable<SimulationSafetyViolation>, generatedAt : LocalDateTime) : SimulationReport
+}
+
+class SimulationReportRenderer <<Service>> {
+    + render(report : SimulationReport) : String
+}
+
+class SimulationReportFileWriter <<Service>> {
+    + write(report : SimulationReport, renderedReport : String, outputDirectory : Path) : Path
+    - fileName(report : SimulationReport) : String
+    - safeIdentifier(identifier : String) : String
+}
+
+class SimulationReport <<Value Object>> {
+    - simulationIdentifier : String
+    - generatedAt : LocalDateTime
+    - passedValidation : boolean
+    - flightResults : List<SimulationFlightResult>
+    - safetyViolations : List<SimulationSafetyViolation>
+    + simulationIdentifier() : String
+    + generatedAt() : LocalDateTime
+    + passedValidation() : boolean
+    + totalFlights() : int
+    + flightResults() : List<SimulationFlightResult>
+    + safetyViolations() : List<SimulationSafetyViolation>
+}
+
+class SimulationFlightResult <<Value Object>> {
+    - flightIdentifier : String
+    - executionStatus : String
+    + flightIdentifier() : String
+    + executionStatus() : String
+}
+
+class SimulationSafetyViolation <<Value Object>> {
+    - timestamp : LocalDateTime
+    - position : String
+    - description : String
+    + timestamp() : LocalDateTime
+    + position() : String
+    + description() : String
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} FLIGHT_CONTROL : Role[]
+}
+
+GenerateSimulationReportUI --> GenerateSimulationReportController
+GenerateSimulationReportUI --> SimulationFlightResult
+GenerateSimulationReportUI --> SimulationSafetyViolation
+
+GenerateSimulationReportController --> AisafeAuthorizationService
+GenerateSimulationReportController --> AisafePermissions
+GenerateSimulationReportController --> SimulationReportGenerator
+GenerateSimulationReportController --> SimulationReportRenderer
+GenerateSimulationReportController --> SimulationReportFileWriter
+GenerateSimulationReportController --> SimulationReport
+GenerateSimulationReportController --> SimulationFlightResult
+GenerateSimulationReportController --> SimulationSafetyViolation
+
+SimulationReportGenerator --> SimulationReport
+SimulationReportGenerator --> SimulationFlightResult
+SimulationReportGenerator --> SimulationSafetyViolation
+
+SimulationReportRenderer --> SimulationReport
+SimulationReportRenderer --> SimulationFlightResult
+SimulationReportRenderer --> SimulationSafetyViolation
+
+SimulationReportFileWriter --> SimulationReport
+
+SimulationReport "1" *-- "0..*" SimulationFlightResult
+SimulationReport "1" *-- "0..*" SimulationSafetyViolation
+
+@enduml
