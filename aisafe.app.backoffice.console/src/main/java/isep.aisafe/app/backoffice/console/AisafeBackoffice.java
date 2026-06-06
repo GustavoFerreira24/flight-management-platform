@@ -12,6 +12,7 @@ import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngin
 import isep.aisafe.app.backoffice.console.presentation.flightmanagement.CreateFlightPlanUI;
 import isep.aisafe.app.backoffice.console.presentation.flightroute.RegisterFlightRouteUI;
 import isep.aisafe.app.backoffice.console.presentation.pilot.ManagePilotsUI;
+import isep.aisafe.app.backoffice.console.presentation.report.GenerateMonthlyReportUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ConsultWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ImportBulkWeatherDataUI;
 import isep.aisafe.app.backoffice.console.presentation.listCollaborators.ListCustomerCollaboratorsUI;
@@ -106,6 +107,13 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         if (authz.authenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
             while (showAirCompanyOptions(scanner)) {
                 // Keep the authenticated air-company session open until logout.
+            }
+            return;
+        }
+
+        if (authz.authenticatedUserHasAnyOf(AisafePermissions.FLIGHT_CONTROL)) {
+            while (showFlightControlOptions(scanner)) {
+                // Keep the authenticated flight-control session open until logout.
             }
             return;
         }
@@ -324,6 +332,42 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("3".equals(option)) {
+            ConsoleStyle.printInfo("Returning to login menu.");
+            return false;
+        }
+
+        ConsoleStyle.printWarning("Unknown option.");
+        return true;
+    }
+
+    private boolean showFlightControlOptions(final Scanner scanner) {
+        ConsoleStyle.printMenu(
+                "Flight Control Console",
+                ConsoleStyle.option(1, "Create Flight Plan                            (US80)"),
+                ConsoleStyle.option(2, "Generate Monthly Report                       (US112)"),
+                ConsoleStyle.option(3, "Consult Weather Data                          (US43)"),
+                ConsoleStyle.option(4, "Logout")
+        );
+        ConsoleStyle.printPrompt("Option: ");
+
+        final String option = scanner.nextLine();
+
+        if ("1".equals(option)) {
+            executeMenuAction(() -> new CreateFlightPlanUI(scanner).show());
+            return true;
+        }
+
+        if ("2".equals(option)) {
+            executeMenuAction(() -> new GenerateMonthlyReportUI(scanner).show());
+            return true;
+        }
+
+        if ("3".equals(option)) {
+            executeMenuAction(() -> new ConsultWeatherDataUI(scanner).show());
+            return true;
+        }
+
+        if ("4".equals(option)) {
             ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
