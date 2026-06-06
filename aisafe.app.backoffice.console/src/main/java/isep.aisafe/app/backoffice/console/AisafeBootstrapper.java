@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console;
 
+import eapli.framework.general.domain.model.EmailAddress;
 import eapli.framework.infrastructure.authz.application.AuthzRegistry;
 import eapli.framework.infrastructure.authz.application.UserManagementService;
 import eapli.framework.infrastructure.authz.domain.model.Role;
@@ -43,6 +44,7 @@ import isep.aisafe.manufacturer.domain.Manufacturer;
 import isep.aisafe.manufacturer.domain.ManufacturerDesignator;
 import isep.aisafe.manufacturer.domain.ManufacturerRepository;
 import isep.aisafe.manufacturer.domain.ManufacturerType;
+import isep.aisafe.pilot.domain.*;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
 
 import java.util.List;
@@ -77,6 +79,7 @@ public class AisafeBootstrapper {
         bootstrapCustomerCollaborators(userService);
         bootstrapAircraftAndEngineModels();
         bootstrapDemoAircraftFleet();
+        bootstrapPilots(userService);
     }
 
     private static void bootstrapManufacturers() {
@@ -721,4 +724,144 @@ public class AisafeBootstrapper {
 
         return airport;
     }
+
+    private static void bootstrapPilots(final UserManagementService userService) {
+        final PilotRepository repository = PersistenceContext.repositories().pilots();
+        final AirTransportCompanyRepository companyRepository = PersistenceContext.repositories().airTransportCompanies();
+        final AircraftModelRepository aircraftModelRepository = PersistenceContext.repositories().aircraftModels();
+
+        final AircraftModel boeingModel = aircraftModelRepository
+                .findByDesignator(AircraftModelDesignator.valueOf("777-200ER", "BOEING"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: Boeing 777-200ER model not found"));
+
+        final AircraftModel airbusModel = aircraftModelRepository
+                .findByDesignator(AircraftModelDesignator.valueOf("A320neo", "AIRBUS"))
+                .orElseThrow(() -> new IllegalStateException("Bootstrap: Airbus A320neo model not found"));
+
+        final AircraftModelDesignator boeingDesignator = boeingModel.identity();
+        final AircraftModelDesignator airbusDesignator = airbusModel.identity();
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "PED",
+                "10-05-2006",
+                "10-05-2100",
+                "pedro123",
+                "Pedro",
+                "Rodrigues",
+                "pedro123@aisafe.com",
+                "Password1",
+                "+351964143831",
+                IATACode.valueOf("TP"),
+                Set.of(airbusDesignator, boeingDesignator)
+        );
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "FRV",
+                "10-05-2006",
+                "10-05-2100",
+                "francisco123",
+                "Francisco",
+                "Vieira",
+                "francisco123@aisafe.com",
+                "Password1",
+                "+351938048037",
+                IATACode.valueOf("TP"),
+                Set.of(airbusDesignator, boeingDesignator)
+        );
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "BPM",
+                "01-01-2006",
+                "01-01-2090",
+                "bruno123",
+                "Bruno",
+                "Monteiro",
+                "bruno123@aisafe.com",
+                "Password1",
+                "+351910684985",
+                IATACode.valueOf("FR"),
+                Set.of(boeingDesignator)
+        );
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "GUF",
+                "01-01-2006",
+                "01-01-2090",
+                "gustavo123",
+                "Gustavo",
+                "Ferreira",
+                "gustavo123@aisafe.com",
+                "Password1",
+                "+351968678051",
+                IATACode.valueOf("FR"),
+                Set.of(boeingDesignator)
+        );
+    }
+
+    static Pilot registerPilotIfMissing(
+            final UserManagementService userService,
+            final PilotRepository repository,
+            final String id,
+            final String issuedAtStr,
+            final String validUntilStr,
+            final String username,
+            final String firstName,
+            final String lastName,
+            final String email,
+            final String password,
+            final String phoneNumber,
+            final IATACode companyIata,
+            final Set<AircraftModelDesignator> certifiedAircraftModels) {
+
+        final isep.aisafe.pilot.domain.PilotID pilotID = isep.aisafe.pilot.domain.PilotID.valueOf(id);
+
+        // Se o piloto já existir no repositório, não faz nada
+        if (repository.ofIdentity(pilotID).isPresent()) {
+            return repository.ofIdentity(pilotID).get();
+        }
+
+        // Instanciar os Value Objects do domínio do Piloto
+        final Certification certification = new Certification(issuedAtStr, validUntilStr);
+        final PilotStatus pilotStatus = new PilotStatus(certification);
+        final PhoneNumber phone = PhoneNumber.valueOf(phoneNumber);
+        final EmailAddress emailAddress = EmailAddress.valueOf(email);
+
+        // Criar a entidade Pilot
+        final Pilot pilot = new Pilot(
+                pilotID,
+                certification,
+                pilotStatus,
+                companyIata,
+                emailAddress,
+                phone,
+                firstName,
+                lastName,
+                certifiedAircraftModels
+        );
+
+        register(
+                userService,
+                username,
+                password,
+                firstName,
+                lastName,
+                email,
+                Set.of(AisafeRoles.PILOT)
+        );
+
+        // Gravar e imprimir no log
+        final Pilot savedPilot = repository.save(pilot);
+        System.out.println("Bootstrapped pilot: " + pilotID);
+
+        return savedPilot;
+    }
+
 }

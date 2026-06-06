@@ -32,4 +32,8 @@ public class InMemoryFlightPlanRepository
             return !departure.isBefore(startInclusive) && departure.isBefore(endExclusive);
         });
     }
+
+    public void clear() {
+        data().clear();
+    }
 }

@@ -93,11 +93,12 @@ public class RegisterPilotUI {
                 }
 
                 ConsoleStyle.printPrompt("Insert Aircraft Model Designator: ");
+                final String designator = scanner.nextLine().trim();
 
                 if (aircraftModelDesignator.isEmpty()) {
-                    aircraftModelDesignator = scanner.nextLine().trim();
+                    aircraftModelDesignator += designator;
                 } else {
-                    aircraftModelDesignator = scanner.nextLine().trim() + ",";
+                    aircraftModelDesignator += "," + designator;
                 }
             }
 
@@ -119,7 +120,9 @@ public class RegisterPilotUI {
             System.out.println();
 
         } catch (Exception e) {
-            ConsoleStyle.printError("Could not register airport: " + e.getMessage());
+            System.out.println();
+            ConsoleStyle.printError("Error registering pilot: " + e.getMessage());
+            System.out.println();
         }
 
     }

@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import isep.aisafe.pilot.domain.PilotRepository;
+
 @Embeddable
 public class PilotStatus implements ValueObject {
 
@@ -85,7 +87,13 @@ public class PilotStatus implements ValueObject {
     }
 
     public PilotStatus deactivate() {
+
         return new PilotStatus("INVÁLIDO");
+    }
+
+    @Override
+    public String toString() {
+        return value;
     }
 }
 

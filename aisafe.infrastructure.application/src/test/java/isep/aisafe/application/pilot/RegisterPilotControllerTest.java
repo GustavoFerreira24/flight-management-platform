@@ -1,7 +1,9 @@
 package isep.aisafe.application.pilot;
 
 import eapli.framework.general.domain.model.EmailAddress;
+import eapli.framework.infrastructure.authz.application.UserManagementService;
 import eapli.framework.infrastructure.authz.domain.model.Role;
+import eapli.framework.infrastructure.authz.domain.model.SystemUser;
 import isep.aisafe.aircontrolarea.domain.*;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
@@ -13,7 +15,6 @@ import isep.aisafe.airtransportcompany.domain.Country;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import isep.aisafe.airtransportcompany.domain.ICAOCode;
 import isep.aisafe.application.aircraftmodel.ManageAircraftModelController;
-import isep.aisafe.application.usermanagement.RegisterBackofficeUserController;
 import isep.aisafe.application.usermanagement.UserRegistrationValidator;
 import isep.aisafe.customercollaborator.domain.*;
 import isep.aisafe.enginemodel.domain.*;
@@ -22,7 +23,9 @@ import isep.aisafe.pilot.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,7 +37,7 @@ class RegisterPilotControllerTest {
     private AisafeAuthorizationService mockAuthz;
     private InMemoryCustomerCollaboratorRepository mockCollaboratorRepo;
     private UserRegistrationValidator mockValidator;
-    private RegisterBackofficeUserController mockUserController;
+    private UserManagementService mockUserController;
     private ManageAircraftModelController mockAircraftModelController;
     private InMemoryEngineModelRepository mockEngineModelRepo;
     private InMemoryAircraftModelRepository mockAircraftModelRepo;
@@ -74,10 +77,11 @@ class RegisterPilotControllerTest {
             }
         };
 
-        mockUserController = new RegisterBackofficeUserController() {
+        mockUserController = new UserManagementService(null, null, null) {
             @Override
-            public void registerUser(String username, String password, String firstName,
-                                     String lastName, String email, Set<Role> roles) {
+            public SystemUser registerNewUser(String username, String password, String firstName,
+                                              String lastName, String email, Set<Role> roles) {
+                return null; // Apenas um valor dummy
             }
         };
 
