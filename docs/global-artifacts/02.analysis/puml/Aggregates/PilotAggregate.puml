@@ -5,6 +5,7 @@ skinparam {
     Shadowing false
     Handwritten false
     ClassAttributeIconSize 0
+    linetype ortho
 
     ClassBackgroundColor white
     ClassBorderColor #495057
@@ -22,8 +23,9 @@ skinparam {
 hide circle
 hide methods
 
-
- class Pilot <<Aggregate Root>>{
+    class Pilot <<Aggregate Root>>{
+        firstName
+        lastName
     }
 
     class PilotID <<Value Object>> {
@@ -39,8 +41,20 @@ hide methods
         value
     }
 
-    Pilot *-- PilotID
-    Pilot *-- Certification
-    Pilot *-- PilotStatus
+    class EmailAddress <<Value Object>> {
+          value
+    }
 
+    class PhoneNumber <<Value Object>> {
+          value
+    }
+
+    Pilot *-- PilotID
+    Pilot *-- PilotStatus
+    Pilot *-- Certification
+    Pilot *-- EmailAddress
+    Pilot *-- PhoneNumber
+
+    Pilot "*" --> "1" AirTransportCompany
+    Pilot "*" --> "*" AircraftModel
 @enduml

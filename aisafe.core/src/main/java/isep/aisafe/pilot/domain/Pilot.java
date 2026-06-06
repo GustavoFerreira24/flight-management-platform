@@ -2,10 +2,17 @@ package isep.aisafe.pilot.domain;
 
 import eapli.framework.domain.model.AggregateRoot;
 import eapli.framework.domain.model.DomainEntities;
+import eapli.framework.general.domain.model.EmailAddress;
+import isep.aisafe.aircraftmodel.domain.AircraftModel;
+import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import jakarta.persistence.*;
+import org.eclipse.persistence.internal.jpa.parsing.GreaterThanEqualToNode;
 
+import javax.management.relation.Role;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "Pilot")
@@ -15,9 +22,19 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
     @AttributeOverride(name = "value", column = @Column(name = "PilotID", nullable = false))
     private PilotID id;
 
+    @Column(nullable = false, name = "FirstName")
+    private String firstName;
+
+    @Column(nullable = false, name = "LastName")
+    private String lastName;
+
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "PilotStatus", nullable = false))
-    private PilotStatus pilotStatus;
+    @AttributeOverride(name = "email", column = @Column(name = "Email", nullable = false))
+    private EmailAddress email;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "PhoneNumber", nullable = false))
+    private PhoneNumber phoneNumber;
 
     @Embedded
     @AttributeOverrides({
@@ -27,8 +44,23 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
     private Certification certification;
 
     @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "PilotStatus", nullable = false))
+    private PilotStatus pilotStatus;
+
+    @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "CompanyIATACode", nullable = false))
     private IATACode companyIATACode;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "PilotCertifiedAircraftModels",
+            joinColumns = @JoinColumn(
+                    name = "PilotID",
+                    referencedColumnName = "PilotID"
+            )
+    )
+    @AttributeOverride(name = "value", column = @Column(name = "Designator", nullable = false))
+    private Set<AircraftModelDesignator> certifiedAircraftModels = new HashSet<>();
 
     /**
      * Required by ORM.
@@ -47,7 +79,12 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
             final PilotID id,
             final Certification certification,
             final PilotStatus pilotStatus,
-            final IATACode companyIATACode) {
+            final IATACode companyIATACode,
+            final EmailAddress email,
+            final PhoneNumber phoneNumber,
+            final String firstName,
+            final String lastName,
+            final Set<AircraftModelDesignator> aircraftModelsDesignators) {
 
         if (id == null) {
             throw new IllegalArgumentException("Pilot ID cannot be null.");
@@ -65,10 +102,37 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
             throw new IllegalArgumentException("Company IATA code cannot be null.");
         }
 
+        if (email == null) {
+            throw new IllegalArgumentException("Email cannot be null.");
+        }
+
+        if (phoneNumber == null) {
+            throw new IllegalArgumentException("Phone number cannot be null.");
+        }
+
+        if (firstName == null) {
+            throw new IllegalArgumentException("First name cannot be null.");
+        }
+
+        if (lastName == null) {
+            throw new IllegalArgumentException("Last name cannot be null.");
+        }
+
+        if (aircraftModelsDesignators == null) {
+            throw new IllegalArgumentException("Aircraft models designators cannot be null.");
+        }
+
         this.id = id;
         this.pilotStatus = pilotStatus;
         this.certification = certification;
         this.companyIATACode = companyIATACode;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.certifiedAircraftModels = new HashSet<>();
+        aircraftModelsDesignators.forEach(this.certifiedAircraftModels::add);
+
     }
 
     @Override
@@ -127,13 +191,68 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
         return certification;
     }
 
+    /**
+     * Returns pilot companyIATACode
+     *
+     * @return pilot companyIATACode
+     */
     public IATACode companyIATACode() {
         return companyIATACode;
+    }
+
+    public EmailAddress email() {
+        return email;
+    }
+
+    public PhoneNumber phoneNumber() {
+        return phoneNumber;
+    }
+
+    public String firstName() {
+        return firstName;
+    }
+
+    public String lastName() {
+        return lastName;
+    }
+
+    public Set<AircraftModelDesignator> certifiedAircraftModelsDesignators() {
+        return certifiedAircraftModels;
     }
 
     @Override
     public int hashCode() {
         return DomainEntities.hashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return DomainEntities.areEqual(this, obj);
+    }
+
+    public String toString() {
+
+        String certifiedAircraftModelsString = "";
+
+        if (!certifiedAircraftModels.isEmpty()) {
+
+            for (AircraftModelDesignator aircraftModelDesignator : certifiedAircraftModels) {
+                certifiedAircraftModelsString += aircraftModelDesignator + "| ";
+            }
+
+            if (certifiedAircraftModelsString.endsWith("| ")) {
+                certifiedAircraftModelsString = certifiedAircraftModelsString.substring(0, certifiedAircraftModelsString.length() - 2);
+            }
+        }
+
+        return "Pilot: " + firstName + " " + lastName +
+                "\nPilot ID: " + id +
+                "\nEmail: " + email +
+                "\nPhone Number: " + phoneNumber +
+                "\nCertification: " + certification +
+                "\nPilot Status: " + pilotStatus +
+                "\nCompany IATA Code: " + companyIATACode +
+                "\nCertified Aircraft Models Designators: " + certifiedAircraftModelsString;
     }
 }
 

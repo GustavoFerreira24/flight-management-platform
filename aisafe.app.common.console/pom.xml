@@ -14,10 +14,10 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>isep</groupId>
-            <artifactId>aisafe.infrastructure.application</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+         <dependency>
+             <groupId>isep</groupId>
+             <artifactId>aisafe.core</artifactId>
+             <version>${project.version}</version>
+         </dependency>
     </dependencies>
 </project>

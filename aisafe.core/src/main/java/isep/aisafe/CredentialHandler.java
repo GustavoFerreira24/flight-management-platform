@@ -1,4 +1,4 @@
-package isep.aisafe.infrastructure.authz;
+package isep.aisafe;
 
 /**
  * Abstraction used by console authentication screens to validate user credentials.

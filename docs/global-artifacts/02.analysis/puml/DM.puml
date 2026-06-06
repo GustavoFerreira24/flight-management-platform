@@ -29,10 +29,10 @@ hide circle
 hide methods
 
 package "Simulation Aggregate" {
+
     class Simulation <<Aggregate Root>> {
         timeRange
         safetyThreshold
-
     }
 
     class SimulationStatus <<Value Object>> {
@@ -256,52 +256,6 @@ package "CustomerCollaborator Aggregate" {
     CustomerCollaborator *-- SystemUsername
 }
 
-
-package "User Aggregate" {
-
-    class User <<Aggregate Root>> {
-           name
-    }
-
-    class UserID <<Value Object>> {
-        value
-    }
-
-    class EmailAddress <<Value Object>> {
-        value
-    }
-
-    class PhoneNumber <<Value Object>> {
-        value
-    }
-
-    class SecurityClearance <<Value Object>> {
-         level
-         expiryDate
-    }
-
-    class SkillsAssessment <<Value Object>> {
-          assessedAt
-          nextDueDate
-    }
-
-    class UserStatus <<Value Object>> {
-        value
-    }
-
-    class UserRole <<Value Object>> {
-        value
-    }
-
-    User *-- UserStatus
-    User *-- UserRole
-    User *-- SecurityClearance
-    User *-- SkillsAssessment
-    User *-- EmailAddress
-    User *-- PhoneNumber
-    User *-- UserID
-}
-
 package "Aircraft Aggregate" {
 
     class Aircraft <<Aggregate Root>> {
@@ -462,6 +416,7 @@ package "Flight Aggregate" {
 package "Pilot Aggregate" {
 
     class Pilot <<Aggregate Root>>{
+        name
     }
 
     class PilotID <<Value Object>> {
@@ -477,10 +432,30 @@ package "Pilot Aggregate" {
         value
     }
 
+    class EmailAddress <<Value Object>> {
+          value
+    }
+
+    class PhoneNumber <<Value Object>> {
+          value
+    }
+
+    class SecurityClearance <<Value Object>> {
+          level
+          expiryDate
+    }
+
+    class Role <<Value Object>> {
+          value
+    }
+
+    Pilot *-- Role
+    Pilot *-- SecurityClearance
+    Pilot *-- EmailAddress
+    Pilot *-- PhoneNumber
     Pilot *-- PilotID
     Pilot *-- Certification
     Pilot *-- PilotStatus
-
 }
 
 
@@ -536,8 +511,6 @@ Aircraft "*" --> "1" AirTransportCompany
 CustomerCollaborator "*" --> "0..1" AirTransportCompany
 CustomerCollaborator "*" --> "0..1" AirControlArea
 
-
-Pilot "*" --> "1" User
 Pilot "*" --> "1" AirTransportCompany
 Pilot "*" --> "*" AircraftModel
 

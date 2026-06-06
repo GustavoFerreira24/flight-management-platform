@@ -1,7 +1,12 @@
 package isep.aisafe.pilot.domain;
 
+import eapli.framework.general.domain.model.EmailAddress;
+import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import org.junit.jupiter.api.Test;
+
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class PilotTest {
@@ -22,6 +27,29 @@ class PilotTest {
         return IATACode.valueOf("TP");
     }
 
+    private EmailAddress validEmail() {
+        return EmailAddress.valueOf("pilot@example.com");
+    }
+
+    private PhoneNumber validPhoneNumber() {
+        return PhoneNumber.valueOf("+351912345678");
+    }
+
+    private String validFirstName() {
+        return "Ben";
+    }
+
+    private String validLastName() {
+        return "Dover";
+    }
+
+    private Set<AircraftModelDesignator> validCertifiedAircraftModels() {
+        return Set.of(AircraftModelDesignator.valueOf("A320"));
+    }
+
+
+
+
     @Test
     void ensurePilotIsCreatedSuccessfully() {
         // Arrange
@@ -29,9 +57,14 @@ class PilotTest {
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
         final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
 
         // Act
-        final Pilot pilot = new Pilot(id, certification, status, company);
+        final Pilot pilot = new Pilot(id, certification, status, company, email, phoneNumber, firstName, lastName, certifiedAircraftModels);
 
         // Assert
         assertNotNull(pilot);
@@ -44,9 +77,14 @@ class PilotTest {
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
         final IATACode company = validCompany();
-        final Pilot pilot = new Pilot(id, certification, status, company);
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
 
         // Act
+        final Pilot pilot = new Pilot(id, certification, status, company, email, phoneNumber, firstName, lastName, certifiedAircraftModels);
         final PilotID result = pilot.identity();
 
         // Assert
@@ -59,10 +97,15 @@ class PilotTest {
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
         final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(null, certification, status, company));
+                () -> new Pilot(null, certification, status, company, email, phoneNumber, firstName, lastName, certifiedAircraftModels));
     }
 
     @Test
@@ -72,10 +115,15 @@ class PilotTest {
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
         final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(id, null, status, company));
+                () -> new Pilot(id, null, status, company, email, phoneNumber, firstName, lastName, certifiedAircraftModels));
     }
 
     @Test
@@ -84,10 +132,15 @@ class PilotTest {
         final PilotID id = validID();
         final Certification certification = validCertification();
         final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(id, certification, null, company));
+                () -> new Pilot(id, certification, null, company, email, phoneNumber, firstName, lastName, certifiedAircraftModels));
     }
 
     @Test
@@ -96,16 +149,106 @@ class PilotTest {
         final PilotID id = validID();
         final Certification certification = validCertification();
         final PilotStatus status = validStatus(certification);
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(id, certification, null, null));
+                () -> new Pilot(id, certification, status, null, email, phoneNumber, firstName, lastName, certifiedAircraftModels));
+    }
+
+    @Test
+    void ensurePilotRejectsNullEmail() {
+        // Arrange
+        final PilotID id = validID();
+        final Certification certification = validCertification();
+        final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new Pilot(id, certification, status, company, null, phoneNumber, firstName, lastName, certifiedAircraftModels));
+    }
+
+    @Test
+    void ensurePilotRejectsNullPhoneNumber() {
+        // Arrange
+        final PilotID id = validID();
+        final Certification certification = validCertification();
+        final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new Pilot(id, certification, status, company, email, null, firstName, lastName, certifiedAircraftModels));
+    }
+
+    @Test
+    void ensurePilotRejectsNullFirstName() {
+        // Arrange
+        final PilotID id = validID();
+        final Certification certification = validCertification();
+        final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String lastName = validLastName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new Pilot(id, certification, status, company, email, phoneNumber, null, lastName, certifiedAircraftModels));
+    }
+
+    @Test
+    void ensurePilotRejectsNullLastName() {
+        // Arrange
+        final PilotID id = validID();
+        final Certification certification = validCertification();
+        final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new Pilot(id, certification, status, company, email, phoneNumber, firstName, null, certifiedAircraftModels));
+    }
+
+    @Test
+    void ensurePilotRejectsNullcertifiedAircraftModels() {
+        // Arrange
+        final PilotID id = validID();
+        final Certification certification = validCertification();
+        final PilotStatus status = validStatus(certification);
+        final IATACode company = validCompany();
+        final EmailAddress email = validEmail();
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final String firstName = validFirstName();
+        final String lastName = validLastName();
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new Pilot(id, certification, status, company, email, phoneNumber, firstName, lastName, null));
     }
 
     @Test
     void ensurePilotDeactivateChangesStatusToInvalid() {
         // Arrange
-        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany());
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         pilot.deactivate();
@@ -118,7 +261,7 @@ class PilotTest {
     void ensurePilotActivateChangesStatusToValid() {
         // Arrange
         final Certification expiredCertification = new Certification("01-01-2020", "01-01-2021");
-        final Pilot pilot = new Pilot(validID(), expiredCertification, validStatus(expiredCertification), validCompany());
+        final Pilot pilot = new Pilot(validID(), expiredCertification, validStatus(expiredCertification), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         pilot.activate();
@@ -130,7 +273,7 @@ class PilotTest {
     @Test
     void ensurePilotSameAsReturnsTrueForSamePilot() {
         // Arrange
-        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany());
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         final boolean result = pilot.sameAs(pilot);
@@ -142,8 +285,8 @@ class PilotTest {
     @Test
     void ensurePilotSameAsReturnsFalseForDifferentPilot() {
         // Arrange
-        final Pilot pilot1 = new Pilot(PilotID.valueOf("ABC"), validCertification(), validStatus(validCertification()), validCompany());
-        final Pilot pilot2 = new Pilot(PilotID.valueOf("DEF"), validCertification(), validStatus(validCertification()), validCompany());
+        final Pilot pilot1 = new Pilot(PilotID.valueOf("ABC"), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
+        final Pilot pilot2 = new Pilot(PilotID.valueOf("DEF"), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         final boolean result = pilot1.sameAs(pilot2);
@@ -156,7 +299,7 @@ class PilotTest {
     void ensurePilotIDMethodReturnsCorrectID() {
         // Arrange
         final PilotID id = validID();
-        final Pilot pilot = new Pilot(id, validCertification(), validStatus(validCertification()), validCompany());
+        final Pilot pilot = new Pilot(id, validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         final PilotID result = pilot.pilotID();
@@ -168,7 +311,7 @@ class PilotTest {
     @Test
     void ensurePilotHashCodeIsConsistent() {
         // Arrange
-        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany());
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         final int first = pilot.hashCode();
@@ -182,7 +325,7 @@ class PilotTest {
     void ensurePilotCertificationReturnsCorrectCertification() {
         // Arrange
         final Certification certification = validCertification();
-        final Pilot pilot = new Pilot(validID(), certification, validStatus(certification), validCompany());
+        final Pilot pilot = new Pilot(validID(), certification, validStatus(certification), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         final Certification result = pilot.certification();
@@ -195,7 +338,7 @@ class PilotTest {
     void ensurePilotCompanyIATACodeReturnsCorrectIATACode() {
         // Arrange
         final IATACode company = validCompany();
-        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), company);
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), company, validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         final IATACode result = pilot.companyIATACode();
@@ -203,4 +346,71 @@ class PilotTest {
         // Assert
         assertEquals(company, result);
     }
+
+    @Test
+    void ensureEmailReturnsCorrectEmail() {
+        // Arrange
+        final EmailAddress email = validEmail();
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), email, validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
+
+        // Act
+        final EmailAddress result = pilot.email();
+
+        // Assert
+        assertEquals(email, result);
+    }
+
+    @Test
+    void ensurePhoneNumberReturnsCorrectPhoneNumber() {
+        // Arrange
+        final PhoneNumber phoneNumber = validPhoneNumber();
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), phoneNumber, validFirstName(), validLastName(), validCertifiedAircraftModels());
+
+        // Act
+        final PhoneNumber result = pilot.phoneNumber();
+
+        // Assert
+        assertEquals(phoneNumber, result);
+    }
+
+    @Test
+    void ensureFirstNameReturnsCorrectFirstName() {
+        // Arrange
+        final String firstName = validFirstName();
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), firstName, validLastName(), validCertifiedAircraftModels());
+
+        // Act
+        final String result = pilot.firstName();
+
+        // Assert
+        assertEquals(firstName, result);
+    }
+
+    @Test
+    void ensureLastNameReturnsCorrectLastName() {
+        // Arrange
+        final String lastName = validLastName();
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), lastName, validCertifiedAircraftModels());
+
+        // Act
+        final String result = pilot.lastName();
+
+        // Assert
+        assertEquals(lastName, result);
+    }
+
+    @Test
+    void ensureCertifiedAircraftModelsDesignatorsReturnsCorrectModelsDesignators() {
+        // Arrange
+        final Set<AircraftModelDesignator> certifiedAircraftModelsDesignators = validCertifiedAircraftModels();
+        final Pilot pilot = new Pilot(validID(), validCertification(), validStatus(validCertification()), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), certifiedAircraftModelsDesignators);
+
+        // Act
+        final Set<AircraftModelDesignator> result = pilot.certifiedAircraftModelsDesignators();
+
+        // Assert
+        assertEquals(certifiedAircraftModelsDesignators, result);
+    }
+
+
 }

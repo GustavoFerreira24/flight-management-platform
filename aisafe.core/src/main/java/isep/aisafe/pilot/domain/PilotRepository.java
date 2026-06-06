@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface PilotRepository extends DomainRepository<PilotID, Pilot> {
 
     Optional<Pilot> findByCode(PilotID id);
+
+    Optional<Pilot> findByEmail(String email);
 }

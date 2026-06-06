@@ -126,6 +126,6 @@ class CertificationTest {
         final String result = certification.toString();
 
         // Assert
-        assertEquals("Certification Issued At: 01-01-2024\nCertification Valid Until: 01-01-2027", result);
+        assertEquals("Certification Issued At: 01-01-2024 | Certification Valid Until: 01-01-2027", result);
     }
 }

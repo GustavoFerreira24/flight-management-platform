@@ -38,4 +38,18 @@ public class JpaPilotRepository extends JpaAutoTxRepository<Pilot, PilotID, Pilo
 
          return Optional.empty();
      }
+
+     @Override
+     public Optional<Pilot> findByEmail(String email) {
+         final Map<String, Object> params = new HashMap<>();
+         params.put("email", email);
+
+         final Iterator<Pilot> matches = match("e.email=:email", params).iterator();
+
+         if (matches.hasNext()) {
+             return Optional.of(matches.next());
+         }
+
+         return Optional.empty();
+     }
 }

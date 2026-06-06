@@ -3,7 +3,7 @@ package isep.aisafe.application.remoteaccess;
 import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
-import isep.aisafe.infrastructure.authz.CredentialHandler;
+import isep.aisafe.CredentialHandler;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

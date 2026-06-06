@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * Credential handler that authenticates users through the EAPLI authorization framework.
  */
-public class AuthenticationCredentialHandler implements CredentialHandler {
+public class AuthenticationCredentialHandler implements isep.aisafe.CredentialHandler {
 
     private final Authenticator authenticator;
 

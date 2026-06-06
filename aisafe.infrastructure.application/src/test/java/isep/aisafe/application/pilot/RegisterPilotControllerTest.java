@@ -1,13 +1,26 @@
 package isep.aisafe.application.pilot;
 
+import eapli.framework.general.domain.model.EmailAddress;
+import eapli.framework.infrastructure.authz.domain.model.Role;
 import isep.aisafe.aircontrolarea.domain.*;
-import isep.aisafe.airtransportcompany.domain.*;
+import isep.aisafe.aircraftmodel.domain.AircraftModel;
+import isep.aisafe.aircraftmodel.domain.InMemoryAircraftModelRepository;
+import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
+import isep.aisafe.airtransportcompany.domain.Country;
+import isep.aisafe.airtransportcompany.domain.IATACode;
+import isep.aisafe.airtransportcompany.domain.ICAOCode;
+import isep.aisafe.application.aircraftmodel.ManageAircraftModelController;
+import isep.aisafe.application.usermanagement.RegisterBackofficeUserController;
+import isep.aisafe.application.usermanagement.UserRegistrationValidator;
 import isep.aisafe.customercollaborator.domain.*;
+import isep.aisafe.enginemodel.domain.*;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.pilot.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import eapli.framework.infrastructure.authz.domain.model.Role;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,11 +30,21 @@ class RegisterPilotControllerTest {
     private RegisterPilotController controller;
     private AisafeAuthorizationService mockAuthz;
     private InMemoryCustomerCollaboratorRepository mockCollaboratorRepo;
+    private UserRegistrationValidator mockValidator;
+    private RegisterBackofficeUserController mockUserController;
+    private ManageAircraftModelController mockAircraftModelController;
+    private InMemoryEngineModelRepository mockEngineModelRepo;
+    private InMemoryAircraftModelRepository mockAircraftModelRepo;
+
 
     @BeforeEach
     void setUp() {
+
         repository = new InMemoryPilotRepository();
         repository.clear();
+        mockEngineModelRepo = new InMemoryEngineModelRepository();
+        mockAircraftModelRepo = new InMemoryAircraftModelRepository(); // Mova para aqui!
+        mockCollaboratorRepo = new InMemoryCustomerCollaboratorRepository();
 
         mockAuthz = new AisafeAuthorizationService() {
             @Override
@@ -33,7 +56,6 @@ class RegisterPilotControllerTest {
             }
         };
 
-        mockCollaboratorRepo = new InMemoryCustomerCollaboratorRepository();
         mockCollaboratorRepo.save(new CustomerCollaborator(
                 "Test", "User",
                 CollaboratorEmail.valueOf("test@test.com"),
@@ -41,7 +63,29 @@ class RegisterPilotControllerTest {
                 SystemUsername.valueOf("test@test.com")
         ));
 
-        controller = new RegisterPilotController(mockAuthz, repository, mockCollaboratorRepo);
+        mockValidator = new UserRegistrationValidator() {
+            @Override
+            public void validate(String username, String password, String firstName,
+                                 String lastName, String email, Set<Role> roles) {
+            }
+        };
+
+        mockUserController = new RegisterBackofficeUserController() {
+            @Override
+            public void registerUser(String username, String password, String firstName,
+                                     String lastName, String email, Set<Role> roles) {
+            }
+        };
+
+        controller = new RegisterPilotController(
+                mockAuthz, repository, mockCollaboratorRepo,
+                mockValidator, mockUserController, mockAircraftModelRepo
+        );
+
+        mockAircraftModelController = new ManageAircraftModelController(
+                mockAuthz, new InMemoryAircraftModelRepository(), new InMemoryEngineModelRepository()
+        );
+
     }
 
     @Test
@@ -52,7 +96,11 @@ class RegisterPilotControllerTest {
         final String validUntil = "01-01-2099";
 
         // Act
-        final Pilot result = controller.registerPilot(id, issuedAt, validUntil);
+        final Pilot result = controller.registerPilot(
+                id, issuedAt, validUntil,
+                "pilot.user", "John", "Doe",
+                "john.doe@test.com", "Password1!", "+351912345678",
+                "A320");
 
         // Assert
         assertNotNull(result);
@@ -63,38 +111,65 @@ class RegisterPilotControllerTest {
     void ensurePilotIsRegisteredWithCorrectCompany() {
         // Arrange
         final String id = "ABC";
-        final String issuedAt = "01-01-2020";
-        final String validUntil = "01-01-2099";
 
         // Act
-        final Pilot result = controller.registerPilot(id, issuedAt, validUntil);
+        final Pilot result = controller.registerPilot(
+                id, "01-01-2020", "01-01-2099",
+                "pilot.user", "John", "Doe",
+                "john.doe@test.com", "Password1!", "+351912345678",
+                "A320");
 
         // Assert
         assertNotNull(result.companyIATACode());
     }
 
     @Test
+    void ensurePilotIsRegisteredWithCorrectEmail() {
+        // Arrange
+        final String id = "ABC";
+        final String email = "john.doe@test.com";
+
+        // Act
+        final Pilot result = controller.registerPilot(
+                id, "01-01-2020", "01-01-2099",
+                "pilot.user", "John", "Doe",
+                email, "Password1!", "+351912345678",
+                "A320");
+
+        // Assert
+        assertEquals(EmailAddress.valueOf(email), result.email());
+    }
+
+    @Test
     void ensureDuplicatePilotRegistrationIsRejected() {
         // Arrange
         final String id = "ABC";
-        final String issuedAt = "01-01-2020";
-        final String validUntil = "01-01-2099";
-        controller.registerPilot(id, issuedAt, validUntil);
+        controller.registerPilot(
+                id, "01-01-2020", "01-01-2099",
+                "pilot.user", "John", "Doe",
+                "john.doe@test.com", "Password1!", "+351912345678",
+                "A320");
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> controller.registerPilot(id, issuedAt, validUntil));
+                () -> controller.registerPilot(
+                        id, "01-01-2020", "01-01-2099",
+                        "pilot.user2", "Jane", "Doe",
+                        "jane.doe@test.com", "Password1!", "+351912345679",
+                        "A320"));
     }
 
     @Test
     void ensurePilotIsPersistedInRepository() {
         // Arrange
         final String id = "ABC";
-        final String issuedAt = "01-01-2020";
-        final String validUntil = "01-01-2099";
 
         // Act
-        controller.registerPilot(id, issuedAt, validUntil);
+        controller.registerPilot(
+                id, "01-01-2020", "01-01-2099",
+                "pilot.user", "John", "Doe",
+                "john.doe@test.com", "Password1!", "+351912345678",
+                "A320");
 
         // Assert
         assertTrue(repository.ofIdentity(PilotID.valueOf(id)).isPresent());
@@ -104,47 +179,52 @@ class RegisterPilotControllerTest {
     void ensureRegistrationRejectsInvalidDateFormat() {
         // Arrange
         final String id = "ABC";
-        final String issuedAt = "2020-01-01";
-        final String validUntil = "01-01-2099";
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> controller.registerPilot(id, issuedAt, validUntil));
+                () -> controller.registerPilot(
+                        id, "2020-01-01", "01-01-2099",
+                        "pilot.user", "John", "Doe",
+                        "john.doe@test.com", "Password1!", "+351912345678",
+                        "A320"));
     }
 
     @Test
     void ensureRegistrationRejectsValidUntilBeforeIssuedAt() {
         // Arrange
         final String id = "ABC";
-        final String issuedAt = "01-01-2025";
-        final String validUntil = "01-01-2020";
 
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> controller.registerPilot(id, issuedAt, validUntil));
+                () -> controller.registerPilot(
+                        id, "01-01-2025", "01-01-2020",
+                        "pilot.user", "John", "Doe",
+                        "john.doe@test.com", "Password1!", "+351912345678",
+                        "A320"));
     }
 
     @Test
     void ensureRegistrationRejectsInvalidPilotID() {
-        // Arrange
-        final String invalidId = "ABC123";
-        final String issuedAt = "01-01-2020";
-        final String validUntil = "01-01-2099";
-
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> controller.registerPilot(invalidId, issuedAt, validUntil));
+                () -> controller.registerPilot(
+                        "ABC123", "01-01-2020", "01-01-2099",
+                        "pilot.user", "John", "Doe",
+                        "john.doe@test.com", "Password1!", "+351912345678",
+                        "A320"));
     }
 
     @Test
     void ensureRegistrationRejectsCollaboratorNotFromAirTransportCompany() {
+
         // Arrange
-        final InMemoryCustomerCollaboratorRepository areaRepo =
-                new InMemoryCustomerCollaboratorRepository();
+
+        final InMemoryCustomerCollaboratorRepository areaRepo = new InMemoryCustomerCollaboratorRepository();
+
         areaRepo.save(new CustomerCollaborator(
                 "Area", "User",
                 CollaboratorEmail.valueOf("area@test.com"),
-                airControlArea("LPPO"),
+                airControlArea("LISACC"),
                 SystemUsername.valueOf("area@test.com")
         ));
 
@@ -158,12 +238,17 @@ class RegisterPilotControllerTest {
             }
         };
 
-        final RegisterPilotController areaController =
-                new RegisterPilotController(areaAuthz, repository, areaRepo);
+        final RegisterPilotController areaController = new RegisterPilotController(
+                areaAuthz, repository, areaRepo, mockValidator, mockUserController, mockAircraftModelRepo
+        );
 
         // Act & Assert
         assertThrows(IllegalStateException.class,
-                () -> areaController.registerPilot("ABC", "01-01-2020", "01-01-2099"));
+                () -> areaController.registerPilot(
+                        "ABC", "01-01-2020", "01-01-2099",
+                        "pilot.user", "John", "Doe",
+                        "john.doe@test.com", "Password1!", "+351912345678",
+                        "A320"));
     }
 
     @Test
@@ -179,33 +264,108 @@ class RegisterPilotControllerTest {
             }
         };
 
-        final RegisterPilotController unknownController =
-                new RegisterPilotController(unknownAuthz, repository, mockCollaboratorRepo);
+        final RegisterPilotController unknownController = new RegisterPilotController(
+                unknownAuthz, repository, mockCollaboratorRepo, mockValidator, mockUserController, mockAircraftModelRepo
+        );
 
         // Act & Assert
         assertThrows(IllegalStateException.class,
-                () -> unknownController.registerPilot("ABC", "01-01-2020", "01-01-2099"));
+                () -> unknownController.registerPilot(
+                        "ABC", "01-01-2020", "01-01-2099",
+                        "pilot.user", "John", "Doe",
+                        "john.doe@test.com", "Password1!", "+351912345678",
+                        "A320"));
     }
 
     @Test
     void ensureControllerRejectsNullAuthz() {
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new RegisterPilotController(null, repository, mockCollaboratorRepo));
+                () -> new RegisterPilotController(
+                        null, repository, mockCollaboratorRepo,
+                        mockValidator, mockUserController, mockAircraftModelRepo
+                ));
     }
 
     @Test
     void ensureControllerRejectsNullRepository() {
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new RegisterPilotController(mockAuthz, null, mockCollaboratorRepo));
+                () -> new RegisterPilotController(
+                        mockAuthz, null, mockCollaboratorRepo,
+                        mockValidator, mockUserController, mockAircraftModelRepo
+                ));
     }
 
     @Test
     void ensureControllerRejectsNullCollaboratorRepo() {
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
-                () -> new RegisterPilotController(mockAuthz, repository, null));
+                () -> new RegisterPilotController(
+                        mockAuthz, repository, null,
+                        mockValidator, mockUserController, mockAircraftModelRepo
+                ));
+    }
+
+    @Test
+    void ensureControllerRejectsNullValidator() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new RegisterPilotController(
+                        mockAuthz, repository, mockCollaboratorRepo,
+                        null, mockUserController, mockAircraftModelRepo
+                ));
+    }
+
+    @Test
+    void ensureControllerRejectsNullUserController() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new RegisterPilotController(
+                        mockAuthz, repository, mockCollaboratorRepo,
+                        mockValidator, null, mockAircraftModelRepo
+                ));
+    }
+
+    @Test
+    void ensureControllerRejectsNullAircraftModelRepo() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class,
+                () -> new RegisterPilotController(
+                        mockAuthz, repository, mockCollaboratorRepo,
+                        mockValidator, mockUserController, null
+                ));
+    }
+
+
+
+    @Test
+    void ensureGetAllAircraftModelsReturnsListWithElements() {
+
+        EngineModel engineModel = new EngineModel(
+                EngineModelDesignator.valueOf("LEAP-1A", "CFM International"),
+                EngineType.valueOf("TURBOFAN"),
+                FuelType.valueOf("JET A-1"),
+                120.0,
+                140.0,
+                0.60
+        );
+
+        mockEngineModelRepo.save(engineModel);
+
+        mockAircraftModelController.registerAircraftModel(
+                "A320", "Airbus", "PASSENGER", "TURBOFAN",
+                6300, 44500, 79000, 64500, 27200, 12000,
+                833, 122.6, 0.024, 0.62, 186,
+                List.of(engineModel.designator().toString())
+        );
+
+        mockAircraftModelRepo = new InMemoryAircraftModelRepository();
+
+        final Iterable<AircraftModel> result = controller.getAllAircraftModels();
+
+        assertNotNull(result);
+        assertTrue(result.iterator().hasNext());
     }
 
     private AirTransportCompany airTransportCompany(final String iataCode, final String icaoCode) {
