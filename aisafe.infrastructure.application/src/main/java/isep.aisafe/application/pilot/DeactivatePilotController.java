@@ -64,21 +64,14 @@ public class DeactivatePilotController {
             throw new IllegalArgumentException("O ID do piloto não pode ser nulo.");
         }
 
-        PilotID pilotID = PilotID.valueOf(id);
-
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+
+        PilotID pilotID = PilotID.valueOf(id);
 
         Pilot pilot = pilotRepository.ofIdentity(pilotID).orElseThrow(() -> new IllegalArgumentException("Piloto não encontrado."));
 
-        Iterable<FlightPlan> flightPlans = flightPlanRepository.findAll();
-
-        for (FlightPlan flightPlan : flightPlans) {
-            if (flightPlan.pilot().identity().equals(pilotID)) {
-                throw new IllegalStateException("Pilot still has active flight plans.");
-            }
-        }
-
         SystemUsername collaboratorUsername = SystemUsername.valueOf(authz.authenticatedUsername());
+
         CustomerCollaborator collaborator = collaboratorRepo.findBySystemUsername(collaboratorUsername)
                 .orElseThrow(() -> new IllegalStateException("Authenticated user is not a customer collaborator."));
 
@@ -90,6 +83,14 @@ public class DeactivatePilotController {
 
         if (!pilot.companyIATACode().equals(airTransportCompany.iataCode())) {
             throw new IllegalStateException("Authenticated user is not associated with the same air transport company as the pilot.");
+        }
+
+        Iterable<FlightPlan> flightPlans = flightPlanRepository.findAll();
+
+        for (FlightPlan flightPlan : flightPlans) {
+            if (flightPlan.pilot().identity().equals(pilotID)) {
+                throw new IllegalStateException("Pilot still has active flight plans.");
+            }
         }
 
         pilot.deactivate();
