@@ -26,6 +26,8 @@ hide methods
     class Pilot <<Aggregate Root>>{
         firstName
         lastName
+        companyIATACode
+        certifiedAircraftModels
     }
 
     class PilotID <<Value Object>> {
@@ -42,10 +44,26 @@ hide methods
     }
 
     class EmailAddress <<Value Object>> {
-          value
+          email
     }
 
     class PhoneNumber <<Value Object>> {
+          value
+    }
+
+    class AircraftModel <<Aggregate Root>>{
+
+    }
+
+    class AircraftModelDesignator <<Value Object>> {
+          value
+    }
+
+    class AirTransportCompany <<Aggregate Root>>{
+
+    }
+
+    class IATACode <<Value Object>> {
           value
     }
 
@@ -55,6 +73,10 @@ hide methods
     Pilot *-- EmailAddress
     Pilot *-- PhoneNumber
 
+    AircraftModel *-- AircraftModelDesignator
+    AirTransportCompany *-- IATACode
+
     Pilot "*" --> "1" AirTransportCompany
     Pilot "*" --> "*" AircraftModel
+
 @enduml
