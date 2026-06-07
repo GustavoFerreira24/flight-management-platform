@@ -10,6 +10,8 @@ import isep.aisafe.weatherdata.domain.WeatherData;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 import isep.aisafe.weatherdata.domain.WeatherParameter;
 import isep.aisafe.weatherdata.domain.WeatherProvider;
+import isep.aisafe.weatherdata.domain.WeatherProviderId;
+import isep.aisafe.weatherdata.domain.WeatherProviderRepository;
 import isep.aisafe.weatherdata.domain.WeatherProviderType;
 import isep.aisafe.weatherdata.domain.WeatherUnit;
 
@@ -26,6 +28,7 @@ public class RegisterWeatherDataController {
     private final AisafeAuthorizationService authz;
     private final WeatherDataRepository weatherDataRepository;
     private final AirControlAreaRepository airControlAreaRepository;
+    private final WeatherProviderRepository weatherProviderRepository;
 
     /**
      * Creates the controller with production authorization and persistence services.
@@ -34,12 +37,14 @@ public class RegisterWeatherDataController {
         authz = new AisafeAuthorizationService();
         weatherDataRepository = null;
         airControlAreaRepository = null;
+        weatherProviderRepository = null;
     }
 
     RegisterWeatherDataController(
             final AisafeAuthorizationService authz,
             final WeatherDataRepository weatherDataRepository,
-            final AirControlAreaRepository airControlAreaRepository) {
+            final AirControlAreaRepository airControlAreaRepository,
+            final WeatherProviderRepository weatherProviderRepository) {
 
         if (authz == null) {
             throw new IllegalArgumentException("Authorization service cannot be null.");
@@ -53,9 +58,14 @@ public class RegisterWeatherDataController {
             throw new IllegalArgumentException("Air control area repository cannot be null.");
         }
 
+        if (weatherProviderRepository == null) {
+            throw new IllegalArgumentException("Weather provider repository cannot be null.");
+        }
+
         this.authz = authz;
         this.weatherDataRepository = weatherDataRepository;
         this.airControlAreaRepository = airControlAreaRepository;
+        this.weatherProviderRepository = weatherProviderRepository;
     }
 
     /**
@@ -121,9 +131,18 @@ public class RegisterWeatherDataController {
         final WeatherData weatherData = weatherDataRepository()
                 .findByDayAndAirControlArea(measurementDay, airControlAreaCode)
                 .orElseGet(() -> new WeatherData(measurementDay, airControlAreaCode));
+        final WeatherProviderType measurementProviderType = WeatherProviderType.valueOf(providerType);
+        final WeatherProvider provider = weatherProviderRepository()
+                .findByIdentifier(WeatherProviderId.valueOf(providerName))
+                .orElseThrow(() -> new IllegalArgumentException("Weather provider not found."));
+
+        if (!provider.supports(measurementProviderType)) {
+            throw new IllegalArgumentException("Weather provider does not support the submitted provider type.");
+        }
 
         weatherData.addMeasurement(
-                WeatherProvider.valueOf(providerName, WeatherProviderType.valueOf(providerType)),
+                provider,
+                measurementProviderType,
                 WeatherParameter.valueOf(parameter),
                 value,
                 WeatherUnit.valueOf(unit),
@@ -225,5 +244,13 @@ public class RegisterWeatherDataController {
         }
 
         return PersistenceContext.repositories().airControlAreas();
+    }
+
+    private WeatherProviderRepository weatherProviderRepository() {
+        if (weatherProviderRepository != null) {
+            return weatherProviderRepository;
+        }
+
+        return PersistenceContext.repositories().weatherProviders();
     }
 }

@@ -23,8 +23,10 @@ class WeatherDataTest {
         );
 
         // Act
+        final WeatherProviderType providerType = WeatherProviderType.valueOf("Manual Input");
         weatherData.addMeasurement(
-                WeatherProvider.valueOf("Manual", WeatherProviderType.valueOf("Manual Input")),
+                provider(providerType),
+                providerType,
                 WeatherParameter.valueOf("temperature"),
                 18.5,
                 WeatherUnit.valueOf("C"),
@@ -66,6 +68,7 @@ class WeatherDataTest {
         assertThrows(IllegalArgumentException.class, () ->
                 weatherData.addMeasurement(
                         null,
+                        WeatherProviderType.valueOf("Manual"),
                         WeatherParameter.valueOf("temperature"),
                         18.5,
                         WeatherUnit.valueOf("C"),
@@ -89,7 +92,8 @@ class WeatherDataTest {
         // Act / Assert
         assertThrows(IllegalArgumentException.class, () ->
                 weatherData.addMeasurement(
-                        WeatherProvider.valueOf("Manual", WeatherProviderType.valueOf("Manual")),
+                        provider(WeatherProviderType.valueOf("Manual")),
+                        WeatherProviderType.valueOf("Manual"),
                         WeatherParameter.valueOf("temperature"),
                         18.5,
                         WeatherUnit.valueOf("M/S"),
@@ -112,7 +116,8 @@ class WeatherDataTest {
         // Act / Assert
         assertThrows(IllegalArgumentException.class, () ->
                 weatherData.addMeasurement(
-                        WeatherProvider.valueOf("Manual", WeatherProviderType.valueOf("Manual")),
+                        provider(WeatherProviderType.valueOf("Manual")),
+                        WeatherProviderType.valueOf("Manual"),
                         WeatherParameter.valueOf("wind speed"),
                         -1,
                         WeatherUnit.valueOf("M/S"),
@@ -131,21 +136,22 @@ class WeatherDataTest {
     void ensureInvalidParameterValuesAreRejected() {
         // Arrange
         final WeatherData weatherData = weatherData();
-        final WeatherProvider provider = WeatherProvider.valueOf("Manual", WeatherProviderType.valueOf("Manual"));
+        final WeatherProviderType providerType = WeatherProviderType.valueOf("Manual");
+        final WeatherProvider provider = provider(providerType);
         final WeatherCoordinates coordinates = WeatherCoordinates.valueOf(38.72, -9.14);
 
         // Act / Assert
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, WeatherParameter.valueOf("temperature"), 100, WeatherUnit.valueOf("C"), 1200, coordinates
+                provider, providerType, WeatherParameter.valueOf("temperature"), 100, WeatherUnit.valueOf("C"), 1200, coordinates
         ));
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, WeatherParameter.valueOf("wind direction"), 361, WeatherUnit.valueOf("DEG"), 1200, coordinates
+                provider, providerType, WeatherParameter.valueOf("wind direction"), 361, WeatherUnit.valueOf("DEG"), 1200, coordinates
         ));
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, WeatherParameter.valueOf("pressure"), 700, WeatherUnit.valueOf("HPA"), 1200, coordinates
+                provider, providerType, WeatherParameter.valueOf("pressure"), 700, WeatherUnit.valueOf("HPA"), 1200, coordinates
         ));
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, WeatherParameter.valueOf("humidity"), -1, WeatherUnit.valueOf("PERCENT"), 1200, coordinates
+                provider, providerType, WeatherParameter.valueOf("humidity"), -1, WeatherUnit.valueOf("PERCENT"), 1200, coordinates
         ));
     }
 
@@ -158,23 +164,24 @@ class WeatherDataTest {
     void ensureMeasurementRequiresMandatoryFieldsAndValidAltitude() {
         // Arrange
         final WeatherData weatherData = weatherData();
-        final WeatherProvider provider = WeatherProvider.valueOf("Manual", WeatherProviderType.valueOf("Manual"));
+        final WeatherProviderType providerType = WeatherProviderType.valueOf("Manual");
+        final WeatherProvider provider = provider(providerType);
         final WeatherParameter parameter = WeatherParameter.valueOf("temperature");
         final WeatherUnit unit = WeatherUnit.valueOf("C");
         final WeatherCoordinates coordinates = WeatherCoordinates.valueOf(38.72, -9.14);
 
         // Act / Assert
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, null, 18.5, unit, 1200, coordinates
+                provider, providerType, null, 18.5, unit, 1200, coordinates
         ));
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, parameter, 18.5, null, 1200, coordinates
+                provider, providerType, parameter, 18.5, null, 1200, coordinates
         ));
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, parameter, 18.5, unit, 1200, null
+                provider, providerType, parameter, 18.5, unit, 1200, null
         ));
         assertThrows(IllegalArgumentException.class, () -> weatherData.addMeasurement(
-                provider, parameter, 18.5, unit, -1, coordinates
+                provider, providerType, parameter, 18.5, unit, -1, coordinates
         ));
     }
 
@@ -187,17 +194,19 @@ class WeatherDataTest {
     void ensureMeasurementExposesRegisteredValues() {
         // Arrange
         final WeatherData weatherData = weatherData();
-        final WeatherProvider provider = WeatherProvider.valueOf("Manual", WeatherProviderType.valueOf("Manual"));
+        final WeatherProviderType providerType = WeatherProviderType.valueOf("Manual");
+        final WeatherProvider provider = provider(providerType);
         final WeatherParameter parameter = WeatherParameter.valueOf("pressure");
         final WeatherUnit unit = WeatherUnit.valueOf("HPA");
         final WeatherCoordinates coordinates = WeatherCoordinates.valueOf(38.72, -9.14);
 
         // Act
-        weatherData.addMeasurement(provider, parameter, 1013, unit, 1200, coordinates);
+        weatherData.addMeasurement(provider, providerType, parameter, 1013, unit, 1200, coordinates);
         final WeatherMeasurement measurement = weatherData.measurements().get(0);
 
         // Assert
         assertEquals(provider, measurement.provider());
+        assertEquals(providerType, measurement.providerType());
         assertEquals(parameter, measurement.parameter());
         assertEquals(1013, measurement.value());
         assertEquals(unit, measurement.unit());
@@ -261,5 +270,9 @@ class WeatherDataTest {
                 LocalDate.of(2026, 5, 14),
                 AirControlAreaCode.valueOf("LISACC")
         );
+    }
+
+    private WeatherProvider provider(final WeatherProviderType providerType) {
+        return new WeatherProvider("Manual", java.util.List.of(providerType));
     }
 }

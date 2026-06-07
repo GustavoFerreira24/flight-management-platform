@@ -127,11 +127,22 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         testStatus = FlightPlanTestStatus.TESTED;
     }
 
+    /**
+     * Returns this aggregate identity.
+     *
+     * @return flight plan identifier
+     */
     @Override
     public FlightPlanIdentifier identity() {
         return identifier;
     }
 
+    /**
+     * Checks whether another object represents the same flight plan.
+     *
+     * @param other object to compare
+     * @return true when both objects have the same identity
+     */
     @Override
     public boolean sameAs(final Object other) {
         if (!(other instanceof FlightPlan)) {
@@ -141,10 +152,20 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return identity().equals(that.identity());
     }
 
+    /**
+     * Returns this flight plan identifier.
+     *
+     * @return flight plan identifier
+     */
     public FlightPlanIdentifier identifier() {
         return identifier;
     }
 
+    /**
+     * Returns the flight covered by this flight plan.
+     *
+     * @return planned flight
+     */
     public Flight flight() {
         return flight;
     }
@@ -167,6 +188,11 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return flight.designator().toString();
     }
 
+    /**
+     * Returns the aircraft assigned to this flight plan.
+     *
+     * @return assigned aircraft
+     */
     public Aircraft aircraft() {
         return aircraft;
     }
@@ -180,6 +206,11 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return aircraft.registration().toString();
     }
 
+    /**
+     * Returns the pilot assigned to this flight plan.
+     *
+     * @return assigned pilot
+     */
     public Pilot pilot() {
         return pilot;
     }
@@ -193,14 +224,29 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return pilot.identity().toString();
     }
 
+    /**
+     * Returns the fuel quantity assigned to this flight plan.
+     *
+     * @return assigned fuel quantity
+     */
     public FuelQuantity fuelQuantity() {
         return fuelQuantity;
     }
 
+    /**
+     * Returns the lifecycle status of this flight plan.
+     *
+     * @return flight plan status
+     */
     public FlightPlanStatus status() {
         return status;
     }
 
+    /**
+     * Returns the weather data identities associated with this flight plan.
+     *
+     * @return unmodifiable weather data identity list
+     */
     public List<WeatherDataId> weatherDataIds() {
         return Collections.unmodifiableList(weatherDataIds);
     }
@@ -223,6 +269,11 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return !weatherDataIds.isEmpty();
     }
 
+    /**
+     * Returns the current test status of this flight plan.
+     *
+     * @return flight plan test status
+     */
     public FlightPlanTestStatus testStatus() {
         return testStatus;
     }

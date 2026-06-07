@@ -9,6 +9,9 @@ import isep.aisafe.aircontrolarea.domain.MinimumFuelRequirement;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.support.CapturingAuthorizationService;
 import isep.aisafe.weatherdata.domain.InMemoryWeatherDataRepository;
+import isep.aisafe.weatherdata.domain.InMemoryWeatherProviderRepository;
+import isep.aisafe.weatherdata.domain.WeatherProvider;
+import isep.aisafe.weatherdata.domain.WeatherProviderType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -54,26 +57,37 @@ class ImportBulkWeatherDataControllerTest {
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
         final InMemoryAirControlAreaRepository airControlAreaRepository = new InMemoryAirControlAreaRepository();
+        final InMemoryWeatherProviderRepository weatherProviderRepository = weatherProviderRepository();
 
         assertThrows(NullPointerException.class, () -> new ImportBulkWeatherDataController(
                 null,
                 weatherDataRepository,
-                airControlAreaRepository
+                airControlAreaRepository,
+                weatherProviderRepository
         ));
         assertThrows(NullPointerException.class, () -> new ImportBulkWeatherDataController(
                 authz,
                 null,
-                airControlAreaRepository
+                airControlAreaRepository,
+                weatherProviderRepository
         ));
         assertThrows(NullPointerException.class, () -> new ImportBulkWeatherDataController(
                 authz,
                 weatherDataRepository,
+                null,
+                weatherProviderRepository
+        ));
+        assertThrows(NullPointerException.class, () -> new ImportBulkWeatherDataController(
+                authz,
+                weatherDataRepository,
+                airControlAreaRepository,
                 null
         ));
         assertThrows(NullPointerException.class, () -> new ImportBulkWeatherDataController(
                 authz,
                 weatherDataRepository,
                 airControlAreaRepository,
+                weatherProviderRepository,
                 null
         ));
     }
@@ -354,6 +368,7 @@ class ImportBulkWeatherDataControllerTest {
                 authz,
                 weatherDataRepository,
                 airControlAreaRepository,
+                weatherProviderRepository(),
                 new StubWeatherDataImporterFactory(List.of(measurement(2, "2027-01-16", "temperature", 18.5, "C", 38.72, -9.14)))
         );
 
@@ -374,8 +389,18 @@ class ImportBulkWeatherDataControllerTest {
         return new ImportBulkWeatherDataController(
                 authz,
                 weatherDataRepository,
-                airControlAreaRepository()
+                airControlAreaRepository(),
+                weatherProviderRepository()
         );
+    }
+
+    private InMemoryWeatherProviderRepository weatherProviderRepository() {
+        final InMemoryWeatherProviderRepository weatherProviderRepository = new InMemoryWeatherProviderRepository();
+        weatherProviderRepository.save(new WeatherProvider(
+                "IPMA",
+                List.of(WeatherProviderType.valueOf("STATION"))
+        ));
+        return weatherProviderRepository;
     }
 
     private InMemoryAirControlAreaRepository airControlAreaRepository() {

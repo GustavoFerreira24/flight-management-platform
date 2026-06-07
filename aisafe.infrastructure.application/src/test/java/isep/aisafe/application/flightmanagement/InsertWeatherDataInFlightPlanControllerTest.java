@@ -462,8 +462,10 @@ class InsertWeatherDataInFlightPlanControllerTest {
                 LocalDate.of(2027, 1, 10),
                 AirControlAreaCode.valueOf("CONACC")
         );
+        final WeatherProviderType providerType = WeatherProviderType.valueOf("GROUND_SENSOR");
         weatherData.addMeasurement(
-                WeatherProvider.valueOf("IPMA", WeatherProviderType.valueOf("GROUND_SENSOR")),
+                new WeatherProvider("IPMA", List.of(providerType)),
+                providerType,
                 WeatherParameter.valueOf("TEMPERATURE"),
                 18.5,
                 WeatherUnit.valueOf("C"),

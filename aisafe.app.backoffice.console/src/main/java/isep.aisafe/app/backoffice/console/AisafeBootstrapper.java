@@ -46,6 +46,10 @@ import isep.aisafe.manufacturer.domain.ManufacturerRepository;
 import isep.aisafe.manufacturer.domain.ManufacturerType;
 import isep.aisafe.pilot.domain.*;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
+import isep.aisafe.weatherdata.domain.WeatherProvider;
+import isep.aisafe.weatherdata.domain.WeatherProviderId;
+import isep.aisafe.weatherdata.domain.WeatherProviderRepository;
+import isep.aisafe.weatherdata.domain.WeatherProviderType;
 
 import java.util.List;
 import java.util.Set;
@@ -76,10 +80,40 @@ public class AisafeBootstrapper {
         bootstrapAirControlAreas();
         bootstrapAirports();
         bootstrapManufacturers();
+        bootstrapWeatherProviders();
         bootstrapCustomerCollaborators(userService);
         bootstrapAircraftAndEngineModels();
         bootstrapDemoAircraftFleet();
         bootstrapPilots(userService);
+    }
+
+    private static void bootstrapWeatherProviders() {
+        final WeatherProviderRepository repository = PersistenceContext.repositories().weatherProviders();
+        registerWeatherProviderIfMissing(
+                repository,
+                "IPMA",
+                List.of("MANUAL_INPUT", "GROUND_SENSOR", "SATELLITE", "BALLOON", "STATION")
+        );
+    }
+
+    private static WeatherProvider registerWeatherProviderIfMissing(
+            final WeatherProviderRepository repository,
+            final String name,
+            final List<String> supportedTypes) {
+
+        final WeatherProviderId identifier = WeatherProviderId.valueOf(name);
+        if (repository.findByIdentifier(identifier).isPresent()) {
+            return repository.findByIdentifier(identifier).get();
+        }
+
+        final WeatherProvider weatherProvider = new WeatherProvider(
+                name,
+                supportedTypes.stream().map(WeatherProviderType::valueOf).toList()
+        );
+
+        final WeatherProvider savedWeatherProvider = repository.save(weatherProvider);
+        System.out.println("Bootstrapped weather provider: " + identifier);
+        return savedWeatherProvider;
     }
 
     private static void bootstrapManufacturers() {

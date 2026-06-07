@@ -7,6 +7,8 @@ import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 import java.io.Serializable;
 
@@ -18,12 +20,13 @@ public class WeatherMeasurement implements ValueObject, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "name", column = @Column(name = "PROVIDER_NAME", nullable = false)),
-            @AttributeOverride(name = "type.value", column = @Column(name = "PROVIDER_TYPE", nullable = false))
-    })
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "WEATHER_PROVIDER_PK", nullable = false)
     private WeatherProvider provider;
+
+    @Embedded
+    @AttributeOverride(name = "value", column = @Column(name = "PROVIDER_TYPE", nullable = false))
+    private WeatherProviderType providerType;
 
     @Embedded
     @AttributeOverride(name = "name", column = @Column(name = "PARAMETER_NAME", nullable = false))
@@ -51,6 +54,7 @@ public class WeatherMeasurement implements ValueObject, Serializable {
 
     WeatherMeasurement(
             final WeatherProvider provider,
+            final WeatherProviderType providerType,
             final WeatherParameter parameter,
             final double value,
             final WeatherUnit unit,
@@ -58,6 +62,8 @@ public class WeatherMeasurement implements ValueObject, Serializable {
             final WeatherCoordinates coordinates) {
 
         Preconditions.nonNull(provider, "Weather provider is required.");
+        Preconditions.nonNull(providerType, "Weather provider type is required.");
+        Preconditions.ensure(provider.supports(providerType), "Weather provider does not support the submitted provider type.");
         Preconditions.nonNull(parameter, "Weather parameter is required.");
         Preconditions.nonNull(unit, "Weather unit is required.");
         Preconditions.ensure(parameter.isCompatibleWith(unit), "Weather unit is not compatible with parameter.");
@@ -67,6 +73,7 @@ public class WeatherMeasurement implements ValueObject, Serializable {
         validateValue(parameter, value);
 
         this.provider = provider;
+        this.providerType = providerType;
         this.parameter = parameter;
         this.value = value;
         this.unit = unit;
@@ -99,6 +106,10 @@ public class WeatherMeasurement implements ValueObject, Serializable {
 
     public WeatherProvider provider() {
         return provider;
+    }
+
+    public WeatherProviderType providerType() {
+        return providerType;
     }
 
     public WeatherParameter parameter() {

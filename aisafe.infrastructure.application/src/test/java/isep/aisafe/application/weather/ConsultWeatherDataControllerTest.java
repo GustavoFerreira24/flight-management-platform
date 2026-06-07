@@ -249,8 +249,10 @@ class ConsultWeatherDataControllerTest {
 
     private WeatherData weatherData(final LocalDate day, final AirControlAreaCode airControlAreaCode) {
         final WeatherData weatherData = new WeatherData(day, airControlAreaCode);
+        final WeatherProviderType providerType = WeatherProviderType.valueOf("GROUND_SENSOR");
         weatherData.addMeasurement(
-                WeatherProvider.valueOf("IPMA", WeatherProviderType.valueOf("GROUND_SENSOR")),
+                new WeatherProvider("IPMA", java.util.List.of(providerType)),
+                providerType,
                 WeatherParameter.valueOf("TEMPERATURE"),
                 18.5,
                 WeatherUnit.valueOf("C"),

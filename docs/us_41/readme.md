@@ -37,7 +37,7 @@ Weather data registration requires two layers of validation:
 **UI-level validation (before controller call):**
 - Date format: ISO 8601 (`YYYY-MM-DD`), parsed with `LocalDate.parse()`.
 - Area code: format `[A-Z0-9]{2,10}`, uppercased before validation.
-- Provider name and provider type: non-blank.
+- Provider name and provider type: non-blank; the provider must be pre-registered and support the submitted provider type.
 - Parameter: numbered menu (1–5), no free-text input to prevent typos.
 - Measurement value: `double` within parameter-specific range.
 - Unit: dynamic numbered menu showing only compatible units for the selected parameter.
@@ -71,7 +71,9 @@ Weather data registration requires two layers of validation:
 
 ### 4.1. Realization
 
-![US41 class diagram](class-diagram-41.svg "US41 Class Diagram")
+![US41 class diagram](diagrams/class-diagram-41.svg "US41 Class Diagram")
+
+![US41 sequence diagram](diagrams/sequence-diagram-41.svg "US41 Sequence Diagram")
 
 The `RegisterWeatherDataUI` collects all inputs with immediate per-field validation in loops. It uses:
 - A static `LinkedHashMap` (`PARAMETER_UNITS`) that maps each parameter to its compatible units, preserving display order.
@@ -86,7 +88,7 @@ The `RegisterWeatherDataController`:
 3. Looks up the air control area by code; throws `IllegalArgumentException` if not found.
 4. Validates that coordinates are within the area's geographic boundary.
 5. Looks up or creates a `WeatherData` aggregate for the given day and area.
-6. Builds domain value objects (`WeatherProvider`, `WeatherParameter`, `WeatherUnit`, `WeatherCoordinates`) and delegates to `WeatherData.addMeasurement()`.
+6. Retrieves the pre-registered `WeatherProvider`, validates that it supports the submitted `WeatherProviderType`, builds the remaining domain value objects and delegates to `WeatherData.addMeasurement()`.
 7. Persists and returns the updated aggregate.
 
 Repositories are resolved lazily from `PersistenceContext` in the production constructor (both set to `null`), and injected directly in tests via the package-private constructor.
@@ -153,8 +155,8 @@ Main implementation artifacts:
 - `WeatherMeasurement`: value object embedded in `WeatherData`. Validates value ranges per parameter and unit compatibility.
 - `WeatherParameter`: value object for the atmospheric parameter. Normalizes input (spaces/hyphens to underscores, uppercase) and rejects unsupported values. Holds the compatibility map (`COMPATIBLE_UNITS`).
 - `WeatherUnit`: value object for the measurement unit (uppercased string).
-- `WeatherProvider`: value object combining provider name and `WeatherProviderType`.
-- `WeatherProviderType`: value object for the provider source type (e.g. `STATION`, `SATELLITE`).
+- `WeatherProvider`: registered provider entity trusted by the system.
+- `WeatherProviderType`: value object for the acquisition method/source type used by a measurement (e.g. `STATION`, `SATELLITE`, `BALLOON`, `MANUAL_INPUT`). A provider can support multiple provider types.
 - `WeatherCoordinates`: value object for latitude/longitude with range enforcement.
 - `WeatherDataId`: composite value object (day + area code) used as the aggregate identity.
 - `WeatherDataRepository`: repository abstraction with `findByDayAndAirControlArea()` for aggregate reuse.

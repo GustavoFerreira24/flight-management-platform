@@ -10,6 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AisafePermissionsTest {
 
+    /**
+     * Purpose: verify user management permission roles.
+     * Scenario: inspect the permission constant.
+     * Expected output: Admin and Backoffice Operator are allowed.
+     */
     @Test
     void ensureUserManagementPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -19,6 +24,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify user registration permission roles.
+     * Scenario: inspect the permission constant.
+     * Expected output: only Admin is allowed.
+     */
     @Test
     void ensureUserRegistrationPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -28,6 +38,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify backoffice configuration permission roles.
+     * Scenario: inspect the permission constant.
+     * Expected output: only Backoffice Operator is allowed.
+     */
     @Test
     void ensureBackofficeConfigurationPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -37,6 +52,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify air company configuration permission roles.
+     * Scenario: inspect the permission constant.
+     * Expected output: only Air Transport Company Collaborator is allowed.
+     */
     @Test
     void ensureAirCompanyConfigurationPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -46,6 +66,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify flight plan management permission roles.
+     * Scenario: inspect the permission constant.
+     * Expected output: Pilot and Flight Control Operator are allowed.
+     */
     @Test
     void ensureFlightPlanManagementPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -55,6 +80,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify flight plan weather data insertion permission roles.
+     * Scenario: inspect the permission constant used by US082.
+     * Expected output: only Pilot is allowed.
+     */
     @Test
     void ensureFlightPlanWeatherDataInsertionPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -64,6 +94,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify flight control permission roles.
+     * Scenario: inspect the permission constant.
+     * Expected output: only Flight Control Operator is allowed.
+     */
     @Test
     void ensureFlightControlPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -73,6 +108,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify weather data management permission roles.
+     * Scenario: inspect the permission constant.
+     * Expected output: only Weather Person is allowed.
+     */
     @Test
     void ensureWeatherDataManagementPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -82,6 +122,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify weather data consultation permission roles.
+     * Scenario: inspect the permission constant used by US043.
+     * Expected output: Weather Person, Pilot and Flight Control Operator are allowed.
+     */
     @Test
     void ensureWeatherDataConsultationPermissionsAreCorrect() {
         // Arrange / Act / Assert
@@ -95,6 +140,11 @@ class AisafePermissionsTest {
         );
     }
 
+    /**
+     * Purpose: verify utility class construction guard.
+     * Scenario: inspect the private constructor through reflection.
+     * Expected output: the constructor is private.
+     */
     @Test
     void ensureUtilityClassHasPrivateConstructor() throws Exception {
         // Arrange

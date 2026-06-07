@@ -9,6 +9,7 @@ participant "WeatherDataImporterFactory" as Factory
 participant "CsvWeatherDataImporter" as Importer
 participant "RegisterWeatherDataController" as RegisterController
 participant "AirControlAreaRepository" as AreaRepo
+participant "WeatherProviderRepository" as ProviderRepo
 participant "WeatherDataRepository" as WeatherRepo
 participant "WeatherData" as WeatherData
 
@@ -53,7 +54,16 @@ loop each imported measurement
     alt area not found or coordinates outside area
         RegisterController --> Controller : IllegalArgumentException
         Controller -> Controller : add BulkWeatherImportError(sourceLine, message)
-    else valid area and weather values
+    else valid area and coordinates
+        RegisterController -> ProviderRepo : findByIdentifier(providerName)
+        activate ProviderRepo
+        ProviderRepo --> RegisterController : Optional<WeatherProvider>
+        deactivate ProviderRepo
+
+        alt provider not found or type not supported
+            RegisterController --> Controller : IllegalArgumentException
+            Controller -> Controller : add BulkWeatherImportError(sourceLine, message)
+        else registered provider supports submitted type
         RegisterController -> WeatherRepo : findByDayAndAirControlArea(day, areaCode)
         activate WeatherRepo
         WeatherRepo --> RegisterController : Optional<WeatherData>
@@ -72,6 +82,7 @@ loop each imported measurement
         deactivate WeatherRepo
         RegisterController --> Controller : WeatherData
         Controller -> Controller : increment persisted count
+        end
     end
     deactivate RegisterController
 end
