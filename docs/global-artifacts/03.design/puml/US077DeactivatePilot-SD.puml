@@ -1,0 +1,64 @@
+@startuml
+title US78 - Pilot Aggregate Scenario: Deactivate Pilot
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "ATC Collaborator" as ATC
+boundary ":DeactivatePilotUI" as UI
+control ":RegisterPilotController" as C
+participant "pilotRepository\n:PilotRepository" as PilotRepo
+participant "flightPlanRepository\n:FlightPlanRepository" as FlightPlanRepo
+participant "pilotID\n:PilotID" as PilotID
+participant "pilot\n:Pilot" as Pilot
+participant "pilotStatus\n:PilotStatus" as PilotStatus
+participant "airTransportCompany\n:AirTransportCompany" as Air
+participant ":AisafeAuthorizationService" as authz
+participant ":CustomerCollaboratorRepository" as CCRepo
+participant ":SystemUsername" as SU
+
+ATC -> UI : request to deactivate pilot
+UI -> ATC : ask for pilotId
+
+ATC -> UI : submit pilotId as a String
+UI -> C : deactivatePilot(pilotId)
+
+C -> authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+authz --> C : authorized
+
+C -> PilotID : valueOf(pilotID)
+PilotID -> C : returns pilotID as PilotID
+
+C -> PilotRepo : ofIdentity(pilotId)
+PilotRepo --> C : pilot
+
+C -> SU : valueOf(authz.authenticatedUsername())
+SU -> C : collaboratorUsername
+
+C -> CCRepo : findBySystemUsername(SystemUsername)
+CCRepo -> C : CustomerCollaborator
+
+C -> Air : collaborator.airTransportCompany()
+note over C : pilot is associated with air transport company of collaborator
+
+C -> FlightPlanRepo : findAll()
+FlightPlanRepo -> C : returns an Iterable of FlightPlans
+
+C -> C : Checks if pilot has any activated flight plans
+note over C : pilot has no activated flight plans
+
+C -> Pilot : deactivate
+Pilot -> PilotStatus : deactivate()
+PolotStatus -> Pilot : return new PilotStatus("INVÁLIDO")
+
+
+C -> PilotRepo : save(pilot)
+PilotRepo --> C : success
+
+C --> UI : sucess
+UI --> ATC : shows success message
+
+@enduml
