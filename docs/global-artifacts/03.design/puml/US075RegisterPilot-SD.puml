@@ -1,0 +1,131 @@
+@startuml
+title US11 - Pilot Aggregate Scenario: Activate Pilot with Valid Certification
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "ATC Collaborator" as ATC
+boundary ":RegisterPilotUI" as UI
+control ":RegisterPilotController" as C
+
+participant "pilot\n:Pilot" as Pilot
+participant "certification\n:Certification" as Cert
+participant "pilotStatus\n:PilotStatus" as Status
+participant ":SystemUsername" as SU
+participant "customerCollaborator\n:CustomerCollaborator" as CC
+participant "iataCode\n:IATACode" as IATA
+participant "emailAddress\n:EmailAddress" as EA
+participant "phoneNumber\n:PhoneNumber" as PN
+participant "aircraftModelDesignator\n:AircraftModelDesignator" as AMD
+participant "aircraftModel\n:AircraftModel" as AM
+
+participant ":CustomerCollaboratorRepository" as CCRepo
+participant ":AircraftModelRepository" as AMRepo
+
+participant ":UserRegistrationValidator" as URV
+participant ":UserManagementService" as UMS
+
+
+
+
+ATC -> UI : request to register a pilot
+
+note over UI : User's Info
+
+UI -> ATC : ask for Username
+ATC -> UI : submit Username
+
+UI -> ATC : ask for First Name
+ATC -> UI : submit First Name
+
+UI -> ATC : ask for Last Name
+ATC -> UI : submit Last Name
+
+UI -> ATC : ask for Email
+ATC -> UI : submit Email
+
+UI -> ATC : ask for Password
+ATC -> UI : submit Password
+
+note over UI : Pilot's Info
+
+UI -> ATC : ask for pilotId
+ATC -> UI : submit pilotId
+
+UI -> ATC : ask for pilotId
+ATC -> UI : submit pilotId
+
+UI -> ATC : ask for Phone Number
+ATC -> UI : submit Phone Number
+
+UI -> ATC : ask for the date Certification was issued at
+ATC -> UI : submit the date Certification was issued at
+
+UI -> ATC : ask for the date Certification was valid until
+ATC -> UI : submit the date Certification was valid until
+
+UI -> ATC : ask for Certified Aircraft Models the Pilot has
+ATC -> UI : submits Certified Aircraft Models the Pilot has
+
+UI -> C : registerPilot()
+
+C -> authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+authz -> C : authorized
+
+C -> PilotID : valueOf(id)
+PilotID -> C : returns pilotId
+
+C -> C : Checks if any pilot of identity pilotId already exists
+
+C -> Cert : Certification(issuedAtStr, validUntilStr)
+Cert -> C : returns certification
+
+C -> Status : PilotStatus(certification)
+Status -> C : pilotStatus
+
+C -> SU : valueOf(authz.authenticatedUsername())
+SU -> C : collaboratorUsername
+
+C -> CCRepo : findBySystemUsername(SystemUsername)
+CCRepo -> C : collaborator
+
+C -> CC : isAssociatedWithAirTransportCompany()
+CC -> C : returns if collaborator is associated with air transport company
+
+C -> URV : validate()
+URV -> C : returns validation
+
+C -> UMS : registerNewUser()
+UMS -> C : success
+
+C -> CC : airTransportCompany()
+CC -> C : returns air transport company
+
+C -> ATC : iataCode()
+ATC -> C : returns companyIATACode
+
+C -> Email : EmailAddress.valueOf()
+Email -> C : returns email
+
+C -> PN : PhoneNumber.valueOf()
+PN -> C : returns phone
+
+C -> AMRepo : findAll()
+AMRepo -> C : returns Iterable<AircraftModel> existingModels
+
+C -> AM : identity()
+AM -> C : returns designator
+
+C -> AMRepo : findByDesignator()
+AMRepo -> C : returns AircraftModel
+
+C -> Pilot : Pilot()
+Pilot -> C : success
+
+C -> UI : success
+
+UI -> ATC : show success message
+@enduml
