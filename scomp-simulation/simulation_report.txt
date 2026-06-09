@@ -1,12 +1,12 @@
 ========================================
       SIMULATION REPORT
-      Generated: 2026-05-29 22:54:58
+      Generated: 2026-06-09 14:55:50
 ========================================
 
 SUMMARY
 -------
-Total Flights   : 3
-Completed       : 3
+Total Flights   : 40
+Completed       : 40
 Terminated      : 0
 Violations      : 1
 Validation      : FAILED
@@ -14,9 +14,46 @@ Validation      : FAILED
 ========================================
 FLIGHT EXECUTION STATUS
 ========================================
-[FLIGHT 101]  Status: COMPLETED
-[FLIGHT 202]  Status: COMPLETED
-[FLIGHT 303]  Status: COMPLETED
+[FLIGHT 2001]  Status: COMPLETED
+[FLIGHT 2002]  Status: COMPLETED
+[FLIGHT 2003]  Status: COMPLETED
+[FLIGHT 2004]  Status: COMPLETED
+[FLIGHT 2005]  Status: COMPLETED
+[FLIGHT 2006]  Status: COMPLETED
+[FLIGHT 2007]  Status: COMPLETED
+[FLIGHT 2008]  Status: COMPLETED
+[FLIGHT 2009]  Status: COMPLETED
+[FLIGHT 2010]  Status: COMPLETED
+[FLIGHT 2011]  Status: COMPLETED
+[FLIGHT 2012]  Status: COMPLETED
+[FLIGHT 2013]  Status: COMPLETED
+[FLIGHT 2014]  Status: COMPLETED
+[FLIGHT 2015]  Status: COMPLETED
+[FLIGHT 2016]  Status: COMPLETED
+[FLIGHT 2017]  Status: COMPLETED
+[FLIGHT 2018]  Status: COMPLETED
+[FLIGHT 2019]  Status: COMPLETED
+[FLIGHT 2020]  Status: COMPLETED
+[FLIGHT 2021]  Status: COMPLETED
+[FLIGHT 2022]  Status: COMPLETED
+[FLIGHT 2023]  Status: COMPLETED
+[FLIGHT 2024]  Status: COMPLETED
+[FLIGHT 2025]  Status: COMPLETED
+[FLIGHT 2026]  Status: COMPLETED
+[FLIGHT 2027]  Status: COMPLETED
+[FLIGHT 2028]  Status: COMPLETED
+[FLIGHT 2029]  Status: COMPLETED
+[FLIGHT 2030]  Status: COMPLETED
+[FLIGHT 2031]  Status: COMPLETED
+[FLIGHT 2032]  Status: COMPLETED
+[FLIGHT 2033]  Status: COMPLETED
+[FLIGHT 2034]  Status: COMPLETED
+[FLIGHT 2035]  Status: COMPLETED
+[FLIGHT 2036]  Status: COMPLETED
+[FLIGHT 2037]  Status: COMPLETED
+[FLIGHT 2038]  Status: COMPLETED
+[FLIGHT 2039]  Status: COMPLETED
+[FLIGHT 2040]  Status: COMPLETED
 
 ========================================
 SAFETY VIOLATION EVENTS
@@ -25,13 +62,13 @@ SAFETY VIOLATION EVENTS
   Type              : PREDICTED
   Step              : 2 (t=2s)
   Detected at step  : 1 (t=1s)
-  Flights           : 101 <-> 202
+  Flights           : 2001 <-> 2002
   Horizontal Dist.  : 0.0 m
   Vertical Dist.    : 0.0 m
-  Flight 101 position (at detection) : lat=41.4129 lon=-8.5552 alt=669.0 m
-  Flight 101 velocity (at detection) : vlat=0.1500 vlon=0.1300 valt=600.0 m/s
-  Flight 202 position (at detection) : lat=41.7129 lon=-8.2952 alt=1769.0 m
-  Flight 202 velocity (at detection) : vlat=-0.1500 vlon=-0.1300 valt=-500.0 m/s
+  Flight 2001 position (at detection) : lat=41.4129 lon=-8.5552 alt=669.0 m
+  Flight 2001 velocity (at detection) : vlat=0.1500 vlon=0.1300 valt=600.0 m/s
+  Flight 2002 position (at detection) : lat=41.7129 lon=-8.2952 alt=1769.0 m
+  Flight 2002 velocity (at detection) : vlat=-0.1500 vlon=-0.1300 valt=-500.0 m/s
 
 ========================================
 FINAL RESULT: *** FAILED ***
