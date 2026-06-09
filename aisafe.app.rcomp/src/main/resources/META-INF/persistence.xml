@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+             http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+
+    <persistence-unit name="aisafePU">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+
+        <class>eapli.framework.infrastructure.authz.domain.model.SystemUser</class>
+        <class>eapli.framework.infrastructure.authz.domain.model.RoleSet</class>
+        <class>eapli.framework.infrastructure.authz.domain.model.RoleAssignment</class>
+        <class>isep.aisafe.manufacturer.domain.Manufacturer</class>
+        <class>isep.aisafe.enginemodel.domain.EngineModel</class>
+        <class>isep.aisafe.aircraftmodel.domain.AircraftModel</class>
+        <class>isep.aisafe.aircraftmodel.domain.AircraftVariant</class>
+        <class>isep.aisafe.airtransportcompany.domain.AirTransportCompany</class>
+        <class>isep.aisafe.aircontrolarea.domain.AirControlArea</class>
+        <class>isep.aisafe.airport.domain.Airport</class>
+        <class>isep.aisafe.customercollaborator.domain.CustomerCollaborator</class>
+        <class>isep.aisafe.aircraft.domain.Aircraft</class>
+        <class>isep.aisafe.flightroute.domain.FlightRoute</class>
+        <class>isep.aisafe.flight.domain.Flight</class>
+        <class>isep.aisafe.flightplan.domain.FlightPlan</class>
+        <class>isep.aisafe.weatherdata.domain.WeatherData</class>
+        <class>isep.aisafe.weatherdata.domain.WeatherProvider</class>
+        <class>isep.aisafe.pilot.domain.Pilot</class>
+        <class>isep.aisafe.pilot.domain.Certification</class>
+        <class>isep.aisafe.pilot.domain.PilotStatus</class>
+        <class>isep.aisafe.pilot.domain.PilotID</class>
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:./db/aisafe"/>
+            <property name="jakarta.persistence.jdbc.user" value="sa"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
+
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+            <property name="eclipselink.logging.level" value="INFO"/>
+        </properties>
+    </persistence-unit>
+</persistence>
