@@ -20,6 +20,33 @@ public class AppSettings {
     private static final String REPOSITORY_FACTORY_KEY = "persistence.repositoryFactory";
     private static final String PERSISTENCE_UNIT_KEY = "persistence.persistenceUnit";
     private static final String SCHEMA_GENERATION_KEY = "jakarta.persistence.schema-generation.database.action";
+    private static final String JDBC_DRIVER_KEY = "jakarta.persistence.jdbc.driver";
+    private static final String JDBC_URL_KEY = "jakarta.persistence.jdbc.url";
+    private static final String JDBC_USER_KEY = "jakarta.persistence.jdbc.user";
+    private static final String JDBC_PASSWORD_KEY = "jakarta.persistence.jdbc.password";
+    private static final String ECLIPSELINK_LOGGING_KEY = "eclipselink.logging.level";
+    private static final String ECLIPSELINK_POOL_INITIAL_KEY = "eclipselink.jdbc.connection_pool.default.initial";
+    private static final String ECLIPSELINK_POOL_MIN_KEY = "eclipselink.jdbc.connection_pool.default.min";
+    private static final String ECLIPSELINK_POOL_MAX_KEY = "eclipselink.jdbc.connection_pool.default.max";
+
+    private static final String[] EXTENDED_PERSISTENCE_KEYS = {
+            SCHEMA_GENERATION_KEY,
+            JDBC_DRIVER_KEY,
+            JDBC_URL_KEY,
+            JDBC_USER_KEY,
+            JDBC_PASSWORD_KEY,
+            ECLIPSELINK_LOGGING_KEY,
+            ECLIPSELINK_POOL_INITIAL_KEY,
+            ECLIPSELINK_POOL_MIN_KEY,
+            ECLIPSELINK_POOL_MAX_KEY
+    };
+
+    private static final Map<String, String> ENVIRONMENT_OVERRIDES = Map.of(
+            JDBC_URL_KEY, "AISAFE_DB_URL",
+            JDBC_USER_KEY, "AISAFE_DB_USER",
+            JDBC_PASSWORD_KEY, "AISAFE_DB_PASSWORD",
+            SCHEMA_GENERATION_KEY, "AISAFE_DB_SCHEMA_ACTION"
+    );
 
     private final Properties applicationProperties = new Properties();
 
@@ -49,7 +76,15 @@ public class AppSettings {
         applicationProperties.setProperty(REPOSITORY_FACTORY_KEY,
                 "isep.aisafe.persistence.impl.jpa.JpaRepositoryFactory");
         applicationProperties.setProperty(PERSISTENCE_UNIT_KEY, "aisafePU");
-        applicationProperties.setProperty(SCHEMA_GENERATION_KEY, "drop-and-create");
+        applicationProperties.setProperty(SCHEMA_GENERATION_KEY, "create");
+        applicationProperties.setProperty(JDBC_DRIVER_KEY, "org.h2.Driver");
+        applicationProperties.setProperty(JDBC_URL_KEY, "jdbc:h2:./db/aisafe");
+        applicationProperties.setProperty(JDBC_USER_KEY, "sa");
+        applicationProperties.setProperty(JDBC_PASSWORD_KEY, "");
+        applicationProperties.setProperty(ECLIPSELINK_LOGGING_KEY, "INFO");
+        applicationProperties.setProperty(ECLIPSELINK_POOL_INITIAL_KEY, "2");
+        applicationProperties.setProperty(ECLIPSELINK_POOL_MIN_KEY, "2");
+        applicationProperties.setProperty(ECLIPSELINK_POOL_MAX_KEY, "10");
     }
 
     /**
@@ -78,7 +113,23 @@ public class AppSettings {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Map extendedPersistenceProperties() {
         final Map ret = new HashMap();
-        ret.put(SCHEMA_GENERATION_KEY, applicationProperties.getProperty(SCHEMA_GENERATION_KEY));
+        for (final String key : EXTENDED_PERSISTENCE_KEYS) {
+            final String value = configuredValue(key);
+            if (value != null) {
+                ret.put(key, value);
+            }
+        }
         return ret;
+    }
+
+    private String configuredValue(final String propertyKey) {
+        final String environmentKey = ENVIRONMENT_OVERRIDES.get(propertyKey);
+        if (environmentKey != null) {
+            final String environmentValue = System.getenv(environmentKey);
+            if (environmentValue != null && !environmentValue.isBlank()) {
+                return environmentValue;
+            }
+        }
+        return applicationProperties.getProperty(propertyKey);
     }
 }

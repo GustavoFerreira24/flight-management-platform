@@ -26,7 +26,7 @@ class AppSettingsTest {
     /**
      * Purpose: verify the extended persistence properties exposed to JPA setup.
      * Scenario: request extendedPersistenceProperties from default AppSettings.
-     * Expected output: schema generation action is present with value drop-and-create.
+     * Expected output: schema generation action is present with value create.
      */
     @Test
     void ensureExtendedPersistencePropertiesIncludeSchemaGenerationAction() {
@@ -37,7 +37,7 @@ class AppSettingsTest {
         final Map properties = settings.extendedPersistenceProperties();
 
         // Assert
-        assertEquals("drop-and-create",
+        assertEquals("create",
                 properties.get("jakarta.persistence.schema-generation.database.action"));
     }
 }
