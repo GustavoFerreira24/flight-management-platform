@@ -416,7 +416,8 @@ static void wait_for_next_timestep(void) {
     }
 }
 
-static void process_simulation_updates(int update_pipes[][2], int control_pipes[][2], int flight_count,
+static void process_simulation_updates(int update_pipes[][2], int control_pipes[][2],
+                                        int flight_count,
                                         position_update_t latest_positions[],
                                         position_history_t *position_history,
                                         const pid_t child_pids[],
