@@ -1,6 +1,6 @@
 # SCOMP Flight Simulation System
 
-This module implements the SCOMP flight simulation component. The default simulator keeps the Sprint 2 pipe-based architecture, while `run-hybrid` provides the Sprint 3 hybrid architecture for US105.
+This module implements the SCOMP flight simulation component. The default simulator keeps the Sprint 2 pipe-based architecture, while `run-hybrid` provides the Sprint 3 hybrid architecture for US105 and US108.
 
 ## Component Diagram
 
@@ -135,6 +135,21 @@ Each child flight process waits for its timestep semaphore, computes its positio
 The parent scheduler thread advances step by step only after all flight processes have posted their updates for the current timestep. The safety thread is notified through a condition variable when a timestep is complete. When safety violations are detected, involved flight processes are still notified with `SIGUSR1`.
 
 Status: implemented as a separate Sprint 3 hybrid mode.
+
+### US108 - Synchronize Hybrid Simulation With Semaphores
+
+The hybrid simulator uses named POSIX semaphores in `hybrid_sync.c` to coordinate the parent process, child flight processes and parent-side threads.
+
+For each timestep:
+
+1. the scheduler thread releases each flight process with its own `start_step` semaphore;
+2. each child process waits with `sem_wait`, writes its update into shared memory, and calls `sem_post` on the shared `updates_ready` semaphore;
+3. the scheduler waits until all updates for that timestep have been posted;
+4. the safety thread and scheduler stay in lockstep with `parent_step_ready` and `parent_step_done` semaphores.
+
+This creates a semaphore-based barrier in the hybrid mode. The default simulator still uses the simpler pipe-based barrier described in US103.
+
+Status: implemented as part of the separate Sprint 3 hybrid mode.
 
 ## Not Implemented Yet
 
