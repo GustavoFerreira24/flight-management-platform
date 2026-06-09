@@ -29,6 +29,7 @@
     <modules>
         <module>aisafe.app.backoffice.console</module>
         <module>aisafe.app.common.console</module>
+        <module>aisafe.app.rcomp</module>
         <module>aisafe.core</module>
         <module>aisafe.infrastructure.application</module>
         <module>persistence.impl.jpa</module>
