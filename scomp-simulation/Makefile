@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-std=c11 -Wall -Wextra -Werror -pedantic -Iinclude
-LDFLAGS=-lm
+LDFLAGS=-lm -pthread
 THREAD_FLAGS=-pthread
 BUILD_DIR=build
 TARGET=build/simulator
