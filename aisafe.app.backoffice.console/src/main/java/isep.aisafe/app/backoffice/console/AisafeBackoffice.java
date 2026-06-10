@@ -10,6 +10,7 @@ import isep.aisafe.app.backoffice.console.presentation.airtransportcompany.Regis
 import isep.aisafe.app.backoffice.console.presentation.customercollaborator.RegisterCustomerCollaboratorUI;
 import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngineModelUI;
 import isep.aisafe.app.backoffice.console.presentation.flightmanagement.CreateFlightPlanUI;
+import isep.aisafe.app.backoffice.console.presentation.flightmanagement.TestFlightPlanUI;
 import isep.aisafe.app.backoffice.console.presentation.flightroute.RegisterFlightRouteUI;
 import isep.aisafe.app.backoffice.console.presentation.pilot.ManagePilotsUI;
 import isep.aisafe.app.backoffice.console.presentation.report.GenerateMonthlyReportUI;
@@ -316,7 +317,8 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
                 "Flight Plan Management Console",
                 ConsoleStyle.option(1, "Create Flight Plan                            (US80)"),
                 ConsoleStyle.option(2, "Consult Weather Data                          (US43)"),
-                ConsoleStyle.option(3, "Logout")
+                ConsoleStyle.option(3, "Test / Validate Flight Plan                   (US85)"),
+                ConsoleStyle.option(4, "Logout")
         );
         ConsoleStyle.printPrompt("Option: ");
 
@@ -333,6 +335,11 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("3".equals(option)) {
+            executeMenuAction(() -> new TestFlightPlanUI(scanner).show());
+            return true;
+        }
+
+        if ("4".equals(option)) {
             ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
