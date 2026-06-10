@@ -40,6 +40,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US56 — Create an Aircraft Engine Model
 - [Engine Model Registration](./us_56/readme.md)
 
+#### US62 — List Customer Collaborators
+- [Customer Collaborator Listing](./us_62/readme.md)
+
 #### US70 — Add an Aircraft to an Air Transport Company
 - [Aircraft Registration](./us_70/readme.md)
 
@@ -54,6 +57,9 @@ This folder contains all documentation artifacts produced during development of 
 
 #### US80 — Create a Flight Plan
 - [Flight Plan Creation](./us_80/readme.md)
+
+#### US85 — Test / Validate Flight Plan
+- [Flight Plan Test / Validation](./us_85/readme.md)
 
 #### US78 — Air Transport Company Collaborator Remote Access
 - [Remote Access](./us_78/readme.md)

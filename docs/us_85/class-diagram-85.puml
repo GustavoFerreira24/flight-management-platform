@@ -1,0 +1,77 @@
+@startuml
+title US085 - Test / Validate Flight Plan
+
+class TestFlightPlanUI {
+    - controller : TestFlightPlanController
+    - scanner : Scanner
+    + show() : void
+}
+
+class TestFlightPlanController {
+    - authz : AisafeAuthorizationService
+    - flightPlanRepository : FlightPlanRepository
+    - validator : FlightPlanDslSyntaxValidator
+    + execute() : void
+    + testFlightPlan(flightPlanIdentifierText : String, dslFile : Path) : TestFlightPlanResult
+}
+
+class TestFlightPlanResult {
+    - successful : boolean
+    - testStatus : FlightPlanTestStatus
+    - messages : List<String>
+    - dslErrors : List<FlightPlanDslError>
+    + isSuccessful() : boolean
+    + testStatus() : FlightPlanTestStatus
+    + messages() : List<String>
+    + dslErrors() : List<FlightPlanDslError>
+}
+
+interface FlightPlanRepository {
+    + findByIdentifier(identifier : FlightPlanIdentifier) : Optional<FlightPlan>
+    + save(flightPlan : FlightPlan) : FlightPlan
+}
+
+class FlightPlan {
+    - testStatus : FlightPlanTestStatus
+    + identity() : FlightPlanIdentifier
+    + flightDesignator() : String
+    + aircraftRegistration() : String
+    + pilotIdentifier() : String
+    + markTested() : void
+    + testStatus() : FlightPlanTestStatus
+}
+
+enum FlightPlanTestStatus {
+    NOT_TESTED
+    TESTED
+    VOID
+}
+
+class FlightPlanDslSyntaxValidator {
+    + validate(file : Path) : FlightPlanParseResult
+}
+
+class FlightPlanParseResult {
+    + isValid() : boolean
+    + errors() : List<FlightPlanDslError>
+    + flightPlans() : List<DslFlightPlan>
+}
+
+class DslFlightPlan {
+    + identifier() : String
+    + aircraftRegistration() : Optional<String>
+    + pilotIdentifier() : Optional<String>
+}
+
+TestFlightPlanUI --> TestFlightPlanController
+TestFlightPlanController --> AisafeAuthorizationService
+TestFlightPlanController --> FlightPlanRepository
+TestFlightPlanController --> FlightPlanDslSyntaxValidator
+TestFlightPlanController --> TestFlightPlanResult
+FlightPlanRepository --> FlightPlan
+FlightPlan --> FlightPlanTestStatus
+FlightPlanDslSyntaxValidator --> FlightPlanParseResult
+FlightPlanParseResult --> DslFlightPlan
+TestFlightPlanResult --> FlightPlanTestStatus
+
+@enduml

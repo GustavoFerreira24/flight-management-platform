@@ -1,0 +1,49 @@
+@startuml
+title US062 - List Customer Collaborators
+
+actor "Backoffice Operator" as Operator
+boundary "ListCustomerCollaboratorsUI" as UI
+control "ListCustomerCollaboratorsController" as Controller
+control "AisafeAuthorizationService" as Authz
+database "AirTransportCompanyRepository" as CompanyRepo
+database "AirControlAreaRepository" as AreaRepo
+database "CustomerCollaboratorRepository" as CollaboratorRepo
+entity "CustomerCollaborator" as Collaborator
+
+Operator -> UI : choose customer type and enter customer code
+
+alt Air Transport Company selected
+    UI -> Controller : listForAirTransportCompany(iataCode)
+    Controller -> Authz : ensureAuthenticatedUserHasAnyOf(USER_MANAGEMENT)
+    Controller -> CompanyRepo : findByIataCode(iataCode)
+    CompanyRepo --> Controller : Optional<AirTransportCompany>
+
+    alt company exists
+        Controller -> CollaboratorRepo : findByAirTransportCompany(company)
+        CollaboratorRepo --> Controller : List<CustomerCollaborator>
+        Controller -> Controller : filter active collaborators
+        Controller --> UI : List<CustomerCollaborator>
+    else company not found
+        Controller --> UI : IllegalArgumentException
+    end
+
+else Air Control Area selected
+    UI -> Controller : listForAirControlArea(areaCode)
+    Controller -> Authz : ensureAuthenticatedUserHasAnyOf(BACKOFFICE_CONFIGURATION)
+    Controller -> AreaRepo : findByCode(areaCode)
+    AreaRepo --> Controller : Optional<AirControlArea>
+
+    alt area exists
+        Controller -> CollaboratorRepo : findByAirControlArea(area)
+        CollaboratorRepo --> Controller : List<CustomerCollaborator>
+        Controller -> Controller : filter active collaborators
+        Controller --> UI : List<CustomerCollaborator>
+    else area not found
+        Controller --> UI : IllegalArgumentException
+    end
+end
+
+UI -> Collaborator : firstName(), lastName(), email()
+UI --> Operator : display active collaborators or error
+
+@enduml

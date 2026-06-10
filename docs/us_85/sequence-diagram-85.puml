@@ -1,0 +1,50 @@
+@startuml
+title US085 - Test / Validate Flight Plan
+
+actor Pilot
+boundary TestFlightPlanUI as UI
+control TestFlightPlanController as Controller
+control AisafeAuthorizationService as Authz
+database FlightPlanRepository as Repository
+control FlightPlanDslSyntaxValidator as Validator
+entity FlightPlan
+entity FlightPlanParseResult as ParseResult
+entity DslFlightPlan
+
+Pilot -> UI : Select Test / Validate Flight Plan
+UI -> Pilot : Ask flight plan identifier and DSL file path
+Pilot -> UI : Provide input
+UI -> Controller : testFlightPlan(identifier, dslFile)
+
+Controller -> Authz : ensureAuthenticatedUserHasAnyOf(FLIGHT_PLAN_MANAGEMENT)
+Controller -> Repository : findByIdentifier(identifier)
+Repository --> Controller : FlightPlan
+Controller -> Authz : authenticatedUsername()
+Controller -> FlightPlan : pilot().identity()
+
+Controller -> Validator : validate(dslFile)
+Validator --> Controller : ParseResult
+
+alt DSL validation failed
+    Controller -> ParseResult : errors()
+    Controller --> UI : failure(currentStatus, DSL errors)
+    UI --> Pilot : Show validation errors
+else DSL validation succeeded
+    Controller -> ParseResult : flightPlans()
+    ParseResult --> Controller : List<DslFlightPlan>
+    Controller -> DslFlightPlan : identifier(), aircraftRegistration(), pilotIdentifier()
+    Controller -> FlightPlan : flightDesignator(), aircraftRegistration(), pilotIdentifier()
+
+    alt DSL does not match selected flight plan
+        Controller --> UI : failure(currentStatus, mismatch messages)
+        UI --> Pilot : Show mismatch messages
+    else DSL matches selected flight plan
+        Controller -> FlightPlan : markTested()
+        Controller -> Repository : save(FlightPlan)
+        Repository --> Controller : saved FlightPlan
+        Controller --> UI : success(TESTED)
+        UI --> Pilot : Show successful test status
+    end
+end
+
+@enduml
