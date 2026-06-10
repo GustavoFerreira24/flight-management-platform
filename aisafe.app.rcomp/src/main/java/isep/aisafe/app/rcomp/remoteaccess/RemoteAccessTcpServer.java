@@ -1,6 +1,10 @@
 package isep.aisafe.app.rcomp.remoteaccess;
 
 import isep.aisafe.application.remoteaccess.RemoteAccessResponse;
+import eapli.framework.infrastructure.authz.application.AuthzRegistry;
+import eapli.framework.infrastructure.authz.domain.model.PlainTextEncoder;
+import isep.aisafe.infrastructure.persistence.PersistenceContext;
+import isep.aisafe.usermanagement.domain.AisafePasswordPolicy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +26,8 @@ public final class RemoteAccessTcpServer {
     }
 
     public static void main(final String[] args) throws IOException {
+        configureAuthz();
+
         final int tcpPort = argument(args, 0, DEFAULT_TCP_PORT);
         final String logHost = stringArgument(args, 1, DEFAULT_LOG_HOST);
         final int logPort = argument(args, 2, DEFAULT_LOG_PORT);
@@ -125,5 +131,13 @@ public final class RemoteAccessTcpServer {
             return defaultValue;
         }
         return args[index];
+    }
+
+    private static void configureAuthz() {
+        AuthzRegistry.configure(
+                PersistenceContext.repositories().users(),
+                new AisafePasswordPolicy(),
+                new PlainTextEncoder()
+        );
     }
 }
