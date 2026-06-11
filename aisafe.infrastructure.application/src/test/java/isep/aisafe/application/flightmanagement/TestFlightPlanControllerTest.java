@@ -195,9 +195,11 @@ class TestFlightPlanControllerTest {
     void ensureFlightPlanFromAnotherPilotIsRejected() throws IOException {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
-        authz.authenticatedUsername("XYZ");
+        authz.authenticatedEmail("other-pilot@example.com");
+
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
         repository.save(flightPlan("FP005", "TP127", "CS-TXF", "ABC"));
+
         final TestFlightPlanController controller = controller(authz, repository);
         final Path dslFile = writeFlightPlan("valid.fpl", validDsl("TP127", "CS-TXF"));
 

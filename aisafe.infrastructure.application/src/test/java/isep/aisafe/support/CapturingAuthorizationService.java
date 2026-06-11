@@ -13,6 +13,7 @@ public class CapturingAuthorizationService extends AisafeAuthorizationService {
     private int calls;
     private RuntimeException exceptionToThrow;
     private String authenticatedUsername = "ABC";
+    private String authenticatedEmail = "pilot@example.com";
 
     public CapturingAuthorizationService() {
         super(new StubAuthorizationService());
@@ -46,6 +47,15 @@ public class CapturingAuthorizationService extends AisafeAuthorizationService {
 
     public void authenticatedUsername(final String authenticatedUsername) {
         this.authenticatedUsername = authenticatedUsername;
+    }
+
+    @Override
+    public String authenticatedEmail() {
+        return authenticatedEmail;
+    }
+
+    public void authenticatedEmail(final String authenticatedEmail) {
+        this.authenticatedEmail = authenticatedEmail;
     }
 
     private static final class StubAuthorizationService extends AuthorizationService {
