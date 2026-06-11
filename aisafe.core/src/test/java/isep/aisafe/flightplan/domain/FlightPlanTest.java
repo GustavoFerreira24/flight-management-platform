@@ -80,7 +80,7 @@ class FlightPlanTest {
         assertEquals(FlightPlanStatus.DRAFT, flightPlan.status());
         assertEquals(fuelQuantity, flightPlan.fuelQuantity());
         assertTrue(flightPlan.weatherDataIds().isEmpty());
-        assertEquals(FlightPlanTestStatus.NOT_TESTED, flightPlan.testStatus());
+        assertTrue(flightPlan.canBeTested());
     }
 
     /**
@@ -100,62 +100,82 @@ class FlightPlanTest {
         // Assert
         assertEquals(1, flightPlan.weatherDataIds().size());
         assertEquals(weatherData.identity(), flightPlan.weatherDataIds().get(0));
-        assertEquals(FlightPlanTestStatus.NOT_TESTED, flightPlan.testStatus());
+        assertEquals(FlightPlanStatus.DRAFT, flightPlan.status());
     }
 
     /**
-     * Purpose: verify flight plan test status mutation.
-     * Scenario: mark a flight plan as tested.
-     * Expected output: the flight plan exposes the tested status.
+     * Purpose: verify flight plan validation.
+     * Scenario: validate a draft flight plan.
+     * Expected output: the flight plan exposes the validated status.
      */
     @Test
-    void ensureFlightPlanCanBeMarkedAsTested() {
+    void ensureFlightPlanCanBeValidated() {
         // Arrange
         final FlightPlan flightPlan = flightPlan();
 
         // Act
-        flightPlan.markTested();
+        flightPlan.validate();
 
         // Assert
-        assertEquals(FlightPlanTestStatus.TESTED, flightPlan.testStatus());
+        assertEquals(FlightPlanStatus.VALIDATED, flightPlan.status());
+        assertFalse(flightPlan.canBeTested());
     }
 
     /**
-     * Purpose: verify previous test invalidation when weather data changes.
-     * Scenario: add new weather data to a previously tested flight plan.
-     * Expected output: the previous test status becomes void.
+     * Purpose: verify flight plan rejection.
+     * Scenario: reject a draft flight plan.
+     * Expected output: the flight plan exposes the rejected status.
      */
     @Test
-    void ensureAddingWeatherDataVoidsPreviousTest() {
+    void ensureFlightPlanCanBeRejected() {
         // Arrange
         final FlightPlan flightPlan = flightPlan();
-        flightPlan.markTested();
+
+        // Act
+        flightPlan.reject();
+
+        // Assert
+        assertEquals(FlightPlanStatus.REJECTED, flightPlan.status());
+        assertFalse(flightPlan.canBeTested());
+    }
+
+    /**
+     * Purpose: verify previous validation invalidation when weather data changes.
+     * Scenario: add new weather data to a previously validated flight plan.
+     * Expected output: the flight plan returns to draft because validation is no longer current.
+     */
+    @Test
+    void ensureAddingWeatherDataInvalidatesPreviousValidation() {
+        // Arrange
+        final FlightPlan flightPlan = flightPlan();
+        flightPlan.validate();
 
         // Act
         flightPlan.addWeatherData(weatherData());
 
         // Assert
-        assertEquals(FlightPlanTestStatus.VOID, flightPlan.testStatus());
+        assertEquals(FlightPlanStatus.DRAFT, flightPlan.status());
+        assertTrue(flightPlan.canBeTested());
     }
 
     /**
      * Purpose: verify duplicate weather data does not invalidate an unchanged flight plan.
-     * Scenario: add already associated weather data to a tested flight plan.
-     * Expected output: the test status remains tested because no weather data was added.
+     * Scenario: add already associated weather data to a validated flight plan.
+     * Expected output: the status remains validated because no weather data was added.
      */
     @Test
-    void ensureDuplicateWeatherDataDoesNotVoidPreviousTest() {
+    void ensureDuplicateWeatherDataDoesNotInvalidatePreviousValidation() {
         // Arrange
         final FlightPlan flightPlan = flightPlan();
         final WeatherData weatherData = weatherData();
         flightPlan.addWeatherData(weatherData);
-        flightPlan.markTested();
+        flightPlan.validate();
 
         // Act
         flightPlan.addWeatherData(weatherData);
 
         // Assert
-        assertEquals(FlightPlanTestStatus.TESTED, flightPlan.testStatus());
+        assertEquals(FlightPlanStatus.VALIDATED, flightPlan.status());
         assertEquals(1, flightPlan.weatherDataIds().size());
     }
 
@@ -176,6 +196,46 @@ class FlightPlanTest {
 
         // Assert
         assertEquals(1, flightPlan.weatherDataIds().size());
+    }
+
+    /**
+     * Purpose: verify validation state transitions.
+     * Scenario: move a draft flight plan to under validation and then validate it.
+     * Expected output: the flight plan becomes validated.
+     */
+    @Test
+    void ensureFlightPlanCanMoveFromUnderValidationToValidated() {
+        // Arrange
+        final FlightPlan flightPlan = flightPlan();
+
+        // Act
+        flightPlan.markUnderValidation();
+        flightPlan.validate();
+
+        // Assert
+        assertEquals(FlightPlanStatus.VALIDATED, flightPlan.status());
+        assertFalse(flightPlan.canBeTested());
+    }
+
+    /**
+     * Purpose: verify invalid lifecycle transitions.
+     * Scenario: try to validate or reject flight plans already in final states.
+     * Expected output: invalid transitions are rejected.
+     */
+    @Test
+    void ensureInvalidLifecycleTransitionsAreRejected() {
+        // Arrange
+        final FlightPlan validatedFlightPlan = flightPlan();
+        final FlightPlan rejectedFlightPlan = flightPlan();
+
+        validatedFlightPlan.validate();
+        rejectedFlightPlan.reject();
+
+        // Act / Assert
+        assertThrows(IllegalArgumentException.class, validatedFlightPlan::validate);
+        assertThrows(IllegalArgumentException.class, validatedFlightPlan::reject);
+        assertThrows(IllegalArgumentException.class, rejectedFlightPlan::validate);
+        assertThrows(IllegalArgumentException.class, rejectedFlightPlan::reject);
     }
 
     /**
@@ -346,6 +406,7 @@ class FlightPlanTest {
 
     private Aircraft aircraft(final AirTransportCompany company) {
         final EngineModel engineModel = engineModel();
+
         return new Aircraft(
                 AircraftRegistration.valueOf("CS-TXA"),
                 AircraftRegistrationCountry.valueOf("Portugal"),
@@ -364,6 +425,7 @@ class FlightPlanTest {
 
     private Pilot pilot(final String companyIataCode) {
         final Certification certification = new Certification("01-01-2026", "01-01-2028");
+
         return new Pilot(
                 PilotID.valueOf("ABC"),
                 certification,
@@ -379,6 +441,7 @@ class FlightPlanTest {
 
     private Pilot inactivePilot() {
         final Certification certification = new Certification("01-01-2020", "01-01-2021");
+
         return new Pilot(
                 PilotID.valueOf("DEF"),
                 certification,
@@ -477,7 +540,9 @@ class FlightPlanTest {
                 LocalDate.of(2027, 1, 10),
                 AirControlAreaCode.valueOf("CONACC")
         );
+
         final WeatherProviderType providerType = WeatherProviderType.valueOf("GROUND_SENSOR");
+
         weatherData.addMeasurement(
                 new WeatherProvider("IPMA", List.of(providerType)),
                 providerType,
@@ -487,6 +552,7 @@ class FlightPlanTest {
                 1200,
                 WeatherCoordinates.valueOf(38.72, -9.14)
         );
+
         return weatherData;
     }
 }

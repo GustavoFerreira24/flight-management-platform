@@ -3,10 +3,12 @@ package isep.aisafe.app.backoffice.console.presentation.flightmanagement;
 import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.flightmanagement.TestFlightPlanController;
 import isep.aisafe.application.flightmanagement.TestFlightPlanResult;
+import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.importer.dsl.FlightPlanDslError;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -40,28 +42,81 @@ public class TestFlightPlanUI {
         System.out.println();
         ConsoleStyle.printSection("Test / Validate Flight Plan");
 
-        final String flightPlanIdentifier = readRequiredText("Flight plan identifier: ");
-        final Path dslFile = Path.of(readRequiredText("Flight DSL file path: "));
-
         try {
-            final TestFlightPlanResult result = controller.testFlightPlan(flightPlanIdentifier, dslFile);
+            final List<FlightPlan> flightPlans = controller.authenticatedPilotFlightPlans();
+
+            if (flightPlans.isEmpty()) {
+                ConsoleStyle.printWarning("There are no flight plans available for testing for the authenticated pilot.");
+                return;
+            }
+
+            printFlightPlans(flightPlans);
+
+            final FlightPlan selectedFlightPlan = selectFlightPlan(flightPlans);
+            final Path dslFile = Path.of(readRequiredText("Flight DSL file path: "));
+
+            final TestFlightPlanResult result = controller.testFlightPlan(
+                    selectedFlightPlan.identity().toString(),
+                    dslFile
+            );
+
             printResult(result);
         } catch (IOException e) {
             ConsoleStyle.printError("Could not read Flight DSL file: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            ConsoleStyle.printError(e.getMessage());
+        }
+    }
+
+    private void printFlightPlans(final List<FlightPlan> flightPlans) {
+        ConsoleStyle.printInfo("Flight plans available for testing:");
+
+        for (int index = 0; index < flightPlans.size(); index++) {
+            final FlightPlan flightPlan = flightPlans.get(index);
+
+            System.out.printf(
+                    "%d - %s | Flight: %s | Aircraft: %s | Departure: %s | Status: %s%n",
+                    index + 1,
+                    flightPlan.identity(),
+                    flightPlan.flightDesignator(),
+                    flightPlan.aircraftRegistration(),
+                    flightPlan.flightDepartureDateTime(),
+                    flightPlan.status()
+            );
+        }
+    }
+
+    private FlightPlan selectFlightPlan(final List<FlightPlan> flightPlans) {
+        while (true) {
+            final String optionText = readRequiredText("Select flight plan: ");
+
+            try {
+                final int option = Integer.parseInt(optionText);
+
+                if (option >= 1 && option <= flightPlans.size()) {
+                    return flightPlans.get(option - 1);
+                }
+            } catch (NumberFormatException ignored) {
+                // handled below with a user-friendly message
+            }
+
+            ConsoleStyle.printWarning("Select a valid flight plan option.");
         }
     }
 
     private void printResult(final TestFlightPlanResult result) {
         if (result.isSuccessful()) {
             ConsoleStyle.printSuccess(result.messages().getFirst());
-            ConsoleStyle.printInfo("Test status: " + result.testStatus());
+            ConsoleStyle.printInfo("Status: " + result.status());
             return;
         }
 
-        ConsoleStyle.printWarning("Flight plan test failed. Current status: " + result.testStatus());
+        ConsoleStyle.printWarning("Flight plan validation failed. Current status: " + result.status());
+
         for (String message : result.messages()) {
             ConsoleStyle.printWarning(message);
         }
+
         for (FlightPlanDslError error : result.dslErrors()) {
             ConsoleStyle.printWarning(
                     error.type() + " at line " + error.line() + ", column " + error.column() + ": "

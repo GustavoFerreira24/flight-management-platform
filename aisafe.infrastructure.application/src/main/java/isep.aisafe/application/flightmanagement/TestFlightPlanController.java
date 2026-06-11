@@ -3,18 +3,19 @@ package isep.aisafe.application.flightmanagement;
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
 import isep.aisafe.flightplan.domain.FlightPlanRepository;
+import isep.aisafe.flightplan.domain.FlightPlanStatus;
 import isep.aisafe.flightplan.importer.dsl.DslFlightPlan;
 import isep.aisafe.flightplan.importer.dsl.FlightPlanDslSyntaxValidator;
 import isep.aisafe.flightplan.importer.dsl.FlightPlanParseResult;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
-import isep.aisafe.pilot.domain.PilotID;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,6 +60,31 @@ public class TestFlightPlanController {
     }
 
     /**
+     * Lists the flight plans owned by the currently authenticated pilot and available for testing.
+     *
+     * @return authenticated pilot flight plans available for testing, ordered by departure date/time
+     */
+    public List<FlightPlan> authenticatedPilotFlightPlans() {
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_MANAGEMENT);
+
+        final String authenticatedEmail = authz.authenticatedEmail();
+        final List<FlightPlan> flightPlans = new ArrayList<>();
+
+        for (final FlightPlan flightPlan : flightPlanRepository.findAll()) {
+            if (belongsToAuthenticatedPilot(flightPlan, authenticatedEmail)
+                    && flightPlan.canBeTested()) {
+                flightPlans.add(flightPlan);
+            }
+        }
+
+        flightPlans.sort(Comparator
+                .comparing(FlightPlan::flightDepartureDateTime)
+                .thenComparing(flightPlan -> flightPlan.identity().toString()));
+
+        return List.copyOf(flightPlans);
+    }
+
+    /**
      * Tests an existing flight plan against the Flight DSL description in the given file.
      *
      * @param flightPlanIdentifierText selected flight plan identifier
@@ -80,10 +106,18 @@ public class TestFlightPlanController {
 
         ensureFlightPlanBelongsToAuthenticatedPilot(flightPlan);
 
+        final List<String> stateMessages = validateTestState(flightPlan);
+        if (!stateMessages.isEmpty()) {
+            return TestFlightPlanResult.failure(flightPlan.status(), stateMessages);
+        }
+
         final FlightPlanParseResult parseResult = validator.validate(dslFile);
         if (!parseResult.isValid()) {
+            flightPlan.reject();
+            final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
+
             return TestFlightPlanResult.failure(
-                    flightPlan.testStatus(),
+                    savedFlightPlan.status(),
                     List.of("Flight DSL validation failed."),
                     parseResult.errors()
             );
@@ -91,12 +125,31 @@ public class TestFlightPlanController {
 
         final List<String> validationMessages = validateAgainstDsl(flightPlan, parseResult.flightPlans());
         if (!validationMessages.isEmpty()) {
-            return TestFlightPlanResult.failure(flightPlan.testStatus(), validationMessages);
+            flightPlan.reject();
+            final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
+
+            return TestFlightPlanResult.failure(savedFlightPlan.status(), validationMessages);
         }
 
-        flightPlan.markTested();
+        flightPlan.validate();
         final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
-        return TestFlightPlanResult.success(savedFlightPlan.testStatus());
+        return TestFlightPlanResult.success(savedFlightPlan.status());
+    }
+
+    private List<String> validateTestState(final FlightPlan flightPlan) {
+        if (flightPlan.status() == FlightPlanStatus.VALIDATED) {
+            return List.of("Flight plan is already validated.");
+        }
+
+        if (flightPlan.status() == FlightPlanStatus.REJECTED) {
+            return List.of("Flight plan is rejected and cannot be tested.");
+        }
+
+        if (!flightPlan.canBeTested()) {
+            return List.of("Flight plan status does not allow testing.");
+        }
+
+        return List.of();
     }
 
     private List<String> validateAgainstDsl(
@@ -114,9 +167,11 @@ public class TestFlightPlanController {
         }
 
         final List<String> messages = new ArrayList<>();
+
         matchingPlan.aircraftRegistration()
                 .filter(registration -> !registration.equalsIgnoreCase(flightPlan.aircraftRegistration()))
                 .ifPresent(registration -> messages.add("Flight DSL aircraft does not match the selected flight plan."));
+
         matchingPlan.pilotIdentifier()
                 .filter(pilot -> !pilot.equalsIgnoreCase(flightPlan.pilotIdentifier()))
                 .ifPresent(pilot -> messages.add("Flight DSL pilot does not match the selected flight plan."));
@@ -130,11 +185,15 @@ public class TestFlightPlanController {
 
     private void ensureFlightPlanBelongsToAuthenticatedPilot(final FlightPlan flightPlan) {
         final String authenticatedEmail = authz.authenticatedEmail();
-        final String flightPlanPilotEmail = flightPlan.pilot().email().toString();
 
-        if (!flightPlanPilotEmail.equalsIgnoreCase(authenticatedEmail)) {
+        if (!belongsToAuthenticatedPilot(flightPlan, authenticatedEmail)) {
             throw new IllegalArgumentException("Flight plan does not belong to authenticated pilot.");
         }
+    }
+
+    private boolean belongsToAuthenticatedPilot(final FlightPlan flightPlan, final String authenticatedEmail) {
+        final String flightPlanPilotEmail = flightPlan.pilot().email().toString();
+        return flightPlanPilotEmail.equalsIgnoreCase(authenticatedEmail);
     }
 
     private void ensureNotBlank(final String value, final String message) {

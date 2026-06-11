@@ -2,7 +2,6 @@ package isep.aisafe.application.report;
 
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanStatus;
-import isep.aisafe.flightplan.domain.FlightPlanTestStatus;
 import isep.aisafe.report.domain.MonthlyReport;
 import isep.aisafe.report.domain.ReportSection;
 
@@ -42,7 +41,6 @@ public class MonthlyReportGenerator {
         final List<ReportSection> sections = new ArrayList<>();
         sections.add(summarySection(flightPlanList));
         sections.add(statusSection(flightPlanList));
-        sections.add(testStatusSection(flightPlanList));
         sections.add(detailsSection(flightPlanList));
 
         return new MonthlyReport("AISafe Monthly Report", period, generatedAt, sections);
@@ -50,9 +48,11 @@ public class MonthlyReportGenerator {
 
     private List<FlightPlan> toList(final Iterable<FlightPlan> flightPlans) {
         final List<FlightPlan> result = new ArrayList<>();
+
         for (final FlightPlan flightPlan : flightPlans) {
             result.add(flightPlan);
         }
+
         return result;
     }
 
@@ -66,6 +66,7 @@ public class MonthlyReportGenerator {
             flights.add(flightPlan.flightDesignator());
             aircraft.add(flightPlan.aircraftRegistration());
             pilots.add(flightPlan.pilotIdentifier());
+
             if (flightPlan.hasWeatherData()) {
                 withWeatherData++;
             }
@@ -83,34 +84,22 @@ public class MonthlyReportGenerator {
 
     private ReportSection statusSection(final List<FlightPlan> flightPlans) {
         final Map<FlightPlanStatus, Integer> counters = new EnumMap<>(FlightPlanStatus.class);
+
         for (final FlightPlanStatus status : FlightPlanStatus.values()) {
             counters.put(status, 0);
         }
+
         for (final FlightPlan flightPlan : flightPlans) {
             counters.compute(flightPlan.status(), (status, count) -> count + 1);
         }
 
         final List<String> lines = new ArrayList<>();
+
         for (final FlightPlanStatus status : FlightPlanStatus.values()) {
             lines.add(status + ": " + counters.get(status));
         }
+
         return new ReportSection("Flight Plan Status", lines);
-    }
-
-    private ReportSection testStatusSection(final List<FlightPlan> flightPlans) {
-        final Map<FlightPlanTestStatus, Integer> counters = new EnumMap<>(FlightPlanTestStatus.class);
-        for (final FlightPlanTestStatus status : FlightPlanTestStatus.values()) {
-            counters.put(status, 0);
-        }
-        for (final FlightPlan flightPlan : flightPlans) {
-            counters.compute(flightPlan.testStatus(), (status, count) -> count + 1);
-        }
-
-        final List<String> lines = new ArrayList<>();
-        for (final FlightPlanTestStatus status : FlightPlanTestStatus.values()) {
-            lines.add(status + ": " + counters.get(status));
-        }
-        return new ReportSection("Flight Plan Test Status", lines);
     }
 
     private ReportSection detailsSection(final List<FlightPlan> flightPlans) {
@@ -119,20 +108,21 @@ public class MonthlyReportGenerator {
         }
 
         final List<String> lines = new ArrayList<>();
-        lines.add("Identifier | Departure | Flight | Aircraft | Pilot | Status | Test Status | Weather Data");
+        lines.add("Identifier | Departure | Flight | Aircraft | Pilot | Status | Weather Data");
+
         for (final FlightPlan flightPlan : flightPlans) {
             lines.add(String.format(
-                    "%s | %s | %s | %s | %s | %s | %s | %d",
+                    "%s | %s | %s | %s | %s | %s | %d",
                     flightPlan.identifier(),
                     flightPlan.flightDepartureDateTime(),
                     flightPlan.flightDesignator(),
                     flightPlan.aircraftRegistration(),
                     flightPlan.pilotIdentifier(),
                     flightPlan.status(),
-                    flightPlan.testStatus(),
                     flightPlan.weatherDataCount()
             ));
         }
+
         return new ReportSection("Flight Plans", lines);
     }
 }
