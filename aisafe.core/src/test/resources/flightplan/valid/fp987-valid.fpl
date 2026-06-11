@@ -1,0 +1,13 @@
+flight TP987A regular {
+  aircraft AIR34;
+  pilot ped;
+  load 7000 kg;
+
+  leg {
+    departure LPPR at 2027-03-20T11:45;
+    arrival LEMD at 2027-03-20T13:30;
+    route LPPR -> LEMD;
+    segment (41.1579,-8.6291) -> (40.4722,-3.5608) speed 450 knots altitude [1000,11000] m width 10 km wind 90 deg 12 m/s;
+    fuel 7000 kg;
+  }
+}

@@ -51,6 +51,17 @@ public class AisafeAuthorizationService {
         authorizationService().ensureAuthenticatedUserHasAnyOf();
     }
 
+
+
+    public String authenticatedEmail() {
+        return authorizationService().session()
+                .orElseThrow(() -> new IllegalStateException("No authenticated user."))
+                .authenticatedUser()
+                .email()
+                .toString();
+    }
+
+
     /**
      * Returns the username of the authenticated system user.
      *

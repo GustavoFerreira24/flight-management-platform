@@ -129,8 +129,10 @@ public class TestFlightPlanController {
     }
 
     private void ensureFlightPlanBelongsToAuthenticatedPilot(final FlightPlan flightPlan) {
-        final PilotID authenticatedPilot = PilotID.valueOf(authz.authenticatedUsername());
-        if (!flightPlan.pilot().identity().equals(authenticatedPilot)) {
+        final String authenticatedEmail = authz.authenticatedEmail();
+        final String flightPlanPilotEmail = flightPlan.pilot().email().toString();
+
+        if (!flightPlanPilotEmail.equalsIgnoreCase(authenticatedEmail)) {
             throw new IllegalArgumentException("Flight plan does not belong to authenticated pilot.");
         }
     }
