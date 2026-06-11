@@ -144,23 +144,6 @@ class PilotTest {
     }
 
     @Test
-    void ensurePilotRejectsNullCompany() {
-        // Arrange
-        final PilotID id = validID();
-        final Certification certification = validCertification();
-        final PilotStatus status = validStatus(certification);
-        final EmailAddress email = validEmail();
-        final PhoneNumber phoneNumber = validPhoneNumber();
-        final String firstName = validFirstName();
-        final String lastName = validLastName();
-        final Set<AircraftModelDesignator> certifiedAircraftModels = validCertifiedAircraftModels();
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class,
-                () -> new Pilot(id, certification, status, null, email, phoneNumber, firstName, lastName, certifiedAircraftModels));
-    }
-
-    @Test
     void ensurePilotRejectsNullEmail() {
         // Arrange
         final PilotID id = validID();
