@@ -65,6 +65,7 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "FLIGHT_PLAN_WEATHER_DATA", joinColumns = @JoinColumn(name = "FLIGHT_PLAN_PK"))
+    @AttributeOverride(name = "value", column = @Column(name = "WEATHER_DATA_ID", nullable = false))
     private List<WeatherDataId> weatherDataIds = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
