@@ -84,7 +84,7 @@ public class RegisterPilotController implements RegisterPilotService {
             final String phoneNumber,
             final String aircraftModelDesignator) {
 
-        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.AIR_COMPANY_CONFIGURATION);
+        authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.USER_MANAGEMENT);
 
         final PilotID pilotID = PilotID.valueOf(id);
         if (pilotRepo.ofIdentity(pilotID).isPresent()) {
@@ -123,7 +123,7 @@ public class RegisterPilotController implements RegisterPilotService {
             }
         }
 
-        Pilot pilot = new Pilot(pilotID, certification, pilotStatus, companyIATACode, emailAddress, phone, firstName, lastName, certifiedAircraftModels);
+        Pilot pilot = new Pilot(pilotID, certification, pilotStatus, null, emailAddress, phone, firstName, lastName, certifiedAircraftModels);
 
         return (pilotRepo.save(pilot));
     }

@@ -43,8 +43,6 @@ class DeactivatePilotControllerTest {
     private InMemoryPilotRepository pilotRepo;
     private InMemoryCustomerCollaboratorRepository collaboratorRepo;
     private AisafeAuthorizationService mockAuthz;
-    private UserRegistrationValidator mockValidator;
-    private UserManagementService mockUserService;
     private InMemoryFlightPlanRepository mockFlightPlanRepo;
     private DeactivatePilotController controller;
     private AirTransportCompany tapCompany;
@@ -84,27 +82,8 @@ class DeactivatePilotControllerTest {
             }
         };
 
-        mockValidator = new UserRegistrationValidator() {
-            @Override
-            public void validate(String u, String p, String f, String l, String e, Set<Role> r) {}
-        };
-
-        mockUserService = new UserManagementService(null, null, null) {
-            @Override
-            public SystemUser registerNewUser(String u, String p, String f,
-                                              String l, String e, Set<Role> r) {
-                return null;
-            }
-        };
-
         controller = new DeactivatePilotController(
-                mockAuthz, pilotRepo, mockFlightPlanRepo, collaboratorRepo,
-                mockValidator,
-                new RegisterBackofficeUserController() {
-                    @Override
-                    public void registerUser(String u, String p, String f,
-                                             String l, String e, Set<Role> r) {}
-                }
+                mockAuthz, pilotRepo, mockFlightPlanRepo, collaboratorRepo
         );
     }
 
@@ -216,8 +195,7 @@ class DeactivatePilotControllerTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new DeactivatePilotController(
                         null, pilotRepo, mockFlightPlanRepo,
-                        collaboratorRepo, mockValidator,
-                        new RegisterBackofficeUserController()
+                        collaboratorRepo
                 ));
     }
 
@@ -227,8 +205,7 @@ class DeactivatePilotControllerTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new DeactivatePilotController(
                         mockAuthz, null, mockFlightPlanRepo,
-                        collaboratorRepo, mockValidator,
-                        new RegisterBackofficeUserController()
+                        collaboratorRepo
                 ));
     }
 
@@ -238,8 +215,7 @@ class DeactivatePilotControllerTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new DeactivatePilotController(
                         mockAuthz, pilotRepo, null,
-                        collaboratorRepo, mockValidator,
-                        new RegisterBackofficeUserController()
+                        collaboratorRepo
                 ));
     }
 
@@ -249,8 +225,7 @@ class DeactivatePilotControllerTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new DeactivatePilotController(
                         mockAuthz, pilotRepo, mockFlightPlanRepo,
-                        null, mockValidator,
-                        new RegisterBackofficeUserController()
+                        null
                 ));
     }
 

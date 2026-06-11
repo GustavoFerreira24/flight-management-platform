@@ -48,7 +48,7 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
     private PilotStatus pilotStatus;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "CompanyIATACode", nullable = false))
+    @AttributeOverride(name = "value", column = @Column(name = "CompanyIATACode", nullable = true))
     private IATACode companyIATACode;
 
     @ElementCollection
@@ -96,10 +96,6 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
 
         if (certification == null) {
             throw new IllegalArgumentException("Pilot certification cannot be null.");
-        }
-
-        if (companyIATACode == null) {
-            throw new IllegalArgumentException("Company IATA code cannot be null.");
         }
 
         if (email == null) {
@@ -253,6 +249,20 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
                 "\nPilot Status: " + pilotStatus.toString() +
                 "\nCompany IATA Code: " + companyIATACode +
                 "\nCertified Aircraft Models Designators: " + certifiedAircraftModelsString;
+    }
+
+    public void assignToCompany(IATACode newCompanyIataCode) {
+
+        if (newCompanyIataCode == null) {
+            throw new IllegalArgumentException("Company IATA code cannot be null.");
+        }
+
+        if (!pilotStatus.isValid() ) {
+            throw new IllegalArgumentException("Pilot status must be valid to assign to a company.");
+        }
+
+        IATACode oldCompanyIataCode = this.companyIATACode;
+        this.companyIATACode = newCompanyIataCode;
     }
 }
 

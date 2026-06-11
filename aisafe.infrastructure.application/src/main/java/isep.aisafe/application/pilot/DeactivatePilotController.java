@@ -22,8 +22,6 @@ public class DeactivatePilotController {
     private final PilotRepository pilotRepository;
     private final FlightPlanRepository flightPlanRepository;
     private final CustomerCollaboratorRepository collaboratorRepo;
-    private final UserRegistrationValidator userValidator;
-    private final RegisterBackofficeUserController backofficeUserController;
     private final AisafeAuthorizationService authz;
 
     public DeactivatePilotController() {
@@ -32,9 +30,7 @@ public class DeactivatePilotController {
                 new AisafeAuthorizationService(),
                 PersistenceContext.repositories().pilots(),
                 PersistenceContext.repositories().flightPlans(),
-                PersistenceContext.repositories().customerCollaborators(),
-                new UserRegistrationValidator(),
-                new RegisterBackofficeUserController()
+                PersistenceContext.repositories().customerCollaborators()
         );
     }
 
@@ -42,11 +38,9 @@ public class DeactivatePilotController {
             final AisafeAuthorizationService authz,
             final PilotRepository pilotRepository,
             final FlightPlanRepository flightPlanRepository,
-            final CustomerCollaboratorRepository collaboratorRepo,
-            final UserRegistrationValidator userValidator,
-            final RegisterBackofficeUserController backofficeUserController) {
+            final CustomerCollaboratorRepository collaboratorRepo) {
 
-        if (authz == null || pilotRepository == null || flightPlanRepository == null || collaboratorRepo == null || userValidator == null || backofficeUserController == null) {
+        if (authz == null || pilotRepository == null || flightPlanRepository == null || collaboratorRepo == null) {
             throw new IllegalArgumentException("As dependências não podem ser nulas.");
         }
 
@@ -54,8 +48,6 @@ public class DeactivatePilotController {
         this.pilotRepository = pilotRepository;
         this.flightPlanRepository = flightPlanRepository;
         this.collaboratorRepo = collaboratorRepo;
-        this.userValidator = userValidator;
-        this.backofficeUserController = backofficeUserController;
     }
 
     public void deactivatePilot(String id) {

@@ -1,14 +1,10 @@
 package isep.aisafe.app.backoffice.console.presentation.pilot;
 
-import isep.aisafe.aircraft.domain.Aircraft;
 import isep.aisafe.aircraftmodel.domain.AircraftModel;
 import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.pilot.RegisterPilotController;
 import isep.aisafe.application.pilot.RegisterPilotService;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class RegisterPilotUI {
@@ -79,7 +75,7 @@ public class RegisterPilotUI {
             int numberOfAircraftModels = Integer.parseInt(scanner.nextLine().trim());
 
             Iterable<AircraftModel> aircraftModels = controller.getAllAircraftModels();
-            String aircraftModelDesignator = "";
+            String aircraftModelDesignator = null;
 
             for (int i = 0; i < numberOfAircraftModels; i++) {
 

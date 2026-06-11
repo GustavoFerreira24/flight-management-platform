@@ -14,6 +14,7 @@ import isep.aisafe.app.backoffice.console.presentation.flightmanagement.CreateFl
 import isep.aisafe.app.backoffice.console.presentation.flightmanagement.TestFlightPlanUI;
 import isep.aisafe.app.backoffice.console.presentation.flightroute.RegisterFlightRouteUI;
 import isep.aisafe.app.backoffice.console.presentation.pilot.ManagePilotsUI;
+import isep.aisafe.app.backoffice.console.presentation.pilot.RegisterPilotUI;
 import isep.aisafe.app.backoffice.console.presentation.report.GenerateMonthlyReportUI;
 import isep.aisafe.app.backoffice.console.presentation.report.GenerateSimulationReportUI;
 import isep.aisafe.app.backoffice.console.presentation.weather.ConsultWeatherDataUI;
@@ -178,8 +179,9 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
                 ConsoleStyle.option(4, "Register Air Control Area                      (US50)"),
                 ConsoleStyle.option(5, "Register Airport                               (US52)"),
                 ConsoleStyle.option(6, "Register Customer Collaborator                 (US61)"),
-                ConsoleStyle.option(7, "List Collaborators                             (US62)"),
-                ConsoleStyle.option(8, "Logout")
+                ConsoleStyle.option(7, "Register Pilot                                 (US75)"),
+                ConsoleStyle.option(8, "List Collaborators                             (US62)"),
+                ConsoleStyle.option(9, "Logout")
         );
         ConsoleStyle.printPrompt("Option: ");
 
@@ -216,11 +218,16 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("7".equals(option)) {
-            executeMenuAction(() -> new ListCustomerCollaboratorsUI(scanner).show());
+            executeMenuAction(() -> new RegisterPilotUI(scanner).show());
             return true;
         }
 
         if ("8".equals(option)) {
+            executeMenuAction(() -> new ListCustomerCollaboratorsUI(scanner).show());
+            return true;
+        }
+
+        if ("9".equals(option)) {
             ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }

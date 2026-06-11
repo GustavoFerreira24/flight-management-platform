@@ -116,22 +116,6 @@ class RegisterPilotControllerTest {
     }
 
     @Test
-    void ensurePilotIsRegisteredWithCorrectCompany() {
-        // Arrange
-        final String id = "ABC";
-
-        // Act
-        final Pilot result = controller.registerPilot(
-                id, "01-01-2020", "01-01-2099",
-                "pilot.user", "John", "Doe",
-                "john.doe@test.com", "Password1!", "+351912345678",
-                "A320");
-
-        // Assert
-        assertNotNull(result.companyIATACode());
-    }
-
-    @Test
     void ensurePilotIsRegisteredWithCorrectEmail() {
         // Arrange
         final String id = "ABC";
