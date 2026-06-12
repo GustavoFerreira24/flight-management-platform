@@ -1,0 +1,70 @@
+@startuml
+title Pilot Aggregate Scenario: Register a Pilot as a System´s User
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "AirTransportCompany" as ATC
+boundary ":AddPilotUI" as UI
+control ":AddPilotController" as C
+
+participant "pilot\n:Pilot" as Pilot
+participant "pilotID\n:PilotID" as PilotID
+participant ":SystemUsername" as SU
+participant "customerCollaborator\n:CustomerCollaborator" as CC
+participant "iataCode\n:IATACode" as IATA
+
+participant ":CustomerCollaboratorRepository" as CCRepo
+participant ":AirTransportCompanyRepository" as ATCRepo
+participant ":PilotRepository" as PilotRepo
+
+participant ":UserRegistrationValidator" as URV
+participant ":UserManagementService" as UMS
+
+ATC -> UI : request to add a pilot
+UI -> ATC : ask for pilotID
+
+ATC -> UI : submit pilotID
+UI -> C : addPilot(pilotID)
+
+C -> authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+authz -> C : authorized
+
+C -> PilotID : valueOf(id)
+PilotID -> C : returns pilotID as PilotID
+
+C -> PilotRepo : ofIdentity(pilotID)
+PilotRepo -> C : returns pilot associated with pilotID
+
+C -> SU : valueOf(authz.authenticatedUsername())
+SU -> C : collaboratorUsername
+
+C -> CCRepo : findBySystemUsername(collaboratorUsername)
+CCRepo -> C : collaborator
+
+C -> CC : isAssociatedWithAirTransportCompany()
+CC -> C : returns if collaborator is associated with air transport company
+
+C -> CC : airTransportCompany()
+CC -> C : returns air transport company
+
+C -> ATC : iataCode()
+ATC -> C : returns newPilotIATACode
+
+C -> Pilot : assignToCompany(newPilotIATACode)
+Pilot -> C : sucessfully assigned to company
+
+C -> PilotRepo : save(pilot)
+PilotRepo -> C : pilot updated in repository
+
+C -> UI : pilot added successfully
+
+UI -> ATC : shows success message
+
+
+
+
+@enduml
