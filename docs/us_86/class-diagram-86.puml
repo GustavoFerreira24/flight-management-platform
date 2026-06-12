@@ -18,15 +18,26 @@ class PilotRemoteAccessController <<Controller>> {
 }
 
 interface PilotRemoteOperations {
+    + createFlightPlan(flightPlanIdentifier : String, flightDesignator : String, aircraftRegistration : String, pilotId : String, fuelAmount : String, fuelUnit : String) : String
     + consultWeatherData(day : String, airControlAreaCode : String) : String
     + insertWeatherData(flightPlanIdentifier : String, weatherDataDay : String, airControlAreaCode : String) : String
+    + listTestableFlightPlans() : String
+    + testFlightPlan(flightPlanIdentifier : String) : String
+    + consultFlightPlanTestReports() : String
 }
 
 class ControllerPilotRemoteOperations <<Adapter>> {
     - consultWeatherDataController : ConsultWeatherDataController
     - insertWeatherDataInFlightPlanController : InsertWeatherDataInFlightPlanController
+    - createFlightPlanController : CreateFlightPlanController
+    - testFlightPlanController : TestFlightPlanController
+    - consultFlightPlanTestReportsController : ConsultFlightPlanTestReportsController
+    + createFlightPlan(flightPlanIdentifier : String, flightDesignator : String, aircraftRegistration : String, pilotId : String, fuelAmount : String, fuelUnit : String) : String
     + consultWeatherData(day : String, airControlAreaCode : String) : String
     + insertWeatherData(flightPlanIdentifier : String, weatherDataDay : String, airControlAreaCode : String) : String
+    + listTestableFlightPlans() : String
+    + testFlightPlan(flightPlanIdentifier : String) : String
+    + consultFlightPlanTestReports() : String
 }
 
 class RemoteAccessRequest <<Protocol>> {
@@ -51,12 +62,27 @@ class ConsultWeatherDataController <<Controller>> {
     + consultWeatherData(day : String, areaCode : String) : Optional<WeatherData>
 }
 
+class CreateFlightPlanController <<Controller>> {
+    + createFlightPlan(...) : FlightPlan
+}
+
 class InsertWeatherDataInFlightPlanController <<Controller>> {
     + insertWeatherData(flightPlanIdentifier : String, weatherDataDay : String, airControlAreaCode : String) : FlightPlan
 }
 
+class TestFlightPlanController <<Controller>> {
+    + authenticatedPilotFlightPlans() : List<FlightPlan>
+    + testFlightPlan(flightPlanIdentifier : String) : TestFlightPlanResult
+}
+
+class ConsultFlightPlanTestReportsController <<Controller>> {
+    + authenticatedPilotReports() : List<FlightPlanTestReport>
+}
+
 class WeatherData <<Aggregate Root>>
 class FlightPlan <<Aggregate Root>>
+class FlightPlanTestReport <<Aggregate Root>>
+class TestFlightPlanResult <<DTO>>
 
 class AisafeAuthorizationService <<Service>> {
     + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
@@ -78,12 +104,21 @@ PilotRemoteAccessController --> RemoteAccessResponse
 PilotRemoteAccessController --> PilotRemoteOperations
 
 ControllerPilotRemoteOperations ..|> PilotRemoteOperations
+ControllerPilotRemoteOperations --> CreateFlightPlanController
 ControllerPilotRemoteOperations --> ConsultWeatherDataController
 ControllerPilotRemoteOperations --> InsertWeatherDataInFlightPlanController
+ControllerPilotRemoteOperations --> TestFlightPlanController
+ControllerPilotRemoteOperations --> ConsultFlightPlanTestReportsController
 ControllerPilotRemoteOperations --> WeatherData
 ControllerPilotRemoteOperations --> FlightPlan
+ControllerPilotRemoteOperations --> FlightPlanTestReport
+ControllerPilotRemoteOperations --> TestFlightPlanResult
 
+CreateFlightPlanController --> FlightPlan
 ConsultWeatherDataController --> WeatherData
 InsertWeatherDataInFlightPlanController --> FlightPlan
+TestFlightPlanController --> FlightPlan
+TestFlightPlanController --> TestFlightPlanResult
+ConsultFlightPlanTestReportsController --> FlightPlanTestReport
 
 @enduml

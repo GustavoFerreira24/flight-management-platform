@@ -15,8 +15,8 @@ participant ":RemoteAccessRequest" as Request
 participant "credentialHandler\n:CredentialHandler" as Credentials
 participant "authz\n:AisafeAuthorizationService" as Authz
 participant "operations\n:ControllerPilotRemoteOperations" as Ops
-control ":InsertWeatherDataInFlightPlanController" as InsertC
-participant "flightPlan\n:FlightPlan" as FlightPlan
+control "EAPLI Pilot Use Case\nControllers" as EapliC
+participant "domain aggregate / DTO" as Result
 
 Pilot -> Client : submit remote command
 Client -> Server : TCP line\nLOGIN|pilotId|password
@@ -31,20 +31,20 @@ RemoteC --> Server : OK|Authenticated as pilotId.
 Server --> Client : TCP response
 Client --> Pilot : show login success
 
-Pilot -> Client : insert weather data in flight plan
-Client -> Server : TCP line\nINSERT_WEATHER_DATA|flightPlanId|day|areaCode
+Pilot -> Client : submit Pilot use case command
+Client -> Server : TCP line\nCREATE_FLIGHT_PLAN / CONSULT_WEATHER /\nINSERT_WEATHER_DATA / LIST_TESTABLE_FLIGHT_PLANS /\nTEST_FLIGHT_PLAN / CONSULT_FLIGHT_PLAN_TEST_REPORTS
 Server -> RemoteC : handle(line)
 RemoteC -> Request ++ : parse(line)
 Request --> RemoteC : request
 RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(PILOT)
 Authz --> RemoteC : authorized
-RemoteC -> Ops : insertWeatherData(flightPlanId, day, areaCode)
-Ops -> InsertC : insertWeatherData(flightPlanId, day, areaCode)
-InsertC -> FlightPlan : addWeatherData(weatherData)
-FlightPlan --> InsertC : weather data associated
-InsertC --> Ops : updated flightPlan
-Ops --> RemoteC : formatted success message
-RemoteC --> Server : OK|formatted success message
+RemoteC -> Ops : delegate command
+Ops -> EapliC : execute matching EAPLI controller
+EapliC -> Result : apply use case / domain rules
+Result --> EapliC : result
+EapliC --> Ops : domain result / DTO
+Ops --> RemoteC : formatted remote payload
+RemoteC --> Server : OK/DATA|payload
 Server --> Client : TCP response
 Client --> Pilot : show operation result
 

@@ -21,8 +21,12 @@ class PilotRemoteAccessControllerTest {
         // Assert
         assertEquals("DATA", response.status());
         assertTrue(response.payload().contains("LOGIN"));
+        assertTrue(response.payload().contains("CREATE_FLIGHT_PLAN"));
         assertTrue(response.payload().contains("CONSULT_WEATHER"));
         assertTrue(response.payload().contains("INSERT_WEATHER_DATA"));
+        assertTrue(response.payload().contains("LIST_TESTABLE_FLIGHT_PLANS"));
+        assertTrue(response.payload().contains("TEST_FLIGHT_PLAN"));
+        assertTrue(response.payload().contains("CONSULT_FLIGHT_PLAN_TEST_REPORTS"));
     }
 
     @Test
@@ -118,6 +122,32 @@ class PilotRemoteAccessControllerTest {
     }
 
     @Test
+    void ensureCreateFlightPlanDelegatesToRemoteOperations() {
+        // Arrange
+        final FakeOperations operations = new FakeOperations();
+        final PilotRemoteAccessController controller = controller(
+                new FakeCredentialHandler(true),
+                new FakeAuthorizationService(),
+                operations
+        );
+        controller.handle("LOGIN|UAA|Password1");
+
+        // Act
+        final RemoteAccessResponse response = controller.handle("CREATE_FLIGHT_PLAN|FP001|TP123|CS-TXA|UAA|5000|KG");
+
+        // Assert
+        assertTrue(response.isOk());
+        assertEquals("flight plan created", response.payload());
+        assertTrue(operations.createFlightPlanCalled);
+        assertEquals("FP001", operations.flightPlanIdentifier);
+        assertEquals("TP123", operations.flightDesignator);
+        assertEquals("CS-TXA", operations.aircraftRegistration);
+        assertEquals("UAA", operations.pilotId);
+        assertEquals("5000", operations.fuelAmount);
+        assertEquals("KG", operations.fuelUnit);
+    }
+
+    @Test
     void ensureInsertWeatherDataDelegatesToRemoteOperations() {
         // Arrange
         final FakeOperations operations = new FakeOperations();
@@ -141,6 +171,67 @@ class PilotRemoteAccessControllerTest {
     }
 
     @Test
+    void ensureListTestableFlightPlansDelegatesToRemoteOperations() {
+        // Arrange
+        final FakeOperations operations = new FakeOperations();
+        final PilotRemoteAccessController controller = controller(
+                new FakeCredentialHandler(true),
+                new FakeAuthorizationService(),
+                operations
+        );
+        controller.handle("LOGIN|UAA|Password1");
+
+        // Act
+        final RemoteAccessResponse response = controller.handle("LIST_TESTABLE_FLIGHT_PLANS");
+
+        // Assert
+        assertEquals("DATA", response.status());
+        assertEquals("testable flight plans", response.payload());
+        assertTrue(operations.listTestableFlightPlansCalled);
+    }
+
+    @Test
+    void ensureTestFlightPlanDelegatesToRemoteOperations() {
+        // Arrange
+        final FakeOperations operations = new FakeOperations();
+        final PilotRemoteAccessController controller = controller(
+                new FakeCredentialHandler(true),
+                new FakeAuthorizationService(),
+                operations
+        );
+        controller.handle("LOGIN|UAA|Password1");
+
+        // Act
+        final RemoteAccessResponse response = controller.handle("TEST_FLIGHT_PLAN|FP001");
+
+        // Assert
+        assertTrue(response.isOk());
+        assertEquals("flight plan tested", response.payload());
+        assertTrue(operations.testFlightPlanCalled);
+        assertEquals("FP001", operations.flightPlanIdentifier);
+    }
+
+    @Test
+    void ensureConsultFlightPlanTestReportsDelegatesToRemoteOperations() {
+        // Arrange
+        final FakeOperations operations = new FakeOperations();
+        final PilotRemoteAccessController controller = controller(
+                new FakeCredentialHandler(true),
+                new FakeAuthorizationService(),
+                operations
+        );
+        controller.handle("LOGIN|UAA|Password1");
+
+        // Act
+        final RemoteAccessResponse response = controller.handle("CONSULT_FLIGHT_PLAN_TEST_REPORTS");
+
+        // Assert
+        assertEquals("DATA", response.status());
+        assertEquals("flight plan test reports", response.payload());
+        assertTrue(operations.consultFlightPlanTestReportsCalled);
+    }
+
+    @Test
     void ensureInvalidArgumentCountIsRejectedBeforeDelegation() {
         // Arrange
         final FakeOperations operations = new FakeOperations();
@@ -158,6 +249,26 @@ class PilotRemoteAccessControllerTest {
         assertTrue(response.isError());
         assertEquals("INSERT_WEATHER_DATA expects 3 argument(s).", response.payload());
         assertFalse(operations.insertWeatherCalled);
+    }
+
+    @Test
+    void ensureInvalidCreateFlightPlanArgumentCountIsRejectedBeforeDelegation() {
+        // Arrange
+        final FakeOperations operations = new FakeOperations();
+        final PilotRemoteAccessController controller = controller(
+                new FakeCredentialHandler(true),
+                new FakeAuthorizationService(),
+                operations
+        );
+        controller.handle("LOGIN|UAA|Password1");
+
+        // Act
+        final RemoteAccessResponse response = controller.handle("CREATE_FLIGHT_PLAN|FP001|TP123|CS-TXA");
+
+        // Assert
+        assertTrue(response.isError());
+        assertEquals("CREATE_FLIGHT_PLAN expects 6 argument(s).", response.payload());
+        assertFalse(operations.createFlightPlanCalled);
     }
 
     @Test
@@ -222,10 +333,38 @@ class PilotRemoteAccessControllerTest {
     private static final class FakeOperations implements PilotRemoteOperations {
 
         private boolean consultWeatherCalled;
+        private boolean createFlightPlanCalled;
         private boolean insertWeatherCalled;
+        private boolean listTestableFlightPlansCalled;
+        private boolean testFlightPlanCalled;
+        private boolean consultFlightPlanTestReportsCalled;
         private String flightPlanIdentifier;
+        private String flightDesignator;
+        private String aircraftRegistration;
+        private String pilotId;
+        private String fuelAmount;
+        private String fuelUnit;
         private String weatherDay;
         private String airControlAreaCode;
+
+        @Override
+        public String createFlightPlan(
+                final String flightPlanIdentifier,
+                final String flightDesignator,
+                final String aircraftRegistration,
+                final String pilotId,
+                final String fuelAmount,
+                final String fuelUnit) {
+
+            createFlightPlanCalled = true;
+            this.flightPlanIdentifier = flightPlanIdentifier;
+            this.flightDesignator = flightDesignator;
+            this.aircraftRegistration = aircraftRegistration;
+            this.pilotId = pilotId;
+            this.fuelAmount = fuelAmount;
+            this.fuelUnit = fuelUnit;
+            return "flight plan created";
+        }
 
         @Override
         public String consultWeatherData(final String day, final String airControlAreaCode) {
@@ -246,6 +385,25 @@ class PilotRemoteAccessControllerTest {
             weatherDay = weatherDataDay;
             this.airControlAreaCode = airControlAreaCode;
             return "weather inserted";
+        }
+
+        @Override
+        public String listTestableFlightPlans() {
+            listTestableFlightPlansCalled = true;
+            return "testable flight plans";
+        }
+
+        @Override
+        public String testFlightPlan(final String flightPlanIdentifier) {
+            testFlightPlanCalled = true;
+            this.flightPlanIdentifier = flightPlanIdentifier;
+            return "flight plan tested";
+        }
+
+        @Override
+        public String consultFlightPlanTestReports() {
+            consultFlightPlanTestReportsCalled = true;
+            return "flight plan test reports";
         }
     }
 }

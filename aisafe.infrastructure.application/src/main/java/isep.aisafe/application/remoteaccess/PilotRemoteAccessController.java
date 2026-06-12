@@ -17,8 +17,12 @@ public class PilotRemoteAccessController {
             ";",
             "LOGIN|username|password",
             "LOGOUT",
+            "CREATE_FLIGHT_PLAN|flightPlanIdentifier|flightDesignator|aircraftRegistration|pilotId|fuelAmount|fuelUnit",
             "CONSULT_WEATHER|day|airControlAreaCode",
-            "INSERT_WEATHER_DATA|flightPlanIdentifier|weatherDataDay|airControlAreaCode"
+            "INSERT_WEATHER_DATA|flightPlanIdentifier|weatherDataDay|airControlAreaCode",
+            "LIST_TESTABLE_FLIGHT_PLANS",
+            "TEST_FLIGHT_PLAN|flightPlanIdentifier",
+            "CONSULT_FLIGHT_PLAN_TEST_REPORTS"
     );
 
     private final CredentialHandler credentialHandler;
@@ -86,6 +90,16 @@ public class PilotRemoteAccessController {
                 return logout();
             case "HELP":
                 return RemoteAccessResponse.data(HELP_TEXT);
+            case "CREATE_FLIGHT_PLAN":
+                requireAuthenticated(request, 6);
+                return RemoteAccessResponse.ok(operations.createFlightPlan(
+                        request.argument(0),
+                        request.argument(1),
+                        request.argument(2),
+                        request.argument(3),
+                        request.argument(4),
+                        request.argument(5)
+                ));
             case "CONSULT_WEATHER":
                 requireAuthenticated(request, 2);
                 return RemoteAccessResponse.data(operations.consultWeatherData(
@@ -99,6 +113,15 @@ public class PilotRemoteAccessController {
                         request.argument(1),
                         request.argument(2)
                 ));
+            case "LIST_TESTABLE_FLIGHT_PLANS":
+                requireAuthenticated(request, 0);
+                return RemoteAccessResponse.data(operations.listTestableFlightPlans());
+            case "TEST_FLIGHT_PLAN":
+                requireAuthenticated(request, 1);
+                return RemoteAccessResponse.ok(operations.testFlightPlan(request.argument(0)));
+            case "CONSULT_FLIGHT_PLAN_TEST_REPORTS":
+                requireAuthenticated(request, 0);
+                return RemoteAccessResponse.data(operations.consultFlightPlanTestReports());
             default:
                 return RemoteAccessResponse.error("Unknown remote command: " + request.command());
         }

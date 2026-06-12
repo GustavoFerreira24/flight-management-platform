@@ -2,9 +2,9 @@
 
 ## 1. Context
 
-US86 integrates EAPLI with RCOMP. The goal is to allow a Pilot to remotely access the system through the Air Transport Company App.
+US86 exposes the Pilot use cases through a remote-access application layer boundary. The EAPLI responsibility is to authenticate the remote Pilot, authorize protected operations and delegate each supported command to the existing EAPLI controllers.
 
-This implementation covers the EAPLI side only. It does not implement TCP sockets, a TCP client or a TCP server. Instead, it exposes an application-level remote access controller that can be invoked by the future RCOMP server.
+The TCP transport belongs to the RCOMP side. For the EAPLI delivery, the relevant artifact is the application-level remote access controller and its line-based request/response protocol.
 
 ## 2. Requirements
 
@@ -14,11 +14,11 @@ Acceptance criteria addressed by the EAPLI layer:
 
 - Pilot remote commands are represented through a line-based request/response protocol.
 - The client does not need direct database access; all behavior is delegated to EAPLI application controllers.
-- Pilot user stories already implemented in EAPLI are available through remote commands.
+- Pilot user stories implemented in EAPLI are available through remote commands.
 - Authentication and authorization are enforced before protected commands are executed.
 - Request parsing, response generation and command delegation are covered by automated tests.
 
-RCOMP remains responsible for the TCP client, TCP server and transport of the protocol lines.
+Any TCP-based client application can transport these protocol lines. The client must not bypass the remote access controller or access repositories directly.
 
 ## 3. Analysis
 
@@ -27,17 +27,15 @@ US86 follows the same split used in US78:
 - EAPLI responsibility: expose Pilot use cases through an application-level remote access controller.
 - RCOMP responsibility: transport requests and responses through TCP.
 
-The Pilot user stories currently documented and implemented in EAPLI are:
+The Pilot user stories currently documented and implemented in EAPLI and exposed by US86 are:
 
+- US80 - Create a flight plan.
 - US43 - Consult weather data.
 - US82 - Insert weather data in a flight plan.
+- US85 - Test / validate a flight plan.
+- US85 - Consult persisted flight plan test reports.
 
-For that reason, the EAPLI command set is intentionally limited to those operations.
-
-The backoffice console also exposes these pilot operations in the Flight Plan Management Console, so the EAPLI side can be demonstrated without the RCOMP TCP transport:
-
-- `Consult Weather Data (US43)`
-- `Insert Weather Data in Flight Plan (US82/US86)`
+For that reason, the EAPLI command set exposes those operations through `PilotRemoteAccessController`.
 
 ## 4. Protocol Draft
 
@@ -61,8 +59,12 @@ Supported commands in the EAPLI layer:
 LOGIN|username|password
 LOGOUT
 HELP
+CREATE_FLIGHT_PLAN|flightPlanIdentifier|flightDesignator|aircraftRegistration|pilotId|fuelAmount|fuelUnit
 CONSULT_WEATHER|day|airControlAreaCode
 INSERT_WEATHER_DATA|flightPlanIdentifier|weatherDataDay|airControlAreaCode
+LIST_TESTABLE_FLIGHT_PLANS
+TEST_FLIGHT_PLAN|flightPlanIdentifier
+CONSULT_FLIGHT_PLAN_TEST_REPORTS
 ```
 
 ## 5. Design
@@ -74,7 +76,14 @@ Main classes:
 - `ControllerPilotRemoteOperations`: production adapter that delegates to existing EAPLI controllers.
 - `RemoteAccessRequest`: parses protocol lines.
 - `RemoteAccessResponse`: represents `OK`, `ERROR` and `DATA` responses.
-- `InsertWeatherDataInFlightPlanUI`: EAPLI console UI for the pilot weather-data insertion operation.
+
+Delegated EAPLI controllers:
+
+- `CreateFlightPlanController`
+- `ConsultWeatherDataController`
+- `InsertWeatherDataInFlightPlanController`
+- `TestFlightPlanController`
+- `ConsultFlightPlanTestReportsController`
 
 Diagrams:
 
@@ -96,8 +105,11 @@ Protected commands require:
 
 The delegated EAPLI controllers still enforce their own permissions:
 
+- `CreateFlightPlanController` checks `FLIGHT_PLAN_MANAGEMENT`.
 - `ConsultWeatherDataController` checks `WEATHER_DATA_CONSULTATION`.
 - `InsertWeatherDataInFlightPlanController` checks `FLIGHT_PLAN_WEATHER_DATA_INSERTION`.
+- `TestFlightPlanController` checks `FLIGHT_PLAN_MANAGEMENT`.
+- `ConsultFlightPlanTestReportsController` checks `FLIGHT_PLAN_MANAGEMENT`.
 
 ## 7. Tests
 
@@ -107,8 +119,12 @@ Automated tests cover:
 - successful and failed login;
 - protected command rejection before login;
 - authorization checks before command delegation;
+- `CREATE_FLIGHT_PLAN` delegation;
 - `CONSULT_WEATHER` delegation;
 - `INSERT_WEATHER_DATA` delegation;
+- `LIST_TESTABLE_FLIGHT_PLANS` delegation;
+- `TEST_FLIGHT_PLAN` delegation;
+- `CONSULT_FLIGHT_PLAN_TEST_REPORTS` delegation;
 - invalid argument count rejection;
 - logout.
 
