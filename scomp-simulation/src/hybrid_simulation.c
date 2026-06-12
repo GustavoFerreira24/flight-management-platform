@@ -343,7 +343,6 @@ static int collect_shared_updates_for_step(hybrid_context_t *context, int step) 
 static void finish_scheduler(hybrid_context_t *context) {
     context->shared->stop_requested = 1;
     hybrid_sync_release_all(context->sync);
-    hybrid_sync_mark_parent_step_ready(context->sync);
 
     pthread_mutex_lock(&context->threads.mutex);
     context->threads.scheduler_finished = 1;
@@ -351,6 +350,8 @@ static void finish_scheduler(hybrid_context_t *context) {
     pthread_cond_broadcast(&context->threads.safety_done_cond);
     pthread_cond_broadcast(&context->threads.report_cond);
     pthread_mutex_unlock(&context->threads.mutex);
+
+    hybrid_sync_mark_parent_step_ready(context->sync);
 }
 
 static void *scheduler_thread_main(void *argument) {

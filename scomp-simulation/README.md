@@ -134,6 +134,8 @@ Each child flight process waits for its timestep semaphore, computes its positio
 
 The parent scheduler thread advances step by step only after all flight processes have posted their updates for the current timestep. The safety thread is notified through a condition variable when a timestep is complete. When safety violations are detected, involved flight processes are still notified with `SIGUSR1`.
 
+During shutdown, the scheduler marks the shared thread state as finished while holding the parent mutex before posting the semaphore that wakes the safety thread. This avoids a lost wakeup/deadlock scenario at the end of the simulation.
+
 Status: implemented as a separate Sprint 3 hybrid mode.
 
 ### US108 - Synchronize Hybrid Simulation With Semaphores
@@ -246,10 +248,15 @@ The hybrid simulator demonstrates the semaphore-based barrier with equivalent ou
 
 ```text
 hybrid timestep 0 semaphore barrier complete: 40/40 updates processed
+hybrid timestep 0 parent-thread semaphore lockstep complete
 hybrid timestep 1 semaphore barrier complete: 40/40 updates processed
+hybrid timestep 1 parent-thread semaphore lockstep complete
 hybrid timestep 2 semaphore barrier complete: 40/40 updates processed
+hybrid timestep 2 parent-thread semaphore lockstep complete
 hybrid timestep 3 semaphore barrier complete: 40/40 updates processed
+hybrid timestep 3 parent-thread semaphore lockstep complete
 hybrid timestep 4 semaphore barrier complete: 40/40 updates processed
+hybrid timestep 4 parent-thread semaphore lockstep complete
 ```
 
 ## Group Self-Assessment
