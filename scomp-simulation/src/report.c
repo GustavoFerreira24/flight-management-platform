@@ -41,16 +41,12 @@ void report_collect_flight_results(simulation_report_t *report,
     }
 }
 
-void report_record_violation(simulation_report_t *report,
-                             const safety_violation_t *violation,
-                             const position_history_t *history,
-                             int flight_count) {
-    if (report == NULL || violation == NULL || history == NULL) {
-        return;
-    }
-
-    if (report->violation_count >= REPORT_MAX_VIOLATIONS) {
-        return;
+int report_build_violation_entry(report_violation_entry_t *entry,
+                                 const safety_violation_t *violation,
+                                 const position_history_t *history,
+                                 int flight_count) {
+    if (entry == NULL || violation == NULL || history == NULL) {
+        return -1;
     }
 
     const int first = violation->first_flight_index;
@@ -60,7 +56,6 @@ void report_record_violation(simulation_report_t *report,
                           : violation->step;
     const int step = snap_step < SIMULATION_STEPS ? snap_step : SIMULATION_STEPS - 1;
 
-    report_violation_entry_t *entry = &report->violations[report->violation_count];
     entry->violation = *violation;
 
     if (first >= 0 && first < flight_count && history->received[first][step]) {
@@ -77,7 +72,38 @@ void report_record_violation(simulation_report_t *report,
         entry->second_snapshot.flight_id = violation->second_flight_id;
     }
 
+    return 0;
+}
+
+void report_append_violation_entry(simulation_report_t *report,
+                                   const report_violation_entry_t *entry) {
+    if (report == NULL || entry == NULL) {
+        return;
+    }
+
+    if (report->violation_count >= REPORT_MAX_VIOLATIONS) {
+        return;
+    }
+
+    report->violations[report->violation_count] = *entry;
     report->violation_count++;
+}
+
+void report_record_violation(simulation_report_t *report,
+                             const safety_violation_t *violation,
+                             const position_history_t *history,
+                             int flight_count) {
+    report_violation_entry_t entry;
+
+    if (report == NULL) {
+        return;
+    }
+
+    if (report_build_violation_entry(&entry, violation, history, flight_count) == -1) {
+        return;
+    }
+
+    report_append_violation_entry(report, &entry);
 }
 
 static void write_separator(FILE *file) {

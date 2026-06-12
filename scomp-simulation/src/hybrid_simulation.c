@@ -6,6 +6,7 @@
 #include "position_history.h"
 #include "report.h"
 #include "safety_monitor.h"
+#include "safety_report_notifier.h"
 #include "shared_simulation.h"
 
 #include <errno.h>
@@ -42,6 +43,7 @@ typedef struct {
     int reported_violations[MAX_FLIGHTS][MAX_FLIGHTS][SIMULATION_STEPS];
     int total_violations;
     simulation_report_t report;
+    safety_report_notifier_t report_notifier;
     parent_thread_state_t threads;
 } hybrid_context_t;
 
@@ -411,13 +413,6 @@ static void *scheduler_thread_main(void *argument) {
     return NULL;
 }
 
-static void notify_report_thread(hybrid_context_t *context) {
-    pthread_mutex_lock(&context->threads.mutex);
-    context->threads.report_event_count++;
-    pthread_cond_signal(&context->threads.report_cond);
-    pthread_mutex_unlock(&context->threads.mutex);
-}
-
 static void notify_hybrid_safety_violations(hybrid_context_t *context,
                                             const safety_scan_result_t *scan_result) {
     for (int i = 0; i < scan_result->count && !hybrid_stop_requested; i++) {
@@ -443,16 +438,19 @@ static void notify_hybrid_safety_violations(hybrid_context_t *context,
         log_safety_violation(stdout, violation);
         fflush(stdout);
 
-        report_record_violation(&context->report,
-                                violation,
-                                &context->position_history,
-                                context->flight_count);
+        if (safety_report_notifier_notify(&context->report_notifier,
+                                          violation,
+                                          &context->position_history,
+                                          context->flight_count) == -1) {
+            fprintf(stderr, "failed to notify report thread about safety violation\n");
+            request_hybrid_stop(context);
+            return;
+        }
 
         kill(context->shared->flight_pids[first], SIGUSR1);
         kill(context->shared->flight_pids[second], SIGUSR1);
 
         context->total_violations++;
-        notify_report_thread(context);
 
         if (context->total_violations >= SAFETY_MAX_TOTAL_VIOLATIONS) {
             fprintf(stderr,
@@ -492,7 +490,6 @@ static void *safety_thread_main(void *argument) {
         if (context->threads.scheduler_finished &&
             context->threads.last_completed_step <= context->threads.last_safety_processed_step) {
             context->threads.safety_finished = 1;
-            pthread_cond_broadcast(&context->threads.report_cond);
             pthread_mutex_unlock(&context->threads.mutex);
             break;
         }
@@ -518,31 +515,37 @@ static void *safety_thread_main(void *argument) {
         }
     }
 
+    pthread_mutex_lock(&context->threads.mutex);
+    context->threads.safety_finished = 1;
+    pthread_mutex_unlock(&context->threads.mutex);
+    safety_report_notifier_close(&context->report_notifier);
+
     return NULL;
 }
 
 static void *report_thread_main(void *argument) {
     hybrid_context_t *context = argument;
-    int observed_report_events = 0;
+    report_violation_entry_t entry;
 
     while (1) {
-        pthread_mutex_lock(&context->threads.mutex);
+        const int wait_result = safety_report_notifier_wait(&context->report_notifier, &entry);
 
-        while (observed_report_events >= context->threads.report_event_count &&
-               !context->threads.safety_finished) {
-            pthread_cond_wait(&context->threads.report_cond, &context->threads.mutex);
-        }
-
-        if (context->threads.safety_finished &&
-            observed_report_events >= context->threads.report_event_count) {
-            pthread_mutex_unlock(&context->threads.mutex);
+        if (wait_result == 0) {
             break;
         }
 
-        observed_report_events = context->threads.report_event_count;
-        pthread_mutex_unlock(&context->threads.mutex);
+        if (wait_result == -1) {
+            request_hybrid_stop(context);
+            break;
+        }
 
-        printf("hybrid report thread notified of safety event count=%d\n", observed_report_events);
+        report_append_violation_entry(&context->report, &entry);
+
+        printf("hybrid report thread processed safety event #%d for flights %d/%d at step %d\n",
+               context->report.violation_count,
+               entry.violation.first_flight_id,
+               entry.violation.second_flight_id,
+               entry.violation.step);
         fflush(stdout);
     }
 
@@ -613,6 +616,13 @@ int run_hybrid_simulation(const flight_plan_t flights[], int flight_count) {
         return -1;
     }
 
+    if (safety_report_notifier_init(&context.report_notifier) == -1) {
+        destroy_parent_thread_state(&context.threads);
+        hybrid_sync_close(&sync);
+        shared_simulation_close(&shared_region);
+        return -1;
+    }
+
     printf("starting hybrid simulation with %d flights, %d steps and %ds timesteps\n",
            flight_count, SIMULATION_STEPS, TIME_STEP_SECONDS);
     fflush(stdout);
@@ -621,6 +631,7 @@ int run_hybrid_simulation(const flight_plan_t flights[], int flight_count) {
         request_hybrid_stop(&context);
         terminate_hybrid_children(shared_region.state, flight_count);
         wait_for_hybrid_children(shared_region.state, flight_count);
+        safety_report_notifier_destroy(&context.report_notifier);
         destroy_parent_thread_state(&context.threads);
         hybrid_sync_close(&sync);
         shared_simulation_close(&shared_region);
@@ -666,8 +677,8 @@ int run_hybrid_simulation(const flight_plan_t flights[], int flight_count) {
     if (!safety_started) {
         pthread_mutex_lock(&context.threads.mutex);
         context.threads.safety_finished = 1;
-        pthread_cond_broadcast(&context.threads.report_cond);
         pthread_mutex_unlock(&context.threads.mutex);
+        safety_report_notifier_close(&context.report_notifier);
     }
 
     if (report_started) {
@@ -677,6 +688,7 @@ int run_hybrid_simulation(const flight_plan_t flights[], int flight_count) {
     wait_for_hybrid_children(shared_region.state, flight_count);
     print_position_history(shared_region.state->flights, flight_count, &context.position_history);
 
+    safety_report_notifier_destroy(&context.report_notifier);
     destroy_parent_thread_state(&context.threads);
     hybrid_sync_close(&sync);
     shared_simulation_close(&shared_region);

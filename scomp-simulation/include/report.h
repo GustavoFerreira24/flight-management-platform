@@ -45,6 +45,14 @@ void report_record_violation(simulation_report_t *report,
                              const position_history_t *history,
                              int flight_count);
 
+int report_build_violation_entry(report_violation_entry_t *entry,
+                                 const safety_violation_t *violation,
+                                 const position_history_t *history,
+                                 int flight_count);
+
+void report_append_violation_entry(simulation_report_t *report,
+                                   const report_violation_entry_t *entry);
+
 int report_save_to_file(const simulation_report_t *report, const char *file_path);
 
 #endif
