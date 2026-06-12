@@ -179,4 +179,7 @@ buildNumber.properties
 #database files
 *.db
 
+# Generated Maven classpath file (absolute paths, machine-specific)
+rcomp-cp.txt
+
 # End of https://www.toptal.com/developers/gitignore/api/intellij,java,maven,git

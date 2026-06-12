@@ -44,6 +44,27 @@ The solution is implemented primarily in **Java**, with simulation components in
 
     mvn exec:java
 
+### <span style="color:#70AD47">RCOMP Remote Access</span>
+
+Start the Remote Access Logging Server:
+
+    mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessLoggingServer -Dexec.args="9001 8080"
+
+Start the Remote Access TCP Server:
+
+    mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpServer -Dexec.args="9000 localhost 9001"
+
+Start a TCP client:
+
+    mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpClient -Dexec.args="localhost 9000 US44"
+
+Use `US44`, `US78` or `US86` as the last client argument depending on the remote service to test.
+
+Logging dashboards:
+
+    http://localhost:8080/events
+    http://localhost:8080/active-users
+
 ---
 
 ## <span style="color:#2E75B6">6. How to Install/Deploy into Another Machine (or Virtual Machine)</span>

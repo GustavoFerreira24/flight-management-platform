@@ -2,48 +2,34 @@
 
 ## 1. Context
 
-US44 integrates the EAPLI weather data use cases with the RCOMP remote access mechanism. A Weather Person can use the remote TCP client to authenticate and execute weather data operations without direct database access.
+US44 integrates EAPLI with RCOMP. The Weather Person uses a dedicated TCP client to access weather data functionality without direct database access.
 
-The implementation follows the same architectural split used by US78 and US86:
-
-- RCOMP transports command lines through TCP and sends access logs through UDP.
-- EAPLI parses commands, authenticates users, checks authorization and delegates business work to existing application controllers.
-- Only the server-side application accesses repositories and persistence.
+The TCP server runs inside the AISafe system and delegates remote commands to the EAPLI application controller `WeatherRemoteAccessController`.
 
 ## 2. Requirements
 
-**US44** As a Weather Person, I want to remotely access weather data operations through the remote access application.
+**US44** As a Weather Person, I want to remotely access the system in order to upload weather data.
 
-Acceptance criteria addressed:
+Acceptance criteria covered by the current implementation:
 
-- Weather Person remote commands use a line-based protocol.
-- Remote clients do not access the database directly.
-- Authentication is required before protected commands.
-- Authorization is checked using `AisafePermissions.WEATHER_DATA_MANAGEMENT`.
-- Weather operations are delegated to existing EAPLI controllers.
-- The RCOMP TCP server exposes this use case through `SERVICE|US44`.
-- Remote log events are sent by the TCP server to the logging server using UDP.
+- A TCP client communicates with a TCP server embedded in the system.
+- The client only interacts through the TCP connection.
+- The client does not access the database directly.
+- Weather Person commands are exposed remotely.
+- Authentication and authorization are enforced before protected commands run.
 
 ## 3. Protocol
 
-The TCP client first selects the service:
+The first TCP line selects the service:
 
 ```text
 SERVICE|US44
 ```
 
-After that, the command format is:
+After that, commands use a line-based protocol with `|` as separator:
 
 ```text
 COMMAND|arg1|arg2|...
-```
-
-Responses use:
-
-```text
-OK|message
-ERROR|message
-DATA|payload
 ```
 
 Supported commands:
@@ -57,133 +43,52 @@ REGISTER_WEATHER_DATA|day|airControlAreaCode|providerName|providerType|parameter
 IMPORT_BULK_WEATHER_DATA|serverFilePath
 ```
 
-The bulk import command receives a file path that exists on the server side. The client does not upload file contents through the protocol.
+Responses use:
 
-## 4. Design
-
-Main EAPLI artifacts:
-
-- `WeatherRemoteAccessController`: handles remote login state, request parsing and command dispatch.
-- `WeatherRemoteOperations`: interface for weather operations exposed remotely.
-- `ControllerWeatherRemoteOperations`: adapter that delegates to existing EAPLI weather controllers.
-- `RemoteAccessRequest`: parses protocol lines.
-- `RemoteAccessResponse`: returns `OK`, `ERROR` or `DATA` responses.
-
-Delegated EAPLI controllers:
-
-- `RegisterWeatherDataController`
-- `ImportBulkWeatherDataController`
-- `ConsultWeatherDataController`
-
-RCOMP artifacts involved:
-
-- `RemoteAccessTcpClient`
-- `RemoteAccessTcpServer`
-- `RemoteAccessService.US44`
-- `RemoteAccessLogClient`
-- `RemoteAccessLoggingServer`
-
-Diagrams:
-
-- US44 class diagram: [PUML](class-diagram-44.puml) | [SVG](svg/class-diagram-44.svg)
-- US44 sequence diagram: [PUML](sequence-diagram-44.puml) | [SVG](svg/sequence-diagram-44.svg)
-- US44 global design SD: [PUML](../global-artifacts/03.design/puml/US44WeatherRemoteAccess-SD.puml) | [SVG](../global-artifacts/03.design/svg/US44WeatherRemoteAccess-SD.svg)
-
-## 5. Authentication and Authorization
-
-The `LOGIN` command authenticates credentials through `CredentialHandler`.
-
-If credentials are valid, the controller checks:
-
-```java
-AisafePermissions.WEATHER_DATA_MANAGEMENT
+```text
+OK|message
+ERROR|message
+DATA|payload
 ```
 
-Protected commands require:
+## 4. Implementation
 
-- a successful remote login;
-- a current authorization check for weather data management;
-- the expected number of command arguments;
-- valid numeric values where required.
+Main classes:
 
-The delegated controllers still enforce their own EAPLI permissions and domain validations.
+- `RemoteAccessTcpServer` accepts TCP clients and selects `US44`, `US78` or `US86`.
+- `RemoteAccessTcpClient` provides a simple console TCP client.
+- `WeatherRemoteAccessController` authenticates, authorizes and dispatches Weather Person commands.
+- `ControllerWeatherRemoteOperations` delegates to the existing EAPLI weather controllers.
 
-## 6. RCOMP Compliance
+## 5. Demo Credentials
 
-The US44 remote access flow complies with the RCOMP constraints used in the project:
+The bootstrap process creates the Weather Person user:
 
-- TCP transport is implemented with `java.net.ServerSocket` and `java.net.Socket`.
-- UDP logging is implemented with `java.net.DatagramSocket` and `java.net.DatagramPacket`.
-- Log visualization is exposed with `com.sun.net.httpserver.HttpServer`.
-- The remote TCP client only exchanges protocol lines with the TCP server.
-- Persistence remains server-side through EAPLI controllers and repositories.
-- Access events are logged externally for `LOGIN_SUCCESS`, `LOGIN_FAILED`, `LOGOUT` and `DISCONNECT`.
+```text
+Username: ipma
+Password: Password1
+Role: WEATHER_PERSON
+```
 
-## 7. Tests
+## 6. Execution
 
-Automated tests cover:
-
-- `HELP` without login;
-- successful and failed login;
-- protected command rejection before login;
-- authorization checks before command delegation;
-- `CONSULT_WEATHER` delegation;
-- `REGISTER_WEATHER_DATA` delegation;
-- `IMPORT_BULK_WEATHER_DATA` delegation;
-- invalid numeric argument rejection;
-- invalid argument count rejection;
-- logout.
-
-Relevant test class:
-
-- `WeatherRemoteAccessControllerTest`
-
-Run the relevant tests with:
+From the repository root, start the TCP server with:
 
 ```bash
-mvn -pl aisafe.infrastructure.application -am '-Dtest=WeatherRemoteAccessControllerTest' '-Dsurefire.failIfNoSpecifiedTests=false' test
+mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpServer -Dexec.args="9000 localhost 9001"
 ```
 
-RCOMP compilation can be checked with:
+Start a client for US44 with:
 
 ```bash
-mvn -pl aisafe.app.rcomp -am compile
+mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpClient -Dexec.args="localhost 9000 US44"
 ```
 
-## 8. Demo Commands
-
-Start the logging server:
+Example client session:
 
 ```text
-RemoteAccessLoggingServer 9001 8080
-```
-
-Start the TCP server:
-
-```text
-RemoteAccessTcpServer 9000 localhost 9001
-```
-
-Start the TCP client for US44:
-
-```text
-RemoteAccessTcpClient localhost 9000 US44
-```
-
-Example session:
-
-```text
-HELP
 LOGIN|ipma|Password1
+HELP
 CONSULT_WEATHER|2027-01-10|LISACC
-REGISTER_WEATHER_DATA|2027-01-10|LISACC|IPMA|STATION|TEMPERATURE|17.5|C|120|38.7|-9.1
-IMPORT_BULK_WEATHER_DATA|C:/path/on/server/weather.csv
 LOGOUT
-```
-
-Logs can be viewed at:
-
-```text
-http://localhost:8080/events
-http://localhost:8080/active-users
 ```
