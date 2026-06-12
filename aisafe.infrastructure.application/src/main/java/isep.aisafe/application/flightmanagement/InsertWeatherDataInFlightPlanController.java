@@ -7,7 +7,6 @@ import isep.aisafe.flightplan.domain.FlightPlanRepository;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
-import isep.aisafe.pilot.domain.PilotID;
 import isep.aisafe.weatherdata.domain.WeatherData;
 import isep.aisafe.weatherdata.domain.WeatherDataRepository;
 
@@ -91,8 +90,13 @@ public class InsertWeatherDataInFlightPlanController {
     }
 
     private void ensureFlightPlanBelongsToAuthenticatedPilot(final FlightPlan flightPlan) {
-        final PilotID authenticatedPilot = PilotID.valueOf(authz.authenticatedUsername());
-        if (!flightPlan.pilot().identity().equals(authenticatedPilot)) {
+        final String authenticatedUsername = authz.authenticatedUsername();
+        final String authenticatedEmail = authz.authenticatedEmail();
+
+        final boolean matchesPilotId = flightPlan.pilot().identity().toString().equalsIgnoreCase(authenticatedUsername);
+        final boolean matchesPilotEmail = flightPlan.pilot().email().toString().equalsIgnoreCase(authenticatedEmail);
+
+        if (!matchesPilotId && !matchesPilotEmail) {
             throw new IllegalArgumentException("Flight plan does not belong to authenticated pilot.");
         }
     }

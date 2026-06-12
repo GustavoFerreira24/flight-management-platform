@@ -242,6 +242,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         authz.authenticatedUsername("XYZ");
+        authz.authenticatedEmail("other.pilot@example.com");
         final InMemoryFlightPlanRepository flightPlanRepository = new InMemoryFlightPlanRepository();
         final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
         flightPlanRepository.save(flightPlan());
@@ -261,6 +262,34 @@ class InsertWeatherDataInFlightPlanControllerTest {
                 .orElseThrow()
                 .weatherDataIds()
                 .isEmpty());
+    }
+
+    /**
+     * Purpose: verify that ownership can be matched by the authenticated user's email.
+     * Scenario: the system username is not the pilot id, but the email matches the pilot aggregate.
+     * Expected output: the pilot can update their own flight plan.
+     */
+    @Test
+    void ensureFlightPlanOwnershipCanBeMatchedByEmail() {
+        // Arrange
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        authz.authenticatedUsername("bruno123");
+        authz.authenticatedEmail("pilot@example.com");
+        final InMemoryFlightPlanRepository flightPlanRepository = new InMemoryFlightPlanRepository();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        flightPlanRepository.save(flightPlan());
+        weatherDataRepository.save(weatherData());
+        final InsertWeatherDataInFlightPlanController controller = new InsertWeatherDataInFlightPlanController(
+                authz,
+                flightPlanRepository,
+                weatherDataRepository
+        );
+
+        // Act
+        final FlightPlan updatedFlightPlan = controller.insertWeatherData("FP001", "2027-01-10", "CONACC");
+
+        // Assert
+        assertEquals(1, updatedFlightPlan.weatherDataCount());
     }
 
     /**

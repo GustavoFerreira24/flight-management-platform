@@ -12,6 +12,7 @@ import isep.aisafe.app.backoffice.console.presentation.enginemodel.RegisterEngin
 import isep.aisafe.app.backoffice.console.presentation.flightmanagement.ConsultFlightPlanTestReportsUI;
 import isep.aisafe.app.backoffice.console.presentation.flightmanagement.CreateFlightPlanUI;
 import isep.aisafe.app.backoffice.console.presentation.flightmanagement.CreateFlightUI;
+import isep.aisafe.app.backoffice.console.presentation.flightmanagement.InsertWeatherDataInFlightPlanUI;
 import isep.aisafe.app.backoffice.console.presentation.flightmanagement.TestFlightPlanUI;
 import isep.aisafe.app.backoffice.console.presentation.flightroute.RegisterFlightRouteUI;
 import isep.aisafe.app.backoffice.console.presentation.pilot.ManagePilotsUI;
@@ -334,9 +335,10 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
                 "Flight Plan Management Console",
                 ConsoleStyle.option(1, "Create Flight Plan                            (US80)"),
                 ConsoleStyle.option(2, "Consult Weather Data                          (US43)"),
-                ConsoleStyle.option(3, "Test / Validate Flight Plan                   (US85)"),
-                ConsoleStyle.option(4, "Consult Flight Plan Test Reports              (US85)"),
-                ConsoleStyle.option(5, "Logout")
+                ConsoleStyle.option(3, "Insert Weather Data in Flight Plan            (US82/US86)"),
+                ConsoleStyle.option(4, "Test / Validate Flight Plan                   (US85)"),
+                ConsoleStyle.option(5, "Consult Flight Plan Test Reports              (US85)"),
+                ConsoleStyle.option(6, "Logout")
         );
         ConsoleStyle.printPrompt("Option: ");
 
@@ -353,16 +355,21 @@ public final class AisafeBackoffice extends AisafeBaseApplication {
         }
 
         if ("3".equals(option)) {
-            executeMenuAction(() -> new TestFlightPlanUI(scanner).show());
+            executeMenuAction(() -> new InsertWeatherDataInFlightPlanUI(scanner).show());
             return true;
         }
 
         if ("4".equals(option)) {
-            executeMenuAction(() -> new ConsultFlightPlanTestReportsUI(scanner).show());
+            executeMenuAction(() -> new TestFlightPlanUI(scanner).show());
             return true;
         }
 
         if ("5".equals(option)) {
+            executeMenuAction(() -> new ConsultFlightPlanTestReportsUI(scanner).show());
+            return true;
+        }
+
+        if ("6".equals(option)) {
             ConsoleStyle.printInfo("Returning to login menu.");
             return false;
         }
