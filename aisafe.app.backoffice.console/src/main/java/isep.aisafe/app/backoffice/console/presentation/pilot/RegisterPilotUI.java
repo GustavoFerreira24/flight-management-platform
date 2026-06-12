@@ -75,7 +75,7 @@ public class RegisterPilotUI {
             int numberOfAircraftModels = Integer.parseInt(scanner.nextLine().trim());
 
             Iterable<AircraftModel> aircraftModels = controller.getAllAircraftModels();
-            String aircraftModelDesignator = null;
+            String aircraftModelDesignator = "";
 
             for (int i = 0; i < numberOfAircraftModels; i++) {
 

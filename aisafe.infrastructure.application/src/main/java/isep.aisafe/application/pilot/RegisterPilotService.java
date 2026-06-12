@@ -18,4 +18,8 @@ public interface RegisterPilotService {
             String aircraftModelDesignator);
 
     Iterable<AircraftModel> getAllAircraftModels();
+
+    Iterable<Pilot> getAllPilots();
+
+    Pilot getPilotById(String id);
 }

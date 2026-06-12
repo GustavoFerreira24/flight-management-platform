@@ -237,20 +237,20 @@ class PilotTest {
         pilot.deactivate();
 
         // Assert
-        assertFalse(pilot.pilotStatus().isValid());
+        assertFalse(pilot.pilotStatus().isValid(pilot.certification()));
     }
 
     @Test
     void ensurePilotActivateChangesStatusToValid() {
         // Arrange
-        final Certification expiredCertification = new Certification("01-01-2020", "01-01-2021");
+        final Certification expiredCertification = new Certification("01-01-2020", "01-01-2028");
         final Pilot pilot = new Pilot(validID(), expiredCertification, validStatus(expiredCertification), validCompany(), validEmail(), validPhoneNumber(), validFirstName(), validLastName(), validCertifiedAircraftModels());
 
         // Act
         pilot.activate();
 
         // Assert
-        assertTrue(pilot.pilotStatus().isValid());
+        assertTrue(pilot.pilotStatus().isValid(pilot.certification()));
     }
 
     @Test

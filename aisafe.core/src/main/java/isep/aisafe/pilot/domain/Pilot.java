@@ -168,7 +168,7 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
      * Activates the pilot
      */
     public void activate() {
-        this.pilotStatus = pilotStatus.activate();
+        this.pilotStatus = pilotStatus.activate(certification());
     }
 
     /**
@@ -257,11 +257,10 @@ public class Pilot implements AggregateRoot<PilotID>, Serializable {
             throw new IllegalArgumentException("Company IATA code cannot be null.");
         }
 
-        if (!pilotStatus.isValid() ) {
+        if (!pilotStatus.isValid(this.certification)) {
             throw new IllegalArgumentException("Pilot status must be valid to assign to a company.");
         }
 
-        IATACode oldCompanyIataCode = this.companyIATACode;
         this.companyIATACode = newCompanyIataCode;
     }
 }

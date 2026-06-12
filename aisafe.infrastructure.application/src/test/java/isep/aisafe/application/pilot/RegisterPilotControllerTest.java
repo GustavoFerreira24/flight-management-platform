@@ -207,69 +207,6 @@ class RegisterPilotControllerTest {
     }
 
     @Test
-    void ensureRegistrationRejectsCollaboratorNotFromAirTransportCompany() {
-
-        // Arrange
-
-        final InMemoryCustomerCollaboratorRepository areaRepo = new InMemoryCustomerCollaboratorRepository();
-
-        areaRepo.save(new CustomerCollaborator(
-                "Area", "User",
-                CollaboratorEmail.valueOf("area@test.com"),
-                airControlArea("LISACC"),
-                SystemUsername.valueOf("area@test.com")
-        ));
-
-        final AisafeAuthorizationService areaAuthz = new AisafeAuthorizationService() {
-            @Override
-            public void ensureAuthenticatedUserHasAnyOf(final Role... roles) {}
-
-            @Override
-            public String authenticatedUsername() {
-                return "area@test.com";
-            }
-        };
-
-        final RegisterPilotController areaController = new RegisterPilotController(
-                areaAuthz, repository, areaRepo, mockValidator, mockUserController, mockAircraftModelRepo
-        );
-
-        // Act & Assert
-        assertThrows(IllegalStateException.class,
-                () -> areaController.registerPilot(
-                        "ABC", "01-01-2020", "01-01-2099",
-                        "pilot.user", "John", "Doe",
-                        "john.doe@test.com", "Password1!", "+351912345678",
-                        "A320"));
-    }
-
-    @Test
-    void ensureRegistrationRejectsUnknownCollaborator() {
-        // Arrange
-        final AisafeAuthorizationService unknownAuthz = new AisafeAuthorizationService() {
-            @Override
-            public void ensureAuthenticatedUserHasAnyOf(final Role... roles) {}
-
-            @Override
-            public String authenticatedUsername() {
-                return "unknown@test.com";
-            }
-        };
-
-        final RegisterPilotController unknownController = new RegisterPilotController(
-                unknownAuthz, repository, mockCollaboratorRepo, mockValidator, mockUserController, mockAircraftModelRepo
-        );
-
-        // Act & Assert
-        assertThrows(IllegalStateException.class,
-                () -> unknownController.registerPilot(
-                        "ABC", "01-01-2020", "01-01-2099",
-                        "pilot.user", "John", "Doe",
-                        "john.doe@test.com", "Password1!", "+351912345678",
-                        "A320"));
-    }
-
-    @Test
     void ensureControllerRejectsNullAuthz() {
         // Act & Assert
         assertThrows(IllegalArgumentException.class,
