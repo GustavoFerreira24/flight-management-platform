@@ -1,5 +1,6 @@
 package isep.aisafe.app.backoffice.console.presentation.pilot;
 
+import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.pilot.DeactivatePilotController;
 import isep.aisafe.application.pilot.ListPilotRosterController;
@@ -7,6 +8,7 @@ import isep.aisafe.application.pilot.RegisterPilotController;
 import isep.aisafe.application.pilot.RegisterPilotService;
 import isep.aisafe.pilot.domain.Pilot;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -39,7 +41,10 @@ public class DeactivatePilotUI {
         try {
             ConsoleStyle.printSection("DEACTIVATE PILOT");
 
-            final Set<Pilot> pilots = listPilotRosterController.listPilotRoster();
+            final Iterable<Pilot> pilotsIterable = listPilotRosterController.listPilotRoster();
+
+            Set<Pilot> pilots = new HashSet<>();
+            pilotsIterable.forEach(pilots::add);
 
             if (pilots.isEmpty()) {
                 ConsoleStyle.printWarning("No pilots are registered.");
@@ -51,6 +56,8 @@ public class DeactivatePilotUI {
             for (Pilot pilot : pilots) {
                 System.out.println(pilot.identity() + " - " + pilot.firstName() + " " + pilot.lastName() + " (" + pilot.pilotStatus() + ")");
             }
+
+            System.out.println();
 
             ConsoleStyle.printPrompt("Enter the pilot's ID: ");
             final String pilotID = scanner.nextLine();
