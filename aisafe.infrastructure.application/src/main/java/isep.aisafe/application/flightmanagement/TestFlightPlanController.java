@@ -221,7 +221,7 @@ public class TestFlightPlanController {
             messages.add("Aircraft does not belong to the route's air transport company.");
         }
 
-        if (!flightPlan.pilot().pilotStatus().isValid()) {
+        if (!flightPlan.pilot().pilotStatus().isValid(flightPlan.pilot().certification())) {
             messages.add("Pilot is not active.");
         }
 

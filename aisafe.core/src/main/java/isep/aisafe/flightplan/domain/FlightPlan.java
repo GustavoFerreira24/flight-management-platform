@@ -92,7 +92,7 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
                 pilot.companyIATACode().equals(flight.route().company().iataCode()),
                 "Pilot must belong to the route's air transport company."
         );
-        Preconditions.ensure(pilot.pilotStatus().isValid(), "Pilot must be active.");
+        Preconditions.ensure(pilot.pilotStatus().isValid(pilot.certification()), "Pilot must be active.");
 
         this.identifier = identifier;
         this.flight = flight;
