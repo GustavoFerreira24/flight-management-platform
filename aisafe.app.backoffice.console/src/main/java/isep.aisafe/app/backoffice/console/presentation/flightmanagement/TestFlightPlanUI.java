@@ -4,6 +4,7 @@ import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.flightmanagement.TestFlightPlanController;
 import isep.aisafe.application.flightmanagement.TestFlightPlanResult;
 import isep.aisafe.flightplan.domain.FlightPlan;
+import isep.aisafe.flightplan.domain.FlightPlanStatus;
 
 import java.util.List;
 import java.util.Scanner;
@@ -12,6 +13,8 @@ import java.util.Scanner;
  * User interface for testing and validating flight plans.
  */
 public class TestFlightPlanUI {
+
+    private static final long VALIDATION_STEP_DELAY_MS = 500;
 
     private final TestFlightPlanController controller = new TestFlightPlanController();
     private final Scanner scanner;
@@ -50,13 +53,62 @@ public class TestFlightPlanUI {
             printFlightPlans(flightPlans);
 
             final FlightPlan selectedFlightPlan = selectFlightPlan(flightPlans);
+            final FlightPlanStatus initialStatus = selectedFlightPlan.status();
+            printValidationProgress(initialStatus);
+
             final TestFlightPlanResult result = controller.testFlightPlan(
                     selectedFlightPlan.identity().toString()
             );
 
+            printFinalTransition(result.status());
             printResult(result);
         } catch (IllegalArgumentException e) {
             ConsoleStyle.printError(e.getMessage());
+        }
+    }
+
+    private void printValidationProgress(final FlightPlanStatus initialStatus) {
+        ConsoleStyle.printInfo("Starting flight plan validation...");
+        pause();
+
+        if (initialStatus == FlightPlanStatus.DRAFT) {
+            ConsoleStyle.printInfo("Status changed: DRAFT -> UNDER_VALIDATION");
+        } else {
+            ConsoleStyle.printInfo("Current validation status: " + initialStatus);
+        }
+
+        pause();
+
+        printValidationStep(1, "Checking route status");
+        printValidationStep(2, "Checking aircraft operational status");
+        printValidationStep(3, "Checking aircraft company ownership");
+        printValidationStep(4, "Checking pilot status");
+        printValidationStep(5, "Checking pilot company assignment");
+        printValidationStep(6, "Checking pilot aircraft certification");
+        printValidationStep(7, "Checking engine/model certification");
+        printValidationStep(8, "Checking fuel quantity");
+
+        ConsoleStyle.printInfo("Generating validation report...");
+        pause();
+    }
+
+    private void printValidationStep(final int step, final String description) {
+        ConsoleStyle.printInfo("[" + step + "/8] " + description + "...");
+        pause();
+    }
+
+    private void printFinalTransition(final FlightPlanStatus finalStatus) {
+        ConsoleStyle.printInfo("Validation report generated.");
+        pause();
+        ConsoleStyle.printInfo("Status changed: UNDER_VALIDATION -> " + finalStatus);
+        pause();
+    }
+
+    private void pause() {
+        try {
+            Thread.sleep(VALIDATION_STEP_DELAY_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -100,6 +152,8 @@ public class TestFlightPlanUI {
         if (result.isSuccessful()) {
             ConsoleStyle.printSuccess(result.messages().getFirst());
             ConsoleStyle.printInfo("Status: " + result.status());
+            result.reportIdentifier().ifPresent(reportIdentifier ->
+                    ConsoleStyle.printInfo("Validation report: " + reportIdentifier));
 
             for (int i = 1; i < result.messages().size(); i++) {
                 ConsoleStyle.printInfo(result.messages().get(i));
@@ -109,6 +163,8 @@ public class TestFlightPlanUI {
         }
 
         ConsoleStyle.printWarning("Flight plan validation failed. Current status: " + result.status());
+        result.reportIdentifier().ifPresent(reportIdentifier ->
+                ConsoleStyle.printInfo("Validation report: " + reportIdentifier));
 
         for (String message : result.messages()) {
             ConsoleStyle.printWarning(message);

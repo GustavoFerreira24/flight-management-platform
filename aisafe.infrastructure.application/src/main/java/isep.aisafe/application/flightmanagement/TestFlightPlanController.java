@@ -5,10 +5,16 @@ import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
 import isep.aisafe.flightplan.domain.FlightPlanRepository;
 import isep.aisafe.flightplan.domain.FlightPlanStatus;
+import isep.aisafe.flightplan.domain.FlightPlanTestReport;
+import isep.aisafe.flightplan.domain.FlightPlanTestReportIdentifier;
+import isep.aisafe.flightplan.domain.FlightPlanTestReportRepository;
+import isep.aisafe.flightplan.domain.InMemoryFlightPlanTestReportRepository;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,6 +27,8 @@ public class TestFlightPlanController {
 
     private final AisafeAuthorizationService authz;
     private final FlightPlanRepository flightPlanRepository;
+    private final FlightPlanTestReportRepository flightPlanTestReportRepository;
+    private static final DateTimeFormatter REPORT_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
     /**
      * Creates the controller with production services.
@@ -28,7 +36,8 @@ public class TestFlightPlanController {
     public TestFlightPlanController() {
         this(
                 new AisafeAuthorizationService(),
-                PersistenceContext.repositories().flightPlans()
+                PersistenceContext.repositories().flightPlans(),
+                PersistenceContext.repositories().flightPlanTestReports()
         );
     }
 
@@ -36,10 +45,22 @@ public class TestFlightPlanController {
             final AisafeAuthorizationService authz,
             final FlightPlanRepository flightPlanRepository) {
 
+        this(authz, flightPlanRepository, new InMemoryFlightPlanTestReportRepository());
+    }
+
+    TestFlightPlanController(
+            final AisafeAuthorizationService authz,
+            final FlightPlanRepository flightPlanRepository,
+            final FlightPlanTestReportRepository flightPlanTestReportRepository) {
+
         this.authz = Objects.requireNonNull(authz, "authz cannot be null");
         this.flightPlanRepository = Objects.requireNonNull(
                 flightPlanRepository,
                 "flightPlanRepository cannot be null"
+        );
+        this.flightPlanTestReportRepository = Objects.requireNonNull(
+                flightPlanTestReportRepository,
+                "flightPlanTestReportRepository cannot be null"
         );
     }
 
@@ -87,7 +108,7 @@ public class TestFlightPlanController {
         ensureNotBlank(flightPlanIdentifierText, "Flight plan identifier is required.");
 
         final FlightPlanIdentifier identifier = FlightPlanIdentifier.valueOf(flightPlanIdentifierText);
-        final FlightPlan flightPlan = flightPlanRepository.findByIdentifier(identifier)
+        FlightPlan flightPlan = flightPlanRepository.findByIdentifier(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("Flight plan not found."));
 
         ensureFlightPlanBelongsToAuthenticatedPilot(flightPlan);
@@ -97,17 +118,76 @@ public class TestFlightPlanController {
             return TestFlightPlanResult.failure(flightPlan.status(), stateMessages);
         }
 
+        final FlightPlanStatus initialStatus = flightPlan.status();
+        final String testedBy = authz.authenticatedEmail();
+
+        if (flightPlan.status() == FlightPlanStatus.DRAFT) {
+            flightPlan.markUnderValidation();
+            flightPlan = flightPlanRepository.save(flightPlan);
+        }
+
         final List<String> validationMessages = validateOperationalRules(flightPlan);
         if (!validationMessages.isEmpty()) {
             flightPlan.reject();
             final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
+            final FlightPlanTestReport report = saveReport(
+                    savedFlightPlan,
+                    testedBy,
+                    false,
+                    initialStatus,
+                    validationMessages
+            );
 
-            return TestFlightPlanResult.failure(savedFlightPlan.status(), validationMessages);
+            return TestFlightPlanResult.failure(
+                    savedFlightPlan.status(),
+                    validationMessages,
+                    report.identity().toString()
+            );
         }
 
         flightPlan.validate();
         final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
-        return TestFlightPlanResult.success(savedFlightPlan.status(), successMessages(savedFlightPlan));
+        final List<String> successMessages = successMessages(savedFlightPlan);
+        final FlightPlanTestReport report = saveReport(
+                savedFlightPlan,
+                testedBy,
+                true,
+                initialStatus,
+                successMessages
+        );
+
+        return TestFlightPlanResult.success(
+                savedFlightPlan.status(),
+                successMessages,
+                report.identity().toString()
+        );
+    }
+
+    private FlightPlanTestReport saveReport(
+            final FlightPlan flightPlan,
+            final String testedBy,
+            final boolean successful,
+            final FlightPlanStatus initialStatus,
+            final List<String> messages) {
+
+        final LocalDateTime testedAt = LocalDateTime.now();
+        final FlightPlanTestReport report = new FlightPlanTestReport(
+                FlightPlanTestReportIdentifier.valueOf(reportIdentifier(flightPlan, testedAt)),
+                flightPlan,
+                testedAt,
+                testedBy,
+                successful,
+                initialStatus,
+                FlightPlanStatus.UNDER_VALIDATION,
+                flightPlan.status(),
+                messages
+        );
+
+        return flightPlanTestReportRepository.save(report);
+    }
+
+    private String reportIdentifier(final FlightPlan flightPlan, final LocalDateTime testedAt) {
+        return "FPT-" + flightPlan.identity() + "-" + REPORT_TIMESTAMP_FORMAT.format(testedAt);
     }
 
     private List<String> validateTestState(final FlightPlan flightPlan) {

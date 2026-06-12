@@ -10,6 +10,7 @@ import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.enginemodel.domain.EngineModelRepository;
 import isep.aisafe.flight.domain.FlightRepository;
 import isep.aisafe.flightplan.domain.FlightPlanRepository;
+import isep.aisafe.flightplan.domain.FlightPlanTestReportRepository;
 import isep.aisafe.flightroute.domain.FlightRouteRepository;
 import isep.aisafe.infrastructure.persistence.RepositoryFactory;
 import isep.aisafe.manufacturer.domain.ManufacturerRepository;
@@ -97,6 +98,11 @@ public class JpaRepositoryFactory implements RepositoryFactory {
     @Override
     public FlightPlanRepository flightPlans() {
         return new JpaFlightPlanRepository(Application.settings().persistenceUnitName());
+    }
+
+    @Override
+    public FlightPlanTestReportRepository flightPlanTestReports() {
+        return new JpaFlightPlanTestReportRepository(Application.settings().persistenceUnitName());
     }
 
     @Override

@@ -34,8 +34,11 @@ import isep.aisafe.flight.domain.FlightDesignator;
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
 import isep.aisafe.flightplan.domain.FlightPlanStatus;
+import isep.aisafe.flightplan.domain.FlightPlanTestReport;
+import isep.aisafe.flightplan.domain.FlightPlanTestReportIdentifier;
 import isep.aisafe.flightplan.domain.FuelQuantity;
 import isep.aisafe.flightplan.domain.InMemoryFlightPlanRepository;
+import isep.aisafe.flightplan.domain.InMemoryFlightPlanTestReportRepository;
 import isep.aisafe.flightroute.domain.FlightRoute;
 import isep.aisafe.flightroute.domain.RouteDesignator;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
@@ -45,12 +48,14 @@ import isep.aisafe.pilot.domain.Pilot;
 import isep.aisafe.pilot.domain.PilotID;
 import isep.aisafe.pilot.domain.PilotStatus;
 import isep.aisafe.support.CapturingAuthorizationService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,6 +65,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TestFlightPlanControllerTest {
+
+    @BeforeEach
+    void clearRepositories() {
+        new InMemoryFlightPlanRepository().clear();
+        new InMemoryFlightPlanTestReportRepository().clear();
+    }
 
     @Test
     void ensureExecuteRequiresFlightPlanManagementPermission() {
@@ -79,10 +90,12 @@ class TestFlightPlanControllerTest {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
 
         // Act / Assert
         assertThrows(NullPointerException.class, () -> new TestFlightPlanController(null, repository));
         assertThrows(NullPointerException.class, () -> new TestFlightPlanController(authz, null));
+        assertThrows(NullPointerException.class, () -> new TestFlightPlanController(authz, repository, null));
     }
 
     @Test
@@ -110,9 +123,10 @@ class TestFlightPlanControllerTest {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
         final FlightPlan flightPlan = flightPlan("FP004", "TP126", "CS-TXD", "ABC", "pilot@example.com");
         repository.save(flightPlan);
-        final TestFlightPlanController controller = controller(authz, repository);
+        final TestFlightPlanController controller = controller(authz, repository, reportRepository);
 
         // Act
         final TestFlightPlanResult result = controller.testFlightPlan("FP004");
@@ -128,17 +142,60 @@ class TestFlightPlanControllerTest {
         assertEquals(FlightPlanStatus.VALIDATED, repository.findByIdentifier(FlightPlanIdentifier.valueOf("FP004"))
                 .orElseThrow()
                 .status());
+        assertTrue(result.reportIdentifier().isPresent());
+        final FlightPlanTestReport report = reportRepository.findByIdentifier(
+                FlightPlanTestReportIdentifier.valueOf(result.reportIdentifier().orElseThrow())
+        ).orElseThrow();
+        assertTrue(report.successful());
+        assertEquals(FlightPlanStatus.DRAFT, report.initialStatus());
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.validationStatus());
+        assertEquals(FlightPlanStatus.VALIDATED, report.finalStatus());
+        assertEquals("pilot@example.com", report.testedBy());
+        assertEquals(result.messages(), report.messages());
         assertArrayEquals(AisafePermissions.FLIGHT_PLAN_MANAGEMENT, authz.requestedRoles());
+    }
+
+    @Test
+    void ensureUnderValidationFlightPlanCanBeCompleted() {
+        // Arrange
+        final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
+        final FlightPlan flightPlan = flightPlan("FP011", "TP133", "CS-TXK", "ABC", "pilot@example.com");
+        flightPlan.markUnderValidation();
+        repository.save(flightPlan);
+        final TestFlightPlanController controller = controller(
+                new CapturingAuthorizationService(),
+                repository,
+                reportRepository
+        );
+
+        // Act
+        final TestFlightPlanResult result = controller.testFlightPlan("FP011");
+
+        // Assert
+        assertTrue(result.isSuccessful());
+        assertEquals(FlightPlanStatus.VALIDATED, result.status());
+        final FlightPlanTestReport report = reportRepository.findByIdentifier(
+                FlightPlanTestReportIdentifier.valueOf(result.reportIdentifier().orElseThrow())
+        ).orElseThrow();
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.initialStatus());
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.validationStatus());
+        assertEquals(FlightPlanStatus.VALIDATED, report.finalStatus());
     }
 
     @Test
     void ensureOperationalValidationFailureRejectsFlightPlan() {
         // Arrange
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
         final FlightPlan flightPlan = flightPlan("FP005", "TP127", "CS-TXE", "ABC", "pilot@example.com");
         flightPlan.aircraft().decommission();
         repository.save(flightPlan);
-        final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
+        final TestFlightPlanController controller = controller(
+                new CapturingAuthorizationService(),
+                repository,
+                reportRepository
+        );
 
         // Act
         final TestFlightPlanResult result = controller.testFlightPlan("FP005");
@@ -148,6 +205,14 @@ class TestFlightPlanControllerTest {
         assertEquals(FlightPlanStatus.REJECTED, result.status());
         assertEquals(List.of("Aircraft cannot be used for flights."), result.messages());
         assertEquals(FlightPlanStatus.REJECTED, flightPlan.status());
+        final FlightPlanTestReport report = reportRepository.findByIdentifier(
+                FlightPlanTestReportIdentifier.valueOf(result.reportIdentifier().orElseThrow())
+        ).orElseThrow();
+        assertFalse(report.successful());
+        assertEquals(FlightPlanStatus.DRAFT, report.initialStatus());
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.validationStatus());
+        assertEquals(FlightPlanStatus.REJECTED, report.finalStatus());
+        assertEquals(result.messages(), report.messages());
     }
 
     @Test
@@ -210,6 +275,7 @@ class TestFlightPlanControllerTest {
         assertFalse(result.isSuccessful());
         assertEquals(FlightPlanStatus.VALIDATED, result.status());
         assertEquals(List.of("Flight plan is already validated."), result.messages());
+        assertTrue(result.reportIdentifier().isEmpty());
     }
 
     @Test
@@ -300,6 +366,24 @@ class TestFlightPlanControllerTest {
             final InMemoryFlightPlanRepository repository) {
 
         return new TestFlightPlanController(authz, repository);
+    }
+
+    private TestFlightPlanController controller(
+            final CapturingAuthorizationService authz,
+            final InMemoryFlightPlanRepository repository,
+            final InMemoryFlightPlanTestReportRepository reportRepository) {
+
+        return new TestFlightPlanController(authz, repository, reportRepository);
+    }
+
+    private List<FlightPlanTestReport> reportsFor(
+            final InMemoryFlightPlanTestReportRepository repository,
+            final String flightPlanIdentifier) {
+
+        return StreamSupport.stream(
+                repository.findByFlightPlan(FlightPlanIdentifier.valueOf(flightPlanIdentifier)).spliterator(),
+                false
+        ).toList();
     }
 
     private FlightPlan flightPlan(
