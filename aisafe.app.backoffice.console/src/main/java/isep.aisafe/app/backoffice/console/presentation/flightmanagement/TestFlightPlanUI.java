@@ -4,10 +4,7 @@ import isep.aisafe.app.common.console.ConsoleStyle;
 import isep.aisafe.application.flightmanagement.TestFlightPlanController;
 import isep.aisafe.application.flightmanagement.TestFlightPlanResult;
 import isep.aisafe.flightplan.domain.FlightPlan;
-import isep.aisafe.flightplan.importer.dsl.FlightPlanDslError;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Scanner;
 
@@ -53,16 +50,11 @@ public class TestFlightPlanUI {
             printFlightPlans(flightPlans);
 
             final FlightPlan selectedFlightPlan = selectFlightPlan(flightPlans);
-            final Path dslFile = Path.of(readRequiredText("Flight DSL file path: "));
-
             final TestFlightPlanResult result = controller.testFlightPlan(
-                    selectedFlightPlan.identity().toString(),
-                    dslFile
+                    selectedFlightPlan.identity().toString()
             );
 
             printResult(result);
-        } catch (IOException e) {
-            ConsoleStyle.printError("Could not read Flight DSL file: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             ConsoleStyle.printError(e.getMessage());
         }
@@ -108,6 +100,11 @@ public class TestFlightPlanUI {
         if (result.isSuccessful()) {
             ConsoleStyle.printSuccess(result.messages().getFirst());
             ConsoleStyle.printInfo("Status: " + result.status());
+
+            for (int i = 1; i < result.messages().size(); i++) {
+                ConsoleStyle.printInfo(result.messages().get(i));
+            }
+
             return;
         }
 
@@ -115,13 +112,6 @@ public class TestFlightPlanUI {
 
         for (String message : result.messages()) {
             ConsoleStyle.printWarning(message);
-        }
-
-        for (FlightPlanDslError error : result.dslErrors()) {
-            ConsoleStyle.printWarning(
-                    error.type() + " at line " + error.line() + ", column " + error.column() + ": "
-                            + error.message()
-            );
         }
     }
 

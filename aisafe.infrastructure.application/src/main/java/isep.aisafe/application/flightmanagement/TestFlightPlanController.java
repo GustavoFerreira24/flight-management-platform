@@ -1,19 +1,14 @@
 package isep.aisafe.application.flightmanagement;
 
+import isep.aisafe.aircraftmodel.domain.AircraftModelDesignator;
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
 import isep.aisafe.flightplan.domain.FlightPlanRepository;
 import isep.aisafe.flightplan.domain.FlightPlanStatus;
-import isep.aisafe.flightplan.importer.dsl.DslFlightPlan;
-import isep.aisafe.flightplan.importer.dsl.FlightPlanDslSyntaxValidator;
-import isep.aisafe.flightplan.importer.dsl.FlightPlanParseResult;
 import isep.aisafe.infrastructure.authz.AisafeAuthorizationService;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
 import isep.aisafe.infrastructure.persistence.PersistenceContext;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,7 +21,6 @@ public class TestFlightPlanController {
 
     private final AisafeAuthorizationService authz;
     private final FlightPlanRepository flightPlanRepository;
-    private final FlightPlanDslSyntaxValidator validator;
 
     /**
      * Creates the controller with production services.
@@ -34,22 +28,19 @@ public class TestFlightPlanController {
     public TestFlightPlanController() {
         this(
                 new AisafeAuthorizationService(),
-                PersistenceContext.repositories().flightPlans(),
-                new FlightPlanDslSyntaxValidator()
+                PersistenceContext.repositories().flightPlans()
         );
     }
 
     TestFlightPlanController(
             final AisafeAuthorizationService authz,
-            final FlightPlanRepository flightPlanRepository,
-            final FlightPlanDslSyntaxValidator validator) {
+            final FlightPlanRepository flightPlanRepository) {
 
         this.authz = Objects.requireNonNull(authz, "authz cannot be null");
         this.flightPlanRepository = Objects.requireNonNull(
                 flightPlanRepository,
                 "flightPlanRepository cannot be null"
         );
-        this.validator = Objects.requireNonNull(validator, "validator cannot be null");
     }
 
     /**
@@ -85,20 +76,15 @@ public class TestFlightPlanController {
     }
 
     /**
-     * Tests an existing flight plan against the Flight DSL description in the given file.
+     * Tests an existing flight plan using the persisted domain data needed by the simulation.
      *
      * @param flightPlanIdentifierText selected flight plan identifier
-     * @param dslFile Flight DSL file describing the planned flight
      * @return test result with success or validation messages
-     * @throws IOException when the DSL file cannot be read
      */
-    public TestFlightPlanResult testFlightPlan(
-            final String flightPlanIdentifierText,
-            final Path dslFile) throws IOException {
+    public TestFlightPlanResult testFlightPlan(final String flightPlanIdentifierText) {
 
         authz.ensureAuthenticatedUserHasAnyOf(AisafePermissions.FLIGHT_PLAN_MANAGEMENT);
         ensureNotBlank(flightPlanIdentifierText, "Flight plan identifier is required.");
-        ensureReadableFile(dslFile);
 
         final FlightPlanIdentifier identifier = FlightPlanIdentifier.valueOf(flightPlanIdentifierText);
         final FlightPlan flightPlan = flightPlanRepository.findByIdentifier(identifier)
@@ -111,19 +97,7 @@ public class TestFlightPlanController {
             return TestFlightPlanResult.failure(flightPlan.status(), stateMessages);
         }
 
-        final FlightPlanParseResult parseResult = validator.validate(dslFile);
-        if (!parseResult.isValid()) {
-            flightPlan.reject();
-            final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
-
-            return TestFlightPlanResult.failure(
-                    savedFlightPlan.status(),
-                    List.of("Flight DSL validation failed."),
-                    parseResult.errors()
-            );
-        }
-
-        final List<String> validationMessages = validateAgainstDsl(flightPlan, parseResult.flightPlans());
+        final List<String> validationMessages = validateOperationalRules(flightPlan);
         if (!validationMessages.isEmpty()) {
             flightPlan.reject();
             final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
@@ -133,7 +107,7 @@ public class TestFlightPlanController {
 
         flightPlan.validate();
         final FlightPlan savedFlightPlan = flightPlanRepository.save(flightPlan);
-        return TestFlightPlanResult.success(savedFlightPlan.status());
+        return TestFlightPlanResult.success(savedFlightPlan.status(), successMessages(savedFlightPlan));
     }
 
     private List<String> validateTestState(final FlightPlan flightPlan) {
@@ -152,32 +126,73 @@ public class TestFlightPlanController {
         return List.of();
     }
 
-    private List<String> validateAgainstDsl(
-            final FlightPlan flightPlan,
-            final List<DslFlightPlan> dslFlightPlans) {
-
-        final String flightDesignator = flightPlan.flightDesignator();
-        final DslFlightPlan matchingPlan = dslFlightPlans.stream()
-                .filter(plan -> plan.identifier().equalsIgnoreCase(flightDesignator))
-                .findFirst()
-                .orElse(null);
-
-        if (matchingPlan == null) {
-            return List.of("Flight DSL file does not describe flight " + flightDesignator + ".");
-        }
-
+    private List<String> validateOperationalRules(final FlightPlan flightPlan) {
         final List<String> messages = new ArrayList<>();
 
-        matchingPlan.aircraftRegistration()
-                .filter(registration -> !registration.equalsIgnoreCase(flightPlan.aircraftRegistration()))
-                .ifPresent(registration -> messages.add("Flight DSL aircraft does not match the selected flight plan."));
+        if (!flightPlan.flight().route().isActive()) {
+            messages.add("Flight route is not active.");
+        }
 
-        matchingPlan.pilotIdentifier()
-                .filter(pilot -> !pilot.equalsIgnoreCase(flightPlan.pilotIdentifier()))
-                .ifPresent(pilot -> messages.add("Flight DSL pilot does not match the selected flight plan."));
+        if (!flightPlan.aircraft().canBeUsedForFlights()) {
+            messages.add("Aircraft cannot be used for flights.");
+        }
+
+        if (!flightPlan.aircraft().company().sameAs(flightPlan.flight().route().company())) {
+            messages.add("Aircraft does not belong to the route's air transport company.");
+        }
+
+        if (!flightPlan.pilot().pilotStatus().isValid()) {
+            messages.add("Pilot is not active.");
+        }
+
+        if (!flightPlan.pilot().companyIATACode().equals(flightPlan.flight().route().company().iataCode())) {
+            messages.add("Pilot does not belong to the route's air transport company.");
+        }
+
+        if (!pilotCertifiedForAircraftModel(flightPlan)) {
+            messages.add("Pilot is not certified for the aircraft model.");
+        }
+
+        if (!flightPlan.aircraft().aircraftModel().hasCertifiedEngineModel(flightPlan.aircraft().engineModel())) {
+            messages.add("Aircraft engine model is not certified for the aircraft model.");
+        }
 
         if (flightPlan.fuelQuantity().amount() <= 0) {
             messages.add("Flight plan fuel quantity must be greater than zero.");
+        }
+
+        return messages;
+    }
+
+    private boolean pilotCertifiedForAircraftModel(final FlightPlan flightPlan) {
+        final String aircraftModelDesignator = flightPlan.aircraft().aircraftModel().designator().toString();
+        final String aircraftModelName = aircraftModelDesignator.split("\\|", 2)[0].trim();
+
+        for (AircraftModelDesignator certifiedModel : flightPlan.pilot().certifiedAircraftModelsDesignators()) {
+            final String certifiedDesignator = certifiedModel.toString();
+            final String certifiedModelName = certifiedDesignator.split("\\|", 2)[0].trim();
+
+            if (certifiedDesignator.equalsIgnoreCase(aircraftModelDesignator)
+                    || certifiedModelName.equalsIgnoreCase(aircraftModelName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private List<String> successMessages(final FlightPlan flightPlan) {
+        final List<String> messages = new ArrayList<>();
+
+        messages.add("Flight plan validated successfully.");
+        messages.add("Flight: " + flightPlan.flightDesignator());
+        messages.add("Aircraft: " + flightPlan.aircraftRegistration());
+        messages.add("Pilot: " + flightPlan.pilotIdentifier());
+        messages.add("Fuel: " + flightPlan.fuelQuantity());
+        messages.add("Weather data records associated: " + flightPlan.weatherDataCount());
+
+        if (!flightPlan.hasWeatherData()) {
+            messages.add("No persisted weather data is associated; standard no-weather assumptions were used.");
         }
 
         return messages;
@@ -199,16 +214,6 @@ public class TestFlightPlanController {
     private void ensureNotBlank(final String value, final String message) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(message);
-        }
-    }
-
-    private void ensureReadableFile(final Path file) {
-        if (file == null) {
-            throw new IllegalArgumentException("Flight DSL file is required.");
-        }
-
-        if (!Files.isRegularFile(file) || !Files.isReadable(file)) {
-            throw new IllegalArgumentException("Flight DSL file must exist and be readable.");
         }
     }
 }

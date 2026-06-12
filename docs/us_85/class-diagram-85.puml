@@ -10,68 +10,83 @@ class TestFlightPlanUI {
 class TestFlightPlanController {
     - authz : AisafeAuthorizationService
     - flightPlanRepository : FlightPlanRepository
-    - validator : FlightPlanDslSyntaxValidator
     + execute() : void
-    + testFlightPlan(flightPlanIdentifierText : String, dslFile : Path) : TestFlightPlanResult
+    + authenticatedPilotFlightPlans() : List<FlightPlan>
+    + testFlightPlan(flightPlanIdentifierText : String) : TestFlightPlanResult
 }
 
 class TestFlightPlanResult {
     - successful : boolean
-    - testStatus : FlightPlanTestStatus
+    - status : FlightPlanStatus
     - messages : List<String>
-    - dslErrors : List<FlightPlanDslError>
     + isSuccessful() : boolean
-    + testStatus() : FlightPlanTestStatus
+    + status() : FlightPlanStatus
     + messages() : List<String>
-    + dslErrors() : List<FlightPlanDslError>
 }
 
 interface FlightPlanRepository {
+    + findAll() : Iterable<FlightPlan>
     + findByIdentifier(identifier : FlightPlanIdentifier) : Optional<FlightPlan>
     + save(flightPlan : FlightPlan) : FlightPlan
 }
 
 class FlightPlan {
-    - testStatus : FlightPlanTestStatus
+    - status : FlightPlanStatus
     + identity() : FlightPlanIdentifier
+    + flight() : Flight
     + flightDesignator() : String
+    + aircraft() : Aircraft
     + aircraftRegistration() : String
+    + pilot() : Pilot
     + pilotIdentifier() : String
-    + markTested() : void
-    + testStatus() : FlightPlanTestStatus
+    + fuelQuantity() : FuelQuantity
+    + weatherDataCount() : int
+    + hasWeatherData() : boolean
+    + canBeTested() : boolean
+    + validate() : void
+    + reject() : void
+    + status() : FlightPlanStatus
 }
 
-enum FlightPlanTestStatus {
-    NOT_TESTED
-    TESTED
-    VOID
+enum FlightPlanStatus {
+    DRAFT
+    UNDER_VALIDATION
+    VALIDATED
+    REJECTED
 }
 
-class FlightPlanDslSyntaxValidator {
-    + validate(file : Path) : FlightPlanParseResult
+class Flight {
+    + route() : FlightRoute
 }
 
-class FlightPlanParseResult {
-    + isValid() : boolean
-    + errors() : List<FlightPlanDslError>
-    + flightPlans() : List<DslFlightPlan>
+class FlightRoute {
+    + isActive() : boolean
+    + company() : AirTransportCompany
 }
 
-class DslFlightPlan {
-    + identifier() : String
-    + aircraftRegistration() : Optional<String>
-    + pilotIdentifier() : Optional<String>
+class Aircraft {
+    + canBeUsedForFlights() : boolean
+    + company() : AirTransportCompany
+    + aircraftModel() : AircraftModel
+    + engineModel() : EngineModel
+}
+
+class Pilot {
+    + pilotStatus() : PilotStatus
+    + companyIATACode() : IATACode
+    + certifiedAircraftModelsDesignators() : Set<AircraftModelDesignator>
+    + email() : EmailAddress
 }
 
 TestFlightPlanUI --> TestFlightPlanController
 TestFlightPlanController --> AisafeAuthorizationService
 TestFlightPlanController --> FlightPlanRepository
-TestFlightPlanController --> FlightPlanDslSyntaxValidator
 TestFlightPlanController --> TestFlightPlanResult
 FlightPlanRepository --> FlightPlan
-FlightPlan --> FlightPlanTestStatus
-FlightPlanDslSyntaxValidator --> FlightPlanParseResult
-FlightPlanParseResult --> DslFlightPlan
-TestFlightPlanResult --> FlightPlanTestStatus
+FlightPlan --> FlightPlanStatus
+FlightPlan --> Flight
+FlightPlan --> Aircraft
+FlightPlan --> Pilot
+Flight --> FlightRoute
 
 @enduml
