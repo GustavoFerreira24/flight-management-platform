@@ -1,0 +1,124 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class RegisterFlightRouteUI <<UI>> {
+    - controller : RegisterFlightRouteController
+    - scanner : Scanner
+    + show() : void
+    - printAvailableAirports() : void
+    - readRouteDesignator() : String
+    - readAirportIcao(prompt : String) : String
+    - readRequiredText(prompt : String, errorMessage : String) : String
+}
+
+class RegisterFlightRouteController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - flightRouteRepository : FlightRouteRepository
+    - airportRepository : AirportRepository
+    - airTransportCompanyRepository : AirTransportCompanyRepository
+    - customerCollaboratorRepository : CustomerCollaboratorRepository
+    + registerFlightRoute(routeDesignatorText : String, departureAirportIcaoText : String, destinationAirportIcaoText : String) : FlightRoute
+    + registerFlightRoute(routeDesignatorText : String, routeTypeText : String, departureAirportIcaoText : String, destinationAirportIcaoText : String) : FlightRoute
+    + routeDesignatorExists(routeDesignatorText : String) : boolean
+    + airportOptions() : List<String>
+    - airportByIcao(airportIcaoText : String, notFoundMessage : String) : Airport
+    - authenticatedCollaboratorCompany() : AirTransportCompany
+}
+
+interface FlightRouteRepository <<Repository>> {
+    + findByRouteDesignator(routeDesignator : RouteDesignator) : Optional<FlightRoute>
+    + save(entity : FlightRoute) : FlightRoute
+    + findAll() : Iterable<FlightRoute>
+}
+
+interface AirportRepository <<Repository>> {
+    + findByIcaoCode(icaoCode : AirportICAOCode) : Optional<Airport>
+    + findAll() : Iterable<Airport>
+}
+
+interface CustomerCollaboratorRepository <<Repository>> {
+    + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
+}
+
+interface AirTransportCompanyRepository <<Repository>>
+
+class InMemoryFlightRouteRepository <<Repository>>
+class JpaFlightRouteRepository <<Repository>>
+
+class FlightRoute <<Aggregate Root>> {
+    - routeDesignator : RouteDesignator
+    - routeType : FlightRouteType
+    - company : AirTransportCompany
+    - departureAirport : Airport
+    - destinationAirport : Airport
+    - status : FlightRouteStatus
+    + routeDesignator() : RouteDesignator
+    + routeType() : FlightRouteType
+    + company() : AirTransportCompany
+    + departureAirport() : Airport
+    + destinationAirport() : Airport
+    + status() : FlightRouteStatus
+}
+
+class RouteDesignator <<Value Object>> {
+    + valueOf(value : String) : RouteDesignator
+}
+
+class FlightRouteType <<Value Object>> {
+    + regular() : FlightRouteType
+    + valueOf(value : String) : FlightRouteType
+}
+
+enum FlightRouteStatus {
+    ACTIVE
+    INACTIVE
+}
+
+class Airport <<Aggregate Root>>
+class AirportICAOCode <<Value Object>>
+class AirTransportCompany <<Aggregate Root>>
+class CustomerCollaborator <<Aggregate Root>> {
+    + isAssociatedWithAirTransportCompany() : boolean
+    + airTransportCompany() : AirTransportCompany
+}
+class SystemUsername <<Value Object>>
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+    + authenticatedUsername() : String
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} AIR_COMPANY_CONFIGURATION : Role[]
+}
+
+RegisterFlightRouteUI --> RegisterFlightRouteController
+
+RegisterFlightRouteController --> AisafeAuthorizationService
+RegisterFlightRouteController --> AisafePermissions
+RegisterFlightRouteController --> FlightRouteRepository
+RegisterFlightRouteController --> AirportRepository
+RegisterFlightRouteController --> CustomerCollaboratorRepository
+RegisterFlightRouteController --> AirTransportCompanyRepository
+RegisterFlightRouteController --> FlightRoute
+RegisterFlightRouteController --> RouteDesignator
+RegisterFlightRouteController --> FlightRouteType
+RegisterFlightRouteController --> AirportICAOCode
+RegisterFlightRouteController --> SystemUsername
+
+FlightRouteRepository --> FlightRoute
+InMemoryFlightRouteRepository ..|> FlightRouteRepository
+JpaFlightRouteRepository ..|> FlightRouteRepository
+AirportRepository --> Airport
+CustomerCollaboratorRepository --> CustomerCollaborator
+
+FlightRoute *-- RouteDesignator
+FlightRoute *-- FlightRouteType
+FlightRoute *-- FlightRouteStatus
+FlightRoute --> AirTransportCompany
+FlightRoute --> Airport : departure
+FlightRoute --> Airport : destination
+CustomerCollaborator --> AirTransportCompany
+
+@enduml
