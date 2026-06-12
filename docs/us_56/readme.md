@@ -4,7 +4,7 @@
 
 This user story was developed for the Backoffice configuration area. The goal is to allow a Backoffice Operator to register engine models that can later be certified for aircraft models.
 
-The implementation follows the same DDD approach used across the project: `EngineModel` is the aggregate root, with identity and classifications represented by value objects.
+The implementation follows the same DDD approach used across the project: `EngineModel` is the aggregate root, with identity and classifications represented by value objects, and the model references an existing `Manufacturer` aggregate.
 
 ### 1.1 List of issues
 
@@ -48,7 +48,7 @@ This requirement supports US055 because aircraft models must select existing cer
 
 ## 3. Analysis
 
-An engine model is identified by the combination of model name and manufacturer. This identity is represented by `EngineModelDesignator`, which normalizes the value and is used by repositories for uniqueness checks.
+An engine model is identified by the combination of model name and manufacturer. This identity is represented by `EngineModelDesignator`, which normalizes the value and is used by repositories for uniqueness checks. The manufacturer itself is an existing `Manufacturer` aggregate loaded by the controller before the engine model is created.
 
 The aggregate stores the engine technical characteristics needed by later aircraft model certification and flight simulation work:
 
@@ -61,6 +61,7 @@ The aggregate stores the engine technical characteristics needed by later aircra
 The domain model enforces the following invariants:
 
 - Engine model designator cannot be null or empty.
+- The selected manufacturer must exist and be classified as an engine manufacturer.
 - Engine type cannot be null or empty.
 - Fuel type cannot be null or empty.
 - Power must be greater than zero.
@@ -74,9 +75,9 @@ The domain model enforces the following invariants:
 
 ![US56 class diagram](class-diagram-56.svg "US56 Class Diagram")
 
-The `RegisterEngineModelUI` collects the data needed to register an engine model. The UI presents selection lists for manufacturer, engine type and fuel type, while still allowing `OTHER` for manufacturers when needed.
+The `RegisterEngineModelUI` collects the data needed to register an engine model. The UI presents selection lists for registered engine manufacturers, engine type and fuel type.
 
-The `RegisterEngineModelController` authorizes the operation, builds the `EngineModelDesignator`, checks repository uniqueness, creates the `EngineModel` aggregate and persists it through `EngineModelRepository`.
+The `RegisterEngineModelController` authorizes the operation, loads the selected manufacturer from `ManufacturerRepository`, builds the `EngineModelDesignator`, checks repository uniqueness, creates the `EngineModel` aggregate and persists it through `EngineModelRepository`.
 
 ### 4.2. Acceptance Tests
 
@@ -118,6 +119,8 @@ Main implementation artifacts:
 - `EngineModelDesignator`: value object for model identity based on model name and manufacturer.
 - `EngineType`: value object for the engine type classification.
 - `FuelType`: value object for the supported fuel type.
+- `Manufacturer`: aggregate root referenced by the engine model as its maker.
+- `ManufacturerRepository`: repository used to load existing engine manufacturers.
 - `EngineModelRepository`: repository abstraction used to enforce uniqueness.
 - `InMemoryEngineModelRepository`: in-memory repository used by tests and memory persistence mode.
 - `JpaEngineModelRepository`: JPA repository implementation.
@@ -148,8 +151,8 @@ Then select:
 3 - Register Engine Model (US56)
 ```
 
-The UI guides the operator through fixed choices for manufacturer, engine type and fuel type, then asks for power, thrust and TSFC.
+The UI guides the operator through registered engine manufacturers and fixed choices for engine type and fuel type, then asks for power, thrust and TSFC.
 
 ## 7. Observations
 
-Manufacturer is currently represented as text in the engine model designator because the manufacturer aggregate/repository is not yet integrated into this registration flow. The UI provides common engine manufacturers to reduce input errors while preserving flexibility through `OTHER`.
+Manufacturer is represented by its own aggregate and must exist before an engine model can reference it. The bootstrap creates common engine manufacturers used in the demonstration dataset.

@@ -1,0 +1,61 @@
+@startuml
+title US111 - Generate a Simulation Report Scenario
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "Flight Control Operator" as FCO
+boundary ":GenerateSimulationReportUI" as UI
+control ":GenerateSimulationReportController" as C
+participant "authz\n:AisafeAuthorizationService" as Authz
+control ":SimulationReportGenerator" as Generator
+control ":SimulationReportRenderer" as Renderer
+control ":SimulationReportFileWriter" as Writer
+participant "report\n:SimulationReport" as Report
+participant "reportFile\n:Path" as ReportFile
+
+FCO -> UI : request simulation report generation
+UI -> FCO : ask simulation identifier and validation result
+FCO -> UI : submit simulation metadata
+UI -> FCO : ask simulated flight results
+FCO -> UI : submit flight identifiers and statuses
+UI -> FCO : ask safety violations
+FCO -> UI : submit violation timestamp, position and description
+UI -> FCO : ask output directory
+FCO -> UI : submit output directory or default
+
+UI -> C : generateSimulationReportFile(simulationId, passedValidation,\nflightResults, safetyViolations, outputDirectory)
+C -> Authz : ensureAuthenticatedUserHasAnyOf(FLIGHT_CONTROL)
+Authz --> C : authorized
+
+C -> Generator : generate(simulationId, passedValidation,\nflightResults, safetyViolations, generatedAt)
+Generator -> Generator : collect flight results
+Generator -> Generator : collect safety violations
+Generator -> Report ++ : create(simulationId, generatedAt,\npassedValidation, flightResults, safetyViolations)
+
+alt safety violations exist and validation is PASS
+    Report --> Generator : IllegalArgumentException("A simulation with safety violations cannot pass validation.")
+    Generator --> C : validation error
+    C --> UI : validation error
+    UI --> FCO : show error message
+else report data is consistent
+    Report --> Generator : report
+    Generator --> C : report
+
+    C -> Renderer : render(report)
+    Renderer --> C : plain text report
+
+    C -> Writer : write(report, renderedReport, outputDirectory)
+    Writer -> Writer : create output directory if needed
+    Writer -> Writer : build safe filename
+    Writer -> ReportFile ++ : write UTF-8 report file
+    ReportFile --> Writer : created file path
+    Writer --> C : report file path
+    C --> UI : report file path
+    UI --> FCO : show saved report path
+end
+
+@enduml

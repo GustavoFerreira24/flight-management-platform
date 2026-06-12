@@ -12,6 +12,7 @@ class RegisterEngineModelController <<Controller>> {
 
 class EngineModel <<Aggregate Root>> {
     - designator : EngineModelDesignator
+    - manufacturer : Manufacturer
     - engineType : EngineType
     - fuelType : FuelType
     - power : double
@@ -26,14 +27,26 @@ class EngineModelDesignator <<Value Object>> {
 
 class EngineType <<Value Object>>
 class FuelType <<Value Object>>
+class Manufacturer <<Aggregate Root>> {
+    - designator : ManufacturerDesignator
+    - type : ManufacturerType
+    + canManufactureEngineModels() : boolean
+}
+class ManufacturerDesignator <<Value Object>>
+class ManufacturerType <<Value Object>>
 interface EngineModelRepository
+interface ManufacturerRepository
 
 RegisterEngineModelUI --> RegisterEngineModelController
 RegisterEngineModelController --> EngineModelRepository
+RegisterEngineModelController --> ManufacturerRepository
 RegisterEngineModelController --> EngineModel
 
 EngineModel *-- EngineModelDesignator
+EngineModel --> Manufacturer
 EngineModel *-- EngineType
 EngineModel *-- FuelType
+Manufacturer *-- ManufacturerDesignator
+Manufacturer *-- ManufacturerType
 
 @enduml

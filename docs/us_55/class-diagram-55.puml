@@ -13,6 +13,7 @@ class ManageAircraftModelController <<Controller>> {
 
 class AircraftModel <<Aggregate Root>> {
     - designator : AircraftModelDesignator
+    - manufacturer : Manufacturer
     - type : AircraftModelType
     - motorization : AircraftModelMotorization
     - passengerCapacity : int
@@ -35,20 +36,32 @@ class AircraftModelMotorization <<Value Object>> {
 
 class EngineModel <<Aggregate Root>>
 class EngineModelDesignator <<Value Object>>
+class Manufacturer <<Aggregate Root>> {
+    - designator : ManufacturerDesignator
+    - type : ManufacturerType
+    + canManufactureAircraftModels() : boolean
+}
+class ManufacturerDesignator <<Value Object>>
+class ManufacturerType <<Value Object>>
 
 interface AircraftModelRepository
 interface EngineModelRepository
+interface ManufacturerRepository
 
 RegisterAircraftModelUI --> ManageAircraftModelController
 ManageAircraftModelController --> AircraftModelRepository
 ManageAircraftModelController --> EngineModelRepository
+ManageAircraftModelController --> ManufacturerRepository
 ManageAircraftModelController --> AircraftModel
 
 AircraftModel *-- AircraftModelDesignator
+AircraftModel --> Manufacturer
 AircraftModel *-- AircraftModelType
 AircraftModel *-- AircraftModelMotorization
 AircraftModel *-- "1..*" AircraftVariant
 AircraftVariant --> EngineModel
 EngineModel *-- EngineModelDesignator
+Manufacturer *-- ManufacturerDesignator
+Manufacturer *-- ManufacturerType
 
 @enduml

@@ -4,7 +4,7 @@
 
 This user story was developed for the Backoffice configuration area. The goal is to allow a Backoffice Operator to register aircraft models with their technical characteristics and at least one certified engine model.
 
-The implementation follows the existing DDD approach in the project: `AircraftModel` is the aggregate root, model identity and characteristics are represented by value objects, and certified engine configurations are represented as internal `AircraftVariant` entities.
+The implementation follows the existing DDD approach in the project: `AircraftModel` is the aggregate root, model identity and characteristics are represented by value objects, the model references an existing `Manufacturer` aggregate, and certified engine configurations are represented as internal `AircraftVariant` entities.
 
 ### 1.1 List of issues
 
@@ -49,13 +49,14 @@ This requirement depends on US056 because aircraft models reference existing eng
 
 ## 3. Analysis
 
-The aircraft model is domain-relevant because it defines the general flight characteristics used later by aircraft registration, flight planning and simulation. The combination of model name and manufacturer is represented by `AircraftModelDesignator`, which normalizes the identity and supports uniqueness checks through the repository.
+The aircraft model is domain-relevant because it defines the general flight characteristics used later by aircraft registration, flight planning and simulation. The combination of model name and manufacturer is represented by `AircraftModelDesignator`, which normalizes the identity and supports uniqueness checks through the repository. The manufacturer itself is an existing `Manufacturer` aggregate loaded by the controller before the model is created.
 
 The requirement states that each aircraft model must have at least one certified engine model. Instead of storing raw engine identifiers inside the aggregate, the implementation creates `AircraftVariant` entities from existing `EngineModel` aggregates. This keeps the aircraft model aggregate responsible for controlling certified configurations.
 
 Important invariants are enforced inside the domain model:
 
 - An aircraft model cannot be created without a designator, type or motorization.
+- The selected manufacturer must exist and be classified as an aircraft manufacturer.
 - Numeric flight characteristics must be positive.
 - Passenger capacity must be positive.
 - At least one certified engine model is required.
@@ -68,9 +69,9 @@ Important invariants are enforced inside the domain model:
 
 ![US55 class diagram](class-diagram-55.svg "US55 Class Diagram")
 
-The `RegisterAircraftModelUI` collects operator input and presents selection lists for manufacturer, aircraft type, motorization and compatible engine models. The UI delegates registration to `ManageAircraftModelController`.
+The `RegisterAircraftModelUI` collects operator input and presents selection lists for registered aircraft manufacturers, aircraft type, motorization and compatible engine models. The UI delegates registration to `ManageAircraftModelController`.
 
-The controller authorizes the operation, validates uniqueness using `AircraftModelRepository`, loads certified engines from `EngineModelRepository`, and creates the `AircraftModel` aggregate. The aggregate then enforces its internal invariants and creates `AircraftVariant` entities for the certified engines.
+The controller authorizes the operation, validates uniqueness using `AircraftModelRepository`, loads the selected manufacturer from `ManufacturerRepository`, loads certified engines from `EngineModelRepository`, and creates the `AircraftModel` aggregate. The aggregate then enforces its internal invariants and creates `AircraftVariant` entities for the certified engines.
 
 ### 4.2. Acceptance Tests
 
@@ -114,6 +115,8 @@ Main implementation artifacts:
 - `AircraftModelType`: value object for model type.
 - `AircraftModelMotorization`: value object for motorization and compatibility checks.
 - `AircraftModelRepository`: repository abstraction used to enforce uniqueness.
+- `Manufacturer`: aggregate root referenced by the aircraft model as its maker.
+- `ManufacturerRepository`: repository used to load existing aircraft manufacturers.
 - `ManageAircraftModelController`: application service/controller for registration and compatible engine listing.
 - `RegisterAircraftModelUI`: Backoffice console UI.
 - `AisafeBootstrapper`: creates initial aircraft model data.
@@ -138,11 +141,11 @@ Password: Password1
 Then select:
 
 ```text
-2 - Register Aircraft Model (US55)
+1 - Register Aircraft Model (US55)
 ```
 
-The UI guides the operator through fixed choices for manufacturer, type and motorization, then lists compatible certified engine models to select by number.
+The UI guides the operator through registered aircraft manufacturers, fixed choices for type and motorization, then lists compatible certified engine models to select by number.
 
 ## 7. Observations
 
-Manufacturer is currently represented as text in the model designator because the manufacturer aggregate/repository is not yet implemented for this flow. The UI mitigates this by presenting common manufacturers while still allowing `OTHER` when needed.
+Manufacturer is represented by its own aggregate and must exist before an aircraft model can reference it. The bootstrap creates common manufacturers used in the demonstration dataset.
