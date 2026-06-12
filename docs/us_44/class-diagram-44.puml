@@ -1,0 +1,75 @@
+@startuml
+title US44 - Weather Person Remote Access Class Diagram
+
+skinparam classAttributeIconSize 0
+
+class WeatherRemoteAccessController <<Controller>> {
+    - credentialHandler : CredentialHandler
+    - authz : AisafeAuthorizationService
+    - operations : WeatherRemoteOperations
+    - authenticated : boolean
+    - username : String
+    + handle(line : String) : RemoteAccessResponse
+    + isAuthenticated() : boolean
+    + username() : String
+}
+
+interface WeatherRemoteOperations {
+    + registerWeatherData(day, areaCode, providerName, providerType, parameter, value, unit, altitude, latitude, longitude) : String
+    + importBulkWeatherData(serverFilePath : String) : String
+    + consultWeatherData(day : String, airControlAreaCode : String) : String
+}
+
+class ControllerWeatherRemoteOperations <<Adapter>> {
+    - registerWeatherDataController : RegisterWeatherDataController
+    - importBulkWeatherDataController : ImportBulkWeatherDataController
+    - consultWeatherDataController : ConsultWeatherDataController
+    + registerWeatherData(...) : String
+    + importBulkWeatherData(serverFilePath : String) : String
+    + consultWeatherData(day : String, airControlAreaCode : String) : String
+}
+
+class RemoteAccessRequest <<Value Object>> {
+    + parse(line : String) : RemoteAccessRequest
+    + command() : String
+    + argument(index : int) : String
+    + argumentCount() : int
+}
+
+class RemoteAccessResponse <<DTO>> {
+    + ok(payload : String) : RemoteAccessResponse
+    + error(payload : String) : RemoteAccessResponse
+    + data(payload : String) : RemoteAccessResponse
+    + encode() : String
+}
+
+interface CredentialHandler {
+    + authWithCredentialData(identity : String, password : String) : boolean
+}
+
+class AuthenticationCredentialHandler
+class AisafeAuthorizationService
+class AisafePermissions
+
+class RegisterWeatherDataController <<Controller>>
+class ImportBulkWeatherDataController <<Controller>>
+class ConsultWeatherDataController <<Controller>>
+class WeatherData <<Aggregate>>
+class BulkWeatherImportResult <<DTO>>
+
+WeatherRemoteAccessController --> CredentialHandler
+AuthenticationCredentialHandler ..|> CredentialHandler
+WeatherRemoteAccessController --> AisafeAuthorizationService
+WeatherRemoteAccessController --> AisafePermissions
+WeatherRemoteAccessController --> RemoteAccessRequest
+WeatherRemoteAccessController --> RemoteAccessResponse
+WeatherRemoteAccessController --> WeatherRemoteOperations
+
+ControllerWeatherRemoteOperations ..|> WeatherRemoteOperations
+ControllerWeatherRemoteOperations --> RegisterWeatherDataController
+ControllerWeatherRemoteOperations --> ImportBulkWeatherDataController
+ControllerWeatherRemoteOperations --> ConsultWeatherDataController
+ControllerWeatherRemoteOperations --> WeatherData
+ControllerWeatherRemoteOperations --> BulkWeatherImportResult
+
+@enduml
