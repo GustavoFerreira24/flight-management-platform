@@ -78,13 +78,14 @@ The `InsertWeatherDataInFlightPlanController` coordinates the use case:
 
 ### 4.3. Test Invalidation Rule
 
-`FlightPlan` has a `FlightPlanTestStatus` with three values:
+`FlightPlan` uses the current `FlightPlanStatus` lifecycle:
 
-- `NOT_TESTED`;
-- `TESTED`;
-- `VOID`.
+- `DRAFT`;
+- `UNDER_VALIDATION`;
+- `VALIDATED`;
+- `REJECTED`.
 
-When new weather data is associated with a previously tested flight plan, `FlightPlan.addWeatherData(...)` changes the status from `TESTED` to `VOID`. This rule is kept in the domain aggregate so it is enforced regardless of the application entry point.
+When new weather data is associated with a previously validated or rejected flight plan, `FlightPlan.addWeatherData(...)` changes the status back to `DRAFT`. This makes the previous validation result obsolete because the flight plan data changed. This rule is kept in the domain aggregate so it is enforced regardless of the application entry point.
 
 If the same weather data is already associated, the flight plan is not changed and the status is not invalidated again.
 
@@ -139,7 +140,7 @@ Main implementation artifacts:
 - `FlightPlan`: aggregate root that stores the flight plan identifier, flight, aircraft, pilot, fuel quantity, associated weather data ids and test status.
 - `FlightPlanIdentifier`: value object for flight plan identity.
 - `Pilot`/`PilotID`: owning pilot aggregate and identifier used for ownership validation.
-- `FlightPlanTestStatus`: enum representing `NOT_TESTED`, `TESTED` and `VOID`.
+- `FlightPlanStatus`: enum representing `DRAFT`, `UNDER_VALIDATION`, `VALIDATED` and `REJECTED`.
 - `FlightPlanRepository`: repository abstraction for flight plan aggregates.
 - `InMemoryFlightPlanRepository`: in-memory repository used by tests.
 - `JpaFlightPlanRepository`: production repository used through `PersistenceContext.repositories().flightPlans()`.

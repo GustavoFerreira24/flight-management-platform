@@ -34,6 +34,11 @@ The Pilot user stories currently documented and implemented in EAPLI are:
 
 For that reason, the EAPLI command set is intentionally limited to those operations.
 
+The backoffice console also exposes these pilot operations in the Flight Plan Management Console, so the EAPLI side can be demonstrated without the RCOMP TCP transport:
+
+- `Consult Weather Data (US43)`
+- `Insert Weather Data in Flight Plan (US82/US86)`
+
 ## 4. Protocol Draft
 
 The protocol reuses the same line-based style as US78:
@@ -69,6 +74,7 @@ Main classes:
 - `ControllerPilotRemoteOperations`: production adapter that delegates to existing EAPLI controllers.
 - `RemoteAccessRequest`: parses protocol lines.
 - `RemoteAccessResponse`: represents `OK`, `ERROR` and `DATA` responses.
+- `InsertWeatherDataInFlightPlanUI`: EAPLI console UI for the pilot weather-data insertion operation.
 
 Diagrams:
 
