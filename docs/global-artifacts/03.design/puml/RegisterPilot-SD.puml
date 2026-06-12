@@ -1,5 +1,5 @@
 @startuml
-title US11 - Pilot Aggregate Scenario: Activate Pilot with Valid Certification
+title Pilot Aggregate Scenario: Register a Pilot as a System´s User
 
 skinparam monochrome true
 skinparam packageStyle rectangle
@@ -7,7 +7,7 @@ skinparam shadowing false
 
 autonumber
 
-actor "ATC Collaborator" as ATC
+actor "Backoffice" as ATC
 boundary ":RegisterPilotUI" as UI
 control ":RegisterPilotController" as C
 
@@ -86,26 +86,11 @@ Cert -> C : returns certification
 C -> Status : PilotStatus(certification)
 Status -> C : pilotStatus
 
-C -> SU : valueOf(authz.authenticatedUsername())
-SU -> C : collaboratorUsername
-
-C -> CCRepo : findBySystemUsername(SystemUsername)
-CCRepo -> C : collaborator
-
-C -> CC : isAssociatedWithAirTransportCompany()
-CC -> C : returns if collaborator is associated with air transport company
-
 C -> URV : validate()
 URV -> C : returns validation
 
 C -> UMS : registerNewUser()
 UMS -> C : success
-
-C -> CC : airTransportCompany()
-CC -> C : returns air transport company
-
-C -> ATC : iataCode()
-ATC -> C : returns companyIATACode
 
 C -> Email : EmailAddress.valueOf()
 Email -> C : returns email
