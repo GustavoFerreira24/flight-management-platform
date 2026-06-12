@@ -73,8 +73,4 @@ public class AddPilotController {
 
         pilotRepository.save(pilot);
     }
-
-    public Iterable<Pilot> getAllPilots() {
-        return this.pilotRepository.findAll();
-    }
 }
