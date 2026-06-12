@@ -1,11 +1,11 @@
 package isep.aisafe.application.flightmanagement;
 
-import isep.aisafe.flightplan.domain.FlightPlanTestStatus;
-import isep.aisafe.flightplan.importer.dsl.FlightPlanDslError;
+import isep.aisafe.flightplan.domain.FlightPlanStatus;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Result of testing and validating a flight plan.
@@ -13,64 +13,85 @@ import java.util.Objects;
 public final class TestFlightPlanResult {
 
     private final boolean successful;
-    private final FlightPlanTestStatus testStatus;
+    private final FlightPlanStatus status;
     private final List<String> messages;
-    private final List<FlightPlanDslError> dslErrors;
+    private final String reportIdentifier;
 
     private TestFlightPlanResult(
             final boolean successful,
-            final FlightPlanTestStatus testStatus,
+            final FlightPlanStatus status,
             final List<String> messages,
-            final List<FlightPlanDslError> dslErrors) {
+            final String reportIdentifier) {
 
         this.successful = successful;
-        this.testStatus = Objects.requireNonNull(testStatus, "testStatus cannot be null");
+        this.status = Objects.requireNonNull(status, "status cannot be null");
         this.messages = List.copyOf(Objects.requireNonNull(messages, "messages cannot be null"));
-        this.dslErrors = List.copyOf(Objects.requireNonNull(dslErrors, "dslErrors cannot be null"));
+        this.reportIdentifier = reportIdentifier;
     }
 
-    public static TestFlightPlanResult success(final FlightPlanTestStatus testStatus) {
-        return new TestFlightPlanResult(
-                true,
-                testStatus,
-                List.of("Flight plan tested successfully."),
-                List.of()
-        );
-    }
-
-    public static TestFlightPlanResult failure(
-            final FlightPlanTestStatus testStatus,
+    public static TestFlightPlanResult success(
+            final FlightPlanStatus status,
             final List<String> messages) {
-
-        return failure(testStatus, messages, List.of());
-    }
-
-    public static TestFlightPlanResult failure(
-            final FlightPlanTestStatus testStatus,
-            final List<String> messages,
-            final List<FlightPlanDslError> dslErrors) {
 
         final List<String> safeMessages = new ArrayList<>(Objects.requireNonNull(messages, "messages cannot be null"));
         if (safeMessages.isEmpty()) {
-            safeMessages.add("Flight plan test failed.");
+            safeMessages.add("Flight plan validated successfully.");
         }
 
-        return new TestFlightPlanResult(false, testStatus, safeMessages, dslErrors);
+        return new TestFlightPlanResult(true, status, safeMessages, null);
+    }
+
+    public static TestFlightPlanResult success(
+            final FlightPlanStatus status,
+            final List<String> messages,
+            final String reportIdentifier) {
+
+        final List<String> safeMessages = new ArrayList<>(Objects.requireNonNull(messages, "messages cannot be null"));
+        if (safeMessages.isEmpty()) {
+            safeMessages.add("Flight plan validated successfully.");
+        }
+
+        return new TestFlightPlanResult(true, status, safeMessages, reportIdentifier);
+    }
+
+    public static TestFlightPlanResult failure(
+            final FlightPlanStatus status,
+            final List<String> messages) {
+
+        final List<String> safeMessages = new ArrayList<>(Objects.requireNonNull(messages, "messages cannot be null"));
+        if (safeMessages.isEmpty()) {
+            safeMessages.add("Flight plan validation failed.");
+        }
+
+        return new TestFlightPlanResult(false, status, safeMessages, null);
+    }
+
+    public static TestFlightPlanResult failure(
+            final FlightPlanStatus status,
+            final List<String> messages,
+            final String reportIdentifier) {
+
+        final List<String> safeMessages = new ArrayList<>(Objects.requireNonNull(messages, "messages cannot be null"));
+        if (safeMessages.isEmpty()) {
+            safeMessages.add("Flight plan validation failed.");
+        }
+
+        return new TestFlightPlanResult(false, status, safeMessages, reportIdentifier);
     }
 
     public boolean isSuccessful() {
         return successful;
     }
 
-    public FlightPlanTestStatus testStatus() {
-        return testStatus;
+    public FlightPlanStatus status() {
+        return status;
     }
 
     public List<String> messages() {
         return messages;
     }
 
-    public List<FlightPlanDslError> dslErrors() {
-        return dslErrors;
+    public Optional<String> reportIdentifier() {
+        return Optional.ofNullable(reportIdentifier);
     }
 }

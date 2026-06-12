@@ -1,0 +1,47 @@
+@startuml
+title US44 - Weather Person Remote Access Scenario
+
+actor "Weather Person" as WeatherPerson
+boundary "TCP Client" as Client
+control "TCP Server\nRemoteAccessTcpServer" as TcpServer
+control "WeatherRemoteAccessController" as RemoteController
+control "Weather EAPLI Controllers" as EapliControllers
+database "AISafe Database" as DB
+control "UDP Log Client" as UdpClient
+control "Remote Accesses\nLogging Server" as LoggingServer
+boundary "Browser" as Browser
+
+WeatherPerson -> Client : Enter SERVICE|US44
+Client -> TcpServer : SERVICE|US44
+TcpServer -> RemoteController : create US44 handler
+TcpServer --> Client : service selected
+
+WeatherPerson -> Client : LOGIN|username|password
+Client -> TcpServer : LOGIN|username|password
+TcpServer -> RemoteController : handle LOGIN
+RemoteController --> TcpServer : OK or ERROR
+TcpServer -> UdpClient : log LOGIN_SUCCESS/LOGIN_FAILED
+UdpClient -> LoggingServer : UDP event
+TcpServer --> Client : response
+
+WeatherPerson -> Client : Weather command
+Client -> TcpServer : CONSULT/REGISTER/IMPORT command
+TcpServer -> RemoteController : handle command
+RemoteController -> EapliControllers : delegate weather use case
+EapliControllers -> DB : repository access
+DB --> EapliControllers : domain data
+EapliControllers --> RemoteController : result
+RemoteController --> TcpServer : OK/DATA/ERROR
+TcpServer --> Client : response
+
+WeatherPerson -> Client : LOGOUT
+Client -> TcpServer : LOGOUT
+TcpServer -> RemoteController : handle LOGOUT
+TcpServer -> UdpClient : log LOGOUT
+UdpClient -> LoggingServer : UDP event
+TcpServer --> Client : session closed
+
+Browser -> LoggingServer : GET /events or /active-users
+LoggingServer --> Browser : HTML/AJAX log view
+
+@enduml

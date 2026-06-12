@@ -30,10 +30,10 @@ import isep.aisafe.enginemodel.domain.EngineType;
 import isep.aisafe.enginemodel.domain.FuelType;
 import isep.aisafe.flight.domain.Flight;
 import isep.aisafe.flight.domain.FlightDesignator;
-import isep.aisafe.flightplan.domain.FuelQuantity;
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
-import isep.aisafe.flightplan.domain.FlightPlanTestStatus;
+import isep.aisafe.flightplan.domain.FlightPlanStatus;
+import isep.aisafe.flightplan.domain.FuelQuantity;
 import isep.aisafe.flightplan.domain.InMemoryFlightPlanRepository;
 import isep.aisafe.flightroute.domain.FlightRoute;
 import isep.aisafe.flightroute.domain.RouteDesignator;
@@ -150,6 +150,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
         assertSame(flightPlan, updatedFlightPlan);
         assertEquals(1, updatedFlightPlan.weatherDataIds().size());
         assertEquals(weatherData.identity(), updatedFlightPlan.weatherDataIds().get(0));
+        assertEquals(FlightPlanStatus.DRAFT, updatedFlightPlan.status());
         assertEquals(1, flightPlanRepository.findByIdentifier(FlightPlanIdentifier.valueOf("FP001"))
                 .orElseThrow()
                 .weatherDataIds()
@@ -157,18 +158,18 @@ class InsertWeatherDataInFlightPlanControllerTest {
     }
 
     /**
-     * Purpose: verify previous flight plan test invalidation through the use case.
-     * Scenario: weather data is inserted in a previously tested flight plan.
-     * Expected output: the updated and persisted flight plan has a void test status.
+     * Purpose: verify previous flight plan validation invalidation through the use case.
+     * Scenario: weather data is inserted in a previously validated flight plan.
+     * Expected output: the updated and persisted flight plan returns to draft status.
      */
     @Test
-    void ensureWeatherDataInsertionVoidsPreviousFlightPlanTest() {
+    void ensureWeatherDataInsertionInvalidatesPreviousFlightPlanValidation() {
         // Arrange
         final InMemoryFlightPlanRepository flightPlanRepository = new InMemoryFlightPlanRepository();
         final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
         final FlightPlan flightPlan = flightPlan();
         final WeatherData weatherData = weatherData();
-        flightPlan.markTested();
+        flightPlan.validate();
         flightPlanRepository.save(flightPlan);
         weatherDataRepository.save(weatherData);
         final InsertWeatherDataInFlightPlanController controller = new InsertWeatherDataInFlightPlanController(
@@ -181,10 +182,10 @@ class InsertWeatherDataInFlightPlanControllerTest {
         final FlightPlan updatedFlightPlan = controller.insertWeatherData("FP001", "2027-01-10", "CONACC");
 
         // Assert
-        assertEquals(FlightPlanTestStatus.VOID, updatedFlightPlan.testStatus());
-        assertEquals(FlightPlanTestStatus.VOID, flightPlanRepository.findByIdentifier(FlightPlanIdentifier.valueOf("FP001"))
+        assertEquals(FlightPlanStatus.DRAFT, updatedFlightPlan.status());
+        assertEquals(FlightPlanStatus.DRAFT, flightPlanRepository.findByIdentifier(FlightPlanIdentifier.valueOf("FP001"))
                 .orElseThrow()
-                .testStatus());
+                .status());
     }
 
     /**
@@ -362,6 +363,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
 
     private Aircraft aircraft() {
         final EngineModel engineModel = engineModel();
+
         return new Aircraft(
                 AircraftRegistration.valueOf("CS-TXA"),
                 AircraftRegistrationCountry.valueOf("Portugal"),
@@ -376,6 +378,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
 
     private Pilot pilot() {
         final Certification certification = new Certification("01-01-2026", "01-01-2028");
+
         return new Pilot(
                 PilotID.valueOf("ABC"),
                 certification,
@@ -386,7 +389,6 @@ class InsertWeatherDataInFlightPlanControllerTest {
                 "Ben",
                 "Dover",
                 Set.of(AircraftModelDesignator.valueOf("A320"))
-
         );
     }
 
@@ -462,7 +464,9 @@ class InsertWeatherDataInFlightPlanControllerTest {
                 LocalDate.of(2027, 1, 10),
                 AirControlAreaCode.valueOf("CONACC")
         );
+
         final WeatherProviderType providerType = WeatherProviderType.valueOf("GROUND_SENSOR");
+
         weatherData.addMeasurement(
                 new WeatherProvider("IPMA", List.of(providerType)),
                 providerType,
@@ -472,6 +476,7 @@ class InsertWeatherDataInFlightPlanControllerTest {
                 1200,
                 WeatherCoordinates.valueOf(38.72, -9.14)
         );
+
         return weatherData;
     }
 }

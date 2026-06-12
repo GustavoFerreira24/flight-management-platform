@@ -34,6 +34,9 @@ This folder contains all documentation artifacts produced during development of 
 #### US11 — Domain Model (DDD)
 - [Overview](./us_11/readme.md)
 
+#### US44 — Weather Person Remote Access
+- [Weather Person Remote Access](./us_44/readme.md)
+
 #### US55 — Create an Aircraft Model
 - [Aircraft Model Registration](./us_55/readme.md)
 

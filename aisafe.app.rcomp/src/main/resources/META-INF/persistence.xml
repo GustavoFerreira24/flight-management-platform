@@ -23,6 +23,7 @@
         <class>isep.aisafe.flightroute.domain.FlightRoute</class>
         <class>isep.aisafe.flight.domain.Flight</class>
         <class>isep.aisafe.flightplan.domain.FlightPlan</class>
+        <class>isep.aisafe.flightplan.domain.FlightPlanTestReport</class>
         <class>isep.aisafe.weatherdata.domain.WeatherData</class>
         <class>isep.aisafe.weatherdata.domain.WeatherProvider</class>
         <class>isep.aisafe.pilot.domain.Pilot</class>

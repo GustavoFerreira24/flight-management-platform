@@ -33,11 +33,12 @@ import isep.aisafe.flight.domain.Flight;
 import isep.aisafe.flight.domain.FlightDesignator;
 import isep.aisafe.flightplan.domain.FlightPlan;
 import isep.aisafe.flightplan.domain.FlightPlanIdentifier;
-import isep.aisafe.flightplan.domain.FlightPlanTestStatus;
+import isep.aisafe.flightplan.domain.FlightPlanStatus;
+import isep.aisafe.flightplan.domain.FlightPlanTestReport;
+import isep.aisafe.flightplan.domain.FlightPlanTestReportIdentifier;
 import isep.aisafe.flightplan.domain.FuelQuantity;
 import isep.aisafe.flightplan.domain.InMemoryFlightPlanRepository;
-import isep.aisafe.flightplan.importer.dsl.FlightPlanDslErrorType;
-import isep.aisafe.flightplan.importer.dsl.FlightPlanDslSyntaxValidator;
+import isep.aisafe.flightplan.domain.InMemoryFlightPlanTestReportRepository;
 import isep.aisafe.flightroute.domain.FlightRoute;
 import isep.aisafe.flightroute.domain.RouteDesignator;
 import isep.aisafe.infrastructure.authz.AisafePermissions;
@@ -47,15 +48,14 @@ import isep.aisafe.pilot.domain.Pilot;
 import isep.aisafe.pilot.domain.PilotID;
 import isep.aisafe.pilot.domain.PilotStatus;
 import isep.aisafe.support.CapturingAuthorizationService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,8 +66,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TestFlightPlanControllerTest {
 
-    @TempDir
-    private Path temporaryDirectory;
+    @BeforeEach
+    void clearRepositories() {
+        new InMemoryFlightPlanRepository().clear();
+        new InMemoryFlightPlanTestReportRepository().clear();
+    }
 
     @Test
     void ensureExecuteRequiresFlightPlanManagementPermission() {
@@ -87,142 +90,240 @@ class TestFlightPlanControllerTest {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
-        final FlightPlanDslSyntaxValidator validator = new FlightPlanDslSyntaxValidator();
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
 
         // Act / Assert
-        assertThrows(NullPointerException.class, () -> new TestFlightPlanController(null, repository, validator));
-        assertThrows(NullPointerException.class, () -> new TestFlightPlanController(authz, null, validator));
+        assertThrows(NullPointerException.class, () -> new TestFlightPlanController(null, repository));
+        assertThrows(NullPointerException.class, () -> new TestFlightPlanController(authz, null));
         assertThrows(NullPointerException.class, () -> new TestFlightPlanController(authz, repository, null));
     }
 
     @Test
-    void ensureFlightPlanCanBeTestedAndMarkedAsTested() throws IOException {
+    void ensureAuthenticatedPilotFlightPlansListsOnlyOwnedTestablePlans() {
+        // Arrange
+        final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final FlightPlan ownedDraft = flightPlan("FP001", "TP123", "CS-TXA", "ABC", "pilot@example.com");
+        final FlightPlan ownedValidated = flightPlan("FP002", "TP124", "CS-TXB", "ABC", "pilot@example.com");
+        final FlightPlan otherPilotDraft = flightPlan("FP003", "TP125", "CS-TXC", "XYZ", "other@example.com");
+        ownedValidated.validate();
+        repository.save(ownedDraft);
+        repository.save(ownedValidated);
+        repository.save(otherPilotDraft);
+        final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
+
+        // Act
+        final List<FlightPlan> flightPlans = controller.authenticatedPilotFlightPlans();
+
+        // Assert
+        assertEquals(List.of(ownedDraft), flightPlans);
+    }
+
+    @Test
+    void ensureFlightPlanCanBeTestedAndValidatedWithoutDslFile() {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
-        final FlightPlan flightPlan = flightPlan("FP001", "TP123", "CS-TXA", "ABC");
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
+        final FlightPlan flightPlan = flightPlan("FP004", "TP126", "CS-TXD", "ABC", "pilot@example.com");
         repository.save(flightPlan);
-        final TestFlightPlanController controller = controller(authz, repository);
-        final Path dslFile = writeFlightPlan("valid.fpl", validDsl("TP123", "CS-TXA"));
+        final TestFlightPlanController controller = controller(authz, repository, reportRepository);
 
         // Act
-        final TestFlightPlanResult result = controller.testFlightPlan("FP001", dslFile);
+        final TestFlightPlanResult result = controller.testFlightPlan("FP004");
 
         // Assert
         assertTrue(result.isSuccessful());
-        assertEquals(FlightPlanTestStatus.TESTED, result.testStatus());
-        assertEquals(List.of("Flight plan tested successfully."), result.messages());
-        assertTrue(result.dslErrors().isEmpty());
-        assertEquals(FlightPlanTestStatus.TESTED, flightPlan.testStatus());
-        assertEquals(FlightPlanTestStatus.TESTED, repository.findByIdentifier(FlightPlanIdentifier.valueOf("FP001"))
+        assertEquals(FlightPlanStatus.VALIDATED, result.status());
+        assertEquals("Flight plan validated successfully.", result.messages().getFirst());
+        assertTrue(result.messages().contains("Flight: TP126"));
+        assertTrue(result.messages().contains("Aircraft: CS-TXD"));
+        assertTrue(result.messages().contains("Pilot: ABC"));
+        assertEquals(FlightPlanStatus.VALIDATED, flightPlan.status());
+        assertEquals(FlightPlanStatus.VALIDATED, repository.findByIdentifier(FlightPlanIdentifier.valueOf("FP004"))
                 .orElseThrow()
-                .testStatus());
+                .status());
+        assertTrue(result.reportIdentifier().isPresent());
+        final FlightPlanTestReport report = reportRepository.findByIdentifier(
+                FlightPlanTestReportIdentifier.valueOf(result.reportIdentifier().orElseThrow())
+        ).orElseThrow();
+        assertTrue(report.successful());
+        assertEquals(FlightPlanStatus.DRAFT, report.initialStatus());
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.validationStatus());
+        assertEquals(FlightPlanStatus.VALIDATED, report.finalStatus());
+        assertEquals("pilot@example.com", report.testedBy());
+        assertEquals(result.messages(), report.messages());
         assertArrayEquals(AisafePermissions.FLIGHT_PLAN_MANAGEMENT, authz.requestedRoles());
     }
 
     @Test
-    void ensureInvalidDslFileFailsWithoutChangingTestStatus() throws IOException {
+    void ensureUnderValidationFlightPlanCanBeCompleted() {
         // Arrange
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
-        final FlightPlan flightPlan = flightPlan("FP002", "TP124", "CS-TXB", "ABC");
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
+        final FlightPlan flightPlan = flightPlan("FP011", "TP133", "CS-TXK", "ABC", "pilot@example.com");
+        flightPlan.markUnderValidation();
         repository.save(flightPlan);
-        final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
-        final Path dslFile = writeFlightPlan("invalid.fpl", """
-                flight TP124 regular {
-                  aircraft CS-TXB;
-                  leg {
-                    departure OPO at 2026-05-10T10:00;
-                    arrival LIS at 2026-05-10T09:00;
-                    route OPO -> LIS;
-                    segment (41.0,-8.0) -> (38.0,-9.0);
-                    fuel 5000 kg;
-                  }
-                }
-                """);
+        final TestFlightPlanController controller = controller(
+                new CapturingAuthorizationService(),
+                repository,
+                reportRepository
+        );
 
         // Act
-        final TestFlightPlanResult result = controller.testFlightPlan("FP002", dslFile);
+        final TestFlightPlanResult result = controller.testFlightPlan("FP011");
 
         // Assert
-        assertFalse(result.isSuccessful());
-        assertEquals(FlightPlanTestStatus.NOT_TESTED, result.testStatus());
-        assertEquals(List.of("Flight DSL validation failed."), result.messages());
-        assertEquals(List.of(FlightPlanDslErrorType.SEMANTIC), result.dslErrors().stream()
-                .map(error -> error.type())
-                .distinct()
-                .toList());
-        assertEquals(FlightPlanTestStatus.NOT_TESTED, flightPlan.testStatus());
+        assertTrue(result.isSuccessful());
+        assertEquals(FlightPlanStatus.VALIDATED, result.status());
+        final FlightPlanTestReport report = reportRepository.findByIdentifier(
+                FlightPlanTestReportIdentifier.valueOf(result.reportIdentifier().orElseThrow())
+        ).orElseThrow();
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.initialStatus());
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.validationStatus());
+        assertEquals(FlightPlanStatus.VALIDATED, report.finalStatus());
     }
 
     @Test
-    void ensureDslFlightMismatchFailsWithoutChangingTestStatus() throws IOException {
+    void ensureOperationalValidationFailureRejectsFlightPlan() {
         // Arrange
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
-        final FlightPlan flightPlan = flightPlan("FP003", "TP125", "CS-TXC", "ABC");
+        final InMemoryFlightPlanTestReportRepository reportRepository = new InMemoryFlightPlanTestReportRepository();
+        final FlightPlan flightPlan = flightPlan("FP005", "TP127", "CS-TXE", "ABC", "pilot@example.com");
+        flightPlan.aircraft().decommission();
         repository.save(flightPlan);
-        final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
-        final Path dslFile = writeFlightPlan("other-flight.fpl", validDsl("TP999", "CS-TXC"));
+        final TestFlightPlanController controller = controller(
+                new CapturingAuthorizationService(),
+                repository,
+                reportRepository
+        );
 
         // Act
-        final TestFlightPlanResult result = controller.testFlightPlan("FP003", dslFile);
+        final TestFlightPlanResult result = controller.testFlightPlan("FP005");
 
         // Assert
         assertFalse(result.isSuccessful());
-        assertEquals(FlightPlanTestStatus.NOT_TESTED, result.testStatus());
-        assertEquals(List.of("Flight DSL file does not describe flight TP125."), result.messages());
-        assertEquals(FlightPlanTestStatus.NOT_TESTED, flightPlan.testStatus());
+        assertEquals(FlightPlanStatus.REJECTED, result.status());
+        assertEquals(List.of("Aircraft cannot be used for flights."), result.messages());
+        assertEquals(FlightPlanStatus.REJECTED, flightPlan.status());
+        final FlightPlanTestReport report = reportRepository.findByIdentifier(
+                FlightPlanTestReportIdentifier.valueOf(result.reportIdentifier().orElseThrow())
+        ).orElseThrow();
+        assertFalse(report.successful());
+        assertEquals(FlightPlanStatus.DRAFT, report.initialStatus());
+        assertEquals(FlightPlanStatus.UNDER_VALIDATION, report.validationStatus());
+        assertEquals(FlightPlanStatus.REJECTED, report.finalStatus());
+        assertEquals(result.messages(), report.messages());
     }
 
     @Test
-    void ensureDslAircraftMismatchFailsWithoutChangingTestStatus() throws IOException {
+    void ensureRouteValidationFailureRejectsFlightPlan() {
         // Arrange
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
-        final FlightPlan flightPlan = flightPlan("FP004", "TP126", "CS-TXD", "ABC");
+        final FlightPlan flightPlan = flightPlan("FP006", "TP128", "CS-TXF", "ABC", "pilot@example.com");
+        flightPlan.flight().route().deactivateFrom(LocalDate.now().plusDays(1));
         repository.save(flightPlan);
         final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
-        final Path dslFile = writeFlightPlan("other-aircraft.fpl", validDsl("TP126", "CS-TXE"));
 
         // Act
-        final TestFlightPlanResult result = controller.testFlightPlan("FP004", dslFile);
+        final TestFlightPlanResult result = controller.testFlightPlan("FP006");
 
         // Assert
         assertFalse(result.isSuccessful());
-        assertEquals(List.of("Flight DSL aircraft does not match the selected flight plan."), result.messages());
-        assertEquals(FlightPlanTestStatus.NOT_TESTED, flightPlan.testStatus());
+        assertEquals(FlightPlanStatus.REJECTED, result.status());
+        assertEquals(List.of("Flight route is not active."), result.messages());
+        assertEquals(FlightPlanStatus.REJECTED, flightPlan.status());
     }
 
     @Test
-    void ensureFlightPlanFromAnotherPilotIsRejected() throws IOException {
+    void ensurePilotCertificationFailureRejectsFlightPlan() {
+        // Arrange
+        final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final FlightPlan flightPlan = flightPlan(
+                "FP007",
+                "TP129",
+                "CS-TXG",
+                "ABC",
+                "pilot@example.com",
+                Set.of(AircraftModelDesignator.valueOf("B737"))
+        );
+        repository.save(flightPlan);
+        final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
+
+        // Act
+        final TestFlightPlanResult result = controller.testFlightPlan("FP007");
+
+        // Assert
+        assertFalse(result.isSuccessful());
+        assertEquals(FlightPlanStatus.REJECTED, result.status());
+        assertEquals(List.of("Pilot is not certified for the aircraft model."), result.messages());
+        assertEquals(FlightPlanStatus.REJECTED, flightPlan.status());
+    }
+
+    @Test
+    void ensureValidatedFlightPlanCannotBeTestedAgain() {
+        // Arrange
+        final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final FlightPlan flightPlan = flightPlan("FP008", "TP130", "CS-TXH", "ABC", "pilot@example.com");
+        flightPlan.validate();
+        repository.save(flightPlan);
+        final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
+
+        // Act
+        final TestFlightPlanResult result = controller.testFlightPlan("FP008");
+
+        // Assert
+        assertFalse(result.isSuccessful());
+        assertEquals(FlightPlanStatus.VALIDATED, result.status());
+        assertEquals(List.of("Flight plan is already validated."), result.messages());
+        assertTrue(result.reportIdentifier().isEmpty());
+    }
+
+    @Test
+    void ensureRejectedFlightPlanCannotBeTestedAgain() {
+        // Arrange
+        final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
+        final FlightPlan flightPlan = flightPlan("FP009", "TP131", "CS-TXI", "ABC", "pilot@example.com");
+        flightPlan.reject();
+        repository.save(flightPlan);
+        final TestFlightPlanController controller = controller(new CapturingAuthorizationService(), repository);
+
+        // Act
+        final TestFlightPlanResult result = controller.testFlightPlan("FP009");
+
+        // Assert
+        assertFalse(result.isSuccessful());
+        assertEquals(FlightPlanStatus.REJECTED, result.status());
+        assertEquals(List.of("Flight plan is rejected and cannot be tested."), result.messages());
+    }
+
+    @Test
+    void ensureFlightPlanFromAnotherPilotIsRejected() {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         authz.authenticatedEmail("other-pilot@example.com");
-
         final InMemoryFlightPlanRepository repository = new InMemoryFlightPlanRepository();
-        repository.save(flightPlan("FP005", "TP127", "CS-TXF", "ABC"));
-
+        repository.save(flightPlan("FP010", "TP132", "CS-TXJ", "ABC", "pilot@example.com"));
         final TestFlightPlanController controller = controller(authz, repository);
-        final Path dslFile = writeFlightPlan("valid.fpl", validDsl("TP127", "CS-TXF"));
 
         // Act / Assert
         assertEquals("Flight plan does not belong to authenticated pilot.", assertThrows(
                 IllegalArgumentException.class,
-                () -> controller.testFlightPlan("FP005", dslFile)
+                () -> controller.testFlightPlan("FP010")
         ).getMessage());
     }
 
     @Test
-    void ensureUnknownFlightPlanIsRejected() throws IOException {
+    void ensureUnknownFlightPlanIsRejected() {
         // Arrange
         final TestFlightPlanController controller = controller(
                 new CapturingAuthorizationService(),
                 new InMemoryFlightPlanRepository()
         );
-        final Path dslFile = writeFlightPlan("valid.fpl", validDsl("TP128", "CS-TXG"));
 
         // Act / Assert
         assertEquals("Flight plan not found.", assertThrows(
                 IllegalArgumentException.class,
-                () -> controller.testFlightPlan("FP404", dslFile)
+                () -> controller.testFlightPlan("FP404")
         ).getMessage());
     }
 
@@ -233,40 +334,30 @@ class TestFlightPlanControllerTest {
                 new CapturingAuthorizationService(),
                 new InMemoryFlightPlanRepository()
         );
-        final Path missingFile = temporaryDirectory.resolve("missing.fpl");
 
         // Act / Assert
         assertEquals("Flight plan identifier is required.", assertThrows(
                 IllegalArgumentException.class,
-                () -> controller.testFlightPlan(null, missingFile)
+                () -> controller.testFlightPlan(null)
         ).getMessage());
         assertEquals("Flight plan identifier is required.", assertThrows(
                 IllegalArgumentException.class,
-                () -> controller.testFlightPlan(" ", missingFile)
-        ).getMessage());
-        assertEquals("Flight DSL file is required.", assertThrows(
-                IllegalArgumentException.class,
-                () -> controller.testFlightPlan("FP001", null)
-        ).getMessage());
-        assertEquals("Flight DSL file must exist and be readable.", assertThrows(
-                IllegalArgumentException.class,
-                () -> controller.testFlightPlan("FP001", missingFile)
+                () -> controller.testFlightPlan(" ")
         ).getMessage());
     }
 
     @Test
-    void ensureAuthorizationFailureStopsTest() throws IOException {
+    void ensureAuthorizationFailureStopsTest() {
         // Arrange
         final CapturingAuthorizationService authz = new CapturingAuthorizationService();
         final RuntimeException failure = new RuntimeException("not authorized");
         authz.throwOnAuthorization(failure);
         final TestFlightPlanController controller = controller(authz, new InMemoryFlightPlanRepository());
-        final Path dslFile = writeFlightPlan("valid.fpl", validDsl("TP129", "CS-TXH"));
 
         // Act / Assert
         assertSame(failure, assertThrows(
                 RuntimeException.class,
-                () -> controller.testFlightPlan("FP001", dslFile)
+                () -> controller.testFlightPlan("FP001")
         ));
     }
 
@@ -274,45 +365,57 @@ class TestFlightPlanControllerTest {
             final CapturingAuthorizationService authz,
             final InMemoryFlightPlanRepository repository) {
 
-        return new TestFlightPlanController(authz, repository, new FlightPlanDslSyntaxValidator());
+        return new TestFlightPlanController(authz, repository);
     }
 
-    private Path writeFlightPlan(final String fileName, final String source) throws IOException {
-        final Path file = temporaryDirectory.resolve(fileName);
-        Files.writeString(file, source);
-        return file;
+    private TestFlightPlanController controller(
+            final CapturingAuthorizationService authz,
+            final InMemoryFlightPlanRepository repository,
+            final InMemoryFlightPlanTestReportRepository reportRepository) {
+
+        return new TestFlightPlanController(authz, repository, reportRepository);
     }
 
-    private String validDsl(
-            final String flightDesignator,
-            final String aircraftRegistration) {
+    private List<FlightPlanTestReport> reportsFor(
+            final InMemoryFlightPlanTestReportRepository repository,
+            final String flightPlanIdentifier) {
 
-        return """
-                flight %s regular {
-                  aircraft %s;
-                  load 15000 kg;
-                  leg {
-                    departure OPO at 2026-05-10T10:00;
-                    arrival LIS at 2026-05-10T11:00;
-                    route OPO -> LIS;
-                    segment (41.0,-8.0) -> (38.0,-9.0) speed 450 knots altitude [1000,2000] m width 10 km wind 90 deg 12 m/s;
-                    fuel 5000 kg;
-                  }
-                }
-                """.formatted(flightDesignator, aircraftRegistration);
+        return StreamSupport.stream(
+                repository.findByFlightPlan(FlightPlanIdentifier.valueOf(flightPlanIdentifier)).spliterator(),
+                false
+        ).toList();
     }
 
     private FlightPlan flightPlan(
             final String flightPlanIdentifier,
             final String flightDesignator,
             final String aircraftRegistration,
-            final String pilotId) {
+            final String pilotId,
+            final String pilotEmail) {
+
+        return flightPlan(
+                flightPlanIdentifier,
+                flightDesignator,
+                aircraftRegistration,
+                pilotId,
+                pilotEmail,
+                Set.of(AircraftModelDesignator.valueOf("A320"))
+        );
+    }
+
+    private FlightPlan flightPlan(
+            final String flightPlanIdentifier,
+            final String flightDesignator,
+            final String aircraftRegistration,
+            final String pilotId,
+            final String pilotEmail,
+            final Set<AircraftModelDesignator> certifiedModels) {
 
         return new FlightPlan(
                 FlightPlanIdentifier.valueOf(flightPlanIdentifier),
                 flight(flightDesignator),
                 aircraft(aircraftRegistration),
-                pilot(pilotId),
+                pilot(pilotId, pilotEmail, certifiedModels),
                 FuelQuantity.valueOf(7000, FuelUnit.valueOf("KG"))
         );
     }
@@ -336,6 +439,7 @@ class TestFlightPlanControllerTest {
 
     private Aircraft aircraft(final String registration) {
         final EngineModel engineModel = engineModel();
+
         return new Aircraft(
                 AircraftRegistration.valueOf(registration),
                 AircraftRegistrationCountry.valueOf("Portugal"),
@@ -348,18 +452,23 @@ class TestFlightPlanControllerTest {
         );
     }
 
-    private Pilot pilot(final String id) {
+    private Pilot pilot(
+            final String id,
+            final String email,
+            final Set<AircraftModelDesignator> certifiedModels) {
+
         final Certification certification = new Certification("01-01-2026", "01-01-2028");
+
         return new Pilot(
                 PilotID.valueOf(id),
                 certification,
                 PilotStatus.valueOf(certification),
                 IATACode.valueOf("TP"),
-                EmailAddress.valueOf("pilot@example.com"),
+                EmailAddress.valueOf(email),
                 PhoneNumber.valueOf("+351912345678"),
                 "Ben",
                 "Dover",
-                Set.of(AircraftModelDesignator.valueOf("A320"))
+                certifiedModels
         );
     }
 

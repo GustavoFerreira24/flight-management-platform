@@ -68,10 +68,6 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
     @AttributeOverride(name = "value", column = @Column(name = "WEATHER_DATA_ID", nullable = false))
     private List<WeatherDataId> weatherDataIds = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "TEST_STATUS", nullable = false)
-    private FlightPlanTestStatus testStatus = FlightPlanTestStatus.NOT_TESTED;
-
     protected FlightPlan() {
     }
 
@@ -117,15 +113,53 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         final WeatherDataId weatherDataId = weatherData.identity();
         if (!weatherDataIds.contains(weatherDataId)) {
             weatherDataIds.add(weatherDataId);
-            invalidateTestIfNeeded();
+            invalidateValidationIfNeeded();
         }
     }
 
     /**
-     * Marks this flight plan as successfully tested.
+     * Marks this flight plan as being validated.
      */
-    public void markTested() {
-        testStatus = FlightPlanTestStatus.TESTED;
+    public void markUnderValidation() {
+        Preconditions.ensure(
+                status == FlightPlanStatus.DRAFT,
+                "Only draft flight plans can start validation."
+        );
+
+        status = FlightPlanStatus.UNDER_VALIDATION;
+    }
+
+    /**
+     * Marks this flight plan as validated.
+     */
+    public void validate() {
+        Preconditions.ensure(
+                status == FlightPlanStatus.DRAFT || status == FlightPlanStatus.UNDER_VALIDATION,
+                "Only draft or under validation flight plans can be validated."
+        );
+
+        status = FlightPlanStatus.VALIDATED;
+    }
+
+    /**
+     * Marks this flight plan as rejected.
+     */
+    public void reject() {
+        Preconditions.ensure(
+                status == FlightPlanStatus.DRAFT || status == FlightPlanStatus.UNDER_VALIDATION,
+                "Only draft or under validation flight plans can be rejected."
+        );
+
+        status = FlightPlanStatus.REJECTED;
+    }
+
+    /**
+     * Checks whether this flight plan can be tested/validated.
+     *
+     * @return true if this flight plan can be tested
+     */
+    public boolean canBeTested() {
+        return status == FlightPlanStatus.DRAFT || status == FlightPlanStatus.UNDER_VALIDATION;
     }
 
     /**
@@ -149,6 +183,7 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         if (!(other instanceof FlightPlan)) {
             return false;
         }
+
         final FlightPlan that = (FlightPlan) other;
         return identity().equals(that.identity());
     }
@@ -270,18 +305,9 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
         return !weatherDataIds.isEmpty();
     }
 
-    /**
-     * Returns the current test status of this flight plan.
-     *
-     * @return flight plan test status
-     */
-    public FlightPlanTestStatus testStatus() {
-        return testStatus;
-    }
-
-    private void invalidateTestIfNeeded() {
-        if (testStatus == FlightPlanTestStatus.TESTED) {
-            testStatus = FlightPlanTestStatus.VOID;
+    private void invalidateValidationIfNeeded() {
+        if (status == FlightPlanStatus.VALIDATED) {
+            status = FlightPlanStatus.DRAFT;
         }
     }
 }

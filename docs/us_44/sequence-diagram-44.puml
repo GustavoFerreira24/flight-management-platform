@@ -1,0 +1,49 @@
+@startuml
+title US44 - Weather Person Remote Access Scenario
+
+actor "Weather Person" as WeatherPerson
+participant "RemoteAccessTcpClient" as Client
+participant "RemoteAccessTcpServer" as TcpServer
+control ":WeatherRemoteAccessController" as RemoteC
+participant "credentialHandler\n:CredentialHandler" as Credentials
+participant "authz\n:AisafeAuthorizationService" as Authz
+participant "operations\n:ControllerWeatherRemoteOperations" as Ops
+control ":RegisterWeatherDataController" as RegisterC
+database "AISafe Persistence" as DB
+
+WeatherPerson -> Client : Start client with service US44
+Client -> TcpServer : SERVICE|US44
+TcpServer -> RemoteC : new handler()
+TcpServer --> Client : OK|Remote service selected: US44.
+
+WeatherPerson -> Client : LOGIN|username|password
+Client -> TcpServer : LOGIN|username|password
+TcpServer -> RemoteC : handle(line)
+RemoteC -> Credentials : authWithCredentialData(username, password)
+Credentials --> RemoteC : true
+RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(WEATHER_DATA_MANAGEMENT)
+Authz --> RemoteC : authorized
+RemoteC --> TcpServer : OK|Authenticated as username.
+TcpServer --> Client : OK|Authenticated as username.
+
+WeatherPerson -> Client : REGISTER_WEATHER_DATA|...
+Client -> TcpServer : REGISTER_WEATHER_DATA|...
+TcpServer -> RemoteC : handle(line)
+RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(WEATHER_DATA_MANAGEMENT)
+Authz --> RemoteC : authorized
+RemoteC -> Ops : registerWeatherData(...)
+Ops -> RegisterC : registerWeatherMeasurement(...)
+RegisterC -> DB : save/update WeatherData
+DB --> RegisterC : WeatherData
+RegisterC --> Ops : WeatherData
+Ops --> RemoteC : Weather data registered: ...
+RemoteC --> TcpServer : OK|Weather data registered: ...
+TcpServer --> Client : OK|Weather data registered: ...
+
+WeatherPerson -> Client : LOGOUT
+Client -> TcpServer : LOGOUT
+TcpServer -> RemoteC : handle(LOGOUT)
+RemoteC --> TcpServer : OK|Remote session closed.
+TcpServer --> Client : OK|Remote session closed.
+
+@enduml
