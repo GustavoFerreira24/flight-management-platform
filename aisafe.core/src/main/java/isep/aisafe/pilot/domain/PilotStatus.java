@@ -66,14 +66,13 @@ public class PilotStatus implements ValueObject {
      * @return {@code true} if the status is {@code "VÁLIDO"}, {@code false} if {@code "INVÁLIDO"}
      * @throws IllegalStateException if the internal status value is neither {@code "VÁLIDO"} nor {@code "INVÁLIDO"}
      */
-    public boolean isValid() {
-        if (value.equals("VÁLIDO")) {
-            return true;
-        } else if (value.equals("INVÁLIDO")) {
-            return false;
-        } else {
-            throw new IllegalStateException("Unexpected pilot status value: " + value);
-        }
+    public boolean isValid(Certification certification) {
+
+        LocalDate issuedAt = certification.issuedAt();
+        LocalDate validUntil = certification.validUntil();
+        LocalDate hoje = LocalDate.now();
+
+        return !hoje.isBefore(issuedAt) && !hoje.isAfter(validUntil) && "VÁLIDO".equals(this.value);
     }
 
     /**
@@ -82,12 +81,20 @@ public class PilotStatus implements ValueObject {
      * pilot needs to get deactivated by thirds
      */
 
-    public PilotStatus activate() {
-        return new PilotStatus("VÁLIDO");
+    public PilotStatus activate(Certification certification) {
+
+        LocalDate issuedAt = certification.issuedAt();
+        LocalDate validUntil = certification.validUntil();
+        LocalDate hoje = LocalDate.now();
+
+        if (!hoje.isBefore(issuedAt) && !hoje.isAfter(validUntil)) {
+            return new PilotStatus("VÁLIDO");
+        } else {
+            return new PilotStatus("INVÁLIDO");
+        }
     }
 
     public PilotStatus deactivate() {
-
         return new PilotStatus("INVÁLIDO");
     }
 

@@ -94,20 +94,10 @@ public class RegisterPilotController implements RegisterPilotService {
         Certification certification = new Certification(issuedAtStr, validUntilStr);
         PilotStatus pilotStatus = new PilotStatus(certification);
 
-        SystemUsername collaboratorUsername = SystemUsername.valueOf(authz.authenticatedUsername());
-        CustomerCollaborator collaborator = collaboratorRepo.findBySystemUsername(collaboratorUsername)
-                .orElseThrow(() -> new IllegalStateException("Authenticated user is not a customer collaborator."));
-
-        if (!collaborator.isAssociatedWithAirTransportCompany()) {
-            throw new IllegalStateException("Authenticated user is not associated with an air transport company.");
-        }
-
         Set<Role> roles = Set.of(AisafeRoles.PILOT);
 
         userValidator.validate(username, rawPassword, firstName, lastName, email, roles);
         userService.registerNewUser(username, rawPassword, firstName, lastName, email, roles);
-
-        IATACode companyIATACode = collaborator.airTransportCompany().iataCode();
 
         EmailAddress emailAddress = EmailAddress.valueOf(email);
         PhoneNumber phone = PhoneNumber.valueOf(phoneNumber);
@@ -158,5 +148,14 @@ public class RegisterPilotController implements RegisterPilotService {
 
     public Iterable<AircraftModel> getAllAircraftModels() {
         return this.aircraftModelRepo.findAll();
+    }
+
+    public Iterable<Pilot> getAllPilots() {
+        return this.pilotRepo.findAll();
+    }
+
+    public Pilot getPilotById(String id) {
+        final PilotID pilotID = PilotID.valueOf(id);
+        return this.pilotRepo.ofIdentity(pilotID).orElseThrow(() -> new IllegalArgumentException("Pilot with ID " + id + " does not exist."));
     }
 }

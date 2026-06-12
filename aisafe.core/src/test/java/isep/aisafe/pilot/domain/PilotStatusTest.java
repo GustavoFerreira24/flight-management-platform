@@ -14,7 +14,7 @@ class PilotStatusTest {
         final PilotStatus status = PilotStatus.valueOf(certification);
 
         // Assert
-        assertTrue(status.isValid());
+        assertTrue(status.isValid(certification));
     }
 
     @Test
@@ -26,7 +26,7 @@ class PilotStatusTest {
         final PilotStatus status = PilotStatus.valueOf(certification);
 
         // Assert
-        assertFalse(status.isValid());
+        assertFalse(status.isValid(certification));
     }
 
     @Test
@@ -38,20 +38,20 @@ class PilotStatusTest {
         final PilotStatus status = PilotStatus.valueOf(certification);
 
         // Assert
-        assertFalse(status.isValid());
+        assertFalse(status.isValid(certification));
     }
 
     @Test
     void ensurePilotStatusActivateReturnsValidStatus() {
         // Arrange
-        final Certification certification = new Certification("01-01-2020", "01-01-2021");
+        final Certification certification = new Certification("01-01-2020", "01-01-2027");
         final PilotStatus status = PilotStatus.valueOf(certification);
 
         // Act
-        final PilotStatus activated = status.activate();
+        final PilotStatus activated = status.activate(certification);
 
         // Assert
-        assertTrue(activated.isValid());
+            assertTrue(activated.isValid(certification));
     }
 
     @Test
@@ -64,6 +64,6 @@ class PilotStatusTest {
         final PilotStatus deactivated = status.deactivate();
 
         // Assert
-        assertFalse(deactivated.isValid());
+        assertFalse(deactivated.isValid(certification));
     }
 }

@@ -838,6 +838,70 @@ public class AisafeBootstrapper {
                 IATACode.valueOf("FR"),
                 Set.of(boeingDesignator)
         );
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "MLC",
+                "01-01-2006",
+                "01-01-2090",
+                "miguel123",
+                "Miguel",
+                "Correia",
+                "miguel123@aisafe.com",
+                "Password1",
+                "+351933847741",
+                null,
+                Set.of(boeingDesignator)
+        );
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "ABC",
+                "01-01-2006",
+                "01-01-2090",
+                "afonso123",
+                "Afonso",
+                "Carvalho",
+                "afonso123@aisafe.com",
+                "Password1",
+                "+351934879724",
+                null,
+                Set.of(boeingDesignator)
+        );
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "CRS",
+                "01-01-2006",
+                "01-01-2090",
+                "ronaldo123",
+                "Cristiano",
+                "Ronaldo",
+                "ronaldo123@aisafe.com",
+                "Password1",
+                "+351912345678",
+                null,
+                Set.of(boeingDesignator)
+        );
+
+        registerPilotIfMissing(
+                userService,
+                repository,
+                "LMD",
+                "01-01-2006",
+                "01-01-2090",
+                "messi123",
+                "Lionel",
+                "Messi",
+                "messi123@aisafe.com",
+                "Password1",
+                "+351923456789",
+                null,
+                Set.of(boeingDesignator)
+        );
     }
 
     static Pilot registerPilotIfMissing(

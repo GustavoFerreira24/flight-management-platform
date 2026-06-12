@@ -76,11 +76,11 @@ public class ListPilotRosterController {
         Set<Pilot> roster = new HashSet<>();
 
         for (Pilot pilot : pilotRepo.findAll()) {
-            if (pilot.companyIATACode().equals(airTransportCompany.iataCode())) {
+
+            if (pilot.companyIATACode() != null && pilot.companyIATACode().equals(airTransportCompany.iataCode())) {
                 roster.add(pilot);
             }
         }
-
         return roster;
     }
 }

@@ -108,20 +108,20 @@ class DeactivatePilotControllerTest {
 
         // Assert
         final Pilot updated = pilotRepo.ofIdentity(PilotID.valueOf("ABC")).get();
-        assertFalse(updated.pilotStatus().isValid());
+        assertFalse(updated.pilotStatus().isValid(updated.certification()), "O piloto deveria estar inativo!");
     }
 
     @Test
     void ensurePilotWithFlightPlanIsNotDeactivated() {
         // Arrange
-        Pilot p = validPilot("ABC");
-        pilotRepo.save(p);
+        Pilot pilot = validPilot("ABC");
+        pilotRepo.save(pilot);
 
         mockFlightPlanRepo.save(new FlightPlan(
                 FlightPlanIdentifier.valueOf("XYZ"),
                 flight(),
                 aircraft(),
-                p, // Associado ao piloto "ABC"
+                pilot, // Associado ao piloto "ABC"
                 fuelQuantity()
         ));
 
@@ -131,7 +131,7 @@ class DeactivatePilotControllerTest {
         });
 
         Pilot updated = pilotRepo.ofIdentity(PilotID.valueOf("ABC")).get();
-        assertTrue(updated.pilotStatus().isValid(), "O piloto deveria continuar ativo!");
+        assertTrue(updated.pilotStatus().isValid(pilot.certification()), "O piloto deveria continuar ativo!");
     }
 
     @Test
@@ -168,7 +168,7 @@ class DeactivatePilotControllerTest {
     }
 
     @Test
-    void ensureActivatePilotWorksSuccessfully() {
+    void ensureActivatePilotWorksSuccessfullyForInvalidCertification() {
         // Arrange
         final Pilot pilot = new Pilot(
                 PilotID.valueOf("ABC"),
@@ -186,7 +186,7 @@ class DeactivatePilotControllerTest {
 
         // Assert
         final Pilot updated = pilotRepo.ofIdentity(PilotID.valueOf("ABC")).get();
-        assertTrue(updated.pilotStatus().isValid());
+        assertFalse(updated.pilotStatus().isValid(pilot.certification()));
     }
 
     @Test

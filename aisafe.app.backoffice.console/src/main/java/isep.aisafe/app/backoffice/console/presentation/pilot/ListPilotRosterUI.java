@@ -35,6 +35,8 @@ public class ListPilotRosterUI {
         try {
             ConsoleStyle.printSection("PILOT ROSTER");
 
+            System.out.println();
+
             final Set<Pilot> pilotRoster = listPilotRosterController.listPilotRoster();
 
             if (pilotRoster.isEmpty()) {
