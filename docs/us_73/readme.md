@@ -60,6 +60,8 @@ The `FlightRoute` aggregate is responsible for internal route invariants, such a
 
 ### 4.1. Realization
 
+![US073 class diagram](svg/class-diagram-73.svg "US073 Class Diagram")
+
 ![US073 sequence diagram](svg/sequence-diagram-73.svg "US073 Sequence Diagram")
 
 The main flow is:

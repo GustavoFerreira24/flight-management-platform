@@ -1,0 +1,142 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class CreateFlightPlanUI <<UI>> {
+    - controller : CreateFlightPlanController
+    - scanner : Scanner
+    + show() : void
+    - readRequiredText(prompt : String) : String
+    - readPositiveDouble(prompt : String) : double
+}
+
+class CreateFlightPlanController <<Controller>> {
+    - authz : AisafeAuthorizationService
+    - flightPlanRepository : FlightPlanRepository
+    - flightRepository : FlightRepository
+    - aircraftRepository : AircraftRepository
+    - pilotRepository : PilotRepository
+    + execute() : void
+    + createFlightPlan(flightPlanIdentifierText : String, flightDesignatorText : String, aircraftRegistrationText : String, pilotIdText : String, fuelAmount : double, fuelUnitText : String) : FlightPlan
+}
+
+interface FlightPlanRepository <<Repository>> {
+    + findByIdentifier(identifier : FlightPlanIdentifier) : Optional<FlightPlan>
+    + findByDepartureBetween(startInclusive : LocalDateTime, endExclusive : LocalDateTime) : Iterable<FlightPlan>
+    + save(entity : FlightPlan) : FlightPlan
+}
+
+interface FlightRepository <<Repository>> {
+    + findByDesignator(designator : FlightDesignator) : Optional<Flight>
+    + save(entity : Flight) : Flight
+}
+
+interface AircraftRepository <<Repository>> {
+    + findByRegistration(registration : AircraftRegistration) : Optional<Aircraft>
+}
+
+interface PilotRepository <<Repository>> {
+    + findByCode(code : PilotID) : Optional<Pilot>
+}
+
+class InMemoryFlightPlanRepository <<Repository>>
+class JpaFlightPlanRepository <<Repository>>
+class InMemoryFlightRepository <<Repository>>
+class JpaFlightRepository <<Repository>>
+
+class FlightPlan <<Aggregate Root>> {
+    - identifier : FlightPlanIdentifier
+    - flight : Flight
+    - aircraft : Aircraft
+    - pilot : Pilot
+    - fuelQuantity : FuelQuantity
+    - status : FlightPlanStatus
+    - testStatus : FlightPlanTestStatus
+    + identity() : FlightPlanIdentifier
+    + flight() : Flight
+    + aircraft() : Aircraft
+    + pilot() : Pilot
+    + fuelQuantity() : FuelQuantity
+    + status() : FlightPlanStatus
+    + testStatus() : FlightPlanTestStatus
+}
+
+class Flight <<Aggregate Root>> {
+    - designator : FlightDesignator
+    - route : FlightRoute
+    - departure : Departure
+    + identity() : FlightDesignator
+    + route() : FlightRoute
+    + departure() : Departure
+}
+
+class Aircraft <<Aggregate Root>>
+class Pilot <<Aggregate Root>>
+class FlightRoute <<Aggregate Root>>
+class FlightPlanIdentifier <<Value Object>>
+class FlightDesignator <<Value Object>>
+class AircraftRegistration <<Value Object>>
+class PilotID <<Value Object>>
+class FuelQuantity <<Value Object>>
+class FuelUnit <<Value Object>>
+class Departure <<Value Object>>
+
+enum FlightPlanStatus {
+    DRAFT
+    UNDER_VALIDATION
+    VALIDATED
+    REJECTED
+}
+
+enum FlightPlanTestStatus {
+    NOT_TESTED
+    TESTED
+    VOID
+}
+
+class AisafeAuthorizationService <<Service>> {
+    + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+}
+
+class AisafePermissions <<Permissions>> {
+    + {static} FLIGHT_PLAN_MANAGEMENT : Role[]
+}
+
+CreateFlightPlanUI --> CreateFlightPlanController
+
+CreateFlightPlanController --> AisafeAuthorizationService
+CreateFlightPlanController --> AisafePermissions
+CreateFlightPlanController --> FlightPlanRepository
+CreateFlightPlanController --> FlightRepository
+CreateFlightPlanController --> AircraftRepository
+CreateFlightPlanController --> PilotRepository
+CreateFlightPlanController --> FlightPlan
+CreateFlightPlanController --> FlightPlanIdentifier
+CreateFlightPlanController --> FlightDesignator
+CreateFlightPlanController --> AircraftRegistration
+CreateFlightPlanController --> PilotID
+CreateFlightPlanController --> FuelQuantity
+CreateFlightPlanController --> FuelUnit
+
+FlightPlanRepository --> FlightPlan
+FlightRepository --> Flight
+AircraftRepository --> Aircraft
+PilotRepository --> Pilot
+InMemoryFlightPlanRepository ..|> FlightPlanRepository
+JpaFlightPlanRepository ..|> FlightPlanRepository
+InMemoryFlightRepository ..|> FlightRepository
+JpaFlightRepository ..|> FlightRepository
+
+FlightPlan *-- FlightPlanIdentifier
+FlightPlan --> Flight
+FlightPlan --> Aircraft
+FlightPlan --> Pilot
+FlightPlan *-- FuelQuantity
+FlightPlan *-- FlightPlanStatus
+FlightPlan *-- FlightPlanTestStatus
+
+Flight *-- FlightDesignator
+Flight --> FlightRoute
+Flight *-- Departure
+
+@enduml

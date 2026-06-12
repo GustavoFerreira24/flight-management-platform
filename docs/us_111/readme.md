@@ -63,6 +63,8 @@ A simulation report with safety violations cannot be marked as passed. This is e
 
 ![US111 class diagram](svg/class-diagram-111.svg "US111 Class Diagram")
 
+![US111 sequence diagram](svg/sequence-diagram-111.svg "US111 Sequence Diagram")
+
 The `GenerateSimulationReportController` coordinates the use case:
 
 1. Enforces `FLIGHT_CONTROL` permission.
