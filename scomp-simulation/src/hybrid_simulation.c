@@ -24,14 +24,10 @@ static volatile sig_atomic_t hybrid_safety_signal_received = 0;
 
 typedef struct {
     pthread_mutex_t mutex;
-    pthread_cond_t step_completed_cond;
-    pthread_cond_t safety_done_cond;
-    pthread_cond_t report_cond;
     int last_completed_step;
     int last_safety_processed_step;
     int scheduler_finished;
     int safety_finished;
-    int report_event_count;
 } parent_thread_state_t;
 
 typedef struct {
@@ -162,31 +158,10 @@ static int init_parent_thread_state(parent_thread_state_t *state) {
         return -1;
     }
 
-    if (pthread_cond_init(&state->step_completed_cond, NULL) != 0) {
-        pthread_mutex_destroy(&state->mutex);
-        return -1;
-    }
-
-    if (pthread_cond_init(&state->safety_done_cond, NULL) != 0) {
-        pthread_cond_destroy(&state->step_completed_cond);
-        pthread_mutex_destroy(&state->mutex);
-        return -1;
-    }
-
-    if (pthread_cond_init(&state->report_cond, NULL) != 0) {
-        pthread_cond_destroy(&state->safety_done_cond);
-        pthread_cond_destroy(&state->step_completed_cond);
-        pthread_mutex_destroy(&state->mutex);
-        return -1;
-    }
-
     return 0;
 }
 
 static void destroy_parent_thread_state(parent_thread_state_t *state) {
-    pthread_cond_destroy(&state->report_cond);
-    pthread_cond_destroy(&state->safety_done_cond);
-    pthread_cond_destroy(&state->step_completed_cond);
     pthread_mutex_destroy(&state->mutex);
 }
 
@@ -348,9 +323,6 @@ static void finish_scheduler(hybrid_context_t *context) {
 
     pthread_mutex_lock(&context->threads.mutex);
     context->threads.scheduler_finished = 1;
-    pthread_cond_broadcast(&context->threads.step_completed_cond);
-    pthread_cond_broadcast(&context->threads.safety_done_cond);
-    pthread_cond_broadcast(&context->threads.report_cond);
     pthread_mutex_unlock(&context->threads.mutex);
 
     hybrid_sync_mark_parent_step_ready(context->sync);
@@ -388,7 +360,6 @@ static void *scheduler_thread_main(void *argument) {
 
         pthread_mutex_lock(&context->threads.mutex);
         context->threads.last_completed_step = step;
-        pthread_cond_broadcast(&context->threads.step_completed_cond);
         pthread_mutex_unlock(&context->threads.mutex);
 
         if (hybrid_sync_mark_parent_step_ready(context->sync) == -1) {
@@ -506,7 +477,6 @@ static void *safety_thread_main(void *argument) {
 
         pthread_mutex_lock(&context->threads.mutex);
         context->threads.last_safety_processed_step = step;
-        pthread_cond_signal(&context->threads.safety_done_cond);
         pthread_mutex_unlock(&context->threads.mutex);
 
         if (hybrid_sync_mark_parent_step_done(context->sync) == -1) {

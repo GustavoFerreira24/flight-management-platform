@@ -138,6 +138,18 @@ During shutdown, the scheduler marks the shared thread state as finished while h
 
 Status: implemented as a separate Sprint 3 hybrid mode.
 
+### US106 - Function-Specific Parent Threads
+
+The hybrid simulator parent process creates dedicated threads for separate responsibilities:
+
+- a scheduler thread that controls timestep progression and semaphore barriers;
+- a safety detection thread that scans completed timestep data for aircraft conflicts;
+- a report generation thread that consumes safety events and updates the simulation report.
+
+Thread coordination uses mutex-protected parent state and condition-variable notification through `safety_report_notifier_t`. The detailed design is documented in `docs/us106.md`.
+
+Status: implemented as part of the separate Sprint 3 hybrid mode.
+
 ### US108 - Synchronize Hybrid Simulation With Semaphores
 
 The hybrid simulator uses named POSIX semaphores in `hybrid_sync.c` to coordinate the parent process, child flight processes and parent-side threads.
