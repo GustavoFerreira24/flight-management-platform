@@ -21,6 +21,10 @@ interface AirCompanyRemoteOperations {
     + registerAircraft(...) : String
     + decommissionAircraft(registration : String) : String
     + createFlightRoute(routeDesignator : String, departureAirportIcao : String, destinationAirportIcao : String) : String
+    + createFlight(routeDesignator : String, flightDesignator : String, departureDay : String, departureTime : String) : String
+    + addPilot(pilotId : String) : String
+    + listPilotRoster() : String
+    + deactivatePilot(pilotId : String) : String
 }
 
 class ControllerAirCompanyRemoteOperations <<Adapter>> {
@@ -28,6 +32,10 @@ class ControllerAirCompanyRemoteOperations <<Adapter>> {
     - registerAircraftController : RegisterAircraftController
     - decommissionAircraftController : DecommissionAircraftController
     - registerFlightRouteController : RegisterFlightRouteController
+    - createFlightController : CreateFlightController
+    - addPilotController : AddPilotController
+    - listPilotRosterController : ListPilotRosterController
+    - deactivatePilotController : DeactivatePilotController
 }
 
 class RemoteAccessRequest <<Protocol>> {
@@ -52,6 +60,10 @@ class ListAircraftFleetController <<Controller>>
 class RegisterAircraftController <<Controller>>
 class DecommissionAircraftController <<Controller>>
 class RegisterFlightRouteController <<Controller>>
+class CreateFlightController <<Controller>>
+class AddPilotController <<Controller>>
+class ListPilotRosterController <<Controller>>
+class DeactivatePilotController <<Controller>>
 
 class AisafeAuthorizationService <<Service>> {
     + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
@@ -77,5 +89,9 @@ ControllerAirCompanyRemoteOperations --> ListAircraftFleetController
 ControllerAirCompanyRemoteOperations --> RegisterAircraftController
 ControllerAirCompanyRemoteOperations --> DecommissionAircraftController
 ControllerAirCompanyRemoteOperations --> RegisterFlightRouteController
+ControllerAirCompanyRemoteOperations --> CreateFlightController
+ControllerAirCompanyRemoteOperations --> AddPilotController
+ControllerAirCompanyRemoteOperations --> ListPilotRosterController
+ControllerAirCompanyRemoteOperations --> DeactivatePilotController
 
 @enduml

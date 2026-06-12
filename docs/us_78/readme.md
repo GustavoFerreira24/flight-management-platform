@@ -33,6 +33,10 @@ The current remote command set is prepared for the main Air Transport Company Co
 - `REGISTER_AIRCRAFT` for US070.
 - `DECOMMISSION_AIRCRAFT` for US071.
 - `CREATE_ROUTE` for US073.
+- `CREATE_FLIGHT` for scheduled flight creation.
+- `ADD_PILOT` for adding a pilot to the company roster.
+- `LIST_PILOT_ROSTER` for listing the company pilot roster.
+- `DEACTIVATE_PILOT` for deactivating a company pilot.
 
 ## 4. Protocol Draft
 
@@ -60,9 +64,13 @@ LIST_FLEET
 REGISTER_AIRCRAFT|registration|country|status|crewSize|economySeats|businessSeats|firstClassSeats|aircraftModelName|aircraftModelManufacturer|engineModelName|engineModelManufacturer
 DECOMMISSION_AIRCRAFT|registration
 CREATE_ROUTE|routeDesignator|departureAirportIcao|destinationAirportIcao
+CREATE_FLIGHT|routeDesignator|flightDesignator|departureDay|departureTime
+ADD_PILOT|pilotId
+LIST_PILOT_ROSTER
+DEACTIVATE_PILOT|pilotId
 ```
 
-The TCP server and TCP client will use this protocol in the RCOMP implementation step.
+The TCP server and TCP client use this protocol by selecting `SERVICE|US78`.
 
 ## 5. Design
 
@@ -99,6 +107,7 @@ The first implementation step includes tests for:
 - login success and failure;
 - command rejection before login;
 - authorization enforcement;
-- delegation to remote operations.
+- delegation to remote operations;
+- invalid argument count and invalid numeric argument rejection.
 
-Socket-level tests are left for the RCOMP implementation step.
+Socket-level concerns belong to the RCOMP transport layer. The EAPLI tests validate the command boundary and delegation rules.

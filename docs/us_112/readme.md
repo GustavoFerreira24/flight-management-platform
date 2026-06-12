@@ -53,7 +53,6 @@ Generated sections:
 
 - Summary
 - Flight Plan Status
-- Flight Plan Test Status
 - Flight Plans
 
 ## 5. Implementation Notes

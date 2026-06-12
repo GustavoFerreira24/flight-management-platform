@@ -26,4 +26,16 @@ public interface AirCompanyRemoteOperations {
             String routeDesignator,
             String departureAirportIcao,
             String destinationAirportIcao);
+
+    String createFlight(
+            String routeDesignator,
+            String flightDesignator,
+            String departureDay,
+            String departureTime);
+
+    String addPilot(String pilotId);
+
+    String listPilotRoster();
+
+    String deactivatePilot(String pilotId);
 }

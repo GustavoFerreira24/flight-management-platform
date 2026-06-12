@@ -15,7 +15,8 @@ participant ":RemoteAccessRequest" as Request
 participant "credentialHandler\n:CredentialHandler" as Credentials
 participant "authz\n:AisafeAuthorizationService" as Authz
 participant "operations\n:ControllerAirCompanyRemoteOperations" as Ops
-control ":ListAircraftFleetController" as FleetC
+control "EAPLI ATCC Use Case\nControllers" as EapliC
+participant "domain aggregate / DTO" as Result
 
 ATC -> Client : submit remote command
 Client -> Server : TCP line\nLOGIN|username|password
@@ -30,19 +31,21 @@ RemoteC --> Server : OK|Authenticated as username.
 Server --> Client : TCP response
 Client --> ATC : show login success
 
-ATC -> Client : request aircraft fleet
-Client -> Server : TCP line\nLIST_FLEET
+ATC -> Client : submit ATCC use case command
+Client -> Server : TCP line\nLIST_FLEET / REGISTER_AIRCRAFT / DECOMMISSION_AIRCRAFT /\nCREATE_ROUTE / CREATE_FLIGHT / ADD_PILOT /\nLIST_PILOT_ROSTER / DEACTIVATE_PILOT
 Server -> RemoteC : handle(line)
 RemoteC -> Request ++ : parse(line)
 Request --> RemoteC : request
 RemoteC -> Authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
 Authz --> RemoteC : authorized
-RemoteC -> Ops : listAircraftFleet()
-Ops -> FleetC : listAircraftFleet()
-FleetC --> Ops : fleet entries
-Ops --> RemoteC : formatted fleet data
-RemoteC --> Server : DATA|formatted fleet data
+RemoteC -> Ops : delegate command
+Ops -> EapliC : execute matching EAPLI controller
+EapliC -> Result : apply use case / domain rules
+Result --> EapliC : result
+EapliC --> Ops : domain result / DTO
+Ops --> RemoteC : formatted remote payload
+RemoteC --> Server : OK/DATA|payload
 Server --> Client : TCP response
-Client --> ATC : show fleet data
+Client --> ATC : show operation result
 
 @enduml

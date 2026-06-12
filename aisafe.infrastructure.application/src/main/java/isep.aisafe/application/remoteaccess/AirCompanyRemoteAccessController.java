@@ -17,7 +17,11 @@ public class AirCompanyRemoteAccessController {
             "LIST_FLEET",
             "REGISTER_AIRCRAFT|registration|country|status|crewSize|economySeats|businessSeats|firstClassSeats|aircraftModelName|aircraftModelManufacturer|engineModelName|engineModelManufacturer",
             "DECOMMISSION_AIRCRAFT|registration",
-            "CREATE_ROUTE|routeDesignator|departureAirportIcao|destinationAirportIcao"
+            "CREATE_ROUTE|routeDesignator|departureAirportIcao|destinationAirportIcao",
+            "CREATE_FLIGHT|routeDesignator|flightDesignator|departureDay|departureTime",
+            "ADD_PILOT|pilotId",
+            "LIST_PILOT_ROSTER",
+            "DEACTIVATE_PILOT|pilotId"
     );
 
     private final CredentialHandler credentialHandler;
@@ -101,6 +105,23 @@ public class AirCompanyRemoteAccessController {
                         request.argument(1),
                         request.argument(2)
                 ));
+            case "CREATE_FLIGHT":
+                requireAuthenticated(request, 4);
+                return RemoteAccessResponse.ok(operations.createFlight(
+                        request.argument(0),
+                        request.argument(1),
+                        request.argument(2),
+                        request.argument(3)
+                ));
+            case "ADD_PILOT":
+                requireAuthenticated(request, 1);
+                return RemoteAccessResponse.ok(operations.addPilot(request.argument(0)));
+            case "LIST_PILOT_ROSTER":
+                requireAuthenticated(request, 0);
+                return RemoteAccessResponse.data(operations.listPilotRoster());
+            case "DEACTIVATE_PILOT":
+                requireAuthenticated(request, 1);
+                return RemoteAccessResponse.ok(operations.deactivatePilot(request.argument(0)));
             default:
                 return RemoteAccessResponse.error("Unknown remote command: " + request.command());
         }

@@ -22,6 +22,10 @@ class AirCompanyRemoteAccessControllerTest {
         assertEquals("DATA", response.status());
         assertTrue(response.payload().contains("LOGIN"));
         assertTrue(response.payload().contains("LIST_FLEET"));
+        assertTrue(response.payload().contains("CREATE_FLIGHT"));
+        assertTrue(response.payload().contains("ADD_PILOT"));
+        assertTrue(response.payload().contains("LIST_PILOT_ROSTER"));
+        assertTrue(response.payload().contains("DEACTIVATE_PILOT"));
     }
 
     /**
@@ -132,6 +136,95 @@ class AirCompanyRemoteAccessControllerTest {
         assertEquals(10, operations.firstClassSeats);
     }
 
+    @Test
+    void ensureDecommissionAircraftDelegatesToRemoteOperations() {
+        final FakeOperations operations = new FakeOperations();
+        final AirCompanyRemoteAccessController controller = controller(new FakeCredentialHandler(true),
+                new FakeAuthorizationService(), operations);
+
+        controller.handle("LOGIN|tap.collaborator@aisafe.com|Password1");
+        final RemoteAccessResponse response = controller.handle("DECOMMISSION_AIRCRAFT|CS-TAP");
+
+        assertTrue(response.isOk());
+        assertEquals("decommissioned CS-TAP", response.payload());
+        assertEquals("CS-TAP", operations.decommissionRegistration);
+    }
+
+    @Test
+    void ensureCreateRouteDelegatesToRemoteOperations() {
+        final FakeOperations operations = new FakeOperations();
+        final AirCompanyRemoteAccessController controller = controller(new FakeCredentialHandler(true),
+                new FakeAuthorizationService(), operations);
+
+        controller.handle("LOGIN|tap.collaborator@aisafe.com|Password1");
+        final RemoteAccessResponse response = controller.handle("CREATE_ROUTE|TP123|LPPT|LPPR");
+
+        assertTrue(response.isOk());
+        assertEquals("route TP123", response.payload());
+        assertEquals("TP123", operations.routeDesignator);
+        assertEquals("LPPT", operations.departureAirportIcao);
+        assertEquals("LPPR", operations.destinationAirportIcao);
+    }
+
+    @Test
+    void ensureCreateFlightDelegatesToRemoteOperations() {
+        final FakeOperations operations = new FakeOperations();
+        final AirCompanyRemoteAccessController controller = controller(new FakeCredentialHandler(true),
+                new FakeAuthorizationService(), operations);
+
+        controller.handle("LOGIN|tap.collaborator@aisafe.com|Password1");
+        final RemoteAccessResponse response = controller.handle("CREATE_FLIGHT|TP123|TP123A|2027-01-10|10:00");
+
+        assertTrue(response.isOk());
+        assertEquals("flight TP123A", response.payload());
+        assertEquals("TP123", operations.routeDesignator);
+        assertEquals("TP123A", operations.flightDesignator);
+        assertEquals("2027-01-10", operations.departureDay);
+        assertEquals("10:00", operations.departureTime);
+    }
+
+    @Test
+    void ensureAddPilotDelegatesToRemoteOperations() {
+        final FakeOperations operations = new FakeOperations();
+        final AirCompanyRemoteAccessController controller = controller(new FakeCredentialHandler(true),
+                new FakeAuthorizationService(), operations);
+
+        controller.handle("LOGIN|tap.collaborator@aisafe.com|Password1");
+        final RemoteAccessResponse response = controller.handle("ADD_PILOT|ABC");
+
+        assertTrue(response.isOk());
+        assertEquals("pilot ABC added", response.payload());
+        assertEquals("ABC", operations.pilotId);
+    }
+
+    @Test
+    void ensureListPilotRosterDelegatesToRemoteOperations() {
+        final FakeOperations operations = new FakeOperations();
+        final AirCompanyRemoteAccessController controller = controller(new FakeCredentialHandler(true),
+                new FakeAuthorizationService(), operations);
+
+        controller.handle("LOGIN|tap.collaborator@aisafe.com|Password1");
+        final RemoteAccessResponse response = controller.handle("LIST_PILOT_ROSTER");
+
+        assertEquals("DATA", response.status());
+        assertEquals("ABC; name=Ben Dover", response.payload());
+        assertTrue(operations.listPilotRosterCalled);
+    }
+
+    @Test
+    void ensureDeactivatePilotDelegatesToRemoteOperations() {
+        final FakeOperations operations = new FakeOperations();
+        final AirCompanyRemoteAccessController controller = controller(new FakeCredentialHandler(true),
+                new FakeAuthorizationService(), operations);
+
+        controller.handle("LOGIN|tap.collaborator@aisafe.com|Password1");
+        final RemoteAccessResponse response = controller.handle("DEACTIVATE_PILOT|ABC");
+
+        assertTrue(response.isOk());
+        assertEquals("pilot ABC deactivated", response.payload());
+        assertEquals("ABC", operations.deactivatedPilotId);
+    }
+
     /**
      * Verifica que valores numericos invalidos sao rejeitados antes da delegacao.
      */
@@ -149,6 +242,20 @@ class AirCompanyRemoteAccessControllerTest {
         assertTrue(response.isError());
         assertEquals("crewSize must be an integer.", response.payload());
         assertNull(operations.registration);
+    }
+
+    @Test
+    void ensureInvalidCreateFlightArgumentCountIsRejected() {
+        final FakeOperations operations = new FakeOperations();
+        final AirCompanyRemoteAccessController controller = controller(new FakeCredentialHandler(true),
+                new FakeAuthorizationService(), operations);
+
+        controller.handle("LOGIN|tap.collaborator@aisafe.com|Password1");
+        final RemoteAccessResponse response = controller.handle("CREATE_FLIGHT|TP123|TP123A");
+
+        assertTrue(response.isError());
+        assertEquals("CREATE_FLIGHT expects 4 argument(s).", response.payload());
+        assertNull(operations.flightDesignator);
     }
 
     /**
@@ -213,7 +320,17 @@ class AirCompanyRemoteAccessControllerTest {
     private static final class FakeOperations implements AirCompanyRemoteOperations {
 
         private boolean listFleetCalled;
+        private boolean listPilotRosterCalled;
         private String registration;
+        private String decommissionRegistration;
+        private String routeDesignator;
+        private String departureAirportIcao;
+        private String destinationAirportIcao;
+        private String flightDesignator;
+        private String departureDay;
+        private String departureTime;
+        private String pilotId;
+        private String deactivatedPilotId;
         private int crewSize;
         private int economySeats;
         private int businessSeats;
@@ -249,6 +366,7 @@ class AirCompanyRemoteAccessControllerTest {
 
         @Override
         public String decommissionAircraft(final String registration) {
+            decommissionRegistration = registration;
             return "decommissioned " + registration;
         }
 
@@ -258,7 +376,42 @@ class AirCompanyRemoteAccessControllerTest {
                 final String departureAirportIcao,
                 final String destinationAirportIcao) {
 
+            this.routeDesignator = routeDesignator;
+            this.departureAirportIcao = departureAirportIcao;
+            this.destinationAirportIcao = destinationAirportIcao;
             return "route " + routeDesignator;
+        }
+
+        @Override
+        public String createFlight(
+                final String routeDesignator,
+                final String flightDesignator,
+                final String departureDay,
+                final String departureTime) {
+
+            this.routeDesignator = routeDesignator;
+            this.flightDesignator = flightDesignator;
+            this.departureDay = departureDay;
+            this.departureTime = departureTime;
+            return "flight " + flightDesignator;
+        }
+
+        @Override
+        public String addPilot(final String pilotId) {
+            this.pilotId = pilotId;
+            return "pilot " + pilotId + " added";
+        }
+
+        @Override
+        public String listPilotRoster() {
+            listPilotRosterCalled = true;
+            return "ABC; name=Ben Dover";
+        }
+
+        @Override
+        public String deactivatePilot(final String pilotId) {
+            deactivatedPilotId = pilotId;
+            return "pilot " + pilotId + " deactivated";
         }
     }
 }
