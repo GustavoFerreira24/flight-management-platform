@@ -1,0 +1,59 @@
+@startuml
+title Pilot Aggregate Scenario: Register a Pilot as a System´s User
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor "AirTransportCompany" as ATC
+boundary ":ListPilotRosterUI" as UI
+control ":ListPilotRosterController" as C
+
+participant "pilot\n:Pilot" as Pilot
+participant "pilotID\n:PilotID" as PilotID
+participant ":SystemUsername" as SU
+participant "customerCollaborator\n:CustomerCollaborator" as CC
+participant "iataCode\n:IATACode" as IATA
+
+participant ":CustomerCollaboratorRepository" as CCRepo
+participant ":AirTransportCompanyRepository" as ATCRepo
+participant ":PilotRepository" as PilotRepo
+
+participant ":UserRegistrationValidator" as URV
+participant ":UserManagementService" as UMS
+
+ATC -> UI : request to list pilot roster
+UI -> C : listPilotRoster()
+
+C -> authz : ensureAuthenticatedUserHasAnyOf(AIR_COMPANY_CONFIGURATION)
+authz -> C : authorized
+
+C -> SU : valueOf(authz.authenticatedUsername())
+SU -> C : returns collaboratorUsername
+
+C -> CCRepo : findBySystemUsername(collaboratorUsername)
+CCRepo -> C : returns collaborator
+
+C -> CC : isAssociatedWithAirTransportCompany()
+CC -> C : returns true or false whether collaborator is associated with air transport company
+
+C -> CC : airTransportCompany()
+CC -> C : returns airTransportCompany
+
+C -> PilotRepo : findAll()
+PilotRepo -> C : returns an Iterable of Pilot
+
+C -> Pilot : companyIATACode()
+Pilot -> C : returns pilot IATACode
+
+C -> ATC : iataCode()
+ATC -> C : returns airTransportCompany IATACode
+
+C -> C : faz ciclo for que verifica se airTransportCompanyIATACode = pilotIATACode e caso seja adiciona o pilot ao Set<Pilot> roster
+
+C -> UI : retruns rooster
+
+UI -> ATC : shows pilot rooster
+@enduml
