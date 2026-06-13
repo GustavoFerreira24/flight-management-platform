@@ -306,7 +306,7 @@ public class FlightPlan implements AggregateRoot<FlightPlanIdentifier>, Serializ
     }
 
     private void invalidateValidationIfNeeded() {
-        if (status == FlightPlanStatus.VALIDATED) {
+        if (status == FlightPlanStatus.VALIDATED || status == FlightPlanStatus.REJECTED) {
             status = FlightPlanStatus.DRAFT;
         }
     }

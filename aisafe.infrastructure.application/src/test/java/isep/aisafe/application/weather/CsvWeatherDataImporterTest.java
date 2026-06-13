@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class CsvWeatherDataImporterTest {
 
-    private static final String HEADER = "day,areaCode,providerName,providerType,parameter,value,unit,altitude,latitude,longitude";
+    private static final String HEADER = "areaCode,latitude,longitude,providerName,providerType,parameter,value,unit,altitude,day";
 
     @TempDir
     private Path temporaryDirectory;
@@ -42,17 +43,13 @@ class CsvWeatherDataImporterTest {
     @Test
     void ensureValidCsvWeatherDataIsImported() throws IOException {
         final CsvWeatherDataImporter importer = new CsvWeatherDataImporter();
-        final Path file = writeCsv("valid-weather.csv", String.join(System.lineSeparator(),
-                HEADER,
-                "2027-02-01,LISACC,IPMA,STATION,TEMPERATURE,18.5,C,1200,38.72,-9.14",
-                "2027-02-01,LISACC,IPMA,STATION,WIND_SPEED,12.0,M/S,1300,38.80,-9.10"
-        ));
+        final Path file = resourcePath("weather/us42/valid/ipma-weather-data.csv");
 
         final List<ImportedWeatherMeasurement> measurements = importer.importFrom(file);
 
-        assertEquals(2, measurements.size());
+        assertEquals(3, measurements.size());
         assertEquals(2, measurements.getFirst().sourceLine());
-        assertEquals("2027-02-01", measurements.getFirst().day());
+        assertEquals("2027-03-01", measurements.getFirst().day());
         assertEquals("LISACC", measurements.getFirst().areaCode());
         assertEquals("IPMA", measurements.getFirst().providerName());
         assertEquals("STATION", measurements.getFirst().providerType());
@@ -63,6 +60,8 @@ class CsvWeatherDataImporterTest {
         assertEquals(38.72, measurements.getFirst().latitude());
         assertEquals(-9.14, measurements.getFirst().longitude());
         assertEquals(3, measurements.get(1).sourceLine());
+        assertEquals("GROUND_SENSOR", measurements.get(1).providerType());
+        assertEquals("SATELLITE", measurements.get(2).providerType());
     }
 
     /**
@@ -75,7 +74,7 @@ class CsvWeatherDataImporterTest {
         final CsvWeatherDataImporter importer = new CsvWeatherDataImporter();
         final Path file = writeCsv("trimmed-weather.csv", String.join(System.lineSeparator(),
                 HEADER,
-                " 2027-02-02 , LISACC , IPMA , STATION , HUMIDITY , 75.0 , PERCENT , 900 , 38.72 , -9.14 "
+                " LISACC , 38.72 , -9.14 , IPMA , STATION , HUMIDITY , 75.0 , PERCENT , 900 , 2027-02-02 "
         ));
 
         final ImportedWeatherMeasurement measurement = importer.importFrom(file).getFirst();
@@ -96,17 +95,13 @@ class CsvWeatherDataImporterTest {
     @Test
     void ensureBlankCsvLinesAreIgnored() throws IOException {
         final CsvWeatherDataImporter importer = new CsvWeatherDataImporter();
-        final Path file = writeCsv("blank-lines-weather.csv", String.join(System.lineSeparator(),
-                HEADER,
-                "",
-                "2027-02-03,LISACC,IPMA,STATION,PRESSURE,1013,HPA,0,38.72,-9.14",
-                "   "
-        ));
+        final Path file = resourcePath("weather/us42/valid/ipma-weather-data-with-blank-lines.csv");
 
         final List<ImportedWeatherMeasurement> measurements = importer.importFrom(file);
 
-        assertEquals(1, measurements.size());
+        assertEquals(2, measurements.size());
         assertEquals(3, measurements.getFirst().sourceLine());
+        assertEquals(5, measurements.get(1).sourceLine());
     }
 
     /**
@@ -135,10 +130,7 @@ class CsvWeatherDataImporterTest {
     @Test
     void ensureInvalidCsvHeaderIsRejected() throws IOException {
         final CsvWeatherDataImporter importer = new CsvWeatherDataImporter();
-        final Path file = writeCsv("invalid-header-weather.csv", String.join(System.lineSeparator(),
-                "day,areaCode,providerName,providerType,parameter,value,unit,altitude,latitude,lon",
-                "2027-02-01,LISACC,IPMA,STATION,TEMPERATURE,18.5,C,1200,38.72,-9.14"
-        ));
+        final Path file = resourcePath("weather/us42/invalid/invalid-header.csv");
 
         final IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -174,10 +166,7 @@ class CsvWeatherDataImporterTest {
     @Test
     void ensureCsvRecordWithWrongFieldCountIsRejected() throws IOException {
         final CsvWeatherDataImporter importer = new CsvWeatherDataImporter();
-        final Path file = writeCsv("short-line-weather.csv", String.join(System.lineSeparator(),
-                HEADER,
-                "2027-02-01,LISACC,IPMA"
-        ));
+        final Path file = resourcePath("weather/us42/invalid/missing-fields.csv");
 
         final IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -195,10 +184,7 @@ class CsvWeatherDataImporterTest {
     @Test
     void ensureCsvRecordWithInvalidValueIsRejected() throws IOException {
         final CsvWeatherDataImporter importer = new CsvWeatherDataImporter();
-        final Path file = writeCsv("invalid-value-weather.csv", String.join(System.lineSeparator(),
-                HEADER,
-                "2027-02-01,LISACC,IPMA,STATION,TEMPERATURE,wrong,C,1200,38.72,-9.14"
-        ));
+        final Path file = resourcePath("weather/us42/invalid/invalid-numeric-value.csv");
 
         final IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -263,7 +249,7 @@ class CsvWeatherDataImporterTest {
         );
         final Path file = writeCsv("controller-weather.csv", String.join(System.lineSeparator(),
                 HEADER,
-                "2027-02-04,LISACC,IPMA,STATION,TEMPERATURE,18.5,C,1200,38.72,-9.14"
+                "LISACC,38.72,-9.14,IPMA,STATION,TEMPERATURE,18.5,C,1200,2027-02-04"
         ));
 
         final BulkWeatherImportResult result = controller.importFromFile(file, importer);
@@ -287,7 +273,7 @@ class CsvWeatherDataImporterTest {
         final String longitude = "longitude".equals(fieldName) ? invalidValue : "-9.14";
         final Path file = writeCsv("invalid-" + fieldName + "-weather.csv", String.join(System.lineSeparator(),
                 HEADER,
-                "2027-02-01,LISACC,IPMA,STATION,TEMPERATURE,18.5,C," + value + "," + latitude + "," + longitude
+                "LISACC," + latitude + "," + longitude + ",IPMA,STATION,TEMPERATURE,18.5,C," + value + ",2027-02-01"
         ));
 
         final IllegalArgumentException exception = assertThrows(
@@ -303,5 +289,13 @@ class CsvWeatherDataImporterTest {
         final Path file = temporaryDirectory.resolve(fileName);
         Files.writeString(file, source);
         return file;
+    }
+
+    private Path resourcePath(final String resourceName) {
+        try {
+            return Path.of(ClassLoader.getSystemResource(resourceName).toURI());
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException("Invalid test resource path: " + resourceName, ex);
+        }
     }
 }

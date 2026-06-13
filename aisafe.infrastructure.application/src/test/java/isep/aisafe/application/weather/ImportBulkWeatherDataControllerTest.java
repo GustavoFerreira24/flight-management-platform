@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -382,6 +383,99 @@ class ImportBulkWeatherDataControllerTest {
         ).orElseThrow().measurements().size());
     }
 
+    /**
+     * Purpose: verify bulk import with a realistic CSV fixture.
+     * Scenario: import a CSV resource with three valid IPMA measurements using supported provider types.
+     * Expected output: all records are imported and stored in the same weather data aggregate.
+     */
+    @Test
+    void ensureCsvFixtureWeatherDataIsImported() throws IOException {
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final ImportBulkWeatherDataController controller = controller(authz, weatherDataRepository);
+
+        final BulkWeatherImportResult result = controller.importFromFile(
+                resourcePath("weather/us42/valid/ipma-weather-data.csv"),
+                new CsvWeatherDataImporter()
+        );
+
+        assertTrue(result.isFullyImported());
+        assertEquals(3, result.importedRecords());
+        assertArrayEquals(AisafePermissions.WEATHER_DATA_MANAGEMENT, authz.requestedRoles());
+        assertEquals(3, weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2027, 3, 1),
+                AirControlAreaCode.valueOf("LISACC")
+        ).orElseThrow().measurements().size());
+    }
+
+    /**
+     * Purpose: verify bulk import with a supplied XLSX weather data file.
+     * Scenario: import the professor CW weather data resource with supported provider data.
+     * Expected output: all generated wind records are imported and stored in the same weather data aggregate.
+     */
+    @Test
+    void ensureXlsxFixtureWeatherDataIsImported() throws IOException {
+        final CapturingAuthorizationService authz = new CapturingAuthorizationService();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final ImportBulkWeatherDataController controller = controller(authz, weatherDataRepository);
+
+        final BulkWeatherImportResult result = controller.importFromFile(resourcePath(
+                "weather/us42/WeatherData_v0/CW_WeatherData_v0.xlsx"
+        ));
+
+        assertTrue(result.isFullyImported());
+        assertEquals(90, result.importedRecords());
+        assertArrayEquals(AisafePermissions.WEATHER_DATA_MANAGEMENT, authz.requestedRoles());
+        assertEquals(90, weatherDataRepository.findByDayAndAirControlArea(
+                LocalDate.of(2026, 6, 22),
+                AirControlAreaCode.valueOf("121")
+        ).orElseThrow().measurements().size());
+    }
+
+    /**
+     * Purpose: verify that CSV import rejects providers that are not pre-registered.
+     * Scenario: import a CSV resource whose provider does not exist in the provider repository.
+     * Expected output: the record is rejected with clear provider feedback.
+     */
+    @Test
+    void ensureCsvFixtureWithUnknownProviderIsRejected() throws IOException {
+        final ImportBulkWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository()
+        );
+
+        final BulkWeatherImportResult result = controller.importFromFile(
+                resourcePath("weather/us42/invalid/unknown-provider.csv"),
+                new CsvWeatherDataImporter()
+        );
+
+        assertEquals(1, result.readRecords());
+        assertEquals(0, result.importedRecords());
+        assertEquals("Weather provider not found.", result.errors().getFirst().message());
+    }
+
+    /**
+     * Purpose: verify that CSV import rejects unsupported provider acquisition types.
+     * Scenario: import a CSV resource where IPMA uses a type not registered in the test repository.
+     * Expected output: the record is rejected with clear provider type feedback.
+     */
+    @Test
+    void ensureCsvFixtureWithUnsupportedProviderTypeIsRejected() throws IOException {
+        final ImportBulkWeatherDataController controller = controller(
+                new CapturingAuthorizationService(),
+                new InMemoryWeatherDataRepository()
+        );
+
+        final BulkWeatherImportResult result = controller.importFromFile(
+                resourcePath("weather/us42/invalid/unsupported-provider-type.csv"),
+                new CsvWeatherDataImporter()
+        );
+
+        assertEquals(1, result.readRecords());
+        assertEquals(0, result.importedRecords());
+        assertEquals("Weather provider does not support the submitted provider type.", result.errors().getFirst().message());
+    }
+
     private ImportBulkWeatherDataController controller(
             final CapturingAuthorizationService authz,
             final InMemoryWeatherDataRepository weatherDataRepository) {
@@ -398,9 +492,21 @@ class ImportBulkWeatherDataControllerTest {
         final InMemoryWeatherProviderRepository weatherProviderRepository = new InMemoryWeatherProviderRepository();
         weatherProviderRepository.save(new WeatherProvider(
                 "IPMA",
-                List.of(WeatherProviderType.valueOf("STATION"))
+                List.of(
+                        WeatherProviderType.valueOf("STATION"),
+                        WeatherProviderType.valueOf("GROUND_SENSOR"),
+                        WeatherProviderType.valueOf("SATELLITE")
+                )
         ));
         return weatherProviderRepository;
+    }
+
+    private Path resourcePath(final String resourceName) {
+        try {
+            return Path.of(ClassLoader.getSystemResource(resourceName).toURI());
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException("Invalid test resource path: " + resourceName, ex);
+        }
     }
 
     private InMemoryAirControlAreaRepository airControlAreaRepository() {
@@ -408,6 +514,12 @@ class ImportBulkWeatherDataControllerTest {
         airControlAreaRepository.save(new AirControlArea(
                 AirControlAreaCode.valueOf("LISACC"),
                 "Lisbon Area Control Centre",
+                GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
+                MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
+        ));
+        airControlAreaRepository.save(new AirControlArea(
+                AirControlAreaCode.valueOf("121"),
+                "Professor Weather Data Area",
                 GeographicBoundary.valueOf(30.0, 45.0, -15.0, 5.0),
                 MinimumFuelRequirement.valueOf(1, FuelUnit.valueOf("KG"))
         ));

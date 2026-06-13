@@ -6,15 +6,16 @@ class ImportBulkWeatherDataUI <<UI>> {
     - controller : ImportBulkWeatherDataController
     - scanner : Scanner
     + show() : void
-    - printCsvFormatInformation() : void
-    - askCsvFilePath() : Path
+    - printFormatInformation() : void
+    - askImportFilePath() : Path
+    - hasSupportedExtension(input : String) : boolean
     - printResult(result : BulkWeatherImportResult) : void
     - printRejectedRecords(result : BulkWeatherImportResult) : void
     - safeMessage(exception : Exception) : String
 }
 
 note right of ImportBulkWeatherDataUI
-  Accepts only non-blank .csv paths.
+  Accepts non-blank .csv and .xlsx paths.
   Displays read, imported and rejected counts.
   Catches validation, IO and runtime failures
   so the console does not crash.
@@ -55,10 +56,25 @@ class CsvWeatherDataImporter <<Importer>> {
     - split(line : String) : String[]
 }
 
+class XlsxWeatherDataImporter <<Importer>> {
+    - {static} DEFAULT_PROVIDER : String
+    - {static} DEFAULT_PROVIDER_TYPE : String
+    + importFrom(file : Path) : List<ImportedWeatherMeasurement>
+    - readSharedStrings(workbook : ZipFile) : List<String>
+    - readRows(workbook : ZipFile, sheetPath : String, sharedStrings : List<String>) : List<Map<Integer, String>>
+    - parseWindRow(row : Map<Integer, String>, sourceLine : int) : List<ImportedWeatherMeasurement>
+}
+
+note bottom of XlsxWeatherDataImporter
+  Supports supplied WeatherData_v0 XLSX files.
+  Reads the Wind sheet and creates WIND_SPEED
+  and WIND_DIRECTION measurements for each row.
+end note
+
 note bottom of CsvWeatherDataImporter
   Expected header:
-  day,areaCode,providerName,providerType,
-  parameter,value,unit,altitude,latitude,longitude
+  areaCode,latitude,longitude,providerName,
+  providerType,parameter,value,unit,altitude,day
   Blank lines are ignored and fields are trimmed.
 end note
 
@@ -196,8 +212,11 @@ ImportBulkWeatherDataController --> AirControlAreaRepository
 ImportBulkWeatherDataController --> WeatherProviderRepository
 
 WeatherDataImporterFactory --> CsvWeatherDataImporter
+WeatherDataImporterFactory --> XlsxWeatherDataImporter
 WeatherDataImporter <|.. CsvWeatherDataImporter
+WeatherDataImporter <|.. XlsxWeatherDataImporter
 CsvWeatherDataImporter --> ImportedWeatherMeasurement
+XlsxWeatherDataImporter --> ImportedWeatherMeasurement
 BulkWeatherImportResult *-- BulkWeatherImportError
 
 RegisterWeatherDataController --> AisafeAuthorizationService

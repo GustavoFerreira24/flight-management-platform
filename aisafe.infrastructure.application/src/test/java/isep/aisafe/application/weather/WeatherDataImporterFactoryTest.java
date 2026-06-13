@@ -41,6 +41,34 @@ class WeatherDataImporterFactoryTest {
     }
 
     /**
+     * Purpose: verify XLSX importer selection.
+     * Scenario: request an importer for a XLSX weather data file.
+     * Expected output: a XLSX weather data importer is returned.
+     */
+    @Test
+    void ensureXlsxWeatherDataImporterIsSelected() {
+        final WeatherDataImporterFactory factory = new WeatherDataImporterFactory();
+
+        final WeatherDataImporter importer = factory.importerFor(Path.of("weather-data.xlsx"));
+
+        assertInstanceOf(XlsxWeatherDataImporter.class, importer);
+    }
+
+    /**
+     * Purpose: verify case-insensitive XLSX importer selection.
+     * Scenario: request an importer for a XLSX file with uppercase extension.
+     * Expected output: a XLSX weather data importer is returned.
+     */
+    @Test
+    void ensureXlsxWeatherDataImporterSelectionIsCaseInsensitive() {
+        final WeatherDataImporterFactory factory = new WeatherDataImporterFactory();
+
+        final WeatherDataImporter importer = factory.importerFor(Path.of("WEATHER-DATA.XLSX"));
+
+        assertInstanceOf(XlsxWeatherDataImporter.class, importer);
+    }
+
+    /**
      * Purpose: verify unsupported format handling.
      * Scenario: request an importer for a file extension that is not supported yet.
      * Expected output: an IllegalArgumentException is thrown with clear feedback.

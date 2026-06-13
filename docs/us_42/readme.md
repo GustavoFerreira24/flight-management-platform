@@ -2,7 +2,7 @@
 
 ## 1. Context
 
-This user story was developed for the Weather Service area. The goal is to allow an authenticated Weather Person to import multiple weather measurements from an external source, initially through a simple CSV file.
+This user story was developed for the Weather Service area. The goal is to allow an authenticated Weather Person to import multiple weather measurements from an external source, initially through a simple CSV file and the supplied WeatherData_v0 XLSX files.
 
 The implementation reuses the weather data registration rules introduced in US041. Bulk import is responsible for reading external records and reporting failures, while persistence and domain validation remain centralized in `RegisterWeatherDataController` and the `WeatherData` aggregate.
 
@@ -10,6 +10,7 @@ The implementation reuses the weather data registration rules introduced in US04
 
 - US042.1 - Implement Bulk Weather Data Import
 - US042.2 - Support CSV Weather Data Import
+- US042.2a - Support Supplied XLSX Weather Data Import
 - US042.3 - Validate Imported Weather Data
 - US042.4 - Design Extensible Weather Provider Import Mechanism
 - US042.5 - Add Bulk Weather Import Tests
@@ -23,6 +24,7 @@ The implementation reuses the weather data registration rules introduced in US04
 
 - AC1 - Weather Person can successfully import bulk weather data into the system.
 - AC2 - CSV weather data files are supported for initial import.
+- AC2a - Supplied WeatherData_v0 XLSX files can be imported through the same bulk import flow.
 - AC3 - Imported weather data is validated before persistence.
 - AC4 - Invalid records are rejected or reported with clear feedback.
 - AC5 - Imported weather data is associated with the correct air control area and source.
@@ -61,6 +63,16 @@ CSV parsing performs only structural validation:
 - leading and trailing whitespace is trimmed from each field;
 - blank lines are ignored.
 
+XLSX parsing supports the supplied `WeatherData_v0` workbook layout:
+
+- the `Wind` sheet is read from the workbook;
+- each wind row is converted into one `WIND_SPEED` measurement and one `WIND_DIRECTION` measurement;
+- `Value (knot)` is mapped to unit `KT`;
+- `Direction (degree)` is mapped to unit `DEG`;
+- the measurement altitude is the average of `Alt_inf (ft)` and `Alt_Sup (ft)`;
+- the Excel serial `Day` value is converted to ISO date format;
+- provider data is mapped to pre-registered provider `IPMA` with provider type `SATELLITE`.
+
 If parsing fails structurally, the import is rejected with a clear message. If individual records fail domain/application validation, the controller imports the remaining valid records and returns a `BulkWeatherImportResult` containing the source line and error message for each rejected record.
 
 ## 4. Design
@@ -71,7 +83,7 @@ If parsing fails structurally, the import is rejected with a clear message. If i
 
 ![US42 sequence diagram](diagrams/sequence-diagram-42.svg "US42 Sequence Diagram")
 
-The `ImportBulkWeatherDataUI` is available from the Weather Person Backoffice menu. It asks for a CSV file path, validates that the path input is non-blank and uses a `.csv` extension, then delegates the import to `ImportBulkWeatherDataController`.
+The `ImportBulkWeatherDataUI` is available from the Weather Person Backoffice menu. It asks for an import file path, validates that the path input is non-blank and uses a supported `.csv` or `.xlsx` extension, then delegates the import to `ImportBulkWeatherDataController`.
 
 The `ImportBulkWeatherDataController` coordinates the use case:
 
@@ -83,48 +95,48 @@ The `ImportBulkWeatherDataController` coordinates the use case:
 6. Collects per-record `IllegalArgumentException` failures as `BulkWeatherImportError` entries.
 7. Returns `BulkWeatherImportResult` with read, imported and rejected counts.
 
-The extensibility point is `WeatherDataImporter`. Adding a future importer requires a new implementation of this interface and a factory selection rule for the new format or provider.
+The extensibility point is `WeatherDataImporter`. `CsvWeatherDataImporter` supports the initial CSV format and `XlsxWeatherDataImporter` supports the supplied WeatherData_v0 XLSX files. Adding a future importer requires a new implementation of this interface and a factory selection rule for the new format or provider.
 
 ### 4.2. CSV Format
 
-The initial supported format is CSV with this exact header:
+The initial supported format is CSV with this exact header, ordered to mirror the supplied weather data files by placing area and coordinates first:
 
 ```csv
-day,areaCode,providerName,providerType,parameter,value,unit,altitude,latitude,longitude
+areaCode,latitude,longitude,providerName,providerType,parameter,value,unit,altitude,day
 ```
 
 Example:
 
 ```csv
-day,areaCode,providerName,providerType,parameter,value,unit,altitude,latitude,longitude
-2026-06-01,LISACC,IPMA,GROUND_SENSOR,TEMPERATURE,18.5,C,1200,38.72,-9.14
-2026-06-01,LISACC,IPMA,SATELLITE,WIND_SPEED,12.0,M/S,1500,38.80,-9.10
+areaCode,latitude,longitude,providerName,providerType,parameter,value,unit,altitude,day
+LISACC,38.72,-9.14,IPMA,GROUND_SENSOR,TEMPERATURE,18.5,C,1200,2026-06-01
+LISACC,38.80,-9.10,IPMA,SATELLITE,WIND_SPEED,12.0,M/S,1500,2026-06-01
 ```
 
 Fields:
 
 | Field          | Description |
 |----------------|-------------|
-| `day`          | Measurement day in ISO format `YYYY-MM-DD` |
 | `areaCode`     | Existing air control area code |
+| `latitude`     | Latitude where the value applies |
+| `longitude`    | Longitude where the value applies |
 | `providerName` | Pre-registered weather data provider name, for example `IPMA` |
 | `providerType` | Acquisition method/source type used by the provider for this measurement, for example `GROUND_SENSOR`, `SATELLITE`, `BALLOON` or `MANUAL_INPUT` |
 | `parameter`    | Weather parameter, for example `TEMPERATURE`, `WIND_SPEED`, `WIND_DIRECTION`, `PRESSURE`, `HUMIDITY` |
 | `value`        | Numeric measurement value |
 | `unit`         | Measurement unit compatible with the parameter |
 | `altitude`     | Non-negative altitude where the value applies |
-| `latitude`     | Latitude where the value applies |
-| `longitude`    | Longitude where the value applies |
+| `day`          | Measurement day in ISO format `YYYY-MM-DD` |
 
 ### 4.3. Validation Rules
 
 The import validates data at three levels:
 
-- UI validation: requires a non-blank `.csv` path and catches user-facing exceptions.
-- Importer validation: checks CSV header, field count and numeric fields.
+- UI validation: requires a non-blank `.csv` or `.xlsx` path and catches user-facing exceptions.
+- Importer validation: checks CSV header, field count and numeric fields, or checks the supplied XLSX Wind sheet structure.
 - Controller/domain validation: checks authorization, required data, air control area association, coordinates, provider existence, provider type support, parameter, unit and value rules.
 
-Invalid CSV structure stops the import because records cannot be safely mapped. Invalid domain records are rejected individually and reported with their source line.
+Invalid CSV/XLSX structure stops the import because records cannot be safely mapped. Invalid domain records are rejected individually and reported with their source line.
 
 ### 4.4. Acceptance Tests
 
@@ -152,13 +164,19 @@ Implemented in `CsvWeatherDataImporterTest`.
 
 Implemented in `CsvWeatherDataImporterTest`.
 
-**Test 5:** Importer selection supports CSV and rejects unsupported formats.
+**Test 5:** Importer selection supports CSV/XLSX and rejects unsupported formats.
 
 **Refers to Acceptance Criteria:** AC6
 
 Implemented in `WeatherDataImporterFactoryTest`.
 
-**Test 6:** Import result and error value objects enforce valid state.
+**Test 6:** Supplied WeatherData_v0 XLSX files are parsed and imported.
+
+**Refers to Acceptance Criteria:** AC1, AC2a, AC3, AC5, AC6
+
+Implemented in `XlsxWeatherDataImporterTest` and `ImportBulkWeatherDataControllerTest.ensureXlsxFixtureWeatherDataIsImported`.
+
+**Test 7:** Import result and error value objects enforce valid state.
 
 **Refers to Acceptance Criteria:** AC4, AC7
 
@@ -168,11 +186,12 @@ Implemented in `BulkWeatherImportResultTest` and related application tests.
 
 Main implementation artifacts:
 
-- `ImportBulkWeatherDataUI`: console UI for Weather Persons to import CSV weather data files and display read/imported/rejected counts.
+- `ImportBulkWeatherDataUI`: console UI for Weather Persons to import CSV/XLSX weather data files and display read/imported/rejected counts.
 - `ImportBulkWeatherDataController`: application controller that coordinates authorization, file validation, importer selection, per-record persistence and error aggregation.
 - `WeatherDataImporter`: interface for importers that convert external files into `ImportedWeatherMeasurement` records.
 - `CsvWeatherDataImporter`: initial importer that supports the defined CSV format.
-- `WeatherDataImporterFactory`: selects the importer based on file format; currently supports `.csv`.
+- `XlsxWeatherDataImporter`: importer that supports the supplied WeatherData_v0 XLSX Wind sheet format.
+- `WeatherDataImporterFactory`: selects the importer based on file format; currently supports `.csv` and `.xlsx`.
 - `ImportedWeatherMeasurement`: DTO representing one measurement read from an import source, including the original source line.
 - `BulkWeatherImportResult`: result object with read record count, imported record count and rejected record errors.
 - `BulkWeatherImportError`: value object describing a rejected record line and reason.
@@ -217,7 +236,7 @@ Username/Email: ipma
 Password: Password1
 ```
 
-Then select the Weather Person menu option for importing bulk weather data and provide the path to a CSV file.
+Then select the Weather Person menu option for importing bulk weather data and provide the path to a CSV or XLSX file.
 
 ### Expected feedback
 
@@ -225,11 +244,11 @@ For a fully valid file, the UI reports a successful import and prints the number
 
 For a partially valid file, valid records are imported and rejected records are listed with their source line and validation message.
 
-For an invalid file path, unsupported extension, malformed CSV header or unreadable file, the UI shows a clear error message and does not crash.
+For an invalid file path, unsupported extension, malformed CSV/XLSX structure or unreadable file, the UI shows a clear error message and does not crash.
 
 ## 7. Observations
 
-The current CSV parser is intentionally simple and does not support quoted commas. This is acceptable for the initial development format described by US042. Future provider-specific formats should be added as new `WeatherDataImporter` implementations instead of adding provider-specific logic to `ImportBulkWeatherDataController`.
+The current CSV parser is intentionally simple and does not support quoted commas. This is acceptable for the initial development format described by US042. The supplied XLSX importer is intentionally scoped to the `WeatherData_v0` Wind sheet layout. Future provider-specific formats should be added as new `WeatherDataImporter` implementations instead of adding provider-specific logic to `ImportBulkWeatherDataController`.
 
 Manual weather registration uses the authenticated username as provider name and `MANUAL_INPUT` as provider type. CSV import keeps provider name and provider type from the file, allowing records such as `IPMA/SATELLITE`, `IPMA/GROUND_SENSOR` or `IPMA/BALLOON`. In both cases, the provider must already be registered and must support the submitted provider type.
 

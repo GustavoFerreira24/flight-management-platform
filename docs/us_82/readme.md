@@ -58,7 +58,7 @@ The `InsertWeatherDataInFlightPlanController` coordinates the use case:
 3. Parses the weather data day using ISO local date format.
 4. Converts the flight plan identifier and air control area code into value objects.
 5. Retrieves the selected `FlightPlan` through `FlightPlanRepository`.
-6. Verifies that `FlightPlan.pilot().identity()` matches `AisafeAuthorizationService.authenticatedUsername()`.
+6. Verifies that the authenticated user owns the flight plan by matching either `FlightPlan.pilot().identity()` with `AisafeAuthorizationService.authenticatedUsername()` or `FlightPlan.pilot().email()` with `AisafeAuthorizationService.authenticatedEmail()`.
 7. Retrieves existing `WeatherData` through `WeatherDataRepository.findByDayAndAirControlArea(...)`.
 8. Calls `FlightPlan.addWeatherData(...)`.
 9. Saves the updated flight plan.
@@ -72,7 +72,7 @@ The `InsertWeatherDataInFlightPlanController` coordinates the use case:
 | Weather data day | Required, ISO date format `YYYY-MM-DD`. |
 | Air control area code | Required, normalized by `AirControlAreaCode`. |
 | Flight plan existence | Unknown flight plans are rejected. |
-| Ownership | Authenticated username must match the flight plan pilot identifier. |
+| Ownership | Authenticated username must match the flight plan pilot identifier, or authenticated email must match the flight plan pilot email. |
 | Weather data existence | Weather data must already exist for the selected day and area. |
 | Duplicate weather data | Re-adding the same weather data does not duplicate the association. |
 
@@ -119,13 +119,13 @@ Implemented in `InsertWeatherDataInFlightPlanControllerTest.ensureInvalidInserti
 
 **Refers to Acceptance Criteria:** AC5
 
-Implemented in `FlightPlanTest.ensureAddingWeatherDataVoidsPreviousTest` and `InsertWeatherDataInFlightPlanControllerTest.ensureWeatherDataInsertionVoidsPreviousFlightPlanTest`.
+Implemented in `FlightPlanTest.ensureAddingWeatherDataInvalidatesPreviousValidation`, `FlightPlanTest.ensureAddingWeatherDataInvalidatesPreviousRejection`, `InsertWeatherDataInFlightPlanControllerTest.ensureWeatherDataInsertionInvalidatesPreviousFlightPlanValidation` and `InsertWeatherDataInFlightPlanControllerTest.ensureWeatherDataInsertionInvalidatesPreviousFlightPlanRejection`.
 
-**Test 6:** Duplicate weather data is not added twice and does not void an unchanged tested flight plan.
+**Test 6:** Duplicate weather data is not added twice and does not invalidate an unchanged tested flight plan.
 
 **Refers to Acceptance Criteria:** AC2, AC5
 
-Implemented in `FlightPlanTest.ensureDuplicateWeatherDataIsNotAddedTwice` and `FlightPlanTest.ensureDuplicateWeatherDataDoesNotVoidPreviousTest`.
+Implemented in `FlightPlanTest.ensureDuplicateWeatherDataIsNotAddedTwice` and `FlightPlanTest.ensureDuplicateWeatherDataDoesNotInvalidatePreviousValidation`.
 
 **Test 7:** Weather data insertion permission is restricted to Pilot.
 
@@ -137,7 +137,7 @@ Implemented in `AisafePermissionsTest.ensureFlightPlanWeatherDataInsertionPermis
 
 Main implementation artifacts:
 
-- `FlightPlan`: aggregate root that stores the flight plan identifier, flight, aircraft, pilot, fuel quantity, associated weather data ids and test status.
+- `FlightPlan`: aggregate root that stores the flight plan identifier, flight, aircraft, pilot, fuel quantity, lifecycle status and associated weather data ids.
 - `FlightPlanIdentifier`: value object for flight plan identity.
 - `Pilot`/`PilotID`: owning pilot aggregate and identifier used for ownership validation.
 - `FlightPlanStatus`: enum representing `DRAFT`, `UNDER_VALIDATION`, `VALIDATED` and `REJECTED`.
@@ -166,7 +166,7 @@ Weather data day: 2027-01-10
 Air control area code: CONACC
 ```
 
-If the authenticated user is `pilot01`, the selected `FlightPlan` must have a `Pilot` whose `PilotID` is `pilot01`.
+If the authenticated user is `pilot01`, the selected `FlightPlan` must have a `Pilot` whose `PilotID` is `pilot01`, or the authenticated user's email must match the `Pilot` email.
 
 ### User Feedback Messages
 

@@ -189,6 +189,37 @@ class InsertWeatherDataInFlightPlanControllerTest {
     }
 
     /**
+     * Purpose: verify previous rejected flight plan invalidation through the use case.
+     * Scenario: weather data is inserted in a previously rejected flight plan.
+     * Expected output: the updated and persisted flight plan returns to draft status.
+     */
+    @Test
+    void ensureWeatherDataInsertionInvalidatesPreviousFlightPlanRejection() {
+        // Arrange
+        final InMemoryFlightPlanRepository flightPlanRepository = new InMemoryFlightPlanRepository();
+        final InMemoryWeatherDataRepository weatherDataRepository = new InMemoryWeatherDataRepository();
+        final FlightPlan flightPlan = flightPlan();
+        final WeatherData weatherData = weatherData();
+        flightPlan.reject();
+        flightPlanRepository.save(flightPlan);
+        weatherDataRepository.save(weatherData);
+        final InsertWeatherDataInFlightPlanController controller = new InsertWeatherDataInFlightPlanController(
+                new CapturingAuthorizationService(),
+                flightPlanRepository,
+                weatherDataRepository
+        );
+
+        // Act
+        final FlightPlan updatedFlightPlan = controller.insertWeatherData("FP001", "2027-01-10", "CONACC");
+
+        // Assert
+        assertEquals(FlightPlanStatus.DRAFT, updatedFlightPlan.status());
+        assertEquals(FlightPlanStatus.DRAFT, flightPlanRepository.findByIdentifier(FlightPlanIdentifier.valueOf("FP001"))
+                .orElseThrow()
+                .status());
+    }
+
+    /**
      * Purpose: verify missing flight plan handling.
      * Scenario: weather data insertion is requested for an unknown flight plan.
      * Expected output: the operation is rejected with a clear message.
