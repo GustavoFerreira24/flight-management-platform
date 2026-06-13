@@ -1,6 +1,6 @@
 # SCOMP Flight Simulation System
 
-This module implements the SCOMP flight simulation component. The default simulator keeps the Sprint 2 pipe-based architecture, while `run-hybrid` provides the Sprint 3 hybrid architecture for US105 and US108.
+This module implements the SCOMP flight simulation component. The default simulator uses processes, pipes and signals. The `run-hybrid` target provides the Sprint 3 shared-memory version for US105, US106 and US108.
 
 ## Component Diagram
 
@@ -79,7 +79,7 @@ For each timestep:
 3. the parent waits until it receives all updates for that timestep;
 4. only then the parent scans for violations and advances to the next timestep.
 
-This creates a barrier implemented with pipes. The parent only advances when:
+This creates a pipe-based timestep barrier. The parent only advances when:
 
 ```text
 received_updates == flight_count
@@ -150,9 +150,9 @@ Thread coordination uses mutex-protected parent state and condition-variable not
 
 Status: implemented as part of the separate Sprint 3 hybrid mode.
 
-### US108 - Synchronize Hybrid Simulation With Semaphores
+### US108 - Enforce Step-By-Step Simulation Synchronization
 
-The hybrid simulator uses named POSIX semaphores in `hybrid_sync.c` to coordinate the parent process, child flight processes and parent-side threads.
+The hybrid simulator uses named POSIX semaphores in `hybrid_sync.c` to keep all flight processes and parent threads in lockstep through each simulation timestep.
 
 For each timestep:
 
@@ -161,9 +161,9 @@ For each timestep:
 3. the scheduler waits until all updates for that timestep have been posted;
 4. the safety thread and scheduler stay in lockstep with `parent_step_ready` and `parent_step_done` semaphores.
 
-This creates a semaphore-based barrier in the hybrid mode. The default simulator still uses the simpler pipe-based barrier described in US103.
+This creates a semaphore-based barrier for both parts of the US108 requirement: flight processes advance one step at a time, and parent threads only process the next step after the current step is complete.
 
-Status: implemented as part of the separate Sprint 3 hybrid mode.
+Status: implemented as part of the Sprint 3 hybrid mode.
 
 ## Not Implemented Yet
 
@@ -173,7 +173,7 @@ The following mechanisms are still pending for later Sprint 3 user stories:
 - HTTP/AJAX visualization;
 - environmental/weather thread.
 
-The default `make run` simulator still uses pipes. The `make run-hybrid` simulator uses shared memory, semaphores, threads, mutexes, condition variables and signals.
+The default `make run` simulator uses pipes and signals. The `make run-hybrid` simulator uses shared memory, semaphores, threads, mutexes, condition variables and signals.
 
 ## Build And Run
 
@@ -230,6 +230,8 @@ PASS test_flight_loader
 PASS test_report
 PASS test_shared_simulation
 PASS test_hybrid_sync
+PASS test_safety_report_notifier
+PASS test_hybrid_simulation
 ```
 
 ## Validation Evidence
@@ -244,7 +246,9 @@ The solution was validated with:
 - unit tests for CSV flight loading;
 - unit tests for final report generation;
 - unit tests for shared memory initialization;
-- unit tests for hybrid semaphore synchronization.
+- unit tests for hybrid semaphore synchronization;
+- unit tests for parent-thread report notification;
+- unit tests for hybrid simulation setup.
 
 The large simulations demonstrate that the parent process receives all updates before advancing:
 
