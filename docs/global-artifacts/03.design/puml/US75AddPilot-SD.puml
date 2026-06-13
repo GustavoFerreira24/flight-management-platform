@@ -1,5 +1,5 @@
 @startuml
-title Pilot Aggregate Scenario: Register a Pilot as a System´s User
+title Pilot Aggregate Scenario: Add a pilot to an Air Transport Company
 
 skinparam monochrome true
 skinparam packageStyle rectangle
