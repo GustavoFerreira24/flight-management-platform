@@ -159,6 +159,25 @@ class FlightPlanTest {
     }
 
     /**
+     * Purpose: verify previous rejection invalidation when weather data changes.
+     * Scenario: add new weather data to a previously rejected flight plan.
+     * Expected output: the flight plan returns to draft because the previous test result is no longer current.
+     */
+    @Test
+    void ensureAddingWeatherDataInvalidatesPreviousRejection() {
+        // Arrange
+        final FlightPlan flightPlan = flightPlan();
+        flightPlan.reject();
+
+        // Act
+        flightPlan.addWeatherData(weatherData());
+
+        // Assert
+        assertEquals(FlightPlanStatus.DRAFT, flightPlan.status());
+        assertTrue(flightPlan.canBeTested());
+    }
+
+    /**
      * Purpose: verify duplicate weather data does not invalidate an unchanged flight plan.
      * Scenario: add already associated weather data to a validated flight plan.
      * Expected output: the status remains validated because no weather data was added.

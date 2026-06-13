@@ -18,6 +18,7 @@ class InsertWeatherDataInFlightPlanController <<Controller>> {
 class AisafeAuthorizationService <<Service>> {
     + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
     + authenticatedUsername() : String
+    + authenticatedEmail() : String
 }
 
 class AisafePermissions <<Permissions>> {
@@ -45,11 +46,12 @@ class FlightPlan <<Aggregate Root>> {
     - fuelQuantity : FuelQuantity
     - status : FlightPlanStatus
     - weatherDataIds : List<WeatherDataId>
-    - testStatus : FlightPlanTestStatus
     + addWeatherData(weatherData : WeatherData) : void
-    + markTested() : void
+    + markUnderValidation() : void
+    + validate() : void
+    + reject() : void
     + pilot() : Pilot
-    + testStatus() : FlightPlanTestStatus
+    + status() : FlightPlanStatus
     + weatherDataIds() : List<WeatherDataId>
 }
 
@@ -63,11 +65,9 @@ class PilotID <<Value Object>>
 class FuelQuantity <<Value Object>>
 enum FlightPlanStatus {
     DRAFT
-}
-enum FlightPlanTestStatus {
-    NOT_TESTED
-    TESTED
-    VOID
+    UNDER_VALIDATION
+    VALIDATED
+    REJECTED
 }
 
 class WeatherData <<Aggregate Root>> {
@@ -100,7 +100,6 @@ FlightPlan --> Aircraft
 FlightPlan --> Pilot
 FlightPlan *-- FuelQuantity
 FlightPlan *-- FlightPlanStatus
-FlightPlan *-- FlightPlanTestStatus
 FlightPlan "1" *-- "0..*" WeatherDataId
 Pilot *-- PilotID
 WeatherData *-- WeatherDataId
