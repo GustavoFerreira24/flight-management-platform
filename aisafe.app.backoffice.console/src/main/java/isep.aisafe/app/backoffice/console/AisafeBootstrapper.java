@@ -375,6 +375,18 @@ public class AisafeBootstrapper {
                 5000.0,
                 "KG"
         );
+
+        registerAirControlAreaIfMissing(
+                repository,
+                "121",
+                "WeatherData v0 Area Control Centre",
+                37.052988,
+                43.840454,
+                -9.795711,
+                4.936039,
+                5000.0,
+                "KG"
+        );
     }
 
     /**

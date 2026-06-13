@@ -14,16 +14,16 @@ public class CsvWeatherDataImporter implements WeatherDataImporter {
 
     private static final int EXPECTED_FIELD_COUNT = 10;
     private static final String[] EXPECTED_HEADER = {
-            "day",
             "areaCode",
+            "latitude",
+            "longitude",
             "providerName",
             "providerType",
             "parameter",
             "value",
             "unit",
             "altitude",
-            "latitude",
-            "longitude"
+            "day"
     };
 
     /**
@@ -78,16 +78,16 @@ public class CsvWeatherDataImporter implements WeatherDataImporter {
 
         return new ImportedWeatherMeasurement(
                 sourceLine,
+                fields[9],
                 fields[0],
-                fields[1],
-                fields[2],
                 fields[3],
                 fields[4],
-                parseDouble(fields[5], sourceLine, "value"),
-                fields[6],
-                parseDouble(fields[7], sourceLine, "altitude"),
-                parseDouble(fields[8], sourceLine, "latitude"),
-                parseDouble(fields[9], sourceLine, "longitude")
+                fields[5],
+                parseDouble(fields[6], sourceLine, "value"),
+                fields[7],
+                parseDouble(fields[8], sourceLine, "altitude"),
+                parseDouble(fields[1], sourceLine, "latitude"),
+                parseDouble(fields[2], sourceLine, "longitude")
         );
     }
 
