@@ -7,7 +7,7 @@ skinparam shadowing false
 
 autonumber
 
-actor "Flight Control Operator" as FCO
+actor "Pilot" as PilotActor
 boundary ":CreateFlightPlanUI" as UI
 control ":CreateFlightPlanController" as C
 participant "authz\n:AisafeAuthorizationService" as Authz
@@ -21,14 +21,15 @@ participant "pilot\n:Pilot" as Pilot
 participant "fuelQuantity\n:FuelQuantity" as FuelQuantity
 participant "flightPlan\n:FlightPlan" as FlightPlan
 
-FCO -> UI : request flight plan creation
-UI -> FCO : ask flight plan identifier, flight designator,
-FCO -> UI : submit flight plan data
+PilotActor -> UI : request flight plan creation
+UI -> PilotActor : ask flight plan id, flight designator, aircraft and fuel
+PilotActor -> UI : submit flight plan data
 UI -> UI : validate required text and positive fuel amount
 
-UI -> C : createFlightPlan(flightPlanId, flightDesignator,
+UI -> C : createFlightPlan(flightPlanId, flightDesignator, aircraftRegistration, fuelAmount, fuelUnit)
+C -> C : createFlightPlan(flightPlanId, flightDesignator, aircraftRegistration, null, fuelAmount, fuelUnit)
 C -> Authz : ensureAuthenticatedUserHasAnyOf(FLIGHT_PLAN_MANAGEMENT)
-Authz --> C : authorized
+Authz --> C : authorized as Pilot
 
 C -> C : FlightPlanIdentifier.valueOf(flightPlanId)
 C -> FlightPlanRepo : findByIdentifier(flightPlanIdentifier)
@@ -49,23 +50,36 @@ else flight plan identifier is available
         alt aircraft not found
             C --> UI : IllegalArgumentException("Aircraft was not found.")
         else aircraft found
-            C -> PilotRepo : findByCode(PilotID.valueOf(pilotId))
+            C -> Authz : authenticatedEmail()
+            Authz --> C : email
+            C -> PilotRepo : findByEmail(email)
             PilotRepo --> C : Optional<Pilot>
 
-            alt pilot not found
-                C --> UI : IllegalArgumentException("Pilot was not found.")
-            else pilot found
+            alt authenticated pilot not found by email
+                C -> Authz : authenticatedUsername()
+                Authz --> C : username
+                C -> PilotRepo : findByEmail(username)
+                PilotRepo --> C : Optional<Pilot>
+                opt username is a pilot id
+                    C -> PilotRepo : findByCode(PilotID.valueOf(username))
+                    PilotRepo --> C : Optional<Pilot>
+                end
+            end
+
+            alt authenticated pilot not found
+                C --> UI : IllegalStateException("Authenticated pilot was not found.")
+            else authenticated pilot found
                 C -> FuelQuantity ++ : valueOf(fuelAmount, FuelUnit.valueOf(fuelUnit))
                 FuelQuantity --> C : fuelQuantity
 
                 C -> FlightPlan ++ : create(flightPlanIdentifier, flight, aircraft, pilot, fuelQuantity)
-                FlightPlan -> FlightPlan : validate flight, aircraft, pilot and company rules
+                FlightPlan -> FlightPlan : validate aircraft, pilot and company rules
                 FlightPlan --> C : draft flight plan
 
                 C -> FlightPlanRepo : save(flightPlan)
                 FlightPlanRepo --> C : saved FlightPlan
                 C --> UI : saved FlightPlan
-                UI --> FCO : success message with identity
+                UI --> PilotActor : success message with identity
             end
         end
     end

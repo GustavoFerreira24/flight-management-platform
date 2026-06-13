@@ -17,7 +17,10 @@ class CreateFlightPlanController <<Controller>> {
     - aircraftRepository : AircraftRepository
     - pilotRepository : PilotRepository
     + execute() : void
+    + createFlightPlan(flightPlanIdentifierText : String, flightDesignatorText : String, aircraftRegistrationText : String, fuelAmount : double, fuelUnitText : String) : FlightPlan
     + createFlightPlan(flightPlanIdentifierText : String, flightDesignatorText : String, aircraftRegistrationText : String, pilotIdText : String, fuelAmount : double, fuelUnitText : String) : FlightPlan
+    - authenticatedPilot(pilotIdText : String) : Pilot
+    - findAuthenticatedPilot() : Optional<Pilot>
 }
 
 interface FlightPlanRepository <<Repository>> {
@@ -37,6 +40,7 @@ interface AircraftRepository <<Repository>> {
 
 interface PilotRepository <<Repository>> {
     + findByCode(code : PilotID) : Optional<Pilot>
+    + findByEmail(email : String) : Optional<Pilot>
 }
 
 class InMemoryFlightPlanRepository <<Repository>>
@@ -46,19 +50,21 @@ class JpaFlightRepository <<Repository>>
 
 class FlightPlan <<Aggregate Root>> {
     - identifier : FlightPlanIdentifier
+    - fuelQuantity : FuelQuantity
     - flight : Flight
     - aircraft : Aircraft
     - pilot : Pilot
-    - fuelQuantity : FuelQuantity
     - status : FlightPlanStatus
-    - testStatus : FlightPlanTestStatus
     + identity() : FlightPlanIdentifier
     + flight() : Flight
+    + flightDepartureDateTime() : LocalDateTime
     + aircraft() : Aircraft
     + pilot() : Pilot
     + fuelQuantity() : FuelQuantity
     + status() : FlightPlanStatus
-    + testStatus() : FlightPlanTestStatus
+    + markUnderValidation() : void
+    + validate() : void
+    + reject() : void
 }
 
 class Flight <<Aggregate Root>> {
@@ -71,7 +77,12 @@ class Flight <<Aggregate Root>> {
 }
 
 class Aircraft <<Aggregate Root>>
-class Pilot <<Aggregate Root>>
+class Pilot <<Aggregate Root>> {
+    + identity() : PilotID
+    + email() : EmailAddress
+    + companyIATACode() : IATACode
+    + pilotStatus() : PilotStatus
+}
 class FlightRoute <<Aggregate Root>>
 class FlightPlanIdentifier <<Value Object>>
 class FlightDesignator <<Value Object>>
@@ -88,14 +99,10 @@ enum FlightPlanStatus {
     REJECTED
 }
 
-enum FlightPlanTestStatus {
-    NOT_TESTED
-    TESTED
-    VOID
-}
-
 class AisafeAuthorizationService <<Service>> {
     + ensureAuthenticatedUserHasAnyOf(actions : Role[]) : void
+    + authenticatedUsername() : String
+    + authenticatedEmail() : String
 }
 
 class AisafePermissions <<Permissions>> {
@@ -133,7 +140,6 @@ FlightPlan --> Aircraft
 FlightPlan --> Pilot
 FlightPlan *-- FuelQuantity
 FlightPlan *-- FlightPlanStatus
-FlightPlan *-- FlightPlanTestStatus
 
 Flight *-- FlightDesignator
 Flight --> FlightRoute

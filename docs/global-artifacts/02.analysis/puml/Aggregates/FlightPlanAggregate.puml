@@ -23,8 +23,6 @@ hide circle
 hide methods
 
  class FlightPlan <<Aggregate Root>> {
-        plannedDeparture
-        scheduledArrival
     }
 
     class FlightPlanIdentifier <<Value Object>> {

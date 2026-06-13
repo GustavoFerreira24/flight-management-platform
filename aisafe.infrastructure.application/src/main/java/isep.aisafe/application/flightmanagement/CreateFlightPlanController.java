@@ -18,6 +18,8 @@ import isep.aisafe.pilot.domain.Pilot;
 import isep.aisafe.pilot.domain.PilotID;
 import isep.aisafe.pilot.domain.PilotRepository;
 
+import java.util.Optional;
+
 /**
  * Application use case for creating flight plans.
  */
@@ -80,12 +82,41 @@ public class CreateFlightPlanController {
     }
 
     /**
-     * Creates a draft flight plan for an existing flight, aircraft and pilot.
+     * Creates a draft flight plan for an existing flight and aircraft, assigning it to the
+     * authenticated pilot.
      *
      * @param flightPlanIdentifierText flight plan identifier
      * @param flightDesignatorText flight designator
      * @param aircraftRegistrationText aircraft registration
-     * @param pilotIdText pilot identifier
+     * @param fuelAmount assigned fuel amount
+     * @param fuelUnitText assigned fuel unit
+     * @return persisted flight plan
+     */
+    public FlightPlan createFlightPlan(
+            final String flightPlanIdentifierText,
+            final String flightDesignatorText,
+            final String aircraftRegistrationText,
+            final double fuelAmount,
+            final String fuelUnitText) {
+
+        return createFlightPlan(
+                flightPlanIdentifierText,
+                flightDesignatorText,
+                aircraftRegistrationText,
+                null,
+                fuelAmount,
+                fuelUnitText
+        );
+    }
+
+    /**
+     * Creates a draft flight plan for an existing flight and aircraft. When a pilot id is supplied by
+     * an external client, it must match the authenticated pilot.
+     *
+     * @param flightPlanIdentifierText flight plan identifier
+     * @param flightDesignatorText flight designator
+     * @param aircraftRegistrationText aircraft registration
+     * @param pilotIdText pilot identifier supplied by the client
      * @param fuelAmount assigned fuel amount
      * @param fuelUnitText assigned fuel unit
      * @return persisted flight plan
@@ -109,8 +140,7 @@ public class CreateFlightPlanController {
                 .orElseThrow(() -> new IllegalArgumentException("Flight was not found."));
         final Aircraft aircraft = aircraftRepository.findByRegistration(AircraftRegistration.valueOf(aircraftRegistrationText))
                 .orElseThrow(() -> new IllegalArgumentException("Aircraft was not found."));
-        final Pilot pilot = pilotRepository.findByCode(PilotID.valueOf(pilotIdText))
-                .orElseThrow(() -> new IllegalArgumentException("Pilot was not found."));
+        final Pilot pilot = authenticatedPilot(pilotIdText);
         final FuelQuantity fuelQuantity = FuelQuantity.valueOf(fuelAmount, FuelUnit.valueOf(fuelUnitText));
 
         final FlightPlan flightPlan = new FlightPlan(
@@ -122,5 +152,39 @@ public class CreateFlightPlanController {
         );
 
         return flightPlanRepository.save(flightPlan);
+    }
+
+    private Pilot authenticatedPilot(final String pilotIdText) {
+        final Pilot pilot = findAuthenticatedPilot()
+                .orElseThrow(() -> new IllegalStateException("Authenticated pilot was not found."));
+
+        if (pilotIdText != null && !pilotIdText.isBlank()) {
+            final PilotID requestedPilotId = PilotID.valueOf(pilotIdText);
+            if (!pilot.identity().equals(requestedPilotId)) {
+                throw new IllegalArgumentException("Pilot must match authenticated user.");
+            }
+        }
+
+        return pilot;
+    }
+
+    private Optional<Pilot> findAuthenticatedPilot() {
+        final String authenticatedEmail = authz.authenticatedEmail();
+        final Optional<Pilot> byEmail = pilotRepository.findByEmail(authenticatedEmail);
+        if (byEmail.isPresent()) {
+            return byEmail;
+        }
+
+        final String authenticatedUsername = authz.authenticatedUsername();
+        final Optional<Pilot> byUsernameEmail = pilotRepository.findByEmail(authenticatedUsername);
+        if (byUsernameEmail.isPresent()) {
+            return byUsernameEmail;
+        }
+
+        try {
+            return pilotRepository.findByCode(PilotID.valueOf(authenticatedUsername));
+        } catch (IllegalArgumentException ignored) {
+            return Optional.empty();
+        }
     }
 }

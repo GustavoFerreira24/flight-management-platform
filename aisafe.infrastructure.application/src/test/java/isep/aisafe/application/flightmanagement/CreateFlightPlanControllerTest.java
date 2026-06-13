@@ -136,7 +136,7 @@ class CreateFlightPlanControllerTest {
         );
 
         // Act
-        final FlightPlan flightPlan = controller.createFlightPlan("FP8501", "TP8501", "CS-U80", "UAA", 7000, "KG");
+        final FlightPlan flightPlan = controller.createFlightPlan("FP8501", "TP8501", "CS-U80", 7000, "KG");
 
         // Assert
         assertArrayEquals(AisafePermissions.FLIGHT_PLAN_MANAGEMENT, authz.requestedRoles());
@@ -218,9 +218,33 @@ class CreateFlightPlanControllerTest {
         );
 
         // Act / Assert
-        assertEquals("Pilot was not found.", assertThrows(
-                IllegalArgumentException.class,
+        assertEquals("Authenticated pilot was not found.", assertThrows(
+                IllegalStateException.class,
                 () -> controller.createFlightPlan("FP8505", "TP8505", "CS-U85", "UAF", 7000, "KG")
+        ).getMessage());
+    }
+
+    @Test
+    void ensureSuppliedPilotIdentifierMustMatchAuthenticatedPilot() {
+        // Arrange
+        final InMemoryFlightRepository flightRepository = new InMemoryFlightRepository();
+        final InMemoryAircraftRepository aircraftRepository = new InMemoryAircraftRepository();
+        final InMemoryPilotRepository pilotRepository = new InMemoryPilotRepository();
+        flightRepository.save(flight("TP8507"));
+        aircraftRepository.save(aircraft("CS-U87"));
+        pilotRepository.save(pilot("UAA"));
+        final CreateFlightPlanController controller = new CreateFlightPlanController(
+                new CapturingAuthorizationService(),
+                new InMemoryFlightPlanRepository(),
+                flightRepository,
+                aircraftRepository,
+                pilotRepository
+        );
+
+        // Act / Assert
+        assertEquals("Pilot must match authenticated user.", assertThrows(
+                IllegalArgumentException.class,
+                () -> controller.createFlightPlan("FP8507", "TP8507", "CS-U87", "UAB", 7000, "KG")
         ).getMessage());
     }
 

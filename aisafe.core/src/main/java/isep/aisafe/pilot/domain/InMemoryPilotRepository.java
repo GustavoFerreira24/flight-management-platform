@@ -16,7 +16,7 @@ public class InMemoryPilotRepository extends InMemoryDomainRepository<Pilot, Pil
 
     @Override
     public Optional<Pilot> findByEmail(String email) {
-        return matchOne(pilot -> pilot.email().equals(email));
+        return matchOne(pilot -> pilot.email().toString().equalsIgnoreCase(email));
     }
 
     public void clear() {

@@ -40,7 +40,6 @@ public class CreateFlightPlanUI {
         final String flightPlanIdentifier = readRequiredText("Flight plan identifier: ");
         final String flightDesignator = readRequiredText("Flight designator: ").toUpperCase();
         final String aircraftRegistration = readRequiredText("Aircraft registration: ").toUpperCase();
-        final String pilotId = readRequiredText("Pilot ID: ").toUpperCase();
         final double fuelAmount = readPositiveDouble("Fuel amount: ");
         final String fuelUnit = readRequiredText("Fuel unit (e.g. KG): ").toUpperCase();
 
@@ -48,7 +47,6 @@ public class CreateFlightPlanUI {
                 flightPlanIdentifier,
                 flightDesignator,
                 aircraftRegistration,
-                pilotId,
                 fuelAmount,
                 fuelUnit
         );

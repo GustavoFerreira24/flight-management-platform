@@ -24,7 +24,7 @@ public final class AisafePermissions {
             { AisafeRoles.AIR_TRANSPORT_COMPANY_COLLABORATOR };
 
     public static final Role[] FLIGHT_PLAN_MANAGEMENT =
-            { AisafeRoles.PILOT, AisafeRoles.FLIGHT_CONTROL_OPERATOR };
+            { AisafeRoles.PILOT };
 
     public static final Role[] FLIGHT_PLAN_WEATHER_DATA_INSERTION =
             { AisafeRoles.PILOT };

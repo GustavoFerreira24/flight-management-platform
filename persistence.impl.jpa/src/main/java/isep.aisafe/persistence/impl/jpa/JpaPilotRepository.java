@@ -44,7 +44,7 @@ public class JpaPilotRepository extends JpaAutoTxRepository<Pilot, PilotID, Pilo
          final Map<String, Object> params = new HashMap<>();
          params.put("email", email);
 
-         final Iterator<Pilot> matches = match("e.email=:email", params).iterator();
+          final Iterator<Pilot> matches = match("e.email.email=:email", params).iterator();
 
          if (matches.hasNext()) {
              return Optional.of(matches.next());

@@ -69,13 +69,13 @@ class AisafePermissionsTest {
     /**
      * Purpose: verify flight plan management permission roles.
      * Scenario: inspect the permission constant.
-     * Expected output: Pilot and Flight Control Operator are allowed.
+     * Expected output: only Pilot is allowed.
      */
     @Test
     void ensureFlightPlanManagementPermissionsAreCorrect() {
         // Arrange / Act / Assert
         assertArrayEquals(
-                new Object[] { AisafeRoles.PILOT, AisafeRoles.FLIGHT_CONTROL_OPERATOR },
+                new Object[] { AisafeRoles.PILOT },
                 AisafePermissions.FLIGHT_PLAN_MANAGEMENT
         );
     }
