@@ -1,5 +1,5 @@
 @startuml
-title US78 - Pilot Aggregate Scenario: Deactivate Pilot
+title US77 - Pilot Aggregate Scenario: Deactivate Pilot
 
 skinparam monochrome true
 skinparam packageStyle rectangle
