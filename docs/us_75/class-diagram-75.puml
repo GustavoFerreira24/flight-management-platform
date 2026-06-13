@@ -1,0 +1,148 @@
+@startuml US075_ClassDiagram
+title US075 - Add a Pilot
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam packageFontSize 13
+skinparam linetype ortho
+
+package "UI Layer" {
+    class RegisterPilotUI {
+        - controller : RegisterPilotService
+        - scanner : Scanner
+        + show() : void
+        - selectCountryPrefix() : String
+    }
+
+    class AddPilotUI {
+        - controller : RegisterPilotService
+        - addPilotController : AddPilotController
+        - scanner : Scanner
+        + show() : void
+    }
+}
+
+package "Application Layer" {
+    interface RegisterPilotService {
+        + registerPilot(id, issuedAtStr, validUntilStr, username,\n  firstName, lastName, email, rawPassword,\n  phoneNumber, aircraftModelDesignator) : Pilot
+        + getAllAircraftModels() : Iterable<AircraftModel>
+        + getAllPilots() : Iterable<Pilot>
+        + getPilotById(id : String) : Pilot
+    }
+
+    class RegisterPilotController {
+        - authz : AisafeAuthorizationService
+        - pilotRepo : PilotRepository
+        - collaboratorRepo : CustomerCollaboratorRepository
+        - userValidator : UserRegistrationValidator
+        - userService : UserManagementService
+        - aircraftModelRepo : AircraftModelRepository
+        + registerPilot(...) : Pilot
+        + getAllAircraftModels() : Iterable<AircraftModel>
+        + getAllPilots() : Iterable<Pilot>
+        + getPilotById(id : String) : Pilot
+        - getAircraftModels(designator : String) : List<AircraftModelDesignator>
+    }
+
+    class AddPilotController {
+        - authz : AisafeAuthorizationService
+        - pilotRepository : PilotRepository
+        - collaboratorRepo : CustomerCollaboratorRepository
+        + addPilot(id : String) : void
+    }
+}
+
+package "Domain Layer" {
+    class Pilot <<AggregateRoot>> {
+        - id : PilotID
+        - firstName : String
+        - lastName : String
+        - email : EmailAddress
+        - phoneNumber : PhoneNumber
+        - certification : Certification
+        - pilotStatus : PilotStatus
+        - companyIATACode : IATACode
+        - certifiedAircraftModels : Set<AircraftModelDesignator>
+        + identity() : PilotID
+        + activate() : void
+        + deactivate() : void
+        + assignToCompany(iataCode : IATACode) : void
+        + pilotStatus() : PilotStatus
+        + companyIATACode() : IATACode
+        + certification() : Certification
+    }
+
+    class PilotID <<ValueObject>> {
+        - value : String
+        + valueOf(value : String) : PilotID
+    }
+
+    class PilotStatus <<ValueObject>> {
+        - value : String
+        + valueOf(certification : Certification) : PilotStatus
+        + isValid(certification : Certification) : boolean
+        + activate(certification : Certification) : PilotStatus
+        + deactivate() : PilotStatus
+    }
+
+    class Certification <<ValueObject>> {
+        - issuedAt : LocalDate
+        - validUntil : LocalDate
+        + issuedAt() : LocalDate
+        + validUntil() : LocalDate
+    }
+
+    class PhoneNumber <<ValueObject>> {
+        - value : String
+        + valueOf(value : String) : PhoneNumber
+    }
+
+    class IATACode <<ValueObject>> {
+        - value : String
+        + valueOf(value : String) : IATACode
+        + isNone() : boolean
+    }
+
+    interface PilotRepository <<Repository>> {
+        + findAll() : Iterable<Pilot>
+        + ofIdentity(id : PilotID) : Optional<Pilot>
+        + save(pilot : Pilot) : Pilot
+    }
+}
+
+    class AisafeAuthorizationService
+    class UserManagementService
+    class CustomerCollaborator
+    interface CustomerCollaboratorRepository
+    class AircraftModel
+    interface AircraftModelRepository
+
+' UI -> Application
+RegisterPilotUI ----> RegisterPilotService : uses
+AddPilotUI ----> RegisterPilotService : uses
+AddPilotUI ----> AddPilotController : uses
+
+' Application
+RegisterPilotController ....|> RegisterPilotService
+RegisterPilotController ----> PilotRepository : uses
+RegisterPilotController ----> CustomerCollaboratorRepository : uses
+RegisterPilotController ----> AircraftModelRepository : uses
+RegisterPilotController ----> AisafeAuthorizationService : uses
+RegisterPilotController ----> UserManagementService : uses
+RegisterPilotController ----> AircraftModel : uses
+RegisterPilotController ....> Pilot : creates
+
+AddPilotController ----> PilotRepository : uses
+AddPilotController ----> CustomerCollaboratorRepository : uses
+AddPilotController ----> AisafeAuthorizationService : uses
+AddPilotController ----> CustomerCollaborator : uses
+AddPilotController ....> Pilot : modifies
+
+' Domain
+Pilot *-- PilotID
+Pilot *-- PilotStatus
+Pilot *-- Certification
+Pilot *-- PhoneNumber
+Pilot *-- IATACode
+
+@enduml
