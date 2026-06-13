@@ -1,0 +1,111 @@
+@startuml US077_ClassDiagram
+title US077 - Deactivate Pilot
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam packageFontSize 13
+skinparam linetype ortho
+
+    class DeactivatePilotUI {
+        - controller : RegisterPilotService
+        - deactivatePilotController : DeactivatePilotController
+        - listPilotRosterController : ListPilotRosterController
+        - scanner : Scanner
+        + show() : void
+    }
+
+    class DeactivatePilotController {
+        - authz : AisafeAuthorizationService
+        - pilotRepository : PilotRepository
+        - flightPlanRepository : FlightPlanRepository
+        - collaboratorRepo : CustomerCollaboratorRepository
+        + deactivatePilot(id : String) : void
+        + activatePilot(id : PilotID) : void
+        + getAllPilots() : Iterable<Pilot>
+    }
+
+    class ListPilotRosterController {
+        + listPilotRoster() : Set<Pilot>
+    }
+
+    class Pilot <<AggregateRoot>> {
+        - id : PilotID
+        - firstName : String
+        - lastName : String
+        - pilotStatus : PilotStatus
+        - companyIATACode : IATACode
+        - certification : Certification
+        + identity() : PilotID
+        + deactivate() : void
+        + activate() : void
+        + pilotStatus() : PilotStatus
+        + companyIATACode() : IATACode
+    }
+
+    class PilotID <<ValueObject>> {
+        - value : String
+        + valueOf(value : String) : PilotID
+    }
+
+    class PilotStatus <<ValueObject>> {
+        - value : String
+        + isValid(certification : Certification) : boolean
+        + deactivate() : PilotStatus
+        + activate(certification : Certification) : PilotStatus
+    }
+
+    class IATACode <<ValueObject>> {
+        - value : String
+        + valueOf(value : String) : IATACode
+        + equals(other : Object) : boolean
+    }
+
+    interface PilotRepository <<Repository>> {
+        + findAll() : Iterable<Pilot>
+        + ofIdentity(id : PilotID) : Optional<Pilot>
+        + save(pilot : Pilot) : Pilot
+    }
+
+    class FlightPlan <<Entity>> {
+        + pilot() : Pilot
+    }
+
+    interface FlightPlanRepository <<Repository>> {
+        + findAll() : Iterable<FlightPlan>
+    }
+
+    class AisafeAuthorizationService
+
+    class CustomerCollaborator {
+        + airTransportCompany() : AirTransportCompany
+        + isAssociatedWithAirTransportCompany() : boolean
+    }
+
+    interface CustomerCollaboratorRepository {
+        + findBySystemUsername(username : SystemUsername) : Optional<CustomerCollaborator>
+    }
+
+    class AirTransportCompany {
+        + iataCode() : IATACode
+    }
+
+' UI -> Application
+DeactivatePilotUI --> DeactivatePilotController : uses
+DeactivatePilotUI --> ListPilotRosterController : uses
+
+' Application
+DeactivatePilotController --> PilotRepository : uses
+DeactivatePilotController --> FlightPlanRepository : uses
+DeactivatePilotController --> CustomerCollaboratorRepository : uses
+DeactivatePilotController --> AisafeAuthorizationService : uses
+DeactivatePilotController --> CustomerCollaborator : uses
+DeactivatePilotController --> AirTransportCompany : uses
+DeactivatePilotController ..> Pilot : modifies
+
+' Domain
+Pilot *-- PilotID
+Pilot *-- PilotStatus
+Pilot *-- IATACode
+FlightPlan --> Pilot : references
+
+@enduml
