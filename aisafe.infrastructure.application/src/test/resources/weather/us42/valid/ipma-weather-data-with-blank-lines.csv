@@ -1,0 +1,5 @@
+areaCode,latitude,longitude,providerName,providerType,parameter,value,unit,altitude,day
+
+LISACC,38.72,-9.14,IPMA,STATION,PRESSURE,1013,HPA,0,2027-03-02
+   
+LISACC,38.80,-9.10,IPMA,GROUND_SENSOR,WIND_DIRECTION,180,DEG,1200,2027-03-02

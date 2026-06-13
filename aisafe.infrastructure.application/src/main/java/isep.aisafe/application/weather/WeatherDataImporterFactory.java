@@ -26,6 +26,10 @@ public class WeatherDataImporterFactory {
             return new CsvWeatherDataImporter();
         }
 
+        if (fileName.endsWith(".xlsx")) {
+            return new XlsxWeatherDataImporter();
+        }
+
         throw new IllegalArgumentException("Unsupported weather data import file format.");
     }
 }

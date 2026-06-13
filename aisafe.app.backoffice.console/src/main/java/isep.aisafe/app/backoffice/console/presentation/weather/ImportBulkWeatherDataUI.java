@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.util.Scanner;
 
 /**
- * User interface for importing bulk weather data from a CSV file.
+ * User interface for importing bulk weather data from supported weather files.
  */
 public class ImportBulkWeatherDataUI {
 
@@ -40,9 +40,9 @@ public class ImportBulkWeatherDataUI {
     public void show() {
         try {
             ConsoleStyle.printSection("Import Bulk Weather Data");
-            printCsvFormatInformation();
+            printFormatInformation();
 
-            final Path file = askCsvFilePath();
+            final Path file = askImportFilePath();
             final BulkWeatherImportResult result = controller.importFromFile(file);
 
             printResult(result);
@@ -55,14 +55,15 @@ public class ImportBulkWeatherDataUI {
         }
     }
 
-    private void printCsvFormatInformation() {
-        ConsoleStyle.printInfo("Supported format: CSV");
-        ConsoleStyle.printInfo("Expected header: day,areaCode,providerName,providerType,parameter,value,unit,altitude,latitude,longitude");
+    private void printFormatInformation() {
+        ConsoleStyle.printInfo("Supported formats: CSV, XLSX");
+        ConsoleStyle.printInfo("Expected CSV header: areaCode,latitude,longitude,providerName,providerType,parameter,value,unit,altitude,day");
+        ConsoleStyle.printInfo("XLSX weather files use the supplied WeatherData_v0 Wind sheet format.");
     }
 
-    private Path askCsvFilePath() {
+    private Path askImportFilePath() {
         while (true) {
-            ConsoleStyle.printPrompt("Weather data CSV file path: ");
+            ConsoleStyle.printPrompt("Weather data import file path: ");
             final String input = scanner.nextLine().trim();
 
             if (input.isBlank()) {
@@ -70,17 +71,22 @@ public class ImportBulkWeatherDataUI {
                 continue;
             }
 
-            if (!input.toLowerCase().endsWith(".csv")) {
-                ConsoleStyle.printWarning("Only CSV weather data files are supported at this stage.");
+            if (!hasSupportedExtension(input)) {
+                ConsoleStyle.printWarning("Only CSV and XLSX weather data files are supported.");
                 continue;
             }
 
             try {
                 return Path.of(input);
             } catch (InvalidPathException e) {
-                ConsoleStyle.printWarning("Invalid file path. Please enter a valid CSV file path.");
+                ConsoleStyle.printWarning("Invalid file path. Please enter a valid import file path.");
             }
         }
+    }
+
+    private boolean hasSupportedExtension(final String input) {
+        final String lowerCaseInput = input.toLowerCase();
+        return lowerCaseInput.endsWith(".csv") || lowerCaseInput.endsWith(".xlsx");
     }
 
     private void printResult(final BulkWeatherImportResult result) {

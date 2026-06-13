@@ -40,7 +40,7 @@ This requirement depends on the existing air transport company, customer collabo
 
 The route designator is the business identity of a flight route and is represented by `RouteDesignator`. The value object normalizes the text to uppercase and validates the format `[A-Z]{2}[0-9]{1,4}`.
 
-The authenticated collaborator determines the owning company. The controller obtains the authenticated username, resolves the matching `CustomerCollaborator`, verifies that the collaborator is associated with an air transport company and then loads that company from `AirTransportCompanyRepository`.
+The authenticated collaborator determines the owning company. The controller obtains the authenticated username, resolves the matching `CustomerCollaborator` and verifies that the collaborator is associated with an air transport company. The collaborator already holds a reference to its `AirTransportCompany` aggregate root, so there is no need to reload the company through a separate repository: only Aggregate Roots may be reached from outside the aggregate boundary, and that rule is preserved by the existing collaborator-to-company association.
 
 The domain model and application layer enforce the following rules:
 
@@ -73,7 +73,7 @@ The main flow is:
 - The UI validates the basic route designator and ICAO code formats before submitting the request.
 - `RegisterFlightRouteController` authorizes the operation with `AIR_COMPANY_CONFIGURATION`.
 - The controller checks route designator uniqueness with `FlightRouteRepository.findByRouteDesignator`.
-- The controller resolves the authenticated collaborator's air transport company.
+- The controller resolves the authenticated collaborator's air transport company from the collaborator aggregate.
 - The controller loads the departure and destination airports by ICAO code.
 - The controller creates the `FlightRoute` aggregate and persists it through `FlightRouteRepository`.
 
@@ -121,7 +121,7 @@ Implemented in `RegisterFlightRouteControllerTest.ensureDepartureAndDestinationM
 
 **Refers to Acceptance Criteria:** US073.1, US073.3
 
-Implemented in `RegisterFlightRouteControllerTest.ensureAuthenticatedUserMustBeCustomerCollaborator`, `ensureCollaboratorMustBeAssociatedWithAirTransportCompany`, `ensureAssociatedAirTransportCompanyMustExist` and `ensureAuthorizationErrorsArePropagated`.
+Implemented in `RegisterFlightRouteControllerTest.ensureAuthenticatedUserMustBeCustomerCollaborator`, `ensureCollaboratorMustBeAssociatedWithAirTransportCompany` and `ensureAuthorizationErrorsArePropagated`.
 
 **Test 8:** Airports can be listed to support route creation.
 
@@ -137,7 +137,7 @@ Main implementation artifacts:
 - `RouteDesignator`: value object for the route identity and company-prefix validation.
 - `FlightRouteType`: value object for the route classification, defaulting to `REGULAR`.
 - `FlightRouteStatus`: value object for route lifecycle state, initialized as `ACTIVE`.
-- `FlightRouteRepository`: repository abstraction used to enforce designator uniqueness and company lookup support.
+- `FlightRouteRepository`: repository abstraction used to persist routes and enforce designator uniqueness.
 - `InMemoryFlightRouteRepository`: in-memory repository used by tests and memory persistence mode.
 - `JpaFlightRouteRepository`: JPA repository implementation.
 - `RegisterFlightRouteController`: application service/controller for route registration.

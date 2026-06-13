@@ -25,10 +25,14 @@ alt flight plan not found
 else flight plan found
     Controller -> Authz : authenticatedUsername()
     Authz --> Controller : username
+    Controller -> Authz : authenticatedEmail()
+    Authz --> Controller : email
     Controller -> FlightPlan : pilot()
     FlightPlan --> Controller : Pilot
     Controller -> FlightPlan : pilot().identity()
     FlightPlan --> Controller : PilotID
+    Controller -> FlightPlan : pilot().email()
+    FlightPlan --> Controller : EmailAddress
 
     alt authenticated pilot does not own flight plan
         Controller --> Pilot : IllegalArgumentException("Flight plan does not belong to authenticated pilot.")
@@ -44,8 +48,8 @@ else flight plan found
             Controller -> FlightPlan : addWeatherData(weatherData)
             activate FlightPlan
             FlightPlan -> FlightPlan : add WeatherDataId if new
-            opt previous status is TESTED and weather data is new
-                FlightPlan -> FlightPlan : testStatus = VOID
+            opt previous status is VALIDATED or REJECTED and weather data is new
+                FlightPlan -> FlightPlan : status = DRAFT
             end
             FlightPlan --> Controller : updated aggregate
             deactivate FlightPlan

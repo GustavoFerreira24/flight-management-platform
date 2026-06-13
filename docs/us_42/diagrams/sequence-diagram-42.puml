@@ -6,7 +6,7 @@ participant "ImportBulkWeatherDataUI" as UI
 participant "ImportBulkWeatherDataController" as Controller
 participant "AisafeAuthorizationService" as Authz
 participant "WeatherDataImporterFactory" as Factory
-participant "CsvWeatherDataImporter" as Importer
+participant "WeatherDataImporter" as Importer
 participant "RegisterWeatherDataController" as RegisterController
 participant "AirControlAreaRepository" as AreaRepo
 participant "WeatherProviderRepository" as ProviderRepo
@@ -15,16 +15,16 @@ participant "WeatherData" as WeatherData
 
 WeatherPerson -> UI : show()
 activate UI
-UI -> UI : print CSV format information
-UI -> WeatherPerson : ask CSV file path
-WeatherPerson --> UI : csv path
-UI -> UI : validate non-blank .csv path
+UI -> UI : print supported format information
+UI -> WeatherPerson : ask import file path
+WeatherPerson --> UI : csv or xlsx path
+UI -> UI : validate non-blank supported path
 
 UI -> Controller : importFromFile(file)
 activate Controller
 Controller -> Factory : importerFor(file)
 activate Factory
-Factory --> Controller : CsvWeatherDataImporter
+Factory --> Controller : CSV or XLSX importer
 deactivate Factory
 
 Controller -> Authz : ensureAuthenticatedUserHasAnyOf(WEATHER_DATA_MANAGEMENT)
@@ -32,9 +32,9 @@ Controller -> Controller : ensureReadableFile(file)
 
 Controller -> Importer : importFrom(file)
 activate Importer
-Importer -> Importer : read lines
-Importer -> Importer : validate header
-loop each non-blank CSV data line
+Importer -> Importer : read external file
+Importer -> Importer : validate supported structure
+loop each imported source record
     Importer -> Importer : parse fields and numeric values
     Importer -> Importer : create ImportedWeatherMeasurement
 end

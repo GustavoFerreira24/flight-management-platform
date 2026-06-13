@@ -16,7 +16,6 @@ import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
 import isep.aisafe.airtransportcompany.domain.Country;
 import isep.aisafe.airtransportcompany.domain.IATACode;
 import isep.aisafe.airtransportcompany.domain.ICAOCode;
-import isep.aisafe.airtransportcompany.domain.InMemoryAirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CollaboratorEmail;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.InMemoryCustomerCollaboratorRepository;
@@ -187,7 +186,6 @@ class RegisterFlightRouteControllerTest {
                 null,
                 new InMemoryFlightRouteRepository(),
                 new InMemoryAirportRepository(),
-                new InMemoryAirTransportCompanyRepository(),
                 new InMemoryCustomerCollaboratorRepository()
         ));
 
@@ -195,22 +193,12 @@ class RegisterFlightRouteControllerTest {
                 authz,
                 null,
                 new InMemoryAirportRepository(),
-                new InMemoryAirTransportCompanyRepository(),
                 new InMemoryCustomerCollaboratorRepository()
         ));
 
         assertThrows(IllegalArgumentException.class, () -> new RegisterFlightRouteController(
                 authz,
                 new InMemoryFlightRouteRepository(),
-                null,
-                new InMemoryAirTransportCompanyRepository(),
-                new InMemoryCustomerCollaboratorRepository()
-        ));
-
-        assertThrows(IllegalArgumentException.class, () -> new RegisterFlightRouteController(
-                authz,
-                new InMemoryFlightRouteRepository(),
-                new InMemoryAirportRepository(),
                 null,
                 new InMemoryCustomerCollaboratorRepository()
         ));
@@ -219,7 +207,6 @@ class RegisterFlightRouteControllerTest {
                 authz,
                 new InMemoryFlightRouteRepository(),
                 new InMemoryAirportRepository(),
-                new InMemoryAirTransportCompanyRepository(),
                 null
         ));
     }
@@ -285,8 +272,6 @@ class RegisterFlightRouteControllerTest {
         private final TestAuthorizationService authz;
         private final InMemoryFlightRouteRepository flightRouteRepository = new InMemoryFlightRouteRepository();
         private final InMemoryAirportRepository airportRepository = new InMemoryAirportRepository();
-        private final InMemoryAirTransportCompanyRepository companyRepository =
-                new InMemoryAirTransportCompanyRepository();
         private final InMemoryCustomerCollaboratorRepository collaboratorRepository =
                 new InMemoryCustomerCollaboratorRepository();
 
@@ -300,7 +285,6 @@ class RegisterFlightRouteControllerTest {
 
         void bootstrapValidCompanyCollaboratorAndAirports() {
             company = company("TAP Air Portugal", "Portugal", "TP", "TAP");
-            companyRepository.save(company);
             collaboratorRepository.save(companyCollaborator(authz.username(), company));
             bootstrapAirportsOnly();
         }
@@ -318,7 +302,6 @@ class RegisterFlightRouteControllerTest {
                     authz,
                     flightRouteRepository,
                     airportRepository,
-                    companyRepository,
                     collaboratorRepository
             );
         }
