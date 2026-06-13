@@ -16,7 +16,6 @@ class RegisterFlightRouteController <<Controller>> {
     - authz : AisafeAuthorizationService
     - flightRouteRepository : FlightRouteRepository
     - airportRepository : AirportRepository
-    - airTransportCompanyRepository : AirTransportCompanyRepository
     - customerCollaboratorRepository : CustomerCollaboratorRepository
     + registerFlightRoute(routeDesignatorText : String, departureAirportIcaoText : String, destinationAirportIcaoText : String) : FlightRoute
     + registerFlightRoute(routeDesignatorText : String, routeTypeText : String, departureAirportIcaoText : String, destinationAirportIcaoText : String) : FlightRoute
@@ -41,24 +40,26 @@ interface CustomerCollaboratorRepository <<Repository>> {
     + findBySystemUsername(systemUsername : SystemUsername) : Optional<CustomerCollaborator>
 }
 
-interface AirTransportCompanyRepository <<Repository>>
-
 class InMemoryFlightRouteRepository <<Repository>>
 class JpaFlightRouteRepository <<Repository>>
 
 class FlightRoute <<Aggregate Root>> {
     - routeDesignator : RouteDesignator
     - routeType : FlightRouteType
+    - routeStatus : FlightRouteStatus
+    - deactivatedFrom : LocalDate
     - company : AirTransportCompany
     - departureAirport : Airport
     - destinationAirport : Airport
-    - status : FlightRouteStatus
     + routeDesignator() : RouteDesignator
     + routeType() : FlightRouteType
+    + routeStatus() : FlightRouteStatus
+    + deactivatedFrom() : LocalDate
     + company() : AirTransportCompany
     + departureAirport() : Airport
     + destinationAirport() : Airport
-    + status() : FlightRouteStatus
+    + isActive() : boolean
+    + deactivateFrom(deactivatedFrom : LocalDate) : void
 }
 
 class RouteDesignator <<Value Object>> {
@@ -70,9 +71,11 @@ class FlightRouteType <<Value Object>> {
     + valueOf(value : String) : FlightRouteType
 }
 
-enum FlightRouteStatus {
-    ACTIVE
-    INACTIVE
+class FlightRouteStatus <<Value Object>> {
+    + active() : FlightRouteStatus
+    + inactive() : FlightRouteStatus
+    + valueOf(value : String) : FlightRouteStatus
+    + isActive() : boolean
 }
 
 class Airport <<Aggregate Root>>
@@ -100,7 +103,6 @@ RegisterFlightRouteController --> AisafePermissions
 RegisterFlightRouteController --> FlightRouteRepository
 RegisterFlightRouteController --> AirportRepository
 RegisterFlightRouteController --> CustomerCollaboratorRepository
-RegisterFlightRouteController --> AirTransportCompanyRepository
 RegisterFlightRouteController --> FlightRoute
 RegisterFlightRouteController --> RouteDesignator
 RegisterFlightRouteController --> FlightRouteType

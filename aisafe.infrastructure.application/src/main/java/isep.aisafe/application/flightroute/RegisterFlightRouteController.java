@@ -4,7 +4,6 @@ import isep.aisafe.airport.domain.Airport;
 import isep.aisafe.airport.domain.AirportICAOCode;
 import isep.aisafe.airport.domain.AirportRepository;
 import isep.aisafe.airtransportcompany.domain.AirTransportCompany;
-import isep.aisafe.airtransportcompany.domain.AirTransportCompanyRepository;
 import isep.aisafe.customercollaborator.domain.CustomerCollaborator;
 import isep.aisafe.customercollaborator.domain.CustomerCollaboratorRepository;
 import isep.aisafe.customercollaborator.domain.SystemUsername;
@@ -26,7 +25,6 @@ public class RegisterFlightRouteController {
     private final AisafeAuthorizationService authz;
     private final FlightRouteRepository flightRouteRepository;
     private final AirportRepository airportRepository;
-    private final AirTransportCompanyRepository airTransportCompanyRepository;
     private final CustomerCollaboratorRepository customerCollaboratorRepository;
 
     /**
@@ -37,7 +35,6 @@ public class RegisterFlightRouteController {
                 new AisafeAuthorizationService(),
                 PersistenceContext.repositories().flightRoutes(),
                 PersistenceContext.repositories().airports(),
-                PersistenceContext.repositories().airTransportCompanies(),
                 PersistenceContext.repositories().customerCollaborators()
         );
     }
@@ -46,7 +43,6 @@ public class RegisterFlightRouteController {
             final AisafeAuthorizationService authz,
             final FlightRouteRepository flightRouteRepository,
             final AirportRepository airportRepository,
-            final AirTransportCompanyRepository airTransportCompanyRepository,
             final CustomerCollaboratorRepository customerCollaboratorRepository) {
 
         if (authz == null) {
@@ -61,10 +57,6 @@ public class RegisterFlightRouteController {
             throw new IllegalArgumentException("Airport repository cannot be null.");
         }
 
-        if (airTransportCompanyRepository == null) {
-            throw new IllegalArgumentException("Air transport company repository cannot be null.");
-        }
-
         if (customerCollaboratorRepository == null) {
             throw new IllegalArgumentException("Customer collaborator repository cannot be null.");
         }
@@ -72,7 +64,6 @@ public class RegisterFlightRouteController {
         this.authz = authz;
         this.flightRouteRepository = flightRouteRepository;
         this.airportRepository = airportRepository;
-        this.airTransportCompanyRepository = airTransportCompanyRepository;
         this.customerCollaboratorRepository = customerCollaboratorRepository;
     }
 
