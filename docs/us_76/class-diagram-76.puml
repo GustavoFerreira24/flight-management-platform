@@ -1,0 +1,88 @@
+@startuml US076_ClassDiagram
+title US076 - List Pilot Roster
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam packageFontSize 13
+skinparam linetype ortho
+
+class ListPilotRosterUI {
+    - controller : RegisterPilotService
+    - listPilotRosterController : ListPilotRosterController
+    - scanner : Scanner
+    + show() : void
+}
+
+class ListPilotRosterController {
+    - authz : AisafeAuthorizationService
+    - pilotRepo : PilotRepository
+    - collaboratorRepo : CustomerCollaboratorRepository
+    - airTransportCompanyRepo : AirTransportCompanyRepository
+    - userValidator : UserRegistrationValidator
+    - backofficeUserController : RegisterBackofficeUserController
+    + listPilotRoster() : Set<Pilot>
+}
+
+class Pilot <<AggregateRoot>> {
+    - id : PilotID
+    - firstName : String
+    - lastName : String
+    - email : EmailAddress
+    - phoneNumber : PhoneNumber
+    - certification : Certification
+    - pilotStatus : PilotStatus
+    - companyIATACode : IATACode
+    - certifiedAircraftModels : Set<AircraftModelDesignator>
+    + identity() : PilotID
+    + pilotStatus() : PilotStatus
+    + companyIATACode() : IATACode
+    + certification() : Certification
+    + firstName() : String
+    + lastName() : String
+}
+
+class IATACode <<ValueObject>> {
+    - value : String
+    + valueOf(value : String) : IATACode
+    + equals(other : Object) : boolean
+}
+
+interface PilotRepository <<Repository>> {
+    + findAll() : Iterable<Pilot>
+    + ofIdentity(id : PilotID) : Optional<Pilot>
+    + save(pilot : Pilot) : Pilot
+}
+
+class AisafeAuthorizationService
+
+class CustomerCollaborator {
+    + airTransportCompany() : AirTransportCompany
+    + isAssociatedWithAirTransportCompany() : boolean
+}
+
+interface CustomerCollaboratorRepository {
+    + findBySystemUsername(username : SystemUsername) : Optional<CustomerCollaborator>
+}
+
+class AirTransportCompany {
+    + iataCode() : IATACode
+}
+
+interface AirTransportCompanyRepository
+
+' UI -> Application
+ListPilotRosterUI --> ListPilotRosterController : uses
+
+' Application
+ListPilotRosterController --> PilotRepository : uses
+ListPilotRosterController --> CustomerCollaboratorRepository : uses
+ListPilotRosterController --> AirTransportCompanyRepository : uses
+ListPilotRosterController --> CustomerCollaborator : uses
+ListPilotRosterController --> AisafeAuthorizationService : uses
+ListPilotRosterController ..> Pilot : reads
+
+' Domain
+Pilot *-- IATACode
+AirTransportCompany --> IATACode : has
+
+@enduml
