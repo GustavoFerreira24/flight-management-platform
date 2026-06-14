@@ -28,6 +28,7 @@
 
     <modules>
         <module>aisafe.app.backoffice.console</module>
+        <module>aisafe.app.backoffice.gui</module>
         <module>aisafe.app.common.console</module>
         <module>aisafe.app.rcomp</module>
         <module>aisafe.core</module>
