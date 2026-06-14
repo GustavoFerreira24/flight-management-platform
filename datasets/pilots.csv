@@ -1,0 +1,10 @@
+pilotId,companyIata,email,phone,firstName,lastName,certificationIssuedAt,certificationValidUntil,certifiedModels
+TPA,TP,joao.silva@tap.pt,+351912345678,Joao,Silva,01-01-2026,01-01-2099,A380;777-200ER
+TPB,TP,maria.costa@tap.pt,+351912345679,Maria,Costa,01-01-2026,01-01-2099,777-200ER
+EKA,EK,ahmed.khan@emirates.ae,+971501234567,Ahmed,Khan,01-01-2026,01-01-2099,A380
+BAA,BA,john.smith@ba.com,+442012345678,John,Smith,01-01-2026,01-01-2099,777-200ER
+AFA,AF,pierre.martin@airfrance.fr,+33123456789,Pierre,Martin,01-01-2026,01-01-2099,777-200ER
+LHA,LH,hans.muller@lufthansa.de,+4915123456789,Hans,Muller,01-01-2026,01-01-2099,A380
+AAA,AA,michael.brown@aa.com,+12125550101,Michael,Brown,01-01-2026,01-01-2099,777-200ER
+DLA,DL,sarah.johnson@delta.com,+14045550101,Sarah,Johnson,01-01-2026,01-01-2099,777-200ER
+UAA,UA,robert.wilson@united.com,+13125550101,Robert,Wilson,01-01-2026,01-01-2099,777-200ER
