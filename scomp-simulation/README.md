@@ -4,7 +4,7 @@ This module implements the SCOMP flight simulation component. The default simula
 
 ## Component Diagram
 
-![SCOMP Flight Simulation Component Diagram](docs/component-diagram.svg)
+![SCOMP Flight Simulation Component Diagram](docs/component-diagram-Sprint2.svg)
 
 ## Implemented User Stories
 

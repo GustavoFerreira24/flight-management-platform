@@ -36,4 +36,16 @@ echo "Starting US78 client..."
 echo "TCP server: $TCP_HOST:$TCP_PORT"
 echo
 
-java -cp "$APP_CP" isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpClient "$TCP_HOST" "$TCP_PORT" "$SERVICE"
+java -cp "$APP_CP" isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpClient "$TCP_HOST" "$TCP_PORT" "$SERVICE" || {
+  echo
+  echo "Could not connect to the TCP server."
+  echo "If you are outside the DEI network, open this SSH tunnel in another terminal:"
+  echo
+  echo "ssh -p 10578 -L 9000:localhost:9000 root@vsgate-ssh.dei.isep.ipp.pt"
+  echo ""
+  echo "For logs:"
+  echo  "ssh -p 10596 -L 8081:localhost:8080 root@vsgate-ssh.dei.isep.ipp.pt"
+  echo
+  echo "Then run this script again."
+  exit 1
+}

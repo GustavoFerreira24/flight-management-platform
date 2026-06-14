@@ -118,7 +118,8 @@ public final class MainWindow extends JFrame {
 
     private final JPanel sidebar = new SidebarPanel();
     private final JPanel cards = new JPanel(new CardLayout());
-    private final JLabel sessionLabel = new JLabel("Not authenticated");
+    private final JPanel content = new JPanel(new BorderLayout());
+    private final NotificationBanner notificationBanner = new NotificationBanner();
     private final Map<String, JButton> navButtons = new LinkedHashMap<>();
 
     public MainWindow() {
@@ -134,8 +135,16 @@ public final class MainWindow extends JFrame {
         getContentPane().setBackground(PAGE);
         cards.setBackground(PAGE);
         sidebar.setPreferredSize(new Dimension(248, 760));
+
+        notificationBanner.setVisible(false);
+
+        content.setBackground(PAGE);
+        content.add(notificationBanner, BorderLayout.NORTH);
+        content.add(cards, BorderLayout.CENTER);
+
         add(sidebar, BorderLayout.WEST);
-        add(cards, BorderLayout.CENTER);
+        add(content, BorderLayout.CENTER);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         showLogin();
     }
 
@@ -146,6 +155,7 @@ public final class MainWindow extends JFrame {
         sidebar.removeAll();
         sidebar.setBackground(NAVY);
         sidebar.setBorder(BorderFactory.createEmptyBorder(18, 16, 18, 16));
+        notificationBanner.hideMessage();
         cards.removeAll();
         cards.add(new LoginPanel(() -> {
             buildMenu();
@@ -161,6 +171,7 @@ public final class MainWindow extends JFrame {
             add(sidebar, BorderLayout.WEST);
         }
         sidebar.removeAll();
+        notificationBanner.hideMessage();
         navButtons.clear();
         cards.removeAll();
         sidebar.setLayout(new BorderLayout(0, 0));
@@ -183,13 +194,7 @@ public final class MainWindow extends JFrame {
         module.setForeground(isWeatherProfile(authz) ? new Color(96, 165, 250) : new Color(148, 163, 184));
         module.setAlignmentX(Component.LEFT_ALIGNMENT);
         headerPanel.add(module);
-        headerPanel.add(Box.createRigidArea(new Dimension(0, 14)));
-
-        sessionLabel.setText(new AisafeAuthorizationService().authenticatedUsername());
-        sessionLabel.setForeground(new Color(203, 213, 225));
-        sessionLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 14, 0));
-        sessionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        headerPanel.add(sessionLabel);
+        headerPanel.add(Box.createRigidArea(new Dimension(0, 26)));
         sidebar.add(headerPanel, BorderLayout.NORTH);
 
         final JPanel navPanel = new JPanel();
@@ -249,6 +254,23 @@ public final class MainWindow extends JFrame {
         if (isWeatherProfile(authz)) {
             return new WeatherDashboardPanel(this, hasAny(authz, AisafePermissions.WEATHER_DATA_MANAGEMENT));
         }
+
+        if (hasAny(authz, AisafeRoles.ADMIN) || hasAny(authz, AisafeRoles.BACKOFFICE_OPERATOR)) {
+            return new DashboardPanel(this);
+        }
+
+        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            return new AirCompanyDashboardPanel(this);
+        }
+
+        if (hasAny(authz, AisafePermissions.FLIGHT_CONTROL)) {
+            return new FlightControlDashboardPanel(this);
+        }
+
+        if (hasAny(authz, AisafePermissions.FLIGHT_PLAN_MANAGEMENT)) {
+            return new PilotDashboardPanel(this, hasAny(authz, AisafePermissions.FLIGHT_PLAN_WEATHER_DATA_INSERTION));
+        }
+
         return new DashboardPanel(this);
     }
 
@@ -286,6 +308,7 @@ public final class MainWindow extends JFrame {
         if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
             addModule(navPanel, "Aircraft", aircraftPanel(authz));
             addModule(navPanel, "Companies", companiesPanel(authz));
+            addModule(navPanel, "Flight Routes", flightRoutesPanel(authz));
             addModule(navPanel, "Flight Plans", flightPlansPanel(authz));
             return;
         }
@@ -392,9 +415,6 @@ public final class MainWindow extends JFrame {
             tabs.addTab("Register Aircraft", new RegisterAircraftPanel());
             tabs.addTab("List Fleet", new ListAircraftFleetPanel());
             tabs.addTab("Decommission", new DecommissionAircraftPanel());
-            tabs.addTab("Add Pilot", new AddPilotPanel());
-            tabs.addTab("Pilot Roster", new ListPilotRosterPanel());
-            tabs.addTab("Deactivate Pilot", new DeactivatePilotPanel());
         }
         if (hasAny(authz, AisafeRoles.BACKOFFICE_OPERATOR)) {
             tabs.addTab("Aircraft Model", new RegisterAircraftModelPanel());
@@ -403,17 +423,40 @@ public final class MainWindow extends JFrame {
         return modulePage("Aircraft", "Manage aircraft, models, engines and fleet status.", tabs);
     }
 
+    private JPanel pilotsPanel(final AisafeAuthorizationService authz) {
+        final JTabbedPane tabs = moduleTabs();
+        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            tabs.addTab("Add Pilot", new AddPilotPanel());
+            tabs.addTab("Pilot Roster", new ListPilotRosterPanel());
+            tabs.addTab("Deactivate Pilot", new DeactivatePilotPanel());
+        }
+        return modulePage("Pilots", "Manage company pilot roster and pilot availability.", tabs);
+    }
+
+    private JPanel flightRoutesPanel(final AisafeAuthorizationService authz) {
+        final JTabbedPane tabs = moduleTabs();
+        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            tabs.addTab("Register Flight Route", new RegisterFlightRoutePanel());
+        }
+        return modulePage("Flight Routes", "Create and manage company flight routes.", tabs);
+    }
+
     private JPanel companiesPanel(final AisafeAuthorizationService authz) {
         final JTabbedPane tabs = moduleTabs();
+
         if (hasAny(authz, AisafeRoles.BACKOFFICE_OPERATOR)) {
             tabs.addTab("Register Company", new RegisterAirTransportCompanyPanel());
             tabs.addTab("Register Collaborator", new RegisterCustomerCollaboratorPanel());
             tabs.addTab("List Collaborators", new ListCustomerCollaboratorsPanel());
         }
+
         if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
-            tabs.addTab("Register Flight Route", new RegisterFlightRoutePanel());
+            tabs.addTab("Add Pilot", new AddPilotPanel());
+            tabs.addTab("Pilot Roster", new ListPilotRosterPanel());
+            tabs.addTab("Deactivate Pilot", new DeactivatePilotPanel());
         }
-        return modulePage("Companies", "Manage companies, collaborators and routes.", tabs);
+
+        return modulePage("Companies", "Manage companies, collaborators and pilot roster.", tabs);
     }
 
     private JPanel flightPlansPanel(final AisafeAuthorizationService authz) {
@@ -679,11 +722,83 @@ public final class MainWindow extends JFrame {
     }
 
     private static void showError(final Component parent, final String message) {
-        JOptionPane.showMessageDialog(parent, message, "Operation failed", JOptionPane.ERROR_MESSAGE);
+        showNotification(
+                parent,
+                "Operation failed",
+                cleanMessage(message, "Something went wrong."),
+                "warning",
+                new Color(220, 38, 38),
+                new Color(254, 226, 226)
+        );
     }
 
     static void showSuccess(final Component parent, final String message) {
-        JOptionPane.showMessageDialog(parent, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        showNotification(
+                parent,
+                "Success",
+                cleanMessage(message, "Operation completed successfully."),
+                "check",
+                new Color(22, 163, 74),
+                new Color(220, 252, 231)
+        );
+    }
+
+    static void showInfo(final Component parent, final String message) {
+        showNotification(
+                parent,
+                "Information",
+                cleanMessage(message, "Information updated."),
+                "info",
+                BLUE,
+                BLUE_SOFT
+        );
+    }
+
+    private static String cleanMessage(final String message, final String fallback) {
+        if (message == null || message.isBlank()) {
+            return fallback;
+        }
+        return message;
+    }
+
+    private static void showNotification(final Component parent,
+                                         final String title,
+                                         final String message,
+                                         final String iconName,
+                                         final Color color,
+                                         final Color background) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            final MainWindow window = findMainWindow(parent);
+
+            if (window != null) {
+                window.notificationBanner.showMessage(title, message, iconName, color, background);
+            }
+        });
+    }
+
+    private static MainWindow findMainWindow(final Component parent) {
+        if (parent != null) {
+            final java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(parent);
+
+            if (window instanceof MainWindow) {
+                return (MainWindow) window;
+            }
+        }
+
+        final java.awt.Window activeWindow =
+                java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+
+        if (activeWindow instanceof MainWindow) {
+            return (MainWindow) activeWindow;
+        }
+
+        for (java.awt.Window window : java.awt.Window.getWindows()) {
+            if (window instanceof MainWindow && window.isShowing()) {
+                return (MainWindow) window;
+            }
+        }
+
+        return null;
     }
 
     static JLabel fieldLabel(final String text) {
@@ -764,4 +879,92 @@ public final class MainWindow extends JFrame {
         }
         return results;
     }
+    private static final class NotificationBanner extends JPanel {
+        private final JLabel icon = new JLabel();
+        private final JLabel text = new JLabel();
+        private final JButton close = new JButton("×");
+
+        private javax.swing.Timer hideTimer;
+
+        NotificationBanner() {
+            super(new BorderLayout(12, 0));
+
+            setOpaque(true);
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER),
+                    BorderFactory.createEmptyBorder(12, 40, 12, 40)
+            ));
+
+            icon.setPreferredSize(new Dimension(28, 28));
+            icon.setHorizontalAlignment(SwingConstants.CENTER);
+
+            text.setForeground(TEXT);
+            text.setFont(text.getFont().deriveFont(13f));
+
+            close.setFocusPainted(false);
+            close.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 10));
+            close.setContentAreaFilled(false);
+            close.setOpaque(false);
+            close.setFont(close.getFont().deriveFont(Font.BOLD, 20f));
+            close.addActionListener(e -> hideMessage());
+
+            add(icon, BorderLayout.WEST);
+            add(text, BorderLayout.CENTER);
+            add(close, BorderLayout.EAST);
+        }
+
+        void showMessage(final String title,
+                         final String message,
+                         final String iconName,
+                         final Color color,
+                         final Color background) {
+            setBackground(background);
+
+            icon.setIcon(new LineIcon(iconName, 22, color));
+            close.setForeground(color);
+
+            text.setText(
+                    "<html>" +
+                            "<div style='font-size:12px'><b>" + html(title) + "</b></div>" +
+                            "<div style='font-size:11px;color:#334155;padding-top:2px'>" + html(message) + "</div>" +
+                            "</html>"
+            );
+
+            setVisible(true);
+            revalidate();
+            repaint();
+
+            if (hideTimer != null) {
+                hideTimer.stop();
+            }
+
+            hideTimer = new javax.swing.Timer(5200, e -> hideMessage());
+            hideTimer.setRepeats(false);
+            hideTimer.start();
+        }
+
+        void hideMessage() {
+            if (hideTimer != null) {
+                hideTimer.stop();
+                hideTimer = null;
+            }
+
+            setVisible(false);
+            revalidate();
+            repaint();
+        }
+
+        private static String html(final String value) {
+            if (value == null) {
+                return "";
+            }
+
+            return value
+                    .replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;");
+        }
+    }
+
 }
