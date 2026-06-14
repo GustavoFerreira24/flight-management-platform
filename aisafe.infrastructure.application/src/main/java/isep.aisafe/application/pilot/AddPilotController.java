@@ -57,6 +57,10 @@ public class AddPilotController {
 
         PilotID pilotID = PilotID.valueOf(id);
         Pilot pilot = pilotRepository.ofIdentity(pilotID).orElseThrow(() -> new IllegalArgumentException("Piloto não encontrado."));
+        if (pilot.companyIATACode() != null) {
+            throw new IllegalArgumentException("Pilot is already associated with an air transport company.");
+        }
+
 
         SystemUsername collaboratorUsername = SystemUsername.valueOf(authz.authenticatedUsername());
         CustomerCollaborator collaborator = collaboratorRepo.findBySystemUsername(collaboratorUsername)

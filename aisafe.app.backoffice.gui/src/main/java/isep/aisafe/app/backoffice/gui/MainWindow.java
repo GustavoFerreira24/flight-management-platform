@@ -307,7 +307,7 @@ public final class MainWindow extends JFrame {
         }
         if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
             addModule(navPanel, "Aircraft", aircraftPanel(authz));
-            addModule(navPanel, "Pilots", pilotsPanel(authz));
+            addModule(navPanel, "Companies", companiesPanel(authz));
             addModule(navPanel, "Flight Routes", flightRoutesPanel(authz));
             addModule(navPanel, "Flight Plans", flightPlansPanel(authz));
             return;
@@ -443,12 +443,20 @@ public final class MainWindow extends JFrame {
 
     private JPanel companiesPanel(final AisafeAuthorizationService authz) {
         final JTabbedPane tabs = moduleTabs();
+
         if (hasAny(authz, AisafeRoles.BACKOFFICE_OPERATOR)) {
             tabs.addTab("Register Company", new RegisterAirTransportCompanyPanel());
             tabs.addTab("Register Collaborator", new RegisterCustomerCollaboratorPanel());
             tabs.addTab("List Collaborators", new ListCustomerCollaboratorsPanel());
         }
-        return modulePage("Companies", "Manage companies and collaborators.", tabs);
+
+        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            tabs.addTab("Add Pilot", new AddPilotPanel());
+            tabs.addTab("Pilot Roster", new ListPilotRosterPanel());
+            tabs.addTab("Deactivate Pilot", new DeactivatePilotPanel());
+        }
+
+        return modulePage("Companies", "Manage companies, collaborators and pilot roster.", tabs);
     }
 
     private JPanel flightPlansPanel(final AisafeAuthorizationService authz) {

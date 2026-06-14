@@ -41,6 +41,7 @@ import isep.aisafe.report.domain.SimulationSafetyViolation;
 import isep.aisafe.usermanagement.domain.AisafeRoles;
 import isep.aisafe.weatherdata.domain.WeatherData;
 import isep.aisafe.weatherdata.domain.WeatherMeasurement;
+import isep.aisafe.pilot.domain.Pilot;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -3425,32 +3426,58 @@ final class RegisterPilotPanel extends FullWidthUseCasePanel {
         final JTextField lastName = PanelUi.text("Last name");
         final JTextField email = PanelUi.text("Email");
         final JPasswordField password = PanelUi.password("Password");
-        final JTextField phone = PanelUi.text("Phone number");
-        final JList<String> models = new JList<>();
-        final List<String> options = new ArrayList<>();
+
+        final JComboBox<String> phonePrefix = new JComboBox<>(new String[] {
+                "PT Portugal | +351",
+                "ES Spain | +34",
+                "FR France | +33",
+                "DE Germany | +49",
+                "UK United Kingdom | +44",
+                "US United States | +1",
+                "BR Brazil | +55"
+        });
+        PanelUi.combo(phonePrefix);
+
+        final JTextField phone = PanelUi.text("Local phone number");
+
+        final JPanel modelChecksPanel = new JPanel();
+        modelChecksPanel.setOpaque(false);
+        modelChecksPanel.setLayout(new BoxLayout(modelChecksPanel, BoxLayout.Y_AXIS));
+
+        final List<JCheckBox> modelChecks = new ArrayList<>();
+
         for (AircraftModel model : controller.getAllAircraftModels()) {
-            options.add(model.identity().toString());
+            final String designator = model.identity().toString();
+
+            final JCheckBox check = new JCheckBox(designator);
+            check.setActionCommand(designator);
+            check.setOpaque(false);
+            check.setForeground(UiTheme.TEXT);
+            check.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 2));
+
+            modelChecks.add(check);
+            modelChecksPanel.add(check);
         }
-        models.setListData(new Vector<>(options));
-        models.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        models.setVisibleRowCount(5);
 
         final JPanel form = PanelUi.formCard("Pilot Certification", "Register a certified pilot and system user.");
         PanelUi.addField(form, 0, 0, "Pilot ID *", id);
-        PanelUi.addField(form, 0, 1, "Phone number *", phone);
-        PanelUi.addField(form, 1, 0, "Certification issued at *", issuedAt);
-        PanelUi.addField(form, 1, 1, "Certification valid until *", validUntil);
-        PanelUi.addSection(form, 2, "User Account", "user");
-        PanelUi.addField(form, 3, 0, "Username *", username);
-        PanelUi.addField(form, 3, 1, "Password *", password);
-        PanelUi.addField(form, 4, 0, "First name *", firstName);
-        PanelUi.addField(form, 4, 1, "Last name *", lastName);
-        PanelUi.addField(form, 5, 0, "Email *", email);
-        PanelUi.addField(form, 5, 1, "Certified aircraft models *", new JScrollPane(models));
+        PanelUi.addField(form, 0, 1, "Country prefix *", phonePrefix);
+        PanelUi.addField(form, 1, 0, "Phone number *", phone);
+        PanelUi.addField(form, 1, 1, "Certification issued at *", issuedAt);
+        PanelUi.addField(form, 2, 0, "Certification valid until *", validUntil);
+
+        PanelUi.addSection(form, 3, "User Account", "user");
+
+        PanelUi.addField(form, 4, 0, "Username *", username);
+        PanelUi.addField(form, 4, 1, "Password *", password);
+        PanelUi.addField(form, 5, 0, "First name *", firstName);
+        PanelUi.addField(form, 5, 1, "Last name *", lastName);
+        PanelUi.addField(form, 6, 0, "Email *", email);
+        PanelUi.addField(form, 6, 1, "Certified aircraft models *", new JScrollPane(modelChecksPanel));
 
         final JPanel side = PanelUi.sideCard("Pilot Rules", "plane",
                 new PanelUi.Tip("check", "Certification", "Pilot must be certified for at least one aircraft model.", PanelUi.SUCCESS),
-                new PanelUi.Tip("info", "System user", "The pilot can authenticate into the system.", UiTheme.BLUE),
+                new PanelUi.Tip("info", "Phone prefix", "Choose the country and write only the local number.", UiTheme.BLUE),
                 new PanelUi.Tip("warning", "Validity", "Certification dates must be valid.", PanelUi.WARNING));
 
         final JPanel workspace = new JPanel(new GridBagLayout());
@@ -3487,19 +3514,60 @@ final class RegisterPilotPanel extends FullWidthUseCasePanel {
         scroll.getViewport().setOpaque(false);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
+
         add(scroll, BorderLayout.CENTER);
 
         add(PanelUi.actions(
-                PanelUi.secondary("Cancel", e -> PanelUi.clear(id, issuedAt, validUntil, username, firstName, lastName, email, password, phone)),
+                PanelUi.secondary("Cancel", e -> {
+                    PanelUi.clear(id, issuedAt, validUntil, username, firstName, lastName, email, password, phone);
+
+                    for (JCheckBox check : modelChecks) {
+                        check.setSelected(false);
+                    }
+
+                    phonePrefix.setSelectedIndex(0);
+                }),
                 PanelUi.primary("Register Pilot", e -> runSafely(() -> {
-                    final List<String> selectedModels = models.getSelectedValuesList();
+                    final List<String> selectedModels = new ArrayList<>();
+
+                    for (JCheckBox check : modelChecks) {
+                        if (check.isSelected()) {
+                            selectedModels.add(check.getActionCommand());
+                        }
+                    }
+
                     if (selectedModels.isEmpty()) {
                         throw new IllegalArgumentException("At least one aircraft model is required.");
                     }
-                    controller.registerPilot(required(id, "Pilot ID"), required(issuedAt, "Certification issued at"), required(validUntil, "Certification valid until"), required(username, "Username"), required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), passwordText(password, "Password"), required(phone, "Phone number"), String.join(",", selectedModels));
+
+                    controller.registerPilot(
+                            required(id, "Pilot ID"),
+                            required(issuedAt, "Certification issued at"),
+                            required(validUntil, "Certification valid until"),
+                            required(username, "Username"),
+                            required(firstName, "First name"),
+                            required(lastName, "Last name"),
+                            required(email, "Email"),
+                            passwordText(password, "Password"),
+                            completePhoneNumber(selected(phonePrefix), required(phone, "Phone number")),
+                            String.join(",", selectedModels));
+
                     showSuccess(this, "Pilot registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
+    }
+
+    private static String completePhoneNumber(final String prefixOption, final String localNumber) {
+        final String normalizedLocal = localNumber.trim().replaceAll("[\\s\\-()]", "");
+
+        if (normalizedLocal.startsWith("+")) {
+            return normalizedLocal;
+        }
+
+        final int separator = prefixOption.lastIndexOf('|');
+        final String prefix = separator >= 0 ? prefixOption.substring(separator + 1).trim() : prefixOption.trim();
+
+        return prefix + normalizedLocal;
     }
 }
 
@@ -3510,30 +3578,48 @@ final class AddPilotPanel extends FullWidthUseCasePanel {
 
         final JComboBox<String> pilots = new JComboBox<>();
         PanelUi.combo(pilots);
-        pilots.setPrototypeDisplayValue("Select an available pilot from the current pool");
+        pilots.setPrototypeDisplayValue("AAA | Pilot name | Status");
 
         final JLabel availableCount = PanelUi.bigValue("0");
         final JLabel selectedStatus = PanelUi.bigValue("—");
 
-        final JTable table = new JTable(tableModel("Available Pilot"));
+        final JTable table = new JTable(tableModel("Pilot ID", "Name", "Status", "Certified Models"));
         PanelUi.table(table);
 
         final Runnable reloadPilots = () -> runSafely(() -> {
             pilots.removeAllItems();
 
-            final DefaultTableModel model = tableModel("Available Pilot");
-            final java.util.List<Object> available = new ArrayList<>();
+            final DefaultTableModel model = tableModel("Pilot ID", "Name", "Status", "Certified Models");
+            final java.util.List<Pilot> available = new ArrayList<>();
 
-            for (Object pilot : new RegisterPilotController().getAllPilots()) {
+            for (Pilot pilot : new RegisterPilotController().getAllPilots()) {
+                if (pilot.companyIATACode() != null) {
+                    continue;
+                }
+
                 available.add(pilot);
-                final String option = String.valueOf(pilot);
+            }
+
+            available.sort((left, right) -> left.identity().toString().compareTo(right.identity().toString()));
+
+            for (Pilot pilot : available) {
+                final String name = pilot.firstName() + " " + pilot.lastName();
+                final String status = String.valueOf(pilot.pilotStatus());
+                final String option = pilot.identity() + " | " + name + " | " + status;
+
                 pilots.addItem(option);
-                model.addRow(new Object[] { option });
+                model.addRow(new Object[] {
+                        pilot.identity(),
+                        name,
+                        status,
+                        certifiedModels(pilot)
+                });
             }
 
             table.setModel(model);
             PanelUi.table(table);
             table.setRowHeight(34);
+
             availableCount.setText(String.valueOf(available.size()));
             selectedStatus.setText(available.isEmpty() ? "Empty" : "Ready");
 
@@ -3542,9 +3628,12 @@ final class AddPilotPanel extends FullWidthUseCasePanel {
             }
         });
 
-        final JPanel selector = PanelUi.formCard("Add Pilot to Roster", "Select an existing pilot and associate it to the company.");
+        final JPanel selector = PanelUi.formCard(
+                "Add Pilot to Roster",
+                "Select an existing unassigned pilot and associate it to the company.");
+
         PanelUi.addField(selector, 0, 0, "Pilot *", pilots);
-        PanelUi.addInfoStrip(selector, 1, "Only existing pilots can be added to the company roster.");
+        PanelUi.addInfoStrip(selector, 1, "Only pilots without a company are available here.");
 
         final JPanel overview = PanelUi.card(new BorderLayout(0, 18));
         overview.add(PanelUi.sectionHeader("Available Pool", "Live overview of selectable pilots.", "user"), BorderLayout.NORTH);
@@ -3553,6 +3642,7 @@ final class AddPilotPanel extends FullWidthUseCasePanel {
         overviewGrid.setOpaque(false);
         overviewGrid.add(PanelUi.summaryCard("Available pilots", availableCount, "user", UiTheme.BLUE, "Selectable records"));
         overviewGrid.add(PanelUi.summaryCard("Status", selectedStatus, "check", PanelUi.SUCCESS, "Pool state"));
+
         overview.add(overviewGrid, BorderLayout.CENTER);
 
         final JPanel top = new JPanel(new GridBagLayout());
@@ -3562,22 +3652,19 @@ final class AddPilotPanel extends FullWidthUseCasePanel {
         tc.gridx = 0;
         tc.gridy = 0;
         tc.fill = GridBagConstraints.BOTH;
-        tc.weightx = 0.58;
-        tc.weighty = 0;
+        tc.weightx = 0.62;
+        tc.weighty = 1;
         tc.insets = new Insets(0, 0, 0, 22);
         top.add(selector, tc);
 
         tc.gridx = 1;
-        tc.weightx = 0.42;
+        tc.weightx = 0.38;
         tc.insets = new Insets(0, 0, 0, 0);
         top.add(overview, tc);
 
         final JPanel list = PanelUi.card(new BorderLayout(0, 16));
-        list.add(PanelUi.sectionHeader("Available Pilots", "Review the current selectable pilot pool.", "grid"), BorderLayout.NORTH);
-
-        final JScrollPane tableScroll = new JScrollPane(table);
-        tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        list.add(tableScroll, BorderLayout.CENTER);
+        list.add(PanelUi.sectionHeader("Available Pilots", "Pilots that can be added to the current company roster.", "grid"), BorderLayout.NORTH);
+        list.add(new JScrollPane(table), BorderLayout.CENTER);
 
         final JPanel content = new JPanel(new GridBagLayout());
         content.setOpaque(false);
@@ -3602,13 +3689,30 @@ final class AddPilotPanel extends FullWidthUseCasePanel {
         add(PanelUi.actions(
                 PanelUi.secondary("Reload Pilots", e -> reloadPilots.run()),
                 PanelUi.primary("Add Pilot", e -> runSafely(() -> {
-                    new AddPilotController().addPilot(firstPart(selected(pilots)));
+                    final String pilotId = firstPart(selected(pilots));
+
+                    new AddPilotController().addPilot(pilotId);
+
                     showSuccess(this, "Pilot added successfully.");
                     reloadPilots.run();
                 }))
         ), BorderLayout.SOUTH);
 
         javax.swing.SwingUtilities.invokeLater(reloadPilots);
+    }
+
+    private static String certifiedModels(final Pilot pilot) {
+        final StringBuilder builder = new StringBuilder();
+
+        for (Object model : pilot.certifiedAircraftModelsDesignators()) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+
+            builder.append(model);
+        }
+
+        return builder.toString();
     }
 }
 
@@ -3620,11 +3724,44 @@ final class ListPilotRosterPanel extends FullWidthUseCasePanel {
         final JLabel total = PanelUi.bigValue("0");
         final JLabel status = PanelUi.bigValue("Ready");
 
-        final JTable table = new JTable(tableModel("Pilot"));
+        final JTable table = new JTable(tableModel("Pilot ID", "Name", "Status", "Certified Models"));
         PanelUi.table(table);
+
+        final Runnable reloadRoster = () -> runSafely(() -> {
+            final java.util.List<Pilot> pilots = new ArrayList<>();
+
+            for (Pilot pilot : new ListPilotRosterController().listPilotRoster()) {
+                pilots.add(pilot);
+            }
+
+            pilots.sort((left, right) -> left.identity().toString().compareTo(right.identity().toString()));
+
+            final DefaultTableModel model = tableModel("Pilot ID", "Name", "Status", "Certified Models");
+
+            for (Pilot pilot : pilots) {
+                model.addRow(new Object[] {
+                        pilot.identity(),
+                        pilot.firstName() + " " + pilot.lastName(),
+                        pilot.pilotStatus(),
+                        certifiedModels(pilot)
+                });
+            }
+
+            table.setModel(model);
+            PanelUi.table(table);
+            table.setRowHeight(34);
+
+            total.setText(String.valueOf(pilots.size()));
+            status.setText(pilots.isEmpty() ? "Empty" : "Loaded");
+
+            if (pilots.isEmpty()) {
+                showInfo(this, "No pilots found in the roster.");
+            }
+        });
 
         final JPanel summary = PanelUi.card(new GridBagLayout());
         final GridBagConstraints sc = new GridBagConstraints();
+
         sc.gridx = 0;
         sc.gridy = 0;
         sc.gridwidth = 2;
@@ -3642,7 +3779,7 @@ final class ListPilotRosterPanel extends FullWidthUseCasePanel {
 
         sc.gridx = 1;
         sc.insets = new Insets(0, 0, 0, 0);
-        summary.add(PanelUi.summaryCard("Status", status, "check", PanelUi.SUCCESS, "Ready to list"), sc);
+        summary.add(PanelUi.summaryCard("Status", status, "check", PanelUi.SUCCESS, "Current state"), sc);
 
         final JPanel tableCard = PanelUi.card(new BorderLayout(0, 16));
         tableCard.add(PanelUi.sectionHeader("Pilot Roster", "Pilots are displayed as one selectable entry per row.", "grid"), BorderLayout.NORTH);
@@ -3671,32 +3808,27 @@ final class ListPilotRosterPanel extends FullWidthUseCasePanel {
                 PanelUi.secondary("Clear", e -> {
                     total.setText("0");
                     status.setText("Ready");
-                    table.setModel(tableModel("Pilot"));
+                    table.setModel(tableModel("Pilot ID", "Name", "Status", "Certified Models"));
                     PanelUi.table(table);
                 }),
-                PanelUi.primary("List Roster", e -> runSafely(() -> {
-                    final java.util.List<Object> pilots = new ArrayList<>();
-                    for (Object pilot : new ListPilotRosterController().listPilotRoster()) {
-                        pilots.add(pilot);
-                    }
-
-                    final DefaultTableModel model = tableModel("Pilot");
-
-                    for (Object pilot : pilots) {
-                        model.addRow(new Object[] { String.valueOf(pilot) });
-                    }
-
-                    table.setModel(model);
-                    PanelUi.table(table);
-
-                    total.setText(String.valueOf(pilots.size()));
-                    status.setText(pilots.isEmpty() ? "Empty" : "Loaded");
-
-                    if (pilots.isEmpty()) {
-                        showInfo(this, "No pilots found in the roster.");
-                    }
-                }))
+                PanelUi.primary("Refresh Roster", e -> reloadRoster.run())
         ), BorderLayout.SOUTH);
+
+        javax.swing.SwingUtilities.invokeLater(reloadRoster);
+    }
+
+    private static String certifiedModels(final Pilot pilot) {
+        final StringBuilder builder = new StringBuilder();
+
+        for (Object model : pilot.certifiedAircraftModelsDesignators()) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+
+            builder.append(model);
+        }
+
+        return builder.toString();
     }
 }
 
