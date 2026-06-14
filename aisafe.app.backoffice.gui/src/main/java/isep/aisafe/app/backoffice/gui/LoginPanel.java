@@ -5,7 +5,6 @@ import isep.aisafe.infrastructure.authz.AuthenticationCredentialHandler;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -25,6 +24,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.geom.Path2D;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+import java.awt.event.KeyEvent;
 
 import static isep.aisafe.app.backoffice.gui.MainWindow.*;
 import static isep.aisafe.app.backoffice.gui.UiTheme.*;
@@ -112,15 +115,26 @@ final class LoginPanel extends JPanel {
         card.add(password, c);
 
         c.gridy++;
-        c.insets = new Insets(0, 0, 20, 0);
-        card.add(optionsRow(), c);
+        c.insets = new Insets(8, 0, 0, 0);
 
-        c.gridy++;
         final JButton login = primaryButton("Sign In");
         login.setPreferredSize(new Dimension(600, 52));
         login.setFont(login.getFont().deriveFont(Font.BOLD, 15f));
         login.addActionListener(e -> runSafely(() -> authenticate(username, password, onAuthenticated)));
         card.add(login, c);
+
+        password.addActionListener(e -> login.doClick());
+        username.addActionListener(e -> login.doClick());
+
+        card.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "signIn");
+
+        card.getActionMap().put("signIn", new AbstractAction() {
+            @Override
+            public void actionPerformed(final java.awt.event.ActionEvent e) {
+                login.doClick();
+            }
+        });
 
         c.gridy++;
         c.insets = new Insets(12, 0, 26, 0);
@@ -150,21 +164,6 @@ final class LoginPanel extends JPanel {
             throw new IllegalArgumentException("Invalid credentials.");
         }
         onAuthenticated.run();
-    }
-
-    private JPanel optionsRow() {
-        final JPanel options = new JPanel(new BorderLayout());
-        options.setOpaque(false);
-        final JCheckBox remember = new JCheckBox("Remember me");
-        remember.setOpaque(false);
-        remember.setForeground(new Color(51, 65, 85));
-        remember.setFont(remember.getFont().deriveFont(14f));
-        final JLabel forgot = new JLabel("Forgot password?");
-        forgot.setForeground(BLUE);
-        forgot.setFont(forgot.getFont().deriveFont(13f));
-        options.add(remember, BorderLayout.WEST);
-        options.add(forgot, BorderLayout.EAST);
-        return options;
     }
 
     private JPanel footer() {

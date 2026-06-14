@@ -51,7 +51,6 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -65,16 +64,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -119,7 +109,7 @@ final class RegisterBackofficeUserPanel extends JPanel {
                 PanelUi.primary("Register User", e -> runSafely(() -> {
                     final Role selectedRole = "ADMIN".equals(selected(role)) ? AisafeRoles.ADMIN : AisafeRoles.BACKOFFICE_OPERATOR;
                     controller.registerUser(required(username, "Username"), passwordText(password, "Password"), required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), Set.of(selectedRole));
-                    JOptionPane.showMessageDialog(this, "User registered successfully.");
+                    showSuccess(this, "User registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -161,7 +151,7 @@ final class RegisterAirControlAreaPanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(code, name)),
                 PanelUi.primary("Register", e -> runSafely(() -> {
                     new RegisterAirControlAreaController().registerAirControlArea(required(code, "Code"), required(name, "Name"), doubleValue(minLat), doubleValue(maxLat), doubleValue(minLon), doubleValue(maxLon), doubleValue(fuel), selected(unit));
-                    JOptionPane.showMessageDialog(this, "Air control area registered successfully.");
+                    showSuccess(this, "Air control area registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -218,7 +208,7 @@ final class RegisterAirportPanel extends JPanel {
                 })),
                 PanelUi.primary("Register", e -> runSafely(() -> {
                     controller.registerAirport(required(icao, "ICAO code"), required(iata, "IATA code"), required(name, "Name"), required(country, "Country"), required(town, "Town"), doubleValue(lat), doubleValue(lon), doubleValue(elev), firstPart(selected(area)));
-                    JOptionPane.showMessageDialog(this, "Airport registered successfully.");
+                    showSuccess(this, "Airport registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -251,7 +241,7 @@ final class RegisterAirTransportCompanyPanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(name, country, iata, icao)),
                 PanelUi.primary("Register Company", e -> runSafely(() -> {
                     new AirCompanyConfigurationController().registerAirTransportCompany(required(name, "Name"), required(country, "Country"), required(iata, "IATA code"), required(icao, "ICAO code"));
-                    JOptionPane.showMessageDialog(this, "Air transport company registered successfully.");
+                    showSuccess(this, "Air transport company registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -293,7 +283,7 @@ final class RegisterCustomerCollaboratorPanel extends JPanel {
                     } else {
                         controller.registerCollaboratorForAirControlArea(required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), required(customerCode, "Area code"), passwordText(password, "Initial password"));
                     }
-                    JOptionPane.showMessageDialog(this, "Customer collaborator registered successfully.");
+                    showSuccess(this, "Customer collaborator registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -377,7 +367,7 @@ final class RegisterEngineModelPanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(model)),
                 PanelUi.primary("Register Engine", e -> runSafely(() -> {
                     controller.registerEngineModel(required(model, "Model name"), selected(manufacturer), selected(engineType), selected(fuelType), doubleValue(power), doubleValue(thrust), doubleValue(tsfc));
-                    JOptionPane.showMessageDialog(this, "Engine model registered successfully.");
+                    showSuccess(this, "Engine model registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -447,7 +437,7 @@ final class RegisterAircraftModelPanel extends JPanel {
                 PanelUi.primary("Register Model", e -> runSafely(() -> {
                     final List<String> selectedEngines = engines.getSelectedValuesList();
                     controller.registerAircraftModel(required(model, "Model name"), selected(manufacturer), selected(type), selected(motorization), doubleValue(range), doubleValue(emptyWeight), doubleValue(mtow), doubleValue(mzfw), doubleValue(fuel), doubleValue(ceiling), doubleValue(cruise), doubleValue(wing), doubleValue(drag), doubleValue(lift), intValue(passengers), selectedEngines);
-                    JOptionPane.showMessageDialog(this, "Aircraft model registered successfully.");
+                    showSuccess(this, "Aircraft model registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -517,7 +507,7 @@ final class RegisterAircraftPanel extends JPanel {
                     final String[] modelParts = splitDesignator(selected(model));
                     final String[] engineParts = splitDesignator(selected(engine));
                     controller.registerAircraft(required(registration, "Registration"), required(country, "Registration country"), selected(status), intValue(year), intValue(crew), intValue(economy), intValue(business), intValue(first), modelParts[0], modelParts[1], engineParts[0], engineParts[1]);
-                    JOptionPane.showMessageDialog(this, "Aircraft registered successfully.");
+                    showSuccess(this, "Aircraft registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -592,7 +582,7 @@ final class DecommissionAircraftPanel extends JPanel {
                 })),
                 PanelUi.primary("Decommission", e -> runSafely(() -> {
                     controller.decommissionAircraft(selected(aircraft));
-                    JOptionPane.showMessageDialog(this, "Aircraft decommissioned successfully.");
+                    showSuccess(this, "Aircraft decommissioned successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -624,7 +614,7 @@ final class RegisterFlightRoutePanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> designator.setText("")),
                 PanelUi.primary("Register Route", e -> runSafely(() -> {
                     controller.registerFlightRoute(required(designator, "Route designator"), firstPart(selected(departure)), firstPart(selected(destination)));
-                    JOptionPane.showMessageDialog(this, "Flight route registered successfully.");
+                    showSuccess(this, "Flight route registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -637,7 +627,7 @@ final class CreateFlightPanel extends JPanel {
 
         final JTextField route = PanelUi.text("Route designator");
         final JTextField flight = PanelUi.text("Flight designator");
-        final JTextField day = PanelUi.text("yyyy-MM-dd");
+        final JTextField day = PanelUi.dateIso();
         final JTextField time = PanelUi.text("HH:mm");
 
         final JPanel form = PanelUi.formCard("Flight Schedule", "Create a scheduled flight from a route.");
@@ -655,7 +645,7 @@ final class CreateFlightPanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(route, flight, day, time)),
                 PanelUi.primary("Create Flight", e -> runSafely(() -> {
                     new CreateFlightController().createFlight(required(route, "Route designator"), required(flight, "Flight designator"), required(day, "Departure day"), required(time, "Departure time"));
-                    JOptionPane.showMessageDialog(this, "Flight created successfully.");
+                    showSuccess(this, "Flight created successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -692,7 +682,7 @@ final class CreateFlightPlanPanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(id, flight, aircraft, pilot)),
                 PanelUi.primary("Create Plan", e -> runSafely(() -> {
                     new CreateFlightPlanController().createFlightPlan(required(id, "Flight plan identifier"), required(flight, "Flight designator"), required(aircraft, "Aircraft registration"), required(pilot, "Pilot ID"), doubleValue(fuel), selected(unit));
-                    JOptionPane.showMessageDialog(this, "Flight plan created successfully.");
+                    showSuccess(this, "Flight plan created successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -704,7 +694,7 @@ final class InsertWeatherDataInFlightPlanPanel extends JPanel {
         setOpaque(false);
 
         final JTextField id = PanelUi.text("Flight plan identifier");
-        final JTextField day = PanelUi.text("yyyy-MM-dd");
+        final JTextField day = PanelUi.dateIso();
         final JTextField area = PanelUi.text("Air control area code");
 
         final JPanel form = PanelUi.formCard("Weather Association", "Attach weather data to an existing flight plan.");
@@ -721,86 +711,1468 @@ final class InsertWeatherDataInFlightPlanPanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(id, day, area)),
                 PanelUi.primary("Insert Weather", e -> runSafely(() -> {
                     final FlightPlan plan = new InsertWeatherDataInFlightPlanController().insertWeatherData(required(id, "Flight plan identifier"), required(day, "Weather day"), required(area, "Air control area code"));
-                    JOptionPane.showMessageDialog(this, "Weather data inserted. Status: " + plan.status() + ", weather entries: " + plan.weatherDataIds().size());
+                    showSuccess(this, "Weather data inserted. Status: " + plan.status() + ", weather entries: " + plan.weatherDataIds().size());
                 }))
         ), BorderLayout.SOUTH);
     }
 }
 
 final class TestFlightPlanPanel extends JPanel {
+    private static final String[] VALIDATION_STEPS = {
+            "Status changed: DRAFT → UNDER_VALIDATION",
+            "[1/8] Checking route status...",
+            "[2/8] Checking aircraft operational status...",
+            "[3/8] Checking aircraft company ownership...",
+            "[4/8] Checking pilot status...",
+            "[5/8] Checking pilot company assignment...",
+            "[6/8] Checking pilot aircraft certification...",
+            "[7/8] Checking engine/model certification...",
+            "[8/8] Checking fuel quantity...",
+            "Generating validation report...",
+            "Status changed: UNDER_VALIDATION → VALIDATED"
+    };
+
+    private static final long MINIMUM_VISUAL_DURATION_MS = 4000L;
+
+    private javax.swing.Timer stepTimer;
+    private javax.swing.Timer spinnerTimer;
+    private long validationStartedAt;
+
     TestFlightPlanPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
         final TestFlightPlanController controller = new TestFlightPlanController();
+
         final JComboBox<String> plans = new JComboBox<>();
         PanelUi.combo(plans);
-        final JTextArea out = PanelUi.outputArea("Test results will appear here.");
 
-        final JPanel form = PanelUi.formCard("Flight Plan Test", "Run the validation process for an authenticated pilot flight plan.");
-        PanelUi.addField(form, 0, 0, "Flight plan *", plans);
+        final JPanel resultBody = new JPanel(new BorderLayout());
+        resultBody.setOpaque(false);
+        showIdleResult(resultBody);
 
-        final JPanel result = PanelUi.resultPanel("Validation Result", out);
-        final JPanel content = PanelUi.card(new BorderLayout(0, 18));
-        content.add(form, BorderLayout.NORTH);
-        content.add(result, BorderLayout.CENTER);
+        final LoadingCircleIcon loadingIcon = new LoadingCircleIcon(42);
+        final JLabel loading = new JLabel(loadingIcon, SwingConstants.CENTER);
+
+        final JLabel statusBadge = statusBadge("Idle", UiTheme.MUTED, new java.awt.Color(241, 245, 249));
+
+        final JLabel currentStep = new JLabel("Select a flight plan and start validation.");
+        currentStep.setForeground(UiTheme.MUTED);
+        currentStep.setFont(currentStep.getFont().deriveFont(13f));
+        currentStep.setHorizontalAlignment(SwingConstants.CENTER);
+
+        final javax.swing.JProgressBar progress = new javax.swing.JProgressBar(0, 100);
+        progress.setValue(0);
+        progress.setStringPainted(true);
+        progress.setString("Waiting");
+        progress.setPreferredSize(new Dimension(280, 24));
+        progress.putClientProperty("FlatLaf.style", "arc: 12");
+
+        final JPanel selector = PanelUi.formCard(
+                "Flight Plan Validation",
+                "Run the same validation pipeline used by the console flow."
+        );
+        selector.setPreferredSize(new Dimension(0, 235));
+        selector.setMinimumSize(new Dimension(520, 235));
+
+        PanelUi.addField(selector, 0, 0, "Flight plan *", plans);
+        PanelUi.addInfoStrip(selector, 1, "The flight plan status will change while validation is running.");
+
+        final JPanel statusCard = PanelUi.card(new GridBagLayout());
+        statusCard.setPreferredSize(new Dimension(360, 235));
+        statusCard.setMinimumSize(new Dimension(330, 235));
+
+        final GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 0;
+        sc.gridy = 0;
+        sc.anchor = GridBagConstraints.CENTER;
+        sc.insets = new Insets(0, 0, 12, 0);
+        statusCard.add(loading, sc);
+
+        sc.gridy++;
+        sc.insets = new Insets(0, 0, 12, 0);
+        statusCard.add(statusBadge, sc);
+
+        sc.gridy++;
+        sc.fill = GridBagConstraints.HORIZONTAL;
+        sc.weightx = 1;
+        sc.insets = new Insets(0, 0, 14, 0);
+        statusCard.add(currentStep, sc);
+
+        sc.gridy++;
+        sc.insets = new Insets(0, 0, 0, 0);
+        statusCard.add(progress, sc);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 1;
+        tc.weighty = 1;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(selector, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(statusCard, tc);
+
+        final JPanel resultCard = PanelUi.card(new BorderLayout(0, 18));
+        resultCard.add(
+                PanelUi.sectionHeader(
+                        "Validation Result",
+                        "Graphical summary of the validation outcome.",
+                        "check"
+                ),
+                BorderLayout.NORTH
+        );
+        resultCard.add(resultBody, BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new GridBagLayout());
+        content.setOpaque(false);
+
+        final GridBagConstraints gc = new GridBagConstraints();
+        gc.gridx = 0;
+        gc.gridy = 0;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.weightx = 1;
+        gc.weighty = 0;
+        gc.insets = new Insets(0, 0, 22, 0);
+        content.add(top, gc);
+
+        gc.gridy++;
+        gc.fill = GridBagConstraints.BOTH;
+        gc.weightx = 1;
+        gc.weighty = 1;
+        gc.insets = new Insets(0, 0, 0, 0);
+        content.add(resultCard, gc);
+
         add(content, BorderLayout.CENTER);
 
-        add(PanelUi.actions(
-                PanelUi.secondary("Refresh", e -> runSafely(() -> {
-                    plans.removeAllItems();
-                    for (FlightPlan p : controller.authenticatedPilotFlightPlans()) {
-                        plans.addItem(p.identity().toString());
-                    }
-                })),
-                PanelUi.primary("Test Plan", e -> new SwingWorker<TestFlightPlanResult, Void>() {
-                    @Override
-                    protected TestFlightPlanResult doInBackground() {
-                        return controller.testFlightPlan(selected(plans));
-                    }
+        final JButton refresh = PanelUi.secondary("Refresh Plans", e -> runSafely(() -> {
+            plans.removeAllItems();
 
-                    @Override
-                    protected void done() {
-                        runSafely(() -> {
+            for (FlightPlan p : controller.authenticatedPilotFlightPlans()) {
+                plans.addItem(p.identity().toString());
+            }
+
+            loadingIcon.idle();
+            loading.repaint();
+
+            setStatus(statusBadge, "Idle", UiTheme.MUTED, new java.awt.Color(241, 245, 249));
+            currentStep.setText("Select a flight plan and start validation.");
+            progress.setValue(0);
+            progress.setString("Waiting");
+            showIdleResult(resultBody);
+        }));
+
+        final JButton test = primaryButton("Run Validation");
+
+        test.addActionListener(e -> runSafely(() -> {
+            final String selectedPlan = selected(plans);
+
+            refresh.setEnabled(false);
+            test.setEnabled(false);
+
+            startValidationAnimation(loadingIcon, loading, statusBadge, currentStep, progress, resultBody);
+
+            new SwingWorker<TestFlightPlanResult, Void>() {
+                @Override
+                protected TestFlightPlanResult doInBackground() {
+                    return controller.testFlightPlan(selectedPlan);
+                }
+
+                @Override
+                protected void done() {
+                    final long elapsed = System.currentTimeMillis() - validationStartedAt;
+                    final int remaining = (int) Math.max(0, MINIMUM_VISUAL_DURATION_MS - elapsed);
+
+                    final javax.swing.Timer finishDelay = new javax.swing.Timer(remaining, event -> {
+                        ((javax.swing.Timer) event.getSource()).stop();
+
+                        stopValidationAnimation();
+
+                        try {
                             final TestFlightPlanResult result = get();
-                            out.setText("Successful: " + result.isSuccessful()
-                                    + "\nStatus: " + result.status()
-                                    + "\nReport: " + result.reportIdentifier().orElse("-")
-                                    + "\n\n" + String.join("\n", result.messages()));
-                        });
-                    }
-                }.execute())
-        ), BorderLayout.SOUTH);
+                            finishValidation(result, loadingIcon, loading, statusBadge, currentStep, progress, resultBody);
+                        } catch (Exception ex) {
+                            final Throwable cause = ex.getCause() == null ? ex : ex.getCause();
+                            failValidation(cause.getMessage(), loadingIcon, loading, statusBadge, currentStep, progress, resultBody);
+                        } finally {
+                            refresh.setEnabled(true);
+                            test.setEnabled(true);
+                        }
+                    });
+
+                    finishDelay.setRepeats(false);
+                    finishDelay.start();
+                }
+            }.execute();
+        }));
+
+        add(PanelUi.actions(refresh, test), BorderLayout.SOUTH);
+        javax.swing.SwingUtilities.invokeLater(refresh::doClick);
+    }
+
+    private void startValidationAnimation(final LoadingCircleIcon loadingIcon,
+                                          final JLabel loading,
+                                          final JLabel statusBadge,
+                                          final JLabel currentStep,
+                                          final javax.swing.JProgressBar progress,
+                                          final JPanel resultBody) {
+        stopValidationAnimation();
+
+        validationStartedAt = System.currentTimeMillis();
+
+        final ProcessStepsPanel processSteps = new ProcessStepsPanel(VALIDATION_STEPS);
+        showRunningResult(resultBody, processSteps);
+
+        loadingIcon.running();
+        loading.repaint();
+
+        setStatus(statusBadge, "UNDER VALIDATION", UiTheme.BLUE, UiTheme.BLUE_SOFT);
+
+        currentStep.setText(VALIDATION_STEPS[0]);
+        progress.setValue(4);
+        progress.setString("Starting...");
+
+        processSteps.setRunning(0);
+
+        spinnerTimer = new javax.swing.Timer(55, e -> {
+            loadingIcon.tick();
+            loading.repaint();
+        });
+        spinnerTimer.start();
+
+        final int[] current = { 0 };
+
+        stepTimer = new javax.swing.Timer(360, e -> {
+            if (current[0] < VALIDATION_STEPS.length - 1) {
+                current[0]++;
+
+                final String step = VALIDATION_STEPS[current[0]];
+                currentStep.setText(step);
+                processSteps.setRunning(current[0]);
+
+                final int value = Math.min(
+                        95,
+                        (int) (((current[0] + 1) / (double) VALIDATION_STEPS.length) * 100)
+                );
+
+                progress.setValue(value);
+                progress.setString(value + "%");
+            } else {
+                progress.setValue(95);
+                progress.setString("Finalizing...");
+            }
+        });
+
+        stepTimer.start();
+    }
+
+    private void finishValidation(final TestFlightPlanResult result,
+                                  final LoadingCircleIcon loadingIcon,
+                                  final JLabel loading,
+                                  final JLabel statusBadge,
+                                  final JLabel currentStep,
+                                  final javax.swing.JProgressBar progress,
+                                  final JPanel resultBody) {
+        final boolean success = result.isSuccessful();
+        final String finalStatus = String.valueOf(result.status());
+
+        if (success) {
+            loadingIcon.success();
+            setStatus(statusBadge, finalStatus, PanelUi.SUCCESS, new java.awt.Color(220, 252, 231));
+            currentStep.setText("Validation completed successfully.");
+        } else {
+            loadingIcon.failed();
+            setStatus(statusBadge, finalStatus, PanelUi.ERROR, new java.awt.Color(254, 226, 226));
+            currentStep.setText("Validation completed with issues.");
+        }
+
+        loading.repaint();
+
+        progress.setValue(100);
+        progress.setString("Complete");
+
+        showResultDashboard(resultBody, result);
+    }
+
+    private void failValidation(final String message,
+                                final LoadingCircleIcon loadingIcon,
+                                final JLabel loading,
+                                final JLabel statusBadge,
+                                final JLabel currentStep,
+                                final javax.swing.JProgressBar progress,
+                                final JPanel resultBody) {
+        loadingIcon.failed();
+        loading.repaint();
+
+        setStatus(statusBadge, "FAILED", PanelUi.ERROR, new java.awt.Color(254, 226, 226));
+        currentStep.setText("Validation stopped before completion.");
+
+        progress.setValue(100);
+        progress.setString("Failed");
+
+        showFailureResult(resultBody, message);
+    }
+
+    private void stopValidationAnimation() {
+        if (stepTimer != null) {
+            stepTimer.stop();
+            stepTimer = null;
+        }
+
+        if (spinnerTimer != null) {
+            spinnerTimer.stop();
+            spinnerTimer = null;
+        }
+    }
+
+    private static void showIdleResult(final JPanel resultBody) {
+        resultBody.removeAll();
+
+        final JPanel empty = new JPanel(new GridBagLayout());
+        empty.setOpaque(false);
+
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.CENTER;
+        c.insets = new Insets(0, 0, 12, 0);
+
+        final JLabel icon = new JLabel(new LineIcon("check", 42, new java.awt.Color(148, 163, 184)));
+        empty.add(icon, c);
+
+        c.gridy++;
+        c.insets = new Insets(0, 0, 6, 0);
+
+        final JLabel title = new JLabel("No validation result yet");
+        title.setForeground(UiTheme.TEXT);
+        title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
+        empty.add(title, c);
+
+        c.gridy++;
+        c.insets = new Insets(0, 0, 0, 0);
+
+        final JLabel subtitle = new JLabel("Choose a flight plan and run validation to see the graphical result.");
+        subtitle.setForeground(UiTheme.MUTED);
+        subtitle.setFont(subtitle.getFont().deriveFont(13f));
+        empty.add(subtitle, c);
+
+        resultBody.add(empty, BorderLayout.CENTER);
+        resultBody.revalidate();
+        resultBody.repaint();
+    }
+
+    private static void showRunningResult(final JPanel resultBody, final ProcessStepsPanel processSteps) {
+        resultBody.removeAll();
+
+        final JPanel panel = new JPanel(new BorderLayout(0, 16));
+        panel.setOpaque(false);
+
+        final JLabel running = new JLabel(
+                "<html><b>Running validation...</b><br><span style='color:#64748B'>The validation checks are being processed sequentially.</span></html>",
+                new LineIcon("check", 28, UiTheme.BLUE),
+                SwingConstants.LEFT
+        );
+        running.setIconTextGap(12);
+        running.setForeground(UiTheme.TEXT);
+
+        final JScrollPane scroll = new JScrollPane(processSteps);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        panel.add(running, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+
+        resultBody.add(panel, BorderLayout.CENTER);
+        resultBody.revalidate();
+        resultBody.repaint();
+    }
+
+    private static void showResultDashboard(final JPanel resultBody, final TestFlightPlanResult result) {
+        resultBody.removeAll();
+
+        final ResultDetails details = ResultDetails.from(result);
+
+        final JPanel dashboard = new JPanel(new BorderLayout(0, 18));
+        dashboard.setOpaque(false);
+
+        final JPanel summary = new JPanel(new BorderLayout(18, 0));
+        summary.setOpaque(false);
+
+        final JPanel statusBox = new RoundedPanel(
+                16,
+                result.isSuccessful() ? new java.awt.Color(240, 253, 244) : new java.awt.Color(254, 242, 242),
+                result.isSuccessful() ? new java.awt.Color(187, 247, 208) : new java.awt.Color(254, 202, 202),
+                true
+        );
+        statusBox.setLayout(new BorderLayout(14, 0));
+        statusBox.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
+
+        final JLabel statusIcon = new JLabel(
+                new LineIcon(
+                        result.isSuccessful() ? "check" : "warning",
+                        36,
+                        result.isSuccessful() ? PanelUi.SUCCESS : PanelUi.ERROR
+                )
+        );
+        statusBox.add(statusIcon, BorderLayout.WEST);
+
+        final JLabel statusText = new JLabel(
+                "<html>" +
+                        "<div style='font-size:15px'><b>" + html(details.status) + "</b></div>" +
+                        "<div style='font-size:11px;color:#64748B;padding-top:4px'>Report " + html(details.reportId) + "</div>" +
+                        "</html>"
+        );
+        statusText.setForeground(UiTheme.TEXT);
+        statusBox.add(statusText, BorderLayout.CENTER);
+
+        summary.add(statusBox, BorderLayout.CENTER);
+
+        final JPanel metrics = new JPanel(new GridLayout(1, 5, 12, 0));
+        metrics.setOpaque(false);
+        metrics.add(metricCard("Flight", details.flight, "plane", UiTheme.BLUE));
+        metrics.add(metricCard("Aircraft", details.aircraft, "plane", new java.awt.Color(79, 70, 229)));
+        metrics.add(metricCard("Pilot", details.pilot, "user", new java.awt.Color(15, 118, 110)));
+        metrics.add(metricCard("Fuel", details.fuel, "gauge", new java.awt.Color(245, 158, 11)));
+        metrics.add(metricCard("Weather", details.weatherRecords, "cloud", new java.awt.Color(2, 132, 199)));
+
+        final JPanel notes = new JPanel();
+        notes.setOpaque(false);
+        notes.setLayout(new BoxLayout(notes, BoxLayout.Y_AXIS));
+
+        if (details.notes.isEmpty() && details.warnings.isEmpty()) {
+            notes.add(messageRow("check", "No warnings returned by the validation.", PanelUi.SUCCESS, new java.awt.Color(240, 253, 244)));
+        } else {
+            for (String note : details.notes) {
+                notes.add(messageRow("info", note, UiTheme.BLUE, UiTheme.BLUE_SOFT));
+                notes.add(Box.createRigidArea(new Dimension(0, 8)));
+            }
+
+            for (String warning : details.warnings) {
+                notes.add(messageRow("warning", warning, PanelUi.WARNING, new java.awt.Color(254, 243, 199)));
+                notes.add(Box.createRigidArea(new Dimension(0, 8)));
+            }
+        }
+
+        final JPanel center = new JPanel(new BorderLayout(0, 16));
+        center.setOpaque(false);
+        center.add(summary, BorderLayout.NORTH);
+        center.add(metrics, BorderLayout.CENTER);
+        center.add(notes, BorderLayout.SOUTH);
+
+        dashboard.add(center, BorderLayout.NORTH);
+
+        final JScrollPane scroll = new JScrollPane(dashboard);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        resultBody.add(scroll, BorderLayout.CENTER);
+        resultBody.revalidate();
+        resultBody.repaint();
+    }
+
+    private static void showFailureResult(final JPanel resultBody, final String message) {
+        resultBody.removeAll();
+
+        final JPanel failed = new RoundedPanel(
+                16,
+                new java.awt.Color(254, 242, 242),
+                new java.awt.Color(254, 202, 202),
+                true
+        );
+        failed.setLayout(new BorderLayout(14, 0));
+        failed.setBorder(BorderFactory.createEmptyBorder(20, 22, 20, 22));
+
+        failed.add(new JLabel(new LineIcon("warning", 38, PanelUi.ERROR)), BorderLayout.WEST);
+
+        final JLabel text = new JLabel(
+                "<html>" +
+                        "<div style='font-size:16px'><b>Validation failed</b></div>" +
+                        "<div style='font-size:12px;color:#7F1D1D;padding-top:6px'>" + html(message) + "</div>" +
+                        "</html>"
+        );
+        text.setForeground(PanelUi.ERROR);
+        failed.add(text, BorderLayout.CENTER);
+
+        resultBody.add(failed, BorderLayout.NORTH);
+        resultBody.revalidate();
+        resultBody.repaint();
+    }
+
+    private static JPanel metricCard(final String title,
+                                     final String value,
+                                     final String icon,
+                                     final java.awt.Color color) {
+        final JPanel card = new RoundedPanel(14, new java.awt.Color(248, 250, 252), UiTheme.BORDER, true);
+        card.setLayout(new BorderLayout(10, 0));
+        card.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
+
+        final JLabel iconLabel = new JLabel(new LineIcon(icon, 24, color));
+        card.add(iconLabel, BorderLayout.WEST);
+
+        final JLabel text = new JLabel(
+                "<html>" +
+                        "<div style='font-size:10px;color:#64748B'>" + html(title) + "</div>" +
+                        "<div style='font-size:14px'><b>" + html(value) + "</b></div>" +
+                        "</html>"
+        );
+        text.setForeground(UiTheme.TEXT);
+        card.add(text, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private static JPanel messageRow(final String icon,
+                                     final String message,
+                                     final java.awt.Color color,
+                                     final java.awt.Color background) {
+        final JPanel row = new RoundedPanel(12, background, new java.awt.Color(226, 232, 240), true);
+        row.setLayout(new BorderLayout(10, 0));
+        row.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        row.add(new JLabel(new LineIcon(icon, 18, color)), BorderLayout.WEST);
+
+        final JLabel label = new JLabel(html(message));
+        label.setForeground(UiTheme.TEXT);
+        label.setFont(label.getFont().deriveFont(12f));
+        row.add(label, BorderLayout.CENTER);
+
+        return row;
+    }
+
+    private static JLabel statusBadge(final String text,
+                                      final java.awt.Color foreground,
+                                      final java.awt.Color background) {
+        final JLabel label = new JLabel(text, SwingConstants.CENTER);
+        label.setOpaque(true);
+        label.setForeground(foreground);
+        label.setBackground(background);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 12f));
+        label.setBorder(BorderFactory.createEmptyBorder(7, 14, 7, 14));
+        return label;
+    }
+
+    private static void setStatus(final JLabel label,
+                                  final String text,
+                                  final java.awt.Color foreground,
+                                  final java.awt.Color background) {
+        label.setText(text);
+        label.setForeground(foreground);
+        label.setBackground(background);
+    }
+
+    private static String html(final String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private static final class ResultDetails {
+        private String status = "-";
+        private String reportId = "-";
+        private String flight = "-";
+        private String aircraft = "-";
+        private String pilot = "-";
+        private String fuel = "-";
+        private String weatherRecords = "-";
+        private final java.util.List<String> notes = new ArrayList<>();
+        private final java.util.List<String> warnings = new ArrayList<>();
+
+        static ResultDetails from(final TestFlightPlanResult result) {
+            final ResultDetails details = new ResultDetails();
+
+            details.status = String.valueOf(result.status());
+            details.reportId = result.reportIdentifier().orElse("-");
+
+            for (String message : result.messages()) {
+                if (message == null || message.isBlank()) {
+                    continue;
+                }
+
+                final String trimmed = message.trim();
+                final String lower = trimmed.toLowerCase();
+
+                if (trimmed.startsWith("Flight:")) {
+                    details.flight = afterColon(trimmed);
+                } else if (trimmed.startsWith("Aircraft:")) {
+                    details.aircraft = afterColon(trimmed);
+                } else if (trimmed.startsWith("Pilot:")) {
+                    details.pilot = afterColon(trimmed);
+                } else if (trimmed.startsWith("Fuel:")) {
+                    details.fuel = afterColon(trimmed);
+                } else if (trimmed.startsWith("Weather data records associated:")) {
+                    details.weatherRecords = afterColon(trimmed) + " records";
+                } else if (lower.contains("no persisted weather")
+                        || lower.contains("warning")
+                        || lower.contains("assumption")) {
+                    details.warnings.add(trimmed);
+                } else if (!lower.contains("validated successfully")) {
+                    details.notes.add(trimmed);
+                }
+            }
+
+            return details;
+        }
+
+        private static String afterColon(final String value) {
+            final int index = value.indexOf(':');
+
+            if (index < 0 || index + 1 >= value.length()) {
+                return value;
+            }
+
+            return value.substring(index + 1).trim();
+        }
+    }
+
+    private static final class ProcessStepsPanel extends JPanel {
+        private static final int PENDING = 0;
+        private static final int RUNNING = 1;
+        private static final int DONE = 2;
+
+        private final java.util.List<ProcessStepRow> rows = new ArrayList<>();
+
+        ProcessStepsPanel(final String[] steps) {
+            super(new GridBagLayout());
+            setOpaque(false);
+            setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 2));
+
+            for (int i = 0; i < steps.length; i++) {
+                final ProcessStepRow row = new ProcessStepRow(steps[i]);
+                rows.add(row);
+
+                final GridBagConstraints c = new GridBagConstraints();
+                c.gridx = 0;
+                c.gridy = i;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.weightx = 1;
+                c.insets = new Insets(i == 0 ? 0 : 6, 0, 0, 0);
+                add(row, c);
+            }
+        }
+
+        void setRunning(final int index) {
+            for (int i = 0; i < rows.size(); i++) {
+                if (i < index) {
+                    rows.get(i).setState(DONE);
+                } else if (i == index) {
+                    rows.get(i).setState(RUNNING);
+                } else {
+                    rows.get(i).setState(PENDING);
+                }
+            }
+
+            repaint();
+        }
+    }
+
+    private static final class ProcessStepRow extends JPanel {
+        private final StepStateIcon icon = new StepStateIcon();
+        private final JLabel text;
+
+        ProcessStepRow(final String value) {
+            super(new BorderLayout(12, 0));
+            setOpaque(false);
+            setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 2));
+
+            final JLabel iconLabel = new JLabel(icon);
+            iconLabel.setPreferredSize(new Dimension(34, 30));
+            iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            text = new JLabel(value);
+            text.setForeground(UiTheme.MUTED);
+            text.setFont(text.getFont().deriveFont(13f));
+
+            add(iconLabel, BorderLayout.WEST);
+            add(text, BorderLayout.CENTER);
+        }
+
+        void setState(final int state) {
+            icon.setState(state);
+
+            if (state == ProcessStepsPanel.RUNNING) {
+                text.setForeground(UiTheme.BLUE);
+                text.setFont(text.getFont().deriveFont(Font.BOLD, 13f));
+            } else if (state == ProcessStepsPanel.DONE) {
+                text.setForeground(new java.awt.Color(30, 41, 59));
+                text.setFont(text.getFont().deriveFont(Font.PLAIN, 13f));
+            } else {
+                text.setForeground(UiTheme.MUTED);
+                text.setFont(text.getFont().deriveFont(Font.PLAIN, 13f));
+            }
+
+            repaint();
+        }
+    }
+
+    private static final class StepStateIcon implements javax.swing.Icon {
+        private int state = ProcessStepsPanel.PENDING;
+
+        void setState(final int state) {
+            this.state = state;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 24;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 24;
+        }
+
+        @Override
+        public void paintIcon(final Component c,
+                              final java.awt.Graphics graphics,
+                              final int x,
+                              final int y) {
+            final Graphics2D g = (Graphics2D) graphics.create();
+
+            g.translate(x, y);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            final java.awt.Color fill;
+            final java.awt.Color stroke;
+
+            if (state == ProcessStepsPanel.DONE) {
+                fill = new java.awt.Color(22, 163, 74);
+                stroke = fill;
+            } else if (state == ProcessStepsPanel.RUNNING) {
+                fill = UiTheme.BLUE_SOFT;
+                stroke = UiTheme.BLUE;
+            } else {
+                fill = UiTheme.CARD;
+                stroke = UiTheme.BORDER;
+            }
+
+            g.setColor(fill);
+            g.fillOval(3, 3, 18, 18);
+
+            g.setColor(stroke);
+            g.drawOval(3, 3, 18, 18);
+
+            if (state == ProcessStepsPanel.DONE) {
+                g.setColor(java.awt.Color.WHITE);
+                g.drawLine(8, 12, 11, 15);
+                g.drawLine(11, 15, 16, 9);
+            } else if (state == ProcessStepsPanel.RUNNING) {
+                g.setColor(UiTheme.BLUE);
+                g.fillOval(9, 9, 6, 6);
+            } else {
+                g.setColor(new java.awt.Color(148, 163, 184));
+                g.fillOval(10, 10, 4, 4);
+            }
+
+            g.dispose();
+        }
+    }
+
+    private static final class LoadingCircleIcon implements javax.swing.Icon {
+        private static final int IDLE = 0;
+        private static final int RUNNING = 1;
+        private static final int SUCCESS = 2;
+        private static final int FAILED = 3;
+
+        private final int size;
+        private int angle = 0;
+        private int state = IDLE;
+
+        LoadingCircleIcon(final int size) {
+            this.size = size;
+        }
+
+        void idle() {
+            state = IDLE;
+            angle = 0;
+        }
+
+        void running() {
+            state = RUNNING;
+        }
+
+        void success() {
+            state = SUCCESS;
+        }
+
+        void failed() {
+            state = FAILED;
+        }
+
+        void tick() {
+            angle = (angle + 18) % 360;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return size;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return size;
+        }
+
+        @Override
+        public void paintIcon(final Component c,
+                              final java.awt.Graphics graphics,
+                              final int x,
+                              final int y) {
+            final Graphics2D g = (Graphics2D) graphics.create();
+
+            g.translate(x, y);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setStroke(new BasicStroke(3.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            if (state == RUNNING) {
+                g.setColor(new java.awt.Color(219, 234, 254));
+                g.drawOval(4, 4, size - 8, size - 8);
+
+                g.setColor(UiTheme.BLUE);
+                g.drawArc(4, 4, size - 8, size - 8, angle, 95);
+            } else if (state == SUCCESS) {
+                g.setColor(new java.awt.Color(22, 163, 74));
+                g.fillOval(3, 3, size - 6, size - 6);
+
+                g.setColor(java.awt.Color.WHITE);
+                g.setStroke(new BasicStroke(3.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g.drawLine(size / 2 - 8, size / 2, size / 2 - 2, size / 2 + 6);
+                g.drawLine(size / 2 - 2, size / 2 + 6, size / 2 + 10, size / 2 - 8);
+            } else if (state == FAILED) {
+                g.setColor(new java.awt.Color(220, 38, 38));
+                g.fillOval(3, 3, size - 6, size - 6);
+
+                g.setColor(java.awt.Color.WHITE);
+                g.setStroke(new BasicStroke(3.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g.drawLine(size / 2 - 8, size / 2 - 8, size / 2 + 8, size / 2 + 8);
+                g.drawLine(size / 2 + 8, size / 2 - 8, size / 2 - 8, size / 2 + 8);
+            } else {
+                g.setColor(new java.awt.Color(226, 232, 240));
+                g.drawOval(4, 4, size - 8, size - 8);
+
+                g.setColor(UiTheme.MUTED);
+                g.fillOval(size / 2 - 3, size / 2 - 3, 6, 6);
+            }
+
+            g.dispose();
+        }
     }
 }
 
+
 final class ConsultFlightPlanTestReportsPanel extends JPanel {
+    private final java.util.List<FlightPlanTestReport> loadedReports = new ArrayList<>();
+
     ConsultFlightPlanTestReportsPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
-        final JTextArea out = PanelUi.outputArea("Reports will appear here after loading.");
-        final JPanel card = PanelUi.card(new BorderLayout(0, 18));
-        card.add(PanelUi.sectionHeader("Test Reports", "Review validation reports for the authenticated pilot.", "chart"), BorderLayout.NORTH);
-        card.add(PanelUi.resultPanel("Reports", out), BorderLayout.CENTER);
-        add(card, BorderLayout.CENTER);
+        final JComboBox<String> reports = new JComboBox<>();
+        PanelUi.combo(reports);
+
+        final JPanel detailBody = new JPanel(new BorderLayout());
+        detailBody.setOpaque(false);
+        showEmptyReport(detailBody);
+
+        final JLabel totalReports = PanelUi.bigValue("0");
+        final JLabel validatedReports = PanelUi.bigValue("0");
+        final JLabel failedReports = PanelUi.bigValue("0");
+        final SuccessRateRing successRateRing = new SuccessRateRing();
+
+        final JPanel selector = PanelUi.formCard(
+                "Report Selection",
+                "Choose one validation report to inspect."
+        );
+        PanelUi.addField(selector, 0, 0, "Available reports", reports);
+        PanelUi.addInfoStrip(selector, 1, "Reports are loaded automatically when this page opens.");
+
+        final JPanel summary = PanelUi.card(new BorderLayout(22, 18));
+
+        final JPanel summaryHeader = new JPanel(new BorderLayout(18, 0));
+        summaryHeader.setOpaque(false);
+
+        summaryHeader.add(
+                PanelUi.sectionHeader(
+                        "Reports Summary",
+                        "Overview of loaded validation reports.",
+                        "chart"
+                ),
+                BorderLayout.CENTER
+        );
+
+        successRateRing.setPreferredSize(new Dimension(118, 112));
+        successRateRing.setMinimumSize(new Dimension(118, 112));
+        summaryHeader.add(successRateRing, BorderLayout.EAST);
+
+        final JPanel summaryCards = new JPanel(new GridLayout(1, 3, 16, 0));
+        summaryCards.setOpaque(false);
+        summaryCards.add(PanelUi.summaryCard("Total", totalReports, "chart", UiTheme.BLUE, "Loaded reports"));
+        summaryCards.add(PanelUi.summaryCard("Validated", validatedReports, "check", PanelUi.SUCCESS, "Successful validations"));
+        summaryCards.add(PanelUi.summaryCard("Issues", failedReports, "warning", PanelUi.ERROR, "Reports with issues"));
+
+        summary.add(summaryHeader, BorderLayout.NORTH);
+        summary.add(summaryCards, BorderLayout.CENTER);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.44;
+        tc.weighty = 1;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(selector, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.56;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(summary, tc);
+
+        final JPanel detailCard = PanelUi.card(new BorderLayout(0, 18));
+        detailCard.add(
+                PanelUi.sectionHeader(
+                        "Report Details",
+                        "Detailed graphical view of the selected report.",
+                        "check"
+                ),
+                BorderLayout.NORTH
+        );
+        detailCard.add(detailBody, BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new GridBagLayout());
+        content.setOpaque(false);
+
+        final GridBagConstraints gc = new GridBagConstraints();
+        gc.gridx = 0;
+        gc.gridy = 0;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.weightx = 1;
+        gc.weighty = 0;
+        gc.insets = new Insets(0, 0, 22, 0);
+        content.add(top, gc);
+
+        gc.gridy++;
+        gc.fill = GridBagConstraints.BOTH;
+        gc.weightx = 1;
+        gc.weighty = 1;
+        gc.insets = new Insets(0, 0, 0, 0);
+        content.add(detailCard, gc);
+
+        add(content, BorderLayout.CENTER);
+
+        reports.addActionListener(e -> {
+            final int index = reports.getSelectedIndex();
+
+            if (index >= 0 && index < loadedReports.size()) {
+                showReport(detailBody, loadedReports.get(index));
+            }
+        });
 
         add(PanelUi.actions(
-                PanelUi.secondary("Clear", e -> out.setText("")),
-                PanelUi.primary("Load Reports", e -> runSafely(() -> {
-                    final StringBuilder sb = new StringBuilder();
-                    for (FlightPlanTestReport r : new ConsultFlightPlanTestReportsController().authenticatedPilotReports()) {
-                        sb.append("Report: ").append(r.identity()).append('\n')
-                                .append("Flight plan: ").append(r.flightPlan().identity()).append('\n')
-                                .append("Successful: ").append(r.successful()).append('\n')
-                                .append("Final status: ").append(r.finalStatus()).append('\n')
-                                .append("Tested at: ").append(r.testedAt()).append('\n')
-                                .append("Tested by: ").append(r.testedBy()).append('\n')
-                                .append(String.join("\n", r.messages())).append("\n\n");
-                    }
-                    out.setText(sb.toString());
-                }))
+                PanelUi.secondary("Clear", e -> {
+                    loadedReports.clear();
+                    reports.removeAllItems();
+
+                    totalReports.setText("0");
+                    validatedReports.setText("0");
+                    failedReports.setText("0");
+                    successRateRing.setValues(0, 0);
+
+                    showEmptyReport(detailBody);
+                }),
+                PanelUi.primary("Reload Reports", e -> loadReports(
+                        reports,
+                        detailBody,
+                        totalReports,
+                        validatedReports,
+                        failedReports,
+                        successRateRing,
+                        true
+                ))
         ), BorderLayout.SOUTH);
+
+        javax.swing.SwingUtilities.invokeLater(() -> loadReports(
+                reports,
+                detailBody,
+                totalReports,
+                validatedReports,
+                failedReports,
+                successRateRing,
+                false
+        ));
+    }
+
+    private void loadReports(final JComboBox<String> reports,
+                             final JPanel detailBody,
+                             final JLabel totalReports,
+                             final JLabel validatedReports,
+                             final JLabel failedReports,
+                             final SuccessRateRing successRateRing,
+                             final boolean notify) {
+        runSafely(() -> {
+            loadedReports.clear();
+            reports.removeAllItems();
+
+            for (FlightPlanTestReport report : new ConsultFlightPlanTestReportsController().authenticatedPilotReports()) {
+                loadedReports.add(report);
+            }
+
+            int validated = 0;
+            int issues = 0;
+
+            for (FlightPlanTestReport report : loadedReports) {
+                if (report.successful()) {
+                    validated++;
+                } else {
+                    issues++;
+                }
+
+                reports.addItem(reportLabel(report));
+            }
+
+            totalReports.setText(String.valueOf(loadedReports.size()));
+            validatedReports.setText(String.valueOf(validated));
+            failedReports.setText(String.valueOf(issues));
+            successRateRing.setValues(validated, loadedReports.size());
+
+            if (loadedReports.isEmpty()) {
+                showEmptyReport(detailBody);
+
+                if (notify) {
+                    showInfo(this, "No validation reports found.");
+                }
+            } else {
+                reports.setSelectedIndex(0);
+                showReport(detailBody, loadedReports.get(0));
+
+                if (notify) {
+                    showSuccess(this, loadedReports.size() + " report(s) loaded.");
+                }
+            }
+        });
+    }
+
+    private static String reportLabel(final FlightPlanTestReport report) {
+        return report.identity()
+                + " | " + report.finalStatus()
+                + " | " + report.flightPlan().identity();
+    }
+
+    private static void showEmptyReport(final JPanel target) {
+        target.removeAll();
+
+        final JPanel empty = new JPanel(new GridBagLayout());
+        empty.setOpaque(false);
+
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.CENTER;
+        c.insets = new Insets(0, 0, 12, 0);
+
+        empty.add(new JLabel(new LineIcon("chart", 42, new java.awt.Color(148, 163, 184))), c);
+
+        c.gridy++;
+        c.insets = new Insets(0, 0, 6, 0);
+
+        final JLabel title = new JLabel("No report selected");
+        title.setForeground(UiTheme.TEXT);
+        title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
+        empty.add(title, c);
+
+        c.gridy++;
+        c.insets = new Insets(0, 0, 0, 0);
+
+        final JLabel subtitle = new JLabel("Select a report to view its validation summary.");
+        subtitle.setForeground(UiTheme.MUTED);
+        subtitle.setFont(subtitle.getFont().deriveFont(13f));
+        empty.add(subtitle, c);
+
+        target.add(empty, BorderLayout.CENTER);
+        target.revalidate();
+        target.repaint();
+    }
+
+    private static void showReport(final JPanel target, final FlightPlanTestReport report) {
+        target.removeAll();
+
+        final ReportDetails details = ReportDetails.from(report);
+
+        final JPanel dashboard = new JPanel(new BorderLayout(0, 18));
+        dashboard.setOpaque(false);
+
+        final JPanel statusBox = new RoundedPanel(
+                16,
+                report.successful() ? new java.awt.Color(240, 253, 244) : new java.awt.Color(254, 242, 242),
+                report.successful() ? new java.awt.Color(187, 247, 208) : new java.awt.Color(254, 202, 202),
+                true
+        );
+        statusBox.setLayout(new BorderLayout(16, 0));
+        statusBox.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
+
+        statusBox.add(
+                new JLabel(new LineIcon(
+                        report.successful() ? "check" : "warning",
+                        38,
+                        report.successful() ? PanelUi.SUCCESS : PanelUi.ERROR
+                )),
+                BorderLayout.WEST
+        );
+
+        final JLabel statusText = new JLabel(
+                "<html>" +
+                        "<div style='font-size:16px'><b>" + html(String.valueOf(report.finalStatus())) + "</b></div>" +
+                        "<div style='font-size:11px;color:#64748B;padding-top:4px'>Report " + html(String.valueOf(report.identity())) + "</div>" +
+                        "</html>"
+        );
+        statusText.setForeground(UiTheme.TEXT);
+        statusBox.add(statusText, BorderLayout.CENTER);
+
+        dashboard.add(statusBox, BorderLayout.NORTH);
+
+        final JPanel body = new JPanel(new GridBagLayout());
+        body.setOpaque(false);
+
+        final JPanel reportInfo = sectionCard(
+                "Report Information",
+                "chart",
+                infoRow("Flight Plan", String.valueOf(report.flightPlan().identity()), "plane", UiTheme.BLUE),
+                infoRow("Tested By", String.valueOf(report.testedBy()), "user", new java.awt.Color(15, 118, 110)),
+                infoRow("Tested At", String.valueOf(report.testedAt()), "chart", new java.awt.Color(79, 70, 229)),
+                infoRow("Successful", String.valueOf(report.successful()), report.successful() ? "check" : "warning", report.successful() ? PanelUi.SUCCESS : PanelUi.ERROR)
+        );
+
+        final JPanel operationalInfo = sectionCard(
+                "Operational Details",
+                "plane",
+                infoRow("Flight", details.flight, "plane", UiTheme.BLUE),
+                infoRow("Aircraft", details.aircraft, "plane", new java.awt.Color(79, 70, 229)),
+                infoRow("Pilot", details.pilot, "user", new java.awt.Color(15, 118, 110)),
+                infoRow("Fuel", details.fuel, "chart", new java.awt.Color(245, 158, 11)),
+                infoRow("Weather Records", details.weatherRecords, "cloud", new java.awt.Color(2, 132, 199))
+        );
+
+        final JPanel notesPanel = notesCard(details);
+
+        final GridBagConstraints bc = new GridBagConstraints();
+        bc.gridx = 0;
+        bc.gridy = 0;
+        bc.fill = GridBagConstraints.BOTH;
+        bc.weightx = 0.46;
+        bc.weighty = 0;
+        bc.insets = new Insets(0, 0, 16, 16);
+        body.add(reportInfo, bc);
+
+        bc.gridx = 1;
+        bc.weightx = 0.54;
+        bc.insets = new Insets(0, 0, 16, 0);
+        body.add(operationalInfo, bc);
+
+        bc.gridx = 0;
+        bc.gridy++;
+        bc.gridwidth = 2;
+        bc.weightx = 1;
+        bc.weighty = 1;
+        bc.insets = new Insets(0, 0, 0, 0);
+        body.add(notesPanel, bc);
+
+        dashboard.add(body, BorderLayout.CENTER);
+
+        final JScrollPane scroll = new JScrollPane(dashboard);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        target.add(scroll, BorderLayout.CENTER);
+        target.revalidate();
+        target.repaint();
+    }
+
+    private static JPanel sectionCard(final String title, final String icon, final JPanel... rows) {
+        final JPanel card = new RoundedPanel(14, new java.awt.Color(248, 250, 252), UiTheme.BORDER, true);
+        card.setLayout(new BorderLayout(0, 12));
+        card.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+        final JLabel header = new JLabel(title, new LineIcon(icon, 22, UiTheme.BLUE), SwingConstants.LEFT);
+        header.setIconTextGap(10);
+        header.setForeground(UiTheme.TEXT);
+        header.setFont(header.getFont().deriveFont(Font.BOLD, 15f));
+        card.add(header, BorderLayout.NORTH);
+
+        final JPanel content = new JPanel();
+        content.setOpaque(false);
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+
+        for (int i = 0; i < rows.length; i++) {
+            content.add(rows[i]);
+
+            if (i < rows.length - 1) {
+                content.add(Box.createRigidArea(new Dimension(0, 8)));
+            }
+        }
+
+        card.add(content, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private static JPanel infoRow(final String title,
+                                  final String value,
+                                  final String icon,
+                                  final java.awt.Color color) {
+        final JPanel row = new JPanel(new BorderLayout(10, 0));
+        row.setOpaque(false);
+        row.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+
+        row.add(new JLabel(new LineIcon(icon, 18, color)), BorderLayout.WEST);
+
+        final JLabel text = new JLabel(
+                "<html>" +
+                        "<div style='font-size:10px;color:#64748B'>" + html(title) + "</div>" +
+                        "<div style='font-size:13px'><b>" + html(value) + "</b></div>" +
+                        "</html>"
+        );
+        text.setForeground(UiTheme.TEXT);
+        row.add(text, BorderLayout.CENTER);
+
+        return row;
+    }
+
+    private static JPanel notesCard(final ReportDetails details) {
+        final JPanel card = new RoundedPanel(14, UiTheme.CARD, UiTheme.BORDER, true);
+        card.setLayout(new BorderLayout(0, 12));
+        card.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+        final JLabel header = new JLabel("Warnings and Notes", new LineIcon("warning", 22, PanelUi.WARNING), SwingConstants.LEFT);
+        header.setIconTextGap(10);
+        header.setForeground(UiTheme.TEXT);
+        header.setFont(header.getFont().deriveFont(Font.BOLD, 15f));
+        card.add(header, BorderLayout.NORTH);
+
+        final JPanel list = new JPanel();
+        list.setOpaque(false);
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+
+        if (details.notes.isEmpty() && details.warnings.isEmpty()) {
+            list.add(messageRow(
+                    "check",
+                    "No warnings returned by this validation report.",
+                    PanelUi.SUCCESS,
+                    new java.awt.Color(240, 253, 244)
+            ));
+        } else {
+            for (String note : details.notes) {
+                list.add(messageRow("info", note, UiTheme.BLUE, UiTheme.BLUE_SOFT));
+                list.add(Box.createRigidArea(new Dimension(0, 8)));
+            }
+
+            for (String warning : details.warnings) {
+                list.add(messageRow("warning", warning, PanelUi.WARNING, new java.awt.Color(254, 243, 199)));
+                list.add(Box.createRigidArea(new Dimension(0, 8)));
+            }
+        }
+
+        card.add(list, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private static JPanel messageRow(final String icon,
+                                     final String message,
+                                     final java.awt.Color color,
+                                     final java.awt.Color background) {
+        final JPanel row = new RoundedPanel(12, background, new java.awt.Color(226, 232, 240), true);
+        row.setLayout(new BorderLayout(10, 0));
+        row.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        row.add(new JLabel(new LineIcon(icon, 18, color)), BorderLayout.WEST);
+
+        final JTextArea label = new JTextArea(message);
+        label.setOpaque(false);
+        label.setEditable(false);
+        label.setFocusable(false);
+        label.setLineWrap(true);
+        label.setWrapStyleWord(true);
+        label.setForeground(UiTheme.TEXT);
+        label.setFont(label.getFont().deriveFont(12f));
+        row.add(label, BorderLayout.CENTER);
+
+        return row;
+    }
+
+    private static String html(final String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private static final class ReportDetails {
+        private String flight = "-";
+        private String aircraft = "-";
+        private String pilot = "-";
+        private String fuel = "-";
+        private String weatherRecords = "-";
+        private final java.util.List<String> notes = new ArrayList<>();
+        private final java.util.List<String> warnings = new ArrayList<>();
+
+        static ReportDetails from(final FlightPlanTestReport report) {
+            final ReportDetails details = new ReportDetails();
+
+            for (String message : report.messages()) {
+                if (message == null || message.isBlank()) {
+                    continue;
+                }
+
+                final String trimmed = message.trim();
+                final String lower = trimmed.toLowerCase();
+
+                if (trimmed.startsWith("Flight:")) {
+                    details.flight = afterColon(trimmed);
+                } else if (trimmed.startsWith("Aircraft:")) {
+                    details.aircraft = afterColon(trimmed);
+                } else if (trimmed.startsWith("Pilot:")) {
+                    details.pilot = afterColon(trimmed);
+                } else if (trimmed.startsWith("Fuel:")) {
+                    details.fuel = afterColon(trimmed);
+                } else if (trimmed.startsWith("Weather data records associated:")) {
+                    details.weatherRecords = afterColon(trimmed) + " records";
+                } else if (lower.contains("no persisted weather")
+                        || lower.contains("warning")
+                        || lower.contains("assumption")) {
+                    details.warnings.add(trimmed);
+                } else if (!lower.contains("validated successfully")) {
+                    details.notes.add(trimmed);
+                }
+            }
+
+            return details;
+        }
+
+        private static String afterColon(final String value) {
+            final int index = value.indexOf(':');
+
+            if (index < 0 || index + 1 >= value.length()) {
+                return value;
+            }
+
+            return value.substring(index + 1).trim();
+        }
+    }
+
+    private static final class SuccessRateRing extends JPanel {
+        private int successful;
+        private int total;
+        private int percentage;
+
+        SuccessRateRing() {
+            setOpaque(false);
+            setPreferredSize(new Dimension(118, 112));
+            setMinimumSize(new Dimension(118, 112));
+        }
+
+        void setValues(final int successful, final int total) {
+            this.successful = Math.max(0, successful);
+            this.total = Math.max(0, total);
+
+            if (this.total == 0) {
+                this.percentage = 0;
+            } else {
+                this.percentage = Math.round((this.successful * 100f) / this.total);
+            }
+
+            setToolTipText("Success rate: " + percentage + "%");
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(final Graphics graphics) {
+            super.paintComponent(graphics);
+
+            final Graphics2D g = (Graphics2D) graphics.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            final int ringSize = 58;
+            final int stroke = 8;
+
+            final int x = (getWidth() - ringSize) / 2;
+            final int y = 4;
+
+            g.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            g.setColor(new java.awt.Color(226, 232, 240));
+            g.drawArc(x, y, ringSize, ringSize, 90, -360);
+
+            final java.awt.Color rateColor;
+            if (percentage >= 80) {
+                rateColor = PanelUi.SUCCESS;
+            } else if (percentage >= 50) {
+                rateColor = PanelUi.WARNING;
+            } else {
+                rateColor = PanelUi.ERROR;
+            }
+
+            g.setColor(rateColor);
+            g.drawArc(x, y, ringSize, ringSize, 90, -(int) Math.round(360 * (percentage / 100.0)));
+
+            String percentText = percentage + "%";
+            g.setFont(getFont().deriveFont(Font.BOLD, 16f));
+            g.setColor(UiTheme.TEXT);
+
+            FontMetrics fm = g.getFontMetrics();
+            int tx = (getWidth() - fm.stringWidth(percentText)) / 2;
+            int ty = y + ringSize / 2 + fm.getAscent() / 2 - 3;
+            g.drawString(percentText, tx, ty);
+
+            final String title = "Success";
+            g.setFont(getFont().deriveFont(Font.BOLD, 11f));
+            g.setColor(UiTheme.MUTED);
+
+            fm = g.getFontMetrics();
+            tx = (getWidth() - fm.stringWidth(title)) / 2;
+            ty = y + ringSize + 22;
+            g.drawString(title, tx, ty);
+
+            final String count = successful + " / " + total;
+            g.setFont(getFont().deriveFont(Font.PLAIN, 11f));
+            g.setColor(rateColor);
+
+            fm = g.getFontMetrics();
+            tx = (getWidth() - fm.stringWidth(count)) / 2;
+            ty += 16;
+            g.drawString(count, tx, ty);
+
+            g.dispose();
+        }
     }
 }
 
@@ -810,7 +2182,7 @@ final class RegisterWeatherDataPanel extends JPanel {
         setOpaque(false);
 
         final RegisterWeatherDataController controller = new RegisterWeatherDataController();
-        final JTextField day = PanelUi.text("yyyy-MM-dd");
+        final JTextField day = PanelUi.dateIso();
         final JComboBox<String> area = comboFrom(controller::airControlAreas);
         PanelUi.combo(area);
         final JSpinner lat = PanelUi.spinner(0, -90, 90, 0.1);
@@ -842,7 +2214,7 @@ final class RegisterWeatherDataPanel extends JPanel {
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(day, unit)),
                 PanelUi.primary("Register", e -> runSafely(() -> {
                     controller.registerWeatherMeasurement(required(day, "Day"), firstPart(selected(area)), selected(parameter), doubleValue(value), required(unit, "Unit"), doubleValue(altitude), doubleValue(lat), doubleValue(lon));
-                    JOptionPane.showMessageDialog(this, "Weather data registered successfully.");
+                    showSuccess(this, "Weather data registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -855,7 +2227,7 @@ final class ConsultWeatherDataPanel extends JPanel {
 
         final JTextField search = PanelUi.text("Search by location, area or ICAO...");
         final JTextField area = PanelUi.text("Air control area code");
-        final JTextField day = PanelUi.text("yyyy-MM-dd");
+        final JTextField day = PanelUi.dateIso();
         final JTable table = new JTable(tableModel("Results"));
         PanelUi.table(table);
         ((DefaultTableModel) table.getModel()).addRow(new Object[] { "Results will appear here after consultation." });
@@ -1016,7 +2388,7 @@ final class FlightPlansOverviewPanel extends JPanel {
 
         add(PanelUi.actions(
                 PanelUi.secondary("Clear", e -> search.setText("")),
-                PanelUi.primary("Refresh", e -> JOptionPane.showMessageDialog(this, "Flight plan data is available in the Create/Test tabs according to your role."))
+                PanelUi.primary("Refresh", e -> showInfo(this, "Flight plan data is available in the Create/Test tabs according to your role."))
         ), BorderLayout.SOUTH);
     }
 }
@@ -1057,7 +2429,7 @@ final class GenerateSimulationReportPanel extends JPanel {
                 }),
                 PanelUi.primary("Generate", e -> runSafely(() -> {
                     final Path path = new GenerateSimulationReportController().generateSimulationReportFile(required(id, "Simulation identifier"), passed.isSelected(), parseFlights(flights.getText()), parseViolations(violations.getText()), Path.of(required(dir, "Output directory")));
-                    JOptionPane.showMessageDialog(this, "Report created: " + path);
+                    showSuccess(this, "Report created: " + path);
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -1070,8 +2442,8 @@ final class RegisterPilotPanel extends JPanel {
 
         final RegisterPilotController controller = new RegisterPilotController();
         final JTextField id = PanelUi.text("Pilot ID");
-        final JTextField issuedAt = PanelUi.text("DD-MM-YYYY");
-        final JTextField validUntil = PanelUi.text("DD-MM-YYYY");
+        final JTextField issuedAt = PanelUi.dateDmy();
+        final JTextField validUntil = PanelUi.dateDmy();
         final JTextField username = PanelUi.text("Username");
         final JTextField firstName = PanelUi.text("First name");
         final JTextField lastName = PanelUi.text("Last name");
@@ -1118,7 +2490,7 @@ final class RegisterPilotPanel extends JPanel {
                         throw new IllegalArgumentException("At least one aircraft model is required.");
                     }
                     controller.registerPilot(required(id, "Pilot ID"), required(issuedAt, "Certification issued at"), required(validUntil, "Certification valid until"), required(username, "Username"), required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), passwordText(password, "Password"), required(phone, "Phone number"), String.join(",", selectedModels));
-                    JOptionPane.showMessageDialog(this, "Pilot registered successfully.");
+                    showSuccess(this, "Pilot registered successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -1144,7 +2516,7 @@ final class AddPilotPanel extends JPanel {
                 PanelUi.secondary("List available pilots", e -> runSafely(() -> out.setText(joinLines(new RegisterPilotController().getAllPilots())))),
                 PanelUi.primary("Add Pilot", e -> runSafely(() -> {
                     new AddPilotController().addPilot(required(id, "Pilot ID"));
-                    JOptionPane.showMessageDialog(this, "Pilot added successfully.");
+                    showSuccess(this, "Pilot added successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -1186,7 +2558,7 @@ final class DeactivatePilotPanel extends JPanel {
                 PanelUi.secondary("List roster", e -> runSafely(() -> out.setText(joinLines(new ListPilotRosterController().listPilotRoster())))),
                 PanelUi.primary("Deactivate", e -> runSafely(() -> {
                     new DeactivatePilotController().deactivatePilot(required(id, "Pilot ID"));
-                    JOptionPane.showMessageDialog(this, "Pilot deactivated successfully.");
+                    showSuccess(this, "Pilot deactivated successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
@@ -1366,26 +2738,67 @@ final class PanelUi {
     }
 
     static JPanel split(final JPanel main, final JPanel side) {
-        final JPanel p = new JPanel(new BorderLayout(22, 0));
+        final JPanel p = new JPanel(new GridBagLayout());
         p.setOpaque(false);
-        p.add(main, BorderLayout.CENTER);
-        p.add(side, BorderLayout.EAST);
+
+        main.setMinimumSize(new Dimension(420, 240));
+        side.setMinimumSize(new Dimension(300, 220));
+        side.setPreferredSize(new Dimension(330, Math.max(320, side.getPreferredSize().height)));
+
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 1;
+        c.insets = new Insets(0, 0, 0, 22);
+        p.add(main, c);
+
+        c.gridx = 1;
+        c.weightx = 0;
+        c.weighty = 1;
+        c.insets = new Insets(0, 0, 0, 0);
+        p.add(side, c);
+
         return p;
     }
 
     static JPanel wizard(final String title, final JPanel form, final JPanel preview, final Step... steps) {
         final JPanel outer = card(new BorderLayout(0, 0));
-        final JPanel body = new JPanel(new BorderLayout(24, 0));
+        final JPanel body = new JPanel(new GridBagLayout());
         body.setOpaque(false);
-        body.add(stepsPanel(steps), BorderLayout.WEST);
-        body.add(form, BorderLayout.CENTER);
-        body.add(preview, BorderLayout.EAST);
+
+        final JPanel stepsPanel = stepsPanel(steps);
+        stepsPanel.setMinimumSize(new Dimension(210, 260));
+        preview.setMinimumSize(new Dimension(300, 260));
+        preview.setPreferredSize(new Dimension(330, Math.max(340, preview.getPreferredSize().height)));
+
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 0;
+        c.weighty = 1;
+        c.insets = new Insets(0, 0, 0, 24);
+        body.add(stepsPanel, c);
+
+        c.gridx = 1;
+        c.weightx = 1;
+        c.insets = new Insets(0, 0, 0, 24);
+        body.add(form, c);
+
+        c.gridx = 2;
+        c.weightx = 0;
+        c.insets = new Insets(0, 0, 0, 0);
+        body.add(preview, c);
+
         outer.add(body, BorderLayout.CENTER);
         return outer;
     }
 
     static JPanel stepsPanel(final Step... steps) {
         final StepRailPanel p = new StepRailPanel();
+        p.setMinimumSize(new Dimension(190, 260));
         p.setPreferredSize(new Dimension(210, 430));
         p.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 18));
 
@@ -1571,7 +2984,8 @@ final class PanelUi {
         final JPanel p = new RoundedPanel(16, new java.awt.Color(248, 250, 252), UiTheme.BORDER, true);
         p.setLayout(new GridBagLayout());
         p.setBorder(BorderFactory.createEmptyBorder(22, 22, 22, 22));
-        p.setPreferredSize(new Dimension(310, 420));
+        p.setMinimumSize(new Dimension(300, 220));
+        p.setPreferredSize(new Dimension(330, 420));
 
         final GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -1614,7 +3028,8 @@ final class PanelUi {
         final JPanel p = new RoundedPanel(16, new java.awt.Color(248, 250, 252), UiTheme.BORDER, true);
         p.setLayout(new GridBagLayout());
         p.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        p.setPreferredSize(new Dimension(300, 420));
+        p.setMinimumSize(new Dimension(300, 220));
+        p.setPreferredSize(new Dimension(330, 420));
 
         final GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -1666,8 +3081,9 @@ final class PanelUi {
     }
 
     static JPanel actions(final JButton... buttons) {
-        final JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 18));
+        final JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 14));
         p.setOpaque(false);
+        p.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
         for (JButton b : buttons) {
             p.add(b);
         }
@@ -1727,8 +3143,10 @@ final class PanelUi {
         head.setFont(head.getFont().deriveFont(Font.BOLD, 16f));
         head.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 0));
         p.add(head, BorderLayout.NORTH);
+
         final JScrollPane scroll = new JScrollPane(out);
-        scroll.setPreferredSize(new Dimension(720, 260));
+        scroll.setMinimumSize(new Dimension(360, 160));
+        scroll.setPreferredSize(new Dimension(720, 240));
         scroll.setBorder(BorderFactory.createLineBorder(UiTheme.BORDER));
         p.add(scroll, BorderLayout.CENTER);
         return p;
@@ -1815,6 +3233,292 @@ final class PanelUi {
             this.title = title;
             this.subtitle = subtitle;
             this.active = active;
+        }
+    }
+
+    static JTextField dateIso() {
+        return new DateTextField("yyyy-MM-dd", java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
+    static JTextField dateDmy() {
+        return new DateTextField("DD-MM-YYYY", java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+    }
+
+    private static final class DateTextField extends JTextField {
+        private final java.time.format.DateTimeFormatter formatter;
+
+        DateTextField(final String placeholder, final java.time.format.DateTimeFormatter formatter) {
+            this.formatter = formatter;
+
+            putClientProperty("JTextField.placeholderText", placeholder);
+            putClientProperty("FlatLaf.style", "arc: 10; padding: 0, 34, 0, 10");
+
+            setPreferredSize(new Dimension(260, 42));
+            setMinimumSize(new Dimension(120, 42));
+            setToolTipText("Click the calendar icon to select a date");
+
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mousePressed(final java.awt.event.MouseEvent e) {
+                    if (e.getX() >= getWidth() - 36) {
+                        showCalendarPopup();
+                    }
+                }
+            });
+
+            addKeyListener(new java.awt.event.KeyAdapter() {
+                @Override
+                public void keyPressed(final java.awt.event.KeyEvent e) {
+                    if (e.isAltDown() && e.getKeyCode() == java.awt.event.KeyEvent.VK_DOWN) {
+                        showCalendarPopup();
+                    }
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(final java.awt.Graphics graphics) {
+            super.paintComponent(graphics);
+
+            final java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
+            final CalendarSmallIcon icon = new CalendarSmallIcon(17, UiTheme.MUTED);
+            final int iconX = getWidth() - 26;
+            final int iconY = (getHeight() - icon.getIconHeight()) / 2;
+            icon.paintIcon(this, g, iconX, iconY);
+
+            g.dispose();
+        }
+
+        private void showCalendarPopup() {
+            final javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
+            popup.setBorder(BorderFactory.createLineBorder(UiTheme.BORDER));
+
+            final java.time.LocalDate initialDate = parseCurrentDate();
+            final CalendarPopupPanel calendar = new CalendarPopupPanel(initialDate, selectedDate -> {
+                setText(formatter.format(selectedDate));
+                popup.setVisible(false);
+            });
+
+            popup.add(calendar);
+            popup.show(this, 0, getHeight() + 4);
+        }
+
+        private java.time.LocalDate parseCurrentDate() {
+            final String value = getText() == null ? "" : getText().trim();
+
+            if (!value.isEmpty()) {
+                try {
+                    return java.time.LocalDate.parse(value, formatter);
+                } catch (RuntimeException ignored) {
+                    // If the typed value is invalid, open the calendar on today's date.
+                }
+            }
+
+            return java.time.LocalDate.now();
+        }
+    }
+
+    private static final class CalendarPopupPanel extends JPanel {
+        private final java.util.function.Consumer<java.time.LocalDate> onSelect;
+        private final JLabel title = new JLabel("", SwingConstants.CENTER);
+        private final JPanel grid = new JPanel(new GridLayout(0, 7, 4, 4));
+
+        private java.time.YearMonth visibleMonth;
+        private final java.time.LocalDate selectedDate;
+
+        CalendarPopupPanel(final java.time.LocalDate initialDate,
+                           final java.util.function.Consumer<java.time.LocalDate> onSelect) {
+            super(new BorderLayout(0, 10));
+
+            this.selectedDate = initialDate;
+            this.visibleMonth = java.time.YearMonth.from(initialDate);
+            this.onSelect = onSelect;
+
+            setBackground(UiTheme.CARD);
+            setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+            setPreferredSize(new Dimension(340, 300));
+
+            add(header(), BorderLayout.NORTH);
+            add(grid, BorderLayout.CENTER);
+
+            renderDays();
+        }
+
+        private JPanel header() {
+            final JPanel header = new JPanel(new BorderLayout(8, 0));
+            header.setOpaque(false);
+
+            final JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+            left.setOpaque(false);
+
+            final JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+            right.setOpaque(false);
+
+            final JButton previousYear = navButton("«");
+            final JButton previousMonth = navButton("‹");
+            final JButton nextMonth = navButton("›");
+            final JButton nextYear = navButton("»");
+
+            previousYear.setToolTipText("Previous year");
+            previousMonth.setToolTipText("Previous month");
+            nextMonth.setToolTipText("Next month");
+            nextYear.setToolTipText("Next year");
+
+            previousYear.addActionListener(e -> {
+                visibleMonth = visibleMonth.minusYears(1);
+                renderDays();
+            });
+
+            previousMonth.addActionListener(e -> {
+                visibleMonth = visibleMonth.minusMonths(1);
+                renderDays();
+            });
+
+            nextMonth.addActionListener(e -> {
+                visibleMonth = visibleMonth.plusMonths(1);
+                renderDays();
+            });
+
+            nextYear.addActionListener(e -> {
+                visibleMonth = visibleMonth.plusYears(1);
+                renderDays();
+            });
+
+            title.setForeground(UiTheme.TEXT);
+            title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
+
+            left.add(previousYear);
+            left.add(previousMonth);
+
+            right.add(nextMonth);
+            right.add(nextYear);
+
+            header.add(left, BorderLayout.WEST);
+            header.add(title, BorderLayout.CENTER);
+            header.add(right, BorderLayout.EAST);
+
+            return header;
+        }
+
+        private JButton navButton(final String text) {
+            final JButton button = new JButton(text);
+            button.setPreferredSize(new Dimension(36, 30));
+            button.setFocusPainted(false);
+            button.setBorder(BorderFactory.createLineBorder(UiTheme.BORDER));
+            button.setBackground(UiTheme.CARD);
+            button.setForeground(UiTheme.TEXT);
+            button.putClientProperty("FlatLaf.style", "arc: 10");
+            return button;
+        }
+
+        private void renderDays() {
+            grid.removeAll();
+            grid.setOpaque(false);
+
+            title.setText(
+                    visibleMonth.getMonth().getDisplayName(
+                            java.time.format.TextStyle.FULL,
+                            java.util.Locale.ENGLISH
+                    ) + " " + visibleMonth.getYear()
+            );
+
+            final String[] weekDays = { "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" };
+            for (String day : weekDays) {
+                final JLabel label = new JLabel(day, SwingConstants.CENTER);
+                label.setForeground(UiTheme.MUTED);
+                label.setFont(label.getFont().deriveFont(Font.BOLD, 11f));
+                grid.add(label);
+            }
+
+            final java.time.LocalDate firstDay = visibleMonth.atDay(1);
+            final int emptyCells = firstDay.getDayOfWeek().getValue() - 1;
+
+            for (int i = 0; i < emptyCells; i++) {
+                grid.add(new JLabel(""));
+            }
+
+            final int daysInMonth = visibleMonth.lengthOfMonth();
+            for (int day = 1; day <= daysInMonth; day++) {
+                final java.time.LocalDate date = visibleMonth.atDay(day);
+                grid.add(dayButton(date));
+            }
+
+            grid.revalidate();
+            grid.repaint();
+        }
+
+        private JButton dayButton(final java.time.LocalDate date) {
+            final JButton button = new JButton(String.valueOf(date.getDayOfMonth()));
+            button.setFocusPainted(false);
+            button.setBorder(BorderFactory.createEmptyBorder());
+            button.setPreferredSize(new Dimension(34, 30));
+            button.putClientProperty("FlatLaf.style", "arc: 10");
+
+            final boolean selected = date.equals(selectedDate);
+            final boolean today = date.equals(java.time.LocalDate.now());
+
+            if (selected) {
+                button.setBackground(UiTheme.BLUE);
+                button.setForeground(java.awt.Color.WHITE);
+            } else if (today) {
+                button.setBackground(new java.awt.Color(219, 234, 254));
+                button.setForeground(UiTheme.BLUE);
+            } else {
+                button.setBackground(UiTheme.CARD);
+                button.setForeground(UiTheme.TEXT);
+            }
+
+            button.addActionListener(e -> onSelect.accept(date));
+
+            return button;
+        }
+    }
+
+    private static final class CalendarSmallIcon implements javax.swing.Icon {
+        private final int size;
+        private final java.awt.Color color;
+
+        CalendarSmallIcon(final int size, final java.awt.Color color) {
+            this.size = size;
+            this.color = color;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return size;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return size;
+        }
+
+        @Override
+        public void paintIcon(final Component c, final java.awt.Graphics graphics, final int x, final int y) {
+            final java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+
+            g.translate(x, y);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g.setColor(color);
+            g.setStroke(new java.awt.BasicStroke(1.6f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+
+            final int w = size;
+            final int h = size;
+
+            g.drawRoundRect(1, 3, w - 3, h - 4, 4, 4);
+            g.drawLine(1, 7, w - 2, 7);
+            g.drawLine(5, 1, 5, 5);
+            g.drawLine(w - 6, 1, w - 6, 5);
+
+            g.fillOval(5, 10, 2, 2);
+            g.fillOval(10, 10, 2, 2);
+            g.fillOval(5, 14, 2, 2);
+            g.fillOval(10, 14, 2, 2);
+
+            g.dispose();
         }
     }
 }
