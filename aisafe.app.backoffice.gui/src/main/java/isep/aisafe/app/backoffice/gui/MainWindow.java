@@ -307,7 +307,7 @@ public final class MainWindow extends JFrame {
         }
         if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
             addModule(navPanel, "Aircraft", aircraftPanel(authz));
-            addModule(navPanel, "Companies", companiesPanel(authz));
+            addModule(navPanel, "Pilots", pilotsPanel(authz));
             addModule(navPanel, "Flight Routes", flightRoutesPanel(authz));
             addModule(navPanel, "Flight Plans", flightPlansPanel(authz));
             return;

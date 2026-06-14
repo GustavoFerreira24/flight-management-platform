@@ -3724,8 +3724,14 @@ final class ListPilotRosterPanel extends FullWidthUseCasePanel {
         final JLabel total = PanelUi.bigValue("0");
         final JLabel status = PanelUi.bigValue("Ready");
 
-        final JTable table = new JTable(tableModel("Pilot ID", "Name", "Status", "Certified Models"));
+        final JTable table = new JTable(tableModel("Pilot ID", "Name", "Status", "Certified Models", "IATA Code", "Phone Number", "Email"));
         PanelUi.table(table);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        table.getColumnModel().getColumn(1).setPreferredWidth(160);
+        table.getColumnModel().getColumn(3).setPreferredWidth(220);
+        table.getColumnModel().getColumn(5).setPreferredWidth(160);
+        table.getColumnModel().getColumn(6).setPreferredWidth(220);
 
         final Runnable reloadRoster = () -> runSafely(() -> {
             final java.util.List<Pilot> pilots = new ArrayList<>();
@@ -3736,20 +3742,28 @@ final class ListPilotRosterPanel extends FullWidthUseCasePanel {
 
             pilots.sort((left, right) -> left.identity().toString().compareTo(right.identity().toString()));
 
-            final DefaultTableModel model = tableModel("Pilot ID", "Name", "Status", "Certified Models");
+            final DefaultTableModel model = tableModel("Pilot ID", "Name", "Status", "Certified Models", "IATA Code", "Phone Number", "Email");
 
             for (Pilot pilot : pilots) {
                 model.addRow(new Object[] {
                         pilot.identity(),
                         pilot.firstName() + " " + pilot.lastName(),
                         pilot.pilotStatus(),
-                        certifiedModels(pilot)
+                        certifiedModels(pilot),
+                        pilot.companyIATACode(),
+                        pilot.phoneNumber(),
+                        pilot.email()
                 });
             }
 
             table.setModel(model);
             PanelUi.table(table);
             table.setRowHeight(34);
+
+            table.getColumnModel().getColumn(1).setPreferredWidth(160);
+            table.getColumnModel().getColumn(3).setPreferredWidth(220);
+            table.getColumnModel().getColumn(5).setPreferredWidth(160);
+            table.getColumnModel().getColumn(6).setPreferredWidth(220);
 
             total.setText(String.valueOf(pilots.size()));
             status.setText(pilots.isEmpty() ? "Empty" : "Loaded");
@@ -3843,24 +3857,33 @@ final class DeactivatePilotPanel extends FullWidthUseCasePanel {
         PanelUi.combo(pilots);
 
         final JLabel rosterCount = PanelUi.bigValue("0");
-        final JTable table = new JTable(tableModel("Roster Pilot"));
+        final JTable table = new JTable(tableModel("Pilot ID", "Name", "Certified Models", "Status"));
         PanelUi.table(table);
 
         final Runnable reloadRoster = () -> runSafely(() -> {
             pilots.removeAllItems();
 
-            final DefaultTableModel model = tableModel("Roster Pilot");
-            final java.util.List<Object> roster = new ArrayList<>();
+            final DefaultTableModel model = tableModel("Pilot ID", "Name", "Certified Models", "Status");
+            final java.util.List<Pilot> roster = new ArrayList<>();
 
-            for (Object pilot : new ListPilotRosterController().listPilotRoster()) {
+            for (Pilot pilot : new ListPilotRosterController().listPilotRoster()) {
                 roster.add(pilot);
-                final String option = String.valueOf(pilot);
+                final String option = String.valueOf(pilot.identity());
                 pilots.addItem(option);
-                model.addRow(new Object[] { option });
+                model.addRow(new Object[] {
+                        pilot.identity(),
+                        pilot.firstName() + " " + pilot.lastName(),
+                        certifiedModels(pilot),
+                        pilot.pilotStatus()
+                });
             }
 
             table.setModel(model);
             PanelUi.table(table);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            table.setRowHeight(34);
+            table.getColumnModel().getColumn(1).setPreferredWidth(160);  // Name
+            table.getColumnModel().getColumn(2).setPreferredWidth(220);  // Certified Models
             rosterCount.setText(String.valueOf(roster.size()));
 
             if (pilots.getItemCount() > 0) {
@@ -3914,6 +3937,22 @@ final class DeactivatePilotPanel extends FullWidthUseCasePanel {
         ), BorderLayout.SOUTH);
 
         javax.swing.SwingUtilities.invokeLater(reloadRoster);
+
+
+    }
+
+    private static String certifiedModels(final Pilot pilot) {
+        final StringBuilder builder = new StringBuilder();
+
+        for (Object model : pilot.certifiedAircraftModelsDesignators()) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+
+            builder.append(model);
+        }
+
+        return builder.toString();
     }
 }
 
