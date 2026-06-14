@@ -1,0 +1,36 @@
+iata,icao,name,town,country,latitude,longitude,altitudeMeters,airControlAreaCode
+OPO,LPPR,Francisco de Sá Carneiro Airport,Porto,Portugal,41.2481003,-8.6813898,69,PTM
+LIS,LPPT,Humberto Delgado Airport,Lisbon,Portugal,38.7812996,-9.1359196,114,PTM
+PDL,LPPD,Joao Paulo II Airport,Ponta Delgada,Portugal,37.7411995,-25.6979008,79,PTI
+FNC,LPMA,Madeira Airport,Funchal,Portugal,32.6978989,-16.7744999,59,PTI
+MAD,LEMD,Adolfo Suárez Madrid Barajas International Airport,Madrid,Spain,40.4936,-3.56676,610,ESP
+PMI,LEPA,Palma de Mallorca Airport,Palma de Mallorca,Spain,39.5517006,2.7388101,7,ESI
+LPA,GCLP,Gran Canaria Airport,Las Palmas,Spain,27.9319,-15.3865995,23,ESI
+CDG,LFPG,Charles de Gaulle International Airport,Paris,France,49.0127983,2.55,119,FRA
+FRA,EDDF,Frankfurt am Main International Airport,Frankfurt am Main,Germany,50.0264015,8.5431299,111,GER
+BER,EDDB,Berlin Brandenburg Airport,Berlin,Germany,52.5166667,13.4,47,GER
+LHR,EGLL,London Heathrow Airport,London,UK,51.4706001,-0.461941,25,GBR
+GLA,EGPF,Glasgow International Airport,Glasgow,UK,55.8718987,-4.4330602,8,GBR
+SNN,EINN,Shannon Airport,Limerick,Ireland,52.7019997,-8.9248199,14,IRL
+KEF,BIKF,Keflavik International Airport,Reykjavík,Iceland,63.9850006,-22.6056004,52,ISL
+TRD,ENVA,Trondheim Vaernes Airport,Trondheim,Norway,63.4578018,10.9239998,17,NOR
+AMS,EHAM,Amsterdam Schiphol Airport,Haarlemmermeer,Netherlands,52.3086014,4.7638898,0,NLD
+ZRH,LSZH,Zurich Airport,Zurich,Switzerland,47.4646988,8.5491695,432,CHE
+MXP,LIMC,Malpensa International Airport,Milano,Italy,45.6306,8.7281103,234,ITA
+FCO,LIRF,Leonardo Da Vinci Fiumicino International Airport,Rome,Italy,41.8044444,12.2508333,5,ITA
+JFK,KJFK,John F Kennedy International Airport,New York,USA,40.639801,-73.7789002,4,USE
+ATL,KATL,Hartsfield Jackson Atlanta International Airport,Atlanta,USA,33.6366997,-84.4281006,313,USE
+IAD,KIAD,Washington Dulles International Airport,Washington DC,USA,38.9445,-77.4558029,95,USE
+ORD,KORD,Chicago OHare International Airport,Chicago,USA,41.9785996,-87.9048004,204,USC
+LAX,KLAX,Los Angeles International Airport,Los Angeles,USA,33.9425011,-118.4079971,38,USW
+DFW,KDFW,Dallas Fort Worth International Airport,Dallas,USA,32.896801,-97.038002,185,USC
+DEN,KDEN,Denver International Airport,Denver,USA,39.8616982,-104.6729965,1655,USC
+SFO,KSFO,San Francisco International Airport,San Francisco,USA,37.6189995,-122.375,3.96,USW
+LAS,KLAS,McCarran International Airport,Las Vegas,USA,36.080101,-115.1520004,665,USW
+MIA,KMIA,Miami International,Miami,USA,25.7931995,-80.2906036,3,USE
+EWR,KEWR,Newark Liberty International Airport,Newark,USA,40.6925011,-74.1687012,5,USE
+HNL,PHNL,Honolulu International Airport,Honolulu,USA,21.3187008,-157.9219971,4,USP
+BOS,KBOS,General Edward Lawrence Logan International Airport,Boston,USA,42.3642998,-71.0052033,6.1,USE
+MCI,KMCI,Kansas City International Airport,Kansas City,USA,39.2975998,-94.7138977,313,USC
+YYC,CYYC,Calgary International Airport,Calgary,Canada,51.1138992,-114.0199966,1099,CAN
+YUL,CYUL,Montréal Pierre Elliott Trudeau International Airport,Montreal,Canada,45.4706001,-73.740799,36,CAN
