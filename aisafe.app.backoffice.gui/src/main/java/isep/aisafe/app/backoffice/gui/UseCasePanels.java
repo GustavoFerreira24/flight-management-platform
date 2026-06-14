@@ -75,7 +75,43 @@ import java.util.Vector;
 
 import static isep.aisafe.app.backoffice.gui.MainWindow.*;
 
-final class RegisterBackofficeUserPanel extends JPanel {
+
+abstract class FullWidthUseCasePanel extends JPanel implements javax.swing.Scrollable {
+    FullWidthUseCasePanel(final java.awt.LayoutManager layout) {
+        super(layout);
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(final Rectangle visibleRect,
+                                          final int orientation,
+                                          final int direction) {
+        return 18;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(final Rectangle visibleRect,
+                                           final int orientation,
+                                           final int direction) {
+        return Math.max(18, visibleRect.height - 40);
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return true;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+}
+
+final class RegisterBackofficeUserPanel extends FullWidthUseCasePanel {
     RegisterBackofficeUserPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -103,7 +139,35 @@ final class RegisterBackofficeUserPanel extends JPanel {
                 new PanelUi.Tip("warning", "Initial password", "The user should change it after first access.", PanelUi.WARNING),
                 new PanelUi.Tip("info", "Valid email", "Use a valid account for identification.", UiTheme.BLUE));
 
-        add(PanelUi.split(form, tips), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(tips, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
                 PanelUi.secondary("Clear", e -> PanelUi.clear(username, password, firstName, lastName, email)),
                 PanelUi.primary("Register User", e -> runSafely(() -> {
@@ -115,7 +179,7 @@ final class RegisterBackofficeUserPanel extends JPanel {
     }
 }
 
-final class RegisterAirControlAreaPanel extends JPanel {
+final class RegisterAirControlAreaPanel extends FullWidthUseCasePanel {
     RegisterAirControlAreaPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -146,7 +210,35 @@ final class RegisterAirControlAreaPanel extends JPanel {
                 new PanelUi.Tip("warning", "Longitude range", "Longitude values must be between -180 and 180.", PanelUi.WARNING),
                 new PanelUi.Tip("info", "Boundary order", "Maximum values must be greater than minimum values.", UiTheme.BLUE));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(code, name)),
                 PanelUi.primary("Register", e -> runSafely(() -> {
@@ -157,7 +249,7 @@ final class RegisterAirControlAreaPanel extends JPanel {
     }
 }
 
-final class RegisterAirportPanel extends JPanel {
+final class RegisterAirportPanel extends FullWidthUseCasePanel {
     RegisterAirportPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -214,7 +306,7 @@ final class RegisterAirportPanel extends JPanel {
     }
 }
 
-final class RegisterAirTransportCompanyPanel extends JPanel {
+final class RegisterAirTransportCompanyPanel extends FullWidthUseCasePanel {
     RegisterAirTransportCompanyPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -236,7 +328,35 @@ final class RegisterAirTransportCompanyPanel extends JPanel {
                 new PanelUi.Tip("shield", "Official name", "Use the official company name as registered.", UiTheme.BLUE),
                 new PanelUi.Tip("warning", "Routes", "An active company can be used in routes and operations.", PanelUi.WARNING));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(name, country, iata, icao)),
                 PanelUi.primary("Register Company", e -> runSafely(() -> {
@@ -247,14 +367,18 @@ final class RegisterAirTransportCompanyPanel extends JPanel {
     }
 }
 
-final class RegisterCustomerCollaboratorPanel extends JPanel {
+final class RegisterCustomerCollaboratorPanel extends FullWidthUseCasePanel {
     RegisterCustomerCollaboratorPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
         final JComboBox<String> type = new JComboBox<>(new String[] { "Air Transport Company", "Air Control Area" });
         PanelUi.combo(type);
-        final JTextField customerCode = PanelUi.text("IATA code or area code");
+        final JComboBox<String> customerCode = new JComboBox<>();
+        PanelUi.combo(customerCode);
+        final Runnable reloadCustomerCodes = () -> PanelUi.reloadCustomerCodes(type, customerCode);
+        type.addActionListener(e -> reloadCustomerCodes.run());
+        reloadCustomerCodes.run();
         final JTextField firstName = PanelUi.text("First name");
         final JTextField lastName = PanelUi.text("Last name");
         final JTextField email = PanelUi.text("email@example.com");
@@ -273,15 +397,48 @@ final class RegisterCustomerCollaboratorPanel extends JPanel {
                 new PanelUi.Tip("check", "Authorization", "Access is restricted to allowed customer operations.", PanelUi.SUCCESS),
                 new PanelUi.Tip("warning", "Disable when needed", "Inactive collaborators should be disabled.", PanelUi.WARNING));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
-                PanelUi.secondary("Cancel", e -> PanelUi.clear(customerCode, firstName, lastName, email, password)),
+                PanelUi.secondary("Cancel", e -> {
+                    PanelUi.clear(firstName, lastName, email, password);
+                    if (customerCode.getItemCount() > 0) {
+                        customerCode.setSelectedIndex(0);
+                    }
+                }),
                 PanelUi.primary("Register Collaborator", e -> runSafely(() -> {
                     final RegisterCustomerCollaboratorController controller = new RegisterCustomerCollaboratorController();
                     if ("Air Transport Company".equals(selected(type))) {
-                        controller.registerCollaboratorForAirTransportCompany(required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), required(customerCode, "IATA code"), passwordText(password, "Initial password"));
+                        controller.registerCollaboratorForAirTransportCompany(required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), firstPart(selected(customerCode)), passwordText(password, "Initial password"));
                     } else {
-                        controller.registerCollaboratorForAirControlArea(required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), required(customerCode, "Area code"), passwordText(password, "Initial password"));
+                        controller.registerCollaboratorForAirControlArea(required(firstName, "First name"), required(lastName, "Last name"), required(email, "Email"), firstPart(selected(customerCode)), passwordText(password, "Initial password"));
                     }
                     showSuccess(this, "Customer collaborator registered successfully.");
                 }))
@@ -289,14 +446,18 @@ final class RegisterCustomerCollaboratorPanel extends JPanel {
     }
 }
 
-final class ListCustomerCollaboratorsPanel extends JPanel {
+final class ListCustomerCollaboratorsPanel extends FullWidthUseCasePanel {
     ListCustomerCollaboratorsPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
         final JComboBox<String> type = new JComboBox<>(new String[] { "Air Transport Company", "Air Control Area" });
         PanelUi.combo(type);
-        final JTextField code = PanelUi.text("IATA code or area code");
+        final JComboBox<String> code = new JComboBox<>();
+        PanelUi.combo(code);
+        final Runnable reloadCustomerCodes = () -> PanelUi.reloadCustomerCodes(type, code);
+        type.addActionListener(e -> reloadCustomerCodes.run());
+        reloadCustomerCodes.run();
         final JTable table = new JTable(tableModel("Collaborators"));
         PanelUi.table(table);
 
@@ -311,14 +472,16 @@ final class ListCustomerCollaboratorsPanel extends JPanel {
 
         add(PanelUi.actions(
                 PanelUi.secondary("Clear", e -> {
-                    code.setText("");
+                    if (code.getItemCount() > 0) {
+                        code.setSelectedIndex(0);
+                    }
                     table.setModel(tableModel("Collaborators"));
                 }),
                 PanelUi.primary("List Collaborators", e -> runSafely(() -> {
                     final ListCustomerCollaboratorsController controller = new ListCustomerCollaboratorsController();
                     final List<?> result = "Air Transport Company".equals(selected(type))
-                            ? controller.listForAirTransportCompany(required(code, "IATA code"))
-                            : controller.listForAirControlArea(required(code, "Area code"));
+                            ? controller.listForAirTransportCompany(firstPart(selected(code)))
+                            : controller.listForAirControlArea(firstPart(selected(code)));
 
                     final DefaultTableModel model = tableModel("Collaborator");
                     for (Object value : result) {
@@ -330,7 +493,7 @@ final class ListCustomerCollaboratorsPanel extends JPanel {
     }
 }
 
-final class RegisterEngineModelPanel extends JPanel {
+final class RegisterEngineModelPanel extends FullWidthUseCasePanel {
     RegisterEngineModelPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -362,7 +525,35 @@ final class RegisterEngineModelPanel extends JPanel {
                 new PanelUi.Tip("info", "Compatibility", "Engine type must match aircraft motorization.", UiTheme.BLUE),
                 new PanelUi.Tip("warning", "Efficiency", "Use consistent units for TSFC values.", PanelUi.WARNING));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(model)),
                 PanelUi.primary("Register Engine", e -> runSafely(() -> {
@@ -373,7 +564,7 @@ final class RegisterEngineModelPanel extends JPanel {
     }
 }
 
-final class RegisterAircraftModelPanel extends JPanel {
+final class RegisterAircraftModelPanel extends FullWidthUseCasePanel {
     RegisterAircraftModelPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -427,8 +618,39 @@ final class RegisterAircraftModelPanel extends JPanel {
                 new PanelUi.Tip("warning", "Weight limits", "Check MTOW, MZFW and fuel capacity consistency.", PanelUi.WARNING),
                 new PanelUi.Tip("info", "Unique model", "Model and manufacturer combination must be unique.", UiTheme.BLUE));
 
-        final JScrollPane scroll = new JScrollPane(PanelUi.split(form, side));
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        final JScrollPane scroll = new JScrollPane(workspace);
         scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
 
@@ -443,7 +665,7 @@ final class RegisterAircraftModelPanel extends JPanel {
     }
 }
 
-final class RegisterAircraftPanel extends JPanel {
+final class RegisterAircraftPanel extends FullWidthUseCasePanel {
     RegisterAircraftPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -491,7 +713,35 @@ final class RegisterAircraftPanel extends JPanel {
                 new PanelUi.Tip("warning", "Seat capacity", "Total seats cannot exceed model capacity.", PanelUi.WARNING),
                 new PanelUi.Tip("info", "Certified engine", "Only certified engines are available for the selected model.", UiTheme.BLUE));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
 
         add(PanelUi.actions(
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(registration, country)),
@@ -513,7 +763,7 @@ final class RegisterAircraftPanel extends JPanel {
     }
 }
 
-final class ListAircraftFleetPanel extends JPanel {
+final class ListAircraftFleetPanel extends FullWidthUseCasePanel {
     ListAircraftFleetPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -524,38 +774,164 @@ final class ListAircraftFleetPanel extends JPanel {
         final JTextField maxCapacity = PanelUi.text("Max capacity");
         final JTextField minAge = PanelUi.text("Min age");
         final JTextField maxAge = PanelUi.text("Max age");
-        final JTable table = new JTable(tableModel("Registration", "Model", "Maker", "Seats", "Capacity", "Year", "Age", "Status", "Engine"));
+
+        final JLabel total = PanelUi.bigValue("0");
+        final JLabel active = PanelUi.bigValue("0");
+        final JLabel maintenance = PanelUi.bigValue("0");
+        final JLabel retired = PanelUi.bigValue("0");
+
+        final JTable table = new JTable(tableModel(
+                "Registration",
+                "Model",
+                "Maker",
+                "Seats",
+                "Capacity",
+                "Year",
+                "Age",
+                "Status",
+                "Engine"
+        ));
         PanelUi.table(table);
 
-        final JPanel filters = PanelUi.card(new GridBagLayout());
-        PanelUi.addCompactFilter(filters, 0, model);
-        PanelUi.addCompactFilter(filters, 1, maker);
-        PanelUi.addCompactFilter(filters, 2, minCapacity);
-        PanelUi.addCompactFilter(filters, 3, maxCapacity);
-        PanelUi.addCompactFilter(filters, 4, minAge);
-        PanelUi.addCompactFilter(filters, 5, maxAge);
+        final JPanel filters = PanelUi.formCard(
+                "Fleet Search",
+                "Filter the authenticated company's aircraft fleet."
+        );
+        PanelUi.addField(filters, 0, 0, "Model", model);
+        PanelUi.addField(filters, 0, 1, "Maker", maker);
+        PanelUi.addField(filters, 1, 0, "Minimum capacity", minCapacity);
+        PanelUi.addField(filters, 1, 1, "Maximum capacity", maxCapacity);
+        PanelUi.addField(filters, 2, 0, "Minimum age", minAge);
+        PanelUi.addField(filters, 2, 1, "Maximum age", maxAge);
+        PanelUi.addInfoStrip(filters, 3, "Leave fields empty to search the full fleet.");
 
-        final JPanel card = PanelUi.card(new BorderLayout(0, 16));
-        card.add(filters, BorderLayout.NORTH);
-        card.add(new JScrollPane(table), BorderLayout.CENTER);
-        add(card, BorderLayout.CENTER);
+        final JPanel summary = PanelUi.card(new GridBagLayout());
+        final GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 0;
+        sc.gridy = 0;
+        sc.gridwidth = 2;
+        sc.anchor = GridBagConstraints.WEST;
+        sc.fill = GridBagConstraints.HORIZONTAL;
+        sc.weightx = 1;
+        sc.insets = new Insets(0, 0, 18, 0);
+        summary.add(PanelUi.sectionHeader("Fleet Snapshot", "Live summary after each search.", "plane"), sc);
+
+        sc.gridwidth = 1;
+        sc.gridy++;
+        sc.gridx = 0;
+        sc.fill = GridBagConstraints.BOTH;
+        sc.weightx = 1;
+        sc.insets = new Insets(0, 0, 14, 14);
+        summary.add(PanelUi.summaryCard("Total", total, "plane", UiTheme.BLUE, "Aircraft found"), sc);
+
+        sc.gridx = 1;
+        sc.insets = new Insets(0, 0, 14, 0);
+        summary.add(PanelUi.summaryCard("Active", active, "check", PanelUi.SUCCESS, "Operational"), sc);
+
+        sc.gridx = 0;
+        sc.gridy++;
+        sc.insets = new Insets(0, 0, 0, 14);
+        summary.add(PanelUi.summaryCard("Maintenance", maintenance, "warning", PanelUi.WARNING, "Needs attention"), sc);
+
+        sc.gridx = 1;
+        sc.insets = new Insets(0, 0, 0, 0);
+        summary.add(PanelUi.summaryCard("Retired", retired, "shield", PanelUi.ERROR, "Decommissioned"), sc);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.64;
+        tc.weighty = 1;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(filters, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.36;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(summary, tc);
+
+        final JPanel tableCard = PanelUi.card(new BorderLayout(0, 16));
+        tableCard.add(PanelUi.sectionHeader("Fleet Results", "Aircraft are shown in a sortable operational table.", "grid"), BorderLayout.NORTH);
+        tableCard.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new BorderLayout(0, 22));
+        content.setOpaque(false);
+        content.add(top, BorderLayout.NORTH);
+        content.add(tableCard, BorderLayout.CENTER);
+        add(content, BorderLayout.CENTER);
 
         add(PanelUi.actions(
-                PanelUi.secondary("Clear", e -> PanelUi.clear(model, maker, minCapacity, maxCapacity, minAge, maxAge)),
+                PanelUi.secondary("Clear", e -> {
+                    PanelUi.clear(model, maker, minCapacity, maxCapacity, minAge, maxAge);
+                    table.setModel(tableModel("Registration", "Model", "Maker", "Seats", "Capacity", "Year", "Age", "Status", "Engine"));
+                    total.setText("0");
+                    active.setText("0");
+                    maintenance.setText("0");
+                    retired.setText("0");
+                }),
                 PanelUi.primary("Search Fleet", e -> runSafely(() -> {
-                    final AircraftFleetFilter filter = new AircraftFleetFilter(model.getText(), maker.getText(), optionalInt(minCapacity), optionalInt(maxCapacity), optionalInt(minAge), optionalInt(maxAge));
+                    final AircraftFleetFilter filter = new AircraftFleetFilter(
+                            model.getText(),
+                            maker.getText(),
+                            optionalInt(minCapacity),
+                            optionalInt(maxCapacity),
+                            optionalInt(minAge),
+                            optionalInt(maxAge)
+                    );
+
                     final List<AircraftFleetEntry> entries = new ListAircraftFleetController().listAircraftFleet(filter);
                     final DefaultTableModel m = tableModel("Registration", "Model", "Maker", "Seats", "Capacity", "Year", "Age", "Status", "Engine");
+
+                    int activeCount = 0;
+                    int maintenanceCount = 0;
+                    int retiredCount = 0;
+
                     for (AircraftFleetEntry item : entries) {
-                        m.addRow(new Object[] { item.registration(), item.model(), item.maker(), item.totalSeats(), item.modelCapacity(), item.manufactureYear(), item.ageInYears(), item.operationalStatus(), item.engineModel() });
+                        final String status = String.valueOf(item.operationalStatus());
+                        if (status.contains("ACTIVE")) {
+                            activeCount++;
+                        } else if (status.contains("MAINTENANCE")) {
+                            maintenanceCount++;
+                        } else if (status.contains("DECOMMISSIONED")) {
+                            retiredCount++;
+                        }
+
+                        m.addRow(new Object[] {
+                                item.registration(),
+                                item.model(),
+                                item.maker(),
+                                item.totalSeats(),
+                                item.modelCapacity(),
+                                item.manufactureYear(),
+                                item.ageInYears(),
+                                item.operationalStatus(),
+                                item.engineModel()
+                        });
                     }
+
                     table.setModel(m);
+                    PanelUi.table(table);
+
+                    total.setText(String.valueOf(entries.size()));
+                    active.setText(String.valueOf(activeCount));
+                    maintenance.setText(String.valueOf(maintenanceCount));
+                    retired.setText(String.valueOf(retiredCount));
+
+                    if (entries.isEmpty()) {
+                        showInfo(this, "No aircraft matched the selected filters.");
+                    }
                 }))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class DecommissionAircraftPanel extends JPanel {
+
+
+final class DecommissionAircraftPanel extends FullWidthUseCasePanel {
     DecommissionAircraftPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -564,31 +940,78 @@ final class DecommissionAircraftPanel extends JPanel {
         final JComboBox<String> aircraft = new JComboBox<>();
         PanelUi.combo(aircraft);
 
-        final JPanel form = PanelUi.formCard("Decommission Aircraft", "Retire an aircraft from the company fleet.");
+        final JLabel available = PanelUi.bigValue("0");
+
+        final Runnable reloadAircraft = () -> runSafely(() -> {
+            aircraft.removeAllItems();
+
+            int count = 0;
+            for (Aircraft a : controller.decommissionableAircraft()) {
+                aircraft.addItem(a.identity().toString());
+                count++;
+            }
+
+            available.setText(String.valueOf(count));
+
+            if (aircraft.getItemCount() > 0) {
+                aircraft.setSelectedIndex(0);
+            }
+        });
+
+        final JPanel form = PanelUi.formCard("Decommission Aircraft", "Select an aircraft eligible for retirement.");
         PanelUi.addField(form, 0, 0, "Aircraft *", aircraft);
-        PanelUi.addInfoStrip(form, 1, "You cannot decommission aircraft with pending flights.");
+        PanelUi.addInfoStrip(form, 1, "Only aircraft without pending flights are listed here.");
 
-        final JPanel side = PanelUi.sideCard("Safety Check", "warning",
-                new PanelUi.Tip("warning", "Pending flights", "Aircraft with pending flights cannot be retired.", PanelUi.WARNING),
-                new PanelUi.Tip("check", "Operational status", "Decommissioning changes future availability.", PanelUi.SUCCESS));
+        final JPanel side = PanelUi.card(new BorderLayout(0, 18));
+        side.add(PanelUi.sectionHeader("Safety Gate", "The operation is blocked when flights are pending.", "shield"), BorderLayout.NORTH);
+        side.add(PanelUi.summaryCard("Eligible aircraft", available, "plane", PanelUi.WARNING, "Can be retired"), BorderLayout.CENTER);
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
+
         add(PanelUi.actions(
-                PanelUi.secondary("Refresh", e -> runSafely(() -> {
-                    aircraft.removeAllItems();
-                    for (Aircraft a : controller.decommissionableAircraft()) {
-                        aircraft.addItem(a.identity().toString());
-                    }
-                })),
+                PanelUi.secondary("Reload", e -> reloadAircraft.run()),
                 PanelUi.primary("Decommission", e -> runSafely(() -> {
                     controller.decommissionAircraft(selected(aircraft));
                     showSuccess(this, "Aircraft decommissioned successfully.");
+                    reloadAircraft.run();
                 }))
         ), BorderLayout.SOUTH);
+
+        javax.swing.SwingUtilities.invokeLater(reloadAircraft);
     }
 }
 
-final class RegisterFlightRoutePanel extends JPanel {
+
+
+final class RegisterFlightRoutePanel extends FullWidthUseCasePanel {
     RegisterFlightRoutePanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -600,27 +1023,121 @@ final class RegisterFlightRoutePanel extends JPanel {
         final JComboBox<String> destination = comboFrom(controller::airportOptions);
         PanelUi.combo(destination);
 
+        final JLabel routeCode = PanelUi.bigValue("—");
+        final JLabel originValue = PanelUi.bigValue("—");
+        final JLabel destinationValue = PanelUi.bigValue("—");
+
+        final Runnable updatePreview = () -> {
+            routeCode.setText(designator.getText().isBlank() ? "—" : designator.getText().trim());
+            originValue.setText(departure.getItemCount() == 0 ? "—" : firstPart(selected(departure)));
+            destinationValue.setText(destination.getItemCount() == 0 ? "—" : firstPart(selected(destination)));
+        };
+
+        designator.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(final javax.swing.event.DocumentEvent e) {
+                updatePreview.run();
+            }
+
+            @Override
+            public void removeUpdate(final javax.swing.event.DocumentEvent e) {
+                updatePreview.run();
+            }
+
+            @Override
+            public void changedUpdate(final javax.swing.event.DocumentEvent e) {
+                updatePreview.run();
+            }
+        });
+        departure.addActionListener(e -> updatePreview.run());
+        destination.addActionListener(e -> updatePreview.run());
+
         final JPanel form = PanelUi.formCard("Route Details", "Create a company route between two airports.");
         PanelUi.addField(form, 0, 0, "Route designator *", designator);
         PanelUi.addField(form, 1, 0, "Departure airport *", departure);
         PanelUi.addField(form, 1, 1, "Destination airport *", destination);
+        PanelUi.addInfoStrip(form, 2, "Departure and destination should be different before registering the route.");
 
-        final JPanel side = PanelUi.sideCard("Route Rules", "map",
-                new PanelUi.Tip("check", "Unique designator", "The route designator must be unique.", PanelUi.SUCCESS),
-                new PanelUi.Tip("warning", "Origin/Destination", "Departure and destination should be different.", PanelUi.WARNING));
+        final JPanel rules = PanelUi.card(new BorderLayout(0, 18));
+        rules.add(PanelUi.sectionHeader("Route Rules", "Validation rules applied before registration.", "map"), BorderLayout.NORTH);
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel ruleList = new JPanel();
+        ruleList.setOpaque(false);
+        ruleList.setLayout(new BoxLayout(ruleList, BoxLayout.Y_AXIS));
+        ruleList.add(PanelUi.statusPanel("Unique designator", "The route designator must be unique.", "check", PanelUi.SUCCESS, new java.awt.Color(240, 253, 244)));
+        ruleList.add(Box.createRigidArea(new Dimension(0, 10)));
+        ruleList.add(PanelUi.statusPanel("Origin / Destination", "The route cannot start and finish at the same airport.", "warning", PanelUi.WARNING, new java.awt.Color(254, 243, 199)));
+        rules.add(ruleList, BorderLayout.NORTH);
+
+        final JPanel preview = PanelUi.card(new BorderLayout(0, 18));
+        preview.add(PanelUi.sectionHeader("Route Preview", "Live route summary before registration.", "plane"), BorderLayout.NORTH);
+
+        final JPanel previewGrid = new JPanel(new GridLayout(1, 3, 16, 0));
+        previewGrid.setOpaque(false);
+        previewGrid.add(PanelUi.summaryCard("Route", routeCode, "plane", UiTheme.BLUE, "Designator"));
+        previewGrid.add(PanelUi.summaryCard("Departure", originValue, "map", new java.awt.Color(15, 118, 110), "Origin airport"));
+        previewGrid.add(PanelUi.summaryCard("Destination", destinationValue, "map", new java.awt.Color(79, 70, 229), "Arrival airport"));
+        preview.add(previewGrid, BorderLayout.CENTER);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.68;
+        tc.weighty = 0;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(form, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.32;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(rules, tc);
+
+        final JPanel content = new JPanel(new GridBagLayout());
+        content.setOpaque(false);
+
+        final GridBagConstraints cc = new GridBagConstraints();
+        cc.gridx = 0;
+        cc.gridy = 0;
+        cc.fill = GridBagConstraints.HORIZONTAL;
+        cc.weightx = 1;
+        cc.weighty = 0;
+        cc.insets = new Insets(0, 0, 22, 0);
+        content.add(top, cc);
+
+        cc.gridy++;
+        cc.fill = GridBagConstraints.HORIZONTAL;
+        cc.insets = new Insets(0, 0, 0, 0);
+        content.add(preview, cc);
+
+        cc.gridy++;
+        cc.fill = GridBagConstraints.BOTH;
+        cc.weighty = 1;
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        content.add(spacer, cc);
+
+        add(content, BorderLayout.CENTER);
+        updatePreview.run();
+
         add(PanelUi.actions(
-                PanelUi.secondary("Cancel", e -> designator.setText("")),
+                PanelUi.secondary("Cancel", e -> {
+                    designator.setText("");
+                    updatePreview.run();
+                }),
                 PanelUi.primary("Register Route", e -> runSafely(() -> {
                     controller.registerFlightRoute(required(designator, "Route designator"), firstPart(selected(departure)), firstPart(selected(destination)));
                     showSuccess(this, "Flight route registered successfully.");
+                    updatePreview.run();
                 }))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class CreateFlightPanel extends JPanel {
+final class CreateFlightPanel extends FullWidthUseCasePanel {
     CreateFlightPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -628,7 +1145,7 @@ final class CreateFlightPanel extends JPanel {
         final JTextField route = PanelUi.text("Route designator");
         final JTextField flight = PanelUi.text("Flight designator");
         final JTextField day = PanelUi.dateIso();
-        final JTextField time = PanelUi.text("HH:mm");
+        final JTextField time = PanelUi.timeHm();
 
         final JPanel form = PanelUi.formCard("Flight Schedule", "Create a scheduled flight from a route.");
         PanelUi.addField(form, 0, 0, "Route designator *", route);
@@ -640,7 +1157,35 @@ final class CreateFlightPanel extends JPanel {
                 new PanelUi.Tip("check", "Flight designator", "Use the company code and flight number.", PanelUi.SUCCESS),
                 new PanelUi.Tip("info", "Date and time", "Use the format accepted by the console flow.", UiTheme.BLUE));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(route, flight, day, time)),
                 PanelUi.primary("Create Flight", e -> runSafely(() -> {
@@ -651,13 +1196,13 @@ final class CreateFlightPanel extends JPanel {
     }
 }
 
-final class CreateFlightPlanPanel extends JPanel {
+final class CreateFlightPlanPanel extends FullWidthUseCasePanel {
     CreateFlightPlanPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
         final JTextField id = PanelUi.text("Flight plan identifier");
-        final JTextField flight = PanelUi.text("Flight designator");
+        final JComboBox<String> flight = PanelUi.flightCombo();
         final JTextField aircraft = PanelUi.text("Aircraft registration");
         final JTextField pilot = PanelUi.text("Pilot ID");
         final JSpinner fuel = PanelUi.spinner(1, 0, 1_000_000, 1);
@@ -677,25 +1222,58 @@ final class CreateFlightPlanPanel extends JPanel {
                 new PanelUi.Tip("warning", "Weather data", "Adding weather data voids previous tests.", PanelUi.WARNING),
                 new PanelUi.Tip("check", "Pilot", "Pilot must belong to the route company.", PanelUi.SUCCESS));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
-                PanelUi.secondary("Cancel", e -> PanelUi.clear(id, flight, aircraft, pilot)),
+                PanelUi.secondary("Cancel", e -> {
+                    PanelUi.clear(id, aircraft, pilot);
+                    if (flight.getItemCount() > 0) {
+                        flight.setSelectedIndex(0);
+                    }
+                }),
                 PanelUi.primary("Create Plan", e -> runSafely(() -> {
-                    new CreateFlightPlanController().createFlightPlan(required(id, "Flight plan identifier"), required(flight, "Flight designator"), required(aircraft, "Aircraft registration"), required(pilot, "Pilot ID"), doubleValue(fuel), selected(unit));
+                    new CreateFlightPlanController().createFlightPlan(required(id, "Flight plan identifier"), firstPart(selected(flight)), required(aircraft, "Aircraft registration"), required(pilot, "Pilot ID"), doubleValue(fuel), selected(unit));
                     showSuccess(this, "Flight plan created successfully.");
                 }))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class InsertWeatherDataInFlightPlanPanel extends JPanel {
+final class InsertWeatherDataInFlightPlanPanel extends FullWidthUseCasePanel {
     InsertWeatherDataInFlightPlanPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
-        final JTextField id = PanelUi.text("Flight plan identifier");
+        final JComboBox<String> id = PanelUi.pilotFlightPlanCombo();
         final JTextField day = PanelUi.dateIso();
-        final JTextField area = PanelUi.text("Air control area code");
+        final JComboBox<String> area = PanelUi.airControlAreaCombo();
 
         final JPanel form = PanelUi.formCard("Weather Association", "Attach weather data to an existing flight plan.");
         PanelUi.addField(form, 0, 0, "Flight plan identifier *", id);
@@ -706,18 +1284,54 @@ final class InsertWeatherDataInFlightPlanPanel extends JPanel {
                 new PanelUi.Tip("warning", "Retesting required", "If the flight plan was already tested, the test becomes void.", PanelUi.WARNING),
                 new PanelUi.Tip("info", "Area-specific", "Weather data is loaded for the selected control area.", UiTheme.BLUE));
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
         add(PanelUi.actions(
-                PanelUi.secondary("Cancel", e -> PanelUi.clear(id, day, area)),
+                PanelUi.secondary("Cancel", e -> {
+                    PanelUi.clear(day);
+                    if (id.getItemCount() > 0) {
+                        id.setSelectedIndex(0);
+                    }
+                    if (area.getItemCount() > 0) {
+                        area.setSelectedIndex(0);
+                    }
+                }),
                 PanelUi.primary("Insert Weather", e -> runSafely(() -> {
-                    final FlightPlan plan = new InsertWeatherDataInFlightPlanController().insertWeatherData(required(id, "Flight plan identifier"), required(day, "Weather day"), required(area, "Air control area code"));
+                    final FlightPlan plan = new InsertWeatherDataInFlightPlanController().insertWeatherData(firstPart(selected(id)), required(day, "Weather day"), firstPart(selected(area)));
                     showSuccess(this, "Weather data inserted. Status: " + plan.status() + ", weather entries: " + plan.weatherDataIds().size());
                 }))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class TestFlightPlanPanel extends JPanel {
+final class TestFlightPlanPanel extends FullWidthUseCasePanel {
     private static final String[] VALIDATION_STEPS = {
             "Status changed: DRAFT → UNDER_VALIDATION",
             "[1/8] Checking route status...",
@@ -1579,7 +2193,7 @@ final class TestFlightPlanPanel extends JPanel {
 }
 
 
-final class ConsultFlightPlanTestReportsPanel extends JPanel {
+final class ConsultFlightPlanTestReportsPanel extends FullWidthUseCasePanel {
     private final java.util.List<FlightPlanTestReport> loadedReports = new ArrayList<>();
 
     ConsultFlightPlanTestReportsPanel() {
@@ -2176,7 +2790,7 @@ final class ConsultFlightPlanTestReportsPanel extends JPanel {
     }
 }
 
-final class RegisterWeatherDataPanel extends JPanel {
+final class RegisterWeatherDataPanel extends FullWidthUseCasePanel {
     RegisterWeatherDataPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -2208,7 +2822,35 @@ final class RegisterWeatherDataPanel extends JPanel {
                 new PanelUi.Tip("check", "Use correct format", "Ensure the day and coordinates are accurate.", PanelUi.SUCCESS),
                 new PanelUi.Tip("warning", "Choose parameter", "Select the parameter that best matches the measurement.", PanelUi.WARNING),
                 new PanelUi.Tip("cloud", "Verify source", "Only trusted providers should insert weather data.", UiTheme.BLUE));
-        add(PanelUi.split(form, tips), BorderLayout.CENTER);
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(tips, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        add(workspace, BorderLayout.CENTER);
 
         add(PanelUi.actions(
                 PanelUi.secondary("Cancel", e -> PanelUi.clear(day, unit)),
@@ -2220,49 +2862,123 @@ final class RegisterWeatherDataPanel extends JPanel {
     }
 }
 
-final class ConsultWeatherDataPanel extends JPanel {
+final class ConsultWeatherDataPanel extends FullWidthUseCasePanel {
     ConsultWeatherDataPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
-        final JTextField search = PanelUi.text("Search by location, area or ICAO...");
-        final JTextField area = PanelUi.text("Air control area code");
+        final JComboBox<String> area = PanelUi.airControlAreaCombo();
         final JTextField day = PanelUi.dateIso();
-        final JTable table = new JTable(tableModel("Results"));
+
+        final JLabel measurementCount = PanelUi.bigValue("0");
+        final JLabel providerCount = PanelUi.bigValue("-");
+        final JLabel areaValue = PanelUi.bigValue("-");
+
+        final JTable table = new JTable(tableModel("Parameter", "Value", "Unit", "Altitude", "Provider", "Coordinates"));
         PanelUi.table(table);
-        ((DefaultTableModel) table.getModel()).addRow(new Object[] { "Results will appear here after consultation." });
 
-        final JPanel filters = PanelUi.card(new GridBagLayout());
-        PanelUi.addCompactFilter(filters, 0, search);
-        PanelUi.addCompactFilter(filters, 1, area);
-        PanelUi.addCompactFilter(filters, 2, day);
+        final JPanel filters = PanelUi.formCard("Weather Query", "Choose the weather day and controlled airspace.");
+        PanelUi.addField(filters, 0, 0, "Air control area *", area);
+        PanelUi.addField(filters, 0, 1, "Weather day *", day);
+        PanelUi.addInfoStrip(filters, 1, "Results are shown as measurement cards and a detailed table.");
 
-        final JPanel results = PanelUi.card(new BorderLayout(0, 16));
-        results.add(filters, BorderLayout.NORTH);
-        results.add(new JScrollPane(table), BorderLayout.CENTER);
+        final JPanel summary = PanelUi.card(new GridBagLayout());
+        final GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 0;
+        sc.gridy = 0;
+        sc.gridwidth = 1;
+        sc.fill = GridBagConstraints.HORIZONTAL;
+        sc.weightx = 1;
+        sc.insets = new Insets(0, 0, 18, 0);
+        summary.add(PanelUi.sectionHeader("Weather Summary", "Updated after consultation.", "cloudSearch"), sc);
 
-        add(results, BorderLayout.CENTER);
+        sc.gridy++;
+        sc.fill = GridBagConstraints.BOTH;
+        sc.insets = new Insets(0, 0, 12, 0);
+        summary.add(PanelUi.summaryCard("Measurements", measurementCount, "chart", UiTheme.BLUE, "Records found"), sc);
+
+        sc.gridy++;
+        summary.add(PanelUi.summaryCard("Provider", providerCount, "cloud", new java.awt.Color(2, 132, 199), "Data source"), sc);
+
+        sc.gridy++;
+        sc.insets = new Insets(0, 0, 0, 0);
+        summary.add(PanelUi.summaryCard("Area", areaValue, "map", new java.awt.Color(79, 70, 229), "Selected code"), sc);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.68;
+        tc.weighty = 1;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(filters, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.32;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(summary, tc);
+
+        final JPanel tableCard = PanelUi.card(new BorderLayout(0, 16));
+        tableCard.add(PanelUi.sectionHeader("Measurement Details", "Each row represents a weather measurement.", "cloud"), BorderLayout.NORTH);
+        tableCard.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new BorderLayout(0, 22));
+        content.setOpaque(false);
+        content.add(top, BorderLayout.NORTH);
+        content.add(tableCard, BorderLayout.CENTER);
+        add(content, BorderLayout.CENTER);
+
         add(PanelUi.actions(
                 PanelUi.secondary("Clear", e -> {
-                    PanelUi.clear(search, area, day);
-                    final DefaultTableModel placeholder = tableModel("Results");
-                    placeholder.addRow(new Object[] { "Results will appear here after consultation." });
-                    table.setModel(placeholder);
+                    PanelUi.clear(day);
+                    if (area.getItemCount() > 0) {
+                        area.setSelectedIndex(0);
+                    }
+
+                    table.setModel(tableModel("Parameter", "Value", "Unit", "Altitude", "Provider", "Coordinates"));
+                    PanelUi.table(table);
+
+                    measurementCount.setText("0");
+                    providerCount.setText("-");
+                    areaValue.setText("-");
                 }),
                 PanelUi.primary("Consult", e -> runSafely(() -> {
-                    final WeatherData data = new ConsultWeatherDataController().consultWeatherData(required(day, "Day"), required(area, "Air control area code"))
+                    final WeatherData data = new ConsultWeatherDataController()
+                            .consultWeatherData(required(day, "Day"), firstPart(selected(area)))
                             .orElseThrow(() -> new IllegalArgumentException("No weather data found."));
-                    final DefaultTableModel model = tableModel("Day", "Area", "Provider", "Parameter", "Value", "Unit", "Altitude", "Coordinates");
+
+                    final DefaultTableModel model = tableModel("Parameter", "Value", "Unit", "Altitude", "Provider", "Coordinates");
+
+                    String provider = "-";
                     for (WeatherMeasurement m : data.measurements()) {
-                        model.addRow(new Object[] { data.day(), data.airControlAreaCode(), m.providerType(), m.parameter(), m.value(), m.unit(), m.altitude(), m.coordinates() });
+                        provider = String.valueOf(m.providerType());
+                        model.addRow(new Object[] {
+                                m.parameter(),
+                                m.value(),
+                                m.unit(),
+                                m.altitude(),
+                                m.providerType(),
+                                m.coordinates()
+                        });
                     }
+
                     table.setModel(model);
+                    PanelUi.table(table);
+
+                    measurementCount.setText(String.valueOf(data.measurements().size()));
+                    providerCount.setText(provider);
+                    areaValue.setText(String.valueOf(data.airControlAreaCode()));
                 }))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class ImportBulkWeatherDataPanel extends JPanel {
+
+
+final class ImportBulkWeatherDataPanel extends FullWidthUseCasePanel {
     ImportBulkWeatherDataPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -2271,13 +2987,20 @@ final class ImportBulkWeatherDataPanel extends JPanel {
         final JLabel read = PanelUi.bigValue("0");
         final JLabel imported = PanelUi.bigValue("0");
         final JLabel errors = PanelUi.bigValue("0");
+        final JLabel state = PanelUi.bigValue("Idle");
+
+        final javax.swing.JProgressBar progress = new javax.swing.JProgressBar();
+        progress.setIndeterminate(false);
+        progress.setStringPainted(true);
+        progress.setString("Waiting");
+        progress.putClientProperty("FlatLaf.style", "arc: 12");
+
         final JTable table = new JTable(tableModel("Row", "Status", "Message", "Details"));
         PanelUi.table(table);
 
         final JPanel importFile = PanelUi.card(new BorderLayout(0, 18));
         importFile.add(PanelUi.sectionHeader("Import File", "Upload a CSV or XLSX file with weather observations.", "upload"), BorderLayout.NORTH);
-        final JPanel chooser = PanelUi.dropZone(file);
-        importFile.add(chooser, BorderLayout.CENTER);
+        importFile.add(PanelUi.dropZone(file), BorderLayout.CENTER);
 
         final JPanel summary = PanelUi.card(new GridBagLayout());
         final GridBagConstraints sc = new GridBagConstraints();
@@ -2285,21 +3008,35 @@ final class ImportBulkWeatherDataPanel extends JPanel {
         sc.gridy = 0;
         sc.gridwidth = 2;
         sc.anchor = GridBagConstraints.WEST;
+        sc.fill = GridBagConstraints.HORIZONTAL;
+        sc.weightx = 1;
         sc.insets = new Insets(0, 0, 18, 0);
-        summary.add(PanelUi.sectionHeader("Import Summary", "Preview validation results after import.", "chart"), sc);
+        summary.add(PanelUi.sectionHeader("Import Summary", "Visual validation results after import.", "chart"), sc);
+
         sc.gridwidth = 1;
         sc.fill = GridBagConstraints.BOTH;
-        sc.weightx = 1;
         sc.gridy++;
         sc.insets = new Insets(0, 0, 14, 14);
         summary.add(PanelUi.summaryCard("Read records", read, "grid", UiTheme.BLUE, "Total rows read"), sc);
+
         sc.gridx = 1;
         sc.insets = new Insets(0, 0, 14, 0);
         summary.add(PanelUi.summaryCard("Imported", imported, "check", PanelUi.SUCCESS, "Successfully imported"), sc);
+
         sc.gridx = 0;
         sc.gridy++;
-        sc.insets = new Insets(0, 0, 0, 14);
+        sc.insets = new Insets(0, 0, 14, 14);
         summary.add(PanelUi.summaryCard("Errors", errors, "warning", PanelUi.ERROR, "Rows skipped"), sc);
+
+        sc.gridx = 1;
+        sc.insets = new Insets(0, 0, 14, 0);
+        summary.add(PanelUi.summaryCard("State", state, "upload", UiTheme.BLUE, "Import process"), sc);
+
+        sc.gridx = 0;
+        sc.gridy++;
+        sc.gridwidth = 2;
+        sc.insets = new Insets(0, 0, 0, 0);
+        summary.add(progress, sc);
 
         final JPanel top = new JPanel(new GridLayout(1, 2, 22, 0));
         top.setOpaque(false);
@@ -2311,89 +3048,267 @@ final class ImportBulkWeatherDataPanel extends JPanel {
         card.add(new JScrollPane(table), BorderLayout.CENTER);
         add(card, BorderLayout.CENTER);
 
-        add(PanelUi.actions(
-                PanelUi.secondary("Choose file", e -> {
-                    final JFileChooser chooserFile = new JFileChooser();
-                    chooserFile.setFileFilter(new FileNameExtensionFilter("CSV/XLSX files", "csv", "xlsx"));
-                    if (chooserFile.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                        file.setText(chooserFile.getSelectedFile().toPath().toString());
-                    }
-                }),
-                PanelUi.primary("Import", e -> runSafely(() -> {
-                    final BulkWeatherImportResult result;
+        final JButton choose = PanelUi.secondary("Choose file", e -> {
+            final JFileChooser chooserFile = new JFileChooser();
+            chooserFile.setFileFilter(new FileNameExtensionFilter("CSV/XLSX files", "csv", "xlsx"));
+
+            if (chooserFile.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                file.setText(chooserFile.getSelectedFile().toPath().toString());
+            }
+        });
+
+        final JButton importButton = primaryButton("Import");
+        importButton.setPreferredSize(new Dimension(145, 42));
+
+        importButton.addActionListener(e -> runSafely(() -> {
+            final String selectedFile = required(file, "File");
+
+            choose.setEnabled(false);
+            importButton.setEnabled(false);
+            state.setText("Running");
+            progress.setIndeterminate(true);
+            progress.setString("Importing...");
+            table.setModel(tableModel("Row", "Status", "Message", "Details"));
+            PanelUi.table(table);
+
+            new SwingWorker<BulkWeatherImportResult, Void>() {
+                @Override
+                protected BulkWeatherImportResult doInBackground() {
                     try {
-                        result = new ImportBulkWeatherDataController().importFromFile(Path.of(required(file, "File")));
+                        return new ImportBulkWeatherDataController().importFromFile(Path.of(selectedFile));
                     } catch (IOException ex) {
                         throw new IllegalArgumentException(ex.getMessage(), ex);
                     }
-                    read.setText(String.valueOf(result.readRecords()));
-                    imported.setText(String.valueOf(result.importedRecords()));
-                    errors.setText(String.valueOf(result.errors().size()));
+                }
 
-                    final DefaultTableModel model = tableModel("Row", "Status", "Message", "Details");
-                    for (BulkWeatherImportError error : result.errors()) {
-                        model.addRow(new Object[] { error.sourceLine(), "Error", error.message(), "Check imported file row" });
+                @Override
+                protected void done() {
+                    try {
+                        final BulkWeatherImportResult result = get();
+
+                        read.setText(String.valueOf(result.readRecords()));
+                        imported.setText(String.valueOf(result.importedRecords()));
+                        errors.setText(String.valueOf(result.errors().size()));
+                        state.setText(result.errors().isEmpty() ? "Clean" : "Issues");
+
+                        final DefaultTableModel model = tableModel("Row", "Status", "Message", "Details");
+
+                        for (BulkWeatherImportError error : result.errors()) {
+                            model.addRow(new Object[] {
+                                    error.sourceLine(),
+                                    "Error",
+                                    error.message(),
+                                    "Check imported file row"
+                            });
+                        }
+
+                        if (result.errors().isEmpty()) {
+                            model.addRow(new Object[] {
+                                    "-",
+                                    "Imported",
+                                    "Weather data imported successfully.",
+                                    "No validation errors"
+                            });
+                        }
+
+                        table.setModel(model);
+                        PanelUi.table(table);
+
+                        if (result.errors().isEmpty()) {
+                            showSuccess(ImportBulkWeatherDataPanel.this, "Weather data imported successfully.");
+                        } else {
+                            showInfo(ImportBulkWeatherDataPanel.this, "Import finished with " + result.errors().size() + " issue(s).");
+                        }
+                    } catch (Exception ex) {
+                        final Throwable cause = ex.getCause() == null ? ex : ex.getCause();
+                        state.setText("Failed");
+                        showInfo(ImportBulkWeatherDataPanel.this, "Import failed: " + cause.getMessage());
+                    } finally {
+                        choose.setEnabled(true);
+                        importButton.setEnabled(true);
+                        progress.setIndeterminate(false);
+                        progress.setValue(100);
+                        progress.setString("Complete");
                     }
-                    if (result.errors().isEmpty()) {
-                        model.addRow(new Object[] { "-", "Imported", "Weather data imported successfully.", "No validation errors" });
-                    }
-                    table.setModel(model);
-                }))
-        ), BorderLayout.SOUTH);
+                }
+            }.execute();
+        }));
+
+        add(PanelUi.actions(choose, importButton), BorderLayout.SOUTH);
     }
 }
 
-final class GenerateMonthlyReportPanel extends JPanel {
+
+
+final class GenerateMonthlyReportPanel extends FullWidthUseCasePanel {
     GenerateMonthlyReportPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
         final JSpinner year = PanelUi.intSpinner(2026, 1900, 3000);
         final JSpinner month = PanelUi.intSpinner(1, 1, 12);
+
         final JTextArea out = PanelUi.outputArea("Report preview will appear here.");
+        out.setEditable(false);
+
+        final JLabel period = PanelUi.bigValue("—");
+        final JLabel status = PanelUi.bigValue("Ready");
 
         final JPanel form = PanelUi.formCard("Report Parameters", "Select the reporting period.");
         PanelUi.addField(form, 0, 0, "Year *", year);
         PanelUi.addField(form, 0, 1, "Month *", month);
+        PanelUi.addInfoStrip(form, 1, "The generated text report is shown in the preview area below.");
 
-        final JPanel card = PanelUi.card(new BorderLayout(0, 18));
-        card.add(PanelUi.split(form, PanelUi.sideCard("Report Types", "chart",
-                new PanelUi.Tip("check", "Operational summary", "Monthly operational overview.", PanelUi.SUCCESS),
-                new PanelUi.Tip("info", "Consistent layout", "Foundational format for future reports.", UiTheme.BLUE))), BorderLayout.NORTH);
-        card.add(PanelUi.resultPanel("Generated Report", out), BorderLayout.CENTER);
-        add(card, BorderLayout.CENTER);
+        final JPanel summary = PanelUi.card(new GridBagLayout());
+        final GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 0;
+        sc.gridy = 0;
+        sc.gridwidth = 2;
+        sc.fill = GridBagConstraints.HORIZONTAL;
+        sc.weightx = 1;
+        sc.insets = new Insets(0, 0, 18, 0);
+        summary.add(PanelUi.sectionHeader("Generation Status", "Current report generation context.", "chart"), sc);
+
+        sc.gridwidth = 1;
+        sc.gridy++;
+        sc.gridx = 0;
+        sc.fill = GridBagConstraints.BOTH;
+        sc.insets = new Insets(0, 0, 0, 14);
+        summary.add(PanelUi.summaryCard("Period", period, "chart", UiTheme.BLUE, "Selected month"), sc);
+
+        sc.gridx = 1;
+        sc.insets = new Insets(0, 0, 0, 0);
+        summary.add(PanelUi.summaryCard("Status", status, "check", PanelUi.SUCCESS, "Generator state"), sc);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.58;
+        tc.weighty = 1;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(form, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.42;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(summary, tc);
+
+        final JPanel preview = PanelUi.resultPanel("Generated Report", out);
+
+        final JPanel content = new JPanel(new BorderLayout(0, 22));
+        content.setOpaque(false);
+        content.add(top, BorderLayout.NORTH);
+        content.add(preview, BorderLayout.CENTER);
+
+        add(content, BorderLayout.CENTER);
 
         add(PanelUi.actions(
-                PanelUi.secondary("Cancel", e -> out.setText("")),
-                PanelUi.primary("Generate", e -> runSafely(() -> out.setText(new GenerateMonthlyReportController().generateMonthlyReportText(intValue(year), intValue(month)))))
+                PanelUi.secondary("Clear", e -> {
+                    out.setText("Report preview will appear here.");
+                    period.setText("—");
+                    status.setText("Ready");
+                }),
+                PanelUi.primary("Generate", e -> runSafely(() -> {
+                    final int y = intValue(year);
+                    final int m = intValue(month);
+
+                    period.setText(String.format("%04d-%02d", y, m));
+                    status.setText("Generated");
+
+                    out.setText(new GenerateMonthlyReportController().generateMonthlyReportText(y, m));
+                    out.setCaretPosition(0);
+
+                    showSuccess(this, "Monthly report generated.");
+                }))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class FlightPlansOverviewPanel extends JPanel {
+
+
+final class FlightPlansOverviewPanel extends FullWidthUseCasePanel {
     FlightPlansOverviewPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
-        final JTextField search = PanelUi.text("Search flight plans, aircraft or pilot...");
-        final JTable table = new JTable(tableModel("Flight Plan", "Flight", "Route", "Aircraft", "Status", "Actions"));
-        PanelUi.table(table);
+        final JPanel create = PanelUi.statusPanel(
+                "Create Flight Plan",
+                "Create a draft plan from an existing flight and then validate it.",
+                "plane",
+                UiTheme.BLUE,
+                UiTheme.BLUE_SOFT
+        );
 
-        final JPanel card = PanelUi.card(new BorderLayout(0, 16));
-        final JPanel filters = PanelUi.card(new GridBagLayout());
-        PanelUi.addCompactFilter(filters, 0, search);
-        card.add(filters, BorderLayout.NORTH);
-        card.add(new JScrollPane(table), BorderLayout.CENTER);
-        add(card, BorderLayout.CENTER);
+        final JPanel test = PanelUi.statusPanel(
+                "Test Flight Plan",
+                "Run the graphical validation pipeline and generate a validation report.",
+                "check",
+                PanelUi.SUCCESS,
+                new java.awt.Color(240, 253, 244)
+        );
+
+        final JPanel reports = PanelUi.statusPanel(
+                "Consult Reports",
+                "Open generated reports one by one with graphical details.",
+                "chart",
+                new java.awt.Color(79, 70, 229),
+                new java.awt.Color(238, 242, 255)
+        );
+
+        final JPanel weather = PanelUi.statusPanel(
+                "Insert Weather",
+                "Attach weather records to a plan and trigger retesting when needed.",
+                "cloud",
+                new java.awt.Color(2, 132, 199),
+                new java.awt.Color(224, 242, 254)
+        );
+
+        final JPanel grid = PanelUi.card(new GridBagLayout());
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1;
+        c.insets = new Insets(0, 0, 22, 0);
+        grid.add(PanelUi.sectionHeader("Flight Plan Workspace", "Use the tabs above to manage the complete plan lifecycle.", "grid"), c);
+
+        c.gridwidth = 1;
+        c.gridy++;
+        c.gridx = 0;
+        c.fill = GridBagConstraints.BOTH;
+        c.weighty = 1;
+        c.insets = new Insets(0, 0, 16, 16);
+        grid.add(create, c);
+
+        c.gridx = 1;
+        c.insets = new Insets(0, 0, 16, 0);
+        grid.add(test, c);
+
+        c.gridx = 0;
+        c.gridy++;
+        c.insets = new Insets(0, 0, 0, 16);
+        grid.add(weather, c);
+
+        c.gridx = 1;
+        c.insets = new Insets(0, 0, 0, 0);
+        grid.add(reports, c);
+
+        add(grid, BorderLayout.CENTER);
 
         add(PanelUi.actions(
-                PanelUi.secondary("Clear", e -> search.setText("")),
-                PanelUi.primary("Refresh", e -> showInfo(this, "Flight plan data is available in the Create/Test tabs according to your role."))
+                PanelUi.secondary("Tip", e -> showInfo(this, "Use the tabs above to create, validate and review flight plans."))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class GenerateSimulationReportPanel extends JPanel {
+
+
+final class GenerateSimulationReportPanel extends FullWidthUseCasePanel {
     GenerateSimulationReportPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -2406,36 +3321,97 @@ final class GenerateSimulationReportPanel extends JPanel {
         final JTextField dir = PanelUi.text("reports");
         dir.setText("reports");
 
+        final JLabel flightRows = PanelUi.bigValue("1");
+        final JLabel violationRows = PanelUi.bigValue("1");
+        final JLabel status = PanelUi.bigValue("Ready");
+
         final JPanel form = PanelUi.formCard("Simulation Report", "Generate and save a simulation report.");
         PanelUi.addField(form, 0, 0, "Simulation identifier *", id);
         PanelUi.addField(form, 0, 1, "Output directory *", dir);
-        PanelUi.addField(form, 1, 0, "Result", passed);
+        PanelUi.addField(form, 1, 0, "Validation result", passed);
         PanelUi.addField(form, 2, 0, "Flight results", new JScrollPane(flights));
         PanelUi.addField(form, 2, 1, "Safety violations", new JScrollPane(violations));
 
-        final JPanel side = PanelUi.sideCard("Report Contents", "chart",
-                new PanelUi.Tip("check", "Flight statuses", "Include each flight execution status.", PanelUi.SUCCESS),
-                new PanelUi.Tip("warning", "Safety violations", "List timestamps, positions and details.", PanelUi.WARNING),
-                new PanelUi.Tip("info", "Saved file", "The complete report is saved to a file.", UiTheme.BLUE));
+        final JPanel summary = PanelUi.card(new GridBagLayout());
+        final GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 0;
+        sc.gridy = 0;
+        sc.gridwidth = 1;
+        sc.fill = GridBagConstraints.HORIZONTAL;
+        sc.weightx = 1;
+        sc.insets = new Insets(0, 0, 18, 0);
+        summary.add(PanelUi.sectionHeader("Report Composition", "Counts are updated before generation.", "chart"), sc);
 
-        add(PanelUi.split(form, side), BorderLayout.CENTER);
+        sc.gridy++;
+        sc.fill = GridBagConstraints.BOTH;
+        sc.insets = new Insets(0, 0, 12, 0);
+        summary.add(PanelUi.summaryCard("Flights", flightRows, "plane", UiTheme.BLUE, "Rows provided"), sc);
+
+        sc.gridy++;
+        summary.add(PanelUi.summaryCard("Violations", violationRows, "warning", PanelUi.WARNING, "Safety rows"), sc);
+
+        sc.gridy++;
+        sc.insets = new Insets(0, 0, 0, 0);
+        summary.add(PanelUi.summaryCard("Status", status, passed.isSelected() ? "check" : "warning", PanelUi.SUCCESS, "Output file"), sc);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.70;
+        tc.weighty = 1;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(form, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.30;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(summary, tc);
+
+        add(top, BorderLayout.CENTER);
+
         add(PanelUi.actions(
                 PanelUi.secondary("Choose directory", e -> {
                     final JFileChooser chooser = new JFileChooser();
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
                     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                         dir.setText(chooser.getSelectedFile().toPath().toString());
                     }
                 }),
+                PanelUi.secondary("Update Counts", e -> {
+                    flightRows.setText(String.valueOf(parseFlights(flights.getText()).size()));
+                    violationRows.setText(String.valueOf(parseViolations(violations.getText()).size()));
+                    status.setText("Ready");
+                }),
                 PanelUi.primary("Generate", e -> runSafely(() -> {
-                    final Path path = new GenerateSimulationReportController().generateSimulationReportFile(required(id, "Simulation identifier"), passed.isSelected(), parseFlights(flights.getText()), parseViolations(violations.getText()), Path.of(required(dir, "Output directory")));
+                    final List<SimulationFlightResult> parsedFlights = parseFlights(flights.getText());
+                    final List<SimulationSafetyViolation> parsedViolations = parseViolations(violations.getText());
+
+                    flightRows.setText(String.valueOf(parsedFlights.size()));
+                    violationRows.setText(String.valueOf(parsedViolations.size()));
+
+                    final Path path = new GenerateSimulationReportController().generateSimulationReportFile(
+                            required(id, "Simulation identifier"),
+                            passed.isSelected(),
+                            parsedFlights,
+                            parsedViolations,
+                            Path.of(required(dir, "Output directory"))
+                    );
+
+                    status.setText("Saved");
                     showSuccess(this, "Report created: " + path);
                 }))
         ), BorderLayout.SOUTH);
     }
 }
 
-final class RegisterPilotPanel extends JPanel {
+
+
+final class RegisterPilotPanel extends FullWidthUseCasePanel {
     RegisterPilotPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -2477,8 +3453,39 @@ final class RegisterPilotPanel extends JPanel {
                 new PanelUi.Tip("info", "System user", "The pilot can authenticate into the system.", UiTheme.BLUE),
                 new PanelUi.Tip("warning", "Validity", "Certification dates must be valid.", PanelUi.WARNING));
 
-        final JScrollPane scroll = new JScrollPane(PanelUi.split(form, side));
+        final JPanel workspace = new JPanel(new GridBagLayout());
+        workspace.setOpaque(false);
+
+        final GridBagConstraints wc = new GridBagConstraints();
+        wc.gridx = 0;
+        wc.gridy = 0;
+        wc.fill = GridBagConstraints.BOTH;
+        wc.weightx = 0.64;
+        wc.weighty = 0;
+        wc.insets = new Insets(0, 0, 0, 22);
+        workspace.add(form, wc);
+
+        wc.gridx = 1;
+        wc.weightx = 0.36;
+        wc.insets = new Insets(0, 0, 0, 0);
+        workspace.add(side, wc);
+
+        wc.gridx = 0;
+        wc.gridy = 1;
+        wc.gridwidth = 2;
+        wc.weightx = 1;
+        wc.weighty = 1;
+        wc.insets = new Insets(22, 0, 0, 0);
+
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        workspace.add(spacer, wc);
+
+        final JScrollPane scroll = new JScrollPane(workspace);
         scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
 
@@ -2496,73 +3503,289 @@ final class RegisterPilotPanel extends JPanel {
     }
 }
 
-final class AddPilotPanel extends JPanel {
+final class AddPilotPanel extends FullWidthUseCasePanel {
     AddPilotPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
-        final JTextField id = PanelUi.text("Pilot ID");
-        final JTextArea out = PanelUi.outputArea("Available pilots will appear here.");
+        final JComboBox<String> pilots = new JComboBox<>();
+        PanelUi.combo(pilots);
+        pilots.setPrototypeDisplayValue("Select an available pilot from the current pool");
 
-        final JPanel form = PanelUi.formCard("Add Pilot to Roster", "Associate an existing pilot to the company.");
-        PanelUi.addField(form, 0, 0, "Pilot ID *", id);
+        final JLabel availableCount = PanelUi.bigValue("0");
+        final JLabel selectedStatus = PanelUi.bigValue("—");
 
-        final JPanel card = PanelUi.card(new BorderLayout(0, 18));
-        card.add(form, BorderLayout.NORTH);
-        card.add(PanelUi.resultPanel("Available Pilots", out), BorderLayout.CENTER);
-        add(card, BorderLayout.CENTER);
+        final JTable table = new JTable(tableModel("Available Pilot"));
+        PanelUi.table(table);
+
+        final Runnable reloadPilots = () -> runSafely(() -> {
+            pilots.removeAllItems();
+
+            final DefaultTableModel model = tableModel("Available Pilot");
+            final java.util.List<Object> available = new ArrayList<>();
+
+            for (Object pilot : new RegisterPilotController().getAllPilots()) {
+                available.add(pilot);
+                final String option = String.valueOf(pilot);
+                pilots.addItem(option);
+                model.addRow(new Object[] { option });
+            }
+
+            table.setModel(model);
+            PanelUi.table(table);
+            table.setRowHeight(34);
+            availableCount.setText(String.valueOf(available.size()));
+            selectedStatus.setText(available.isEmpty() ? "Empty" : "Ready");
+
+            if (pilots.getItemCount() > 0) {
+                pilots.setSelectedIndex(0);
+            }
+        });
+
+        final JPanel selector = PanelUi.formCard("Add Pilot to Roster", "Select an existing pilot and associate it to the company.");
+        PanelUi.addField(selector, 0, 0, "Pilot *", pilots);
+        PanelUi.addInfoStrip(selector, 1, "Only existing pilots can be added to the company roster.");
+
+        final JPanel overview = PanelUi.card(new BorderLayout(0, 18));
+        overview.add(PanelUi.sectionHeader("Available Pool", "Live overview of selectable pilots.", "user"), BorderLayout.NORTH);
+
+        final JPanel overviewGrid = new JPanel(new GridLayout(1, 2, 16, 0));
+        overviewGrid.setOpaque(false);
+        overviewGrid.add(PanelUi.summaryCard("Available pilots", availableCount, "user", UiTheme.BLUE, "Selectable records"));
+        overviewGrid.add(PanelUi.summaryCard("Status", selectedStatus, "check", PanelUi.SUCCESS, "Pool state"));
+        overview.add(overviewGrid, BorderLayout.CENTER);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.58;
+        tc.weighty = 0;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(selector, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.42;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(overview, tc);
+
+        final JPanel list = PanelUi.card(new BorderLayout(0, 16));
+        list.add(PanelUi.sectionHeader("Available Pilots", "Review the current selectable pilot pool.", "grid"), BorderLayout.NORTH);
+
+        final JScrollPane tableScroll = new JScrollPane(table);
+        tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        list.add(tableScroll, BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new GridBagLayout());
+        content.setOpaque(false);
+
+        final GridBagConstraints cc = new GridBagConstraints();
+        cc.gridx = 0;
+        cc.gridy = 0;
+        cc.fill = GridBagConstraints.HORIZONTAL;
+        cc.weightx = 1;
+        cc.weighty = 0;
+        cc.insets = new Insets(0, 0, 22, 0);
+        content.add(top, cc);
+
+        cc.gridy++;
+        cc.fill = GridBagConstraints.BOTH;
+        cc.weighty = 1;
+        cc.insets = new Insets(0, 0, 0, 0);
+        content.add(list, cc);
+
+        add(content, BorderLayout.CENTER);
 
         add(PanelUi.actions(
-                PanelUi.secondary("List available pilots", e -> runSafely(() -> out.setText(joinLines(new RegisterPilotController().getAllPilots())))),
+                PanelUi.secondary("Reload Pilots", e -> reloadPilots.run()),
                 PanelUi.primary("Add Pilot", e -> runSafely(() -> {
-                    new AddPilotController().addPilot(required(id, "Pilot ID"));
+                    new AddPilotController().addPilot(firstPart(selected(pilots)));
                     showSuccess(this, "Pilot added successfully.");
+                    reloadPilots.run();
                 }))
         ), BorderLayout.SOUTH);
+
+        javax.swing.SwingUtilities.invokeLater(reloadPilots);
     }
 }
 
-final class ListPilotRosterPanel extends JPanel {
+final class ListPilotRosterPanel extends FullWidthUseCasePanel {
     ListPilotRosterPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
 
-        final JTextArea out = PanelUi.outputArea("Pilot roster will appear here.");
-        add(PanelUi.resultPanel("Pilot Roster", out), BorderLayout.CENTER);
+        final JLabel total = PanelUi.bigValue("0");
+        final JLabel status = PanelUi.bigValue("Ready");
+
+        final JTable table = new JTable(tableModel("Pilot"));
+        PanelUi.table(table);
+
+        final JPanel summary = PanelUi.card(new GridBagLayout());
+        final GridBagConstraints sc = new GridBagConstraints();
+        sc.gridx = 0;
+        sc.gridy = 0;
+        sc.gridwidth = 2;
+        sc.fill = GridBagConstraints.HORIZONTAL;
+        sc.weightx = 1;
+        sc.insets = new Insets(0, 0, 18, 0);
+        summary.add(PanelUi.sectionHeader("Roster Overview", "Loaded pilots for the authenticated company.", "user"), sc);
+
+        sc.gridwidth = 1;
+        sc.gridy++;
+        sc.gridx = 0;
+        sc.fill = GridBagConstraints.BOTH;
+        sc.insets = new Insets(0, 0, 0, 14);
+        summary.add(PanelUi.summaryCard("Pilots", total, "user", UiTheme.BLUE, "Roster entries"), sc);
+
+        sc.gridx = 1;
+        sc.insets = new Insets(0, 0, 0, 0);
+        summary.add(PanelUi.summaryCard("Status", status, "check", PanelUi.SUCCESS, "Ready to list"), sc);
+
+        final JPanel tableCard = PanelUi.card(new BorderLayout(0, 16));
+        tableCard.add(PanelUi.sectionHeader("Pilot Roster", "Pilots are displayed as one selectable entry per row.", "grid"), BorderLayout.NORTH);
+        tableCard.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new GridBagLayout());
+        content.setOpaque(false);
+
+        final GridBagConstraints cc = new GridBagConstraints();
+        cc.gridx = 0;
+        cc.gridy = 0;
+        cc.fill = GridBagConstraints.BOTH;
+        cc.weightx = 0.28;
+        cc.weighty = 1;
+        cc.insets = new Insets(0, 0, 0, 22);
+        content.add(summary, cc);
+
+        cc.gridx = 1;
+        cc.weightx = 0.72;
+        cc.insets = new Insets(0, 0, 0, 0);
+        content.add(tableCard, cc);
+
+        add(content, BorderLayout.CENTER);
+
         add(PanelUi.actions(
-                PanelUi.secondary("Clear", e -> out.setText("")),
-                PanelUi.primary("List Roster", e -> runSafely(() -> out.setText(joinLines(new ListPilotRosterController().listPilotRoster()))))
-        ), BorderLayout.SOUTH);
-    }
-}
+                PanelUi.secondary("Clear", e -> {
+                    total.setText("0");
+                    status.setText("Ready");
+                    table.setModel(tableModel("Pilot"));
+                    PanelUi.table(table);
+                }),
+                PanelUi.primary("List Roster", e -> runSafely(() -> {
+                    final java.util.List<Object> pilots = new ArrayList<>();
+                    for (Object pilot : new ListPilotRosterController().listPilotRoster()) {
+                        pilots.add(pilot);
+                    }
 
-final class DeactivatePilotPanel extends JPanel {
-    DeactivatePilotPanel() {
-        super(new BorderLayout(0, 18));
-        setOpaque(false);
+                    final DefaultTableModel model = tableModel("Pilot");
 
-        final JTextField id = PanelUi.text("Pilot ID");
-        final JTextArea out = PanelUi.outputArea("Roster preview will appear here.");
+                    for (Object pilot : pilots) {
+                        model.addRow(new Object[] { String.valueOf(pilot) });
+                    }
 
-        final JPanel form = PanelUi.formCard("Deactivate Pilot", "Make a pilot inactive in the company roster.");
-        PanelUi.addField(form, 0, 0, "Pilot ID *", id);
+                    table.setModel(model);
+                    PanelUi.table(table);
 
-        final JPanel card = PanelUi.card(new BorderLayout(0, 18));
-        card.add(PanelUi.split(form, PanelUi.sideCard("Restriction", "warning",
-                new PanelUi.Tip("warning", "Assigned plans", "Cannot deactivate a pilot with flight plans assigned.", PanelUi.WARNING),
-                new PanelUi.Tip("info", "Roster status", "Inactive pilots no longer appear in the active roster.", UiTheme.BLUE))), BorderLayout.NORTH);
-        card.add(PanelUi.resultPanel("Current Roster", out), BorderLayout.CENTER);
-        add(card, BorderLayout.CENTER);
+                    total.setText(String.valueOf(pilots.size()));
+                    status.setText(pilots.isEmpty() ? "Empty" : "Loaded");
 
-        add(PanelUi.actions(
-                PanelUi.secondary("List roster", e -> runSafely(() -> out.setText(joinLines(new ListPilotRosterController().listPilotRoster())))),
-                PanelUi.primary("Deactivate", e -> runSafely(() -> {
-                    new DeactivatePilotController().deactivatePilot(required(id, "Pilot ID"));
-                    showSuccess(this, "Pilot deactivated successfully.");
+                    if (pilots.isEmpty()) {
+                        showInfo(this, "No pilots found in the roster.");
+                    }
                 }))
         ), BorderLayout.SOUTH);
     }
 }
+
+
+
+final class DeactivatePilotPanel extends FullWidthUseCasePanel {
+    DeactivatePilotPanel() {
+        super(new BorderLayout(0, 18));
+        setOpaque(false);
+
+        final JComboBox<String> pilots = new JComboBox<>();
+        PanelUi.combo(pilots);
+
+        final JLabel rosterCount = PanelUi.bigValue("0");
+        final JTable table = new JTable(tableModel("Roster Pilot"));
+        PanelUi.table(table);
+
+        final Runnable reloadRoster = () -> runSafely(() -> {
+            pilots.removeAllItems();
+
+            final DefaultTableModel model = tableModel("Roster Pilot");
+            final java.util.List<Object> roster = new ArrayList<>();
+
+            for (Object pilot : new ListPilotRosterController().listPilotRoster()) {
+                roster.add(pilot);
+                final String option = String.valueOf(pilot);
+                pilots.addItem(option);
+                model.addRow(new Object[] { option });
+            }
+
+            table.setModel(model);
+            PanelUi.table(table);
+            rosterCount.setText(String.valueOf(roster.size()));
+
+            if (pilots.getItemCount() > 0) {
+                pilots.setSelectedIndex(0);
+            }
+        });
+
+        final JPanel form = PanelUi.formCard("Deactivate Pilot", "Select a pilot from the company roster.");
+        PanelUi.addField(form, 0, 0, "Pilot *", pilots);
+        PanelUi.addInfoStrip(form, 1, "Pilots assigned to active flight plans cannot be deactivated.");
+
+        final JPanel restriction = PanelUi.card(new BorderLayout(0, 18));
+        restriction.add(PanelUi.sectionHeader("Safety Restriction", "Roster changes are validated before execution.", "warning"), BorderLayout.NORTH);
+        restriction.add(PanelUi.summaryCard("Roster entries", rosterCount, "user", PanelUi.WARNING, "Current pilots"), BorderLayout.CENTER);
+
+        final JPanel top = new JPanel(new GridBagLayout());
+        top.setOpaque(false);
+
+        final GridBagConstraints tc = new GridBagConstraints();
+        tc.gridx = 0;
+        tc.gridy = 0;
+        tc.fill = GridBagConstraints.BOTH;
+        tc.weightx = 0.62;
+        tc.weighty = 1;
+        tc.insets = new Insets(0, 0, 0, 22);
+        top.add(form, tc);
+
+        tc.gridx = 1;
+        tc.weightx = 0.38;
+        tc.insets = new Insets(0, 0, 0, 0);
+        top.add(restriction, tc);
+
+        final JPanel rosterCard = PanelUi.card(new BorderLayout(0, 16));
+        rosterCard.add(PanelUi.sectionHeader("Current Roster", "Select the pilot above or inspect the roster below.", "grid"), BorderLayout.NORTH);
+        rosterCard.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new BorderLayout(0, 22));
+        content.setOpaque(false);
+        content.add(top, BorderLayout.NORTH);
+        content.add(rosterCard, BorderLayout.CENTER);
+
+        add(content, BorderLayout.CENTER);
+
+        add(PanelUi.actions(
+                PanelUi.secondary("Reload Roster", e -> reloadRoster.run()),
+                PanelUi.primary("Deactivate", e -> runSafely(() -> {
+                    new DeactivatePilotController().deactivatePilot(firstPart(selected(pilots)));
+                    showSuccess(this, "Pilot deactivated successfully.");
+                    reloadRoster.run();
+                }))
+        ), BorderLayout.SOUTH);
+
+        javax.swing.SwingUtilities.invokeLater(reloadRoster);
+    }
+}
+
+
 
 final class WeatherParameterRenderer extends javax.swing.DefaultListCellRenderer {
     @Override
@@ -2680,6 +3903,73 @@ final class PanelUi {
         combo.setMinimumSize(new Dimension(120, 42));
     }
 
+    static JComboBox<String> airControlAreaCombo() {
+        final List<String> options = new ArrayList<>();
+
+        for (isep.aisafe.aircontrolarea.domain.AirControlArea area :
+                isep.aisafe.infrastructure.persistence.PersistenceContext.repositories().airControlAreas().findAll()) {
+            options.add(area.code() + " | " + area.name());
+        }
+
+        return comboWithOptions(options);
+    }
+
+    static JComboBox<String> flightCombo() {
+        final List<String> options = new ArrayList<>();
+
+        for (isep.aisafe.flight.domain.Flight flight :
+                isep.aisafe.infrastructure.persistence.PersistenceContext.repositories().flights().findAll()) {
+            options.add(flight.identity().toString());
+        }
+
+        return comboWithOptions(options);
+    }
+
+    static JComboBox<String> pilotFlightPlanCombo() {
+        final List<String> options = new ArrayList<>();
+
+        for (FlightPlan plan : new TestFlightPlanController().authenticatedPilotFlightPlans()) {
+            options.add(plan.identity() + " | " + plan.flightDesignator() + " | " + plan.status());
+        }
+
+        return comboWithOptions(options);
+    }
+
+    static void reloadCustomerCodes(final JComboBox<String> type, final JComboBox<String> target) {
+        final List<String> options = new ArrayList<>();
+
+        if ("Air Transport Company".equals(selected(type))) {
+            for (isep.aisafe.airtransportcompany.domain.AirTransportCompany company :
+                    isep.aisafe.infrastructure.persistence.PersistenceContext.repositories().airTransportCompanies().findAll()) {
+                options.add(company.iataCode() + " | " + company.name());
+            }
+        } else {
+            for (isep.aisafe.aircontrolarea.domain.AirControlArea area :
+                    isep.aisafe.infrastructure.persistence.PersistenceContext.repositories().airControlAreas().findAll()) {
+                options.add(area.code() + " | " + area.name());
+            }
+        }
+
+        options.sort(String::compareTo);
+        target.removeAllItems();
+
+        for (String option : options) {
+            target.addItem(option);
+        }
+
+        if (target.getItemCount() > 0) {
+            target.setSelectedIndex(0);
+        }
+    }
+
+    private static JComboBox<String> comboWithOptions(final List<String> options) {
+        options.sort(String::compareTo);
+
+        final JComboBox<String> combo = new JComboBox<>(new Vector<>(options));
+        combo(combo);
+        return combo;
+    }
+
     static void addField(final JPanel form, final int row, final int col, final String label, final Component component) {
         final JPanel wrap = new JPanel(new BorderLayout(0, 7));
         wrap.setOpaque(false);
@@ -2741,24 +4031,29 @@ final class PanelUi {
         final JPanel p = new JPanel(new GridBagLayout());
         p.setOpaque(false);
 
-        main.setMinimumSize(new Dimension(420, 240));
-        side.setMinimumSize(new Dimension(300, 220));
-        side.setPreferredSize(new Dimension(330, Math.max(320, side.getPreferredSize().height)));
-
         final GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
         c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1;
-        c.weighty = 1;
+        c.weightx = 0.64;
+        c.weighty = 0;
         c.insets = new Insets(0, 0, 0, 22);
         p.add(main, c);
 
         c.gridx = 1;
-        c.weightx = 0;
-        c.weighty = 1;
+        c.weightx = 0.36;
         c.insets = new Insets(0, 0, 0, 0);
         p.add(side, c);
+
+        c.gridx = 0;
+        c.gridy = 1;
+        c.gridwidth = 2;
+        c.weightx = 1;
+        c.weighty = 1;
+        c.insets = new Insets(22, 0, 0, 0);
+        final JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        p.add(spacer, c);
 
         return p;
     }
@@ -2788,7 +4083,7 @@ final class PanelUi {
         body.add(form, c);
 
         c.gridx = 2;
-        c.weightx = 0;
+        c.weightx = 0.25;
         c.insets = new Insets(0, 0, 0, 0);
         body.add(preview, c);
 
@@ -3210,6 +4505,99 @@ final class PanelUi {
         }
     }
 
+
+    static JPanel emptyState(final String icon, final String title, final String subtitle) {
+        final JPanel empty = new JPanel(new GridBagLayout());
+        empty.setOpaque(false);
+
+        final GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.CENTER;
+        c.insets = new Insets(0, 0, 12, 0);
+
+        empty.add(new JLabel(new LineIcon(icon, 42, new java.awt.Color(148, 163, 184))), c);
+
+        c.gridy++;
+        c.insets = new Insets(0, 0, 6, 0);
+
+        final JLabel titleLabel = new JLabel(title);
+        titleLabel.setForeground(UiTheme.TEXT);
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 18f));
+        empty.add(titleLabel, c);
+
+        c.gridy++;
+        c.insets = new Insets(0, 0, 0, 0);
+
+        final JLabel subtitleLabel = new JLabel(subtitle);
+        subtitleLabel.setForeground(UiTheme.MUTED);
+        subtitleLabel.setFont(subtitleLabel.getFont().deriveFont(13f));
+        empty.add(subtitleLabel, c);
+
+        return empty;
+    }
+
+    static JPanel metricPill(final String label,
+                             final String value,
+                             final String icon,
+                             final java.awt.Color color) {
+        final JPanel card = new RoundedPanel(14, new java.awt.Color(248, 250, 252), UiTheme.BORDER, true);
+        card.setLayout(new BorderLayout(12, 0));
+        card.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
+
+        final JLabel iconLabel = new JLabel(new LineIcon(icon, 23, color));
+        iconLabel.setPreferredSize(new Dimension(34, 34));
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(iconLabel, BorderLayout.WEST);
+
+        final JLabel copy = new JLabel(
+                "<html>" +
+                        "<div style='font-size:10px;color:#64748B'>" + html(label) + "</div>" +
+                        "<div style='font-size:15px'><b>" + html(value) + "</b></div>" +
+                        "</html>"
+        );
+        copy.setForeground(UiTheme.TEXT);
+        card.add(copy, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    static JPanel statusPanel(final String title,
+                              final String subtitle,
+                              final String icon,
+                              final java.awt.Color color,
+                              final java.awt.Color background) {
+        final JPanel panel = new RoundedPanel(14, background, new java.awt.Color(226, 232, 240), true);
+        panel.setLayout(new BorderLayout(12, 0));
+        panel.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
+
+        panel.add(new JLabel(new LineIcon(icon, 26, color)), BorderLayout.WEST);
+
+        final JLabel copy = new JLabel(
+                "<html>" +
+                        "<div style='font-size:13px'><b>" + html(title) + "</b></div>" +
+                        "<div style='font-size:11px;color:#64748B;padding-top:3px'>" + html(subtitle) + "</div>" +
+                        "</html>"
+        );
+        copy.setForeground(UiTheme.TEXT);
+        panel.add(copy, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    static String html(final String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+
     static final class Tip {
         final String icon;
         final String title;
@@ -3242,6 +4630,10 @@ final class PanelUi {
 
     static JTextField dateDmy() {
         return new DateTextField("DD-MM-YYYY", java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+    }
+
+    static JTextField timeHm() {
+        return new TimeTextField("HH:mm");
     }
 
     private static final class DateTextField extends JTextField {
@@ -3517,6 +4909,329 @@ final class PanelUi {
             g.fillOval(10, 10, 2, 2);
             g.fillOval(5, 14, 2, 2);
             g.fillOval(10, 14, 2, 2);
+
+            g.dispose();
+        }
+    }
+
+    private static final class TimeTextField extends JTextField {
+        private final java.time.format.DateTimeFormatter formatter =
+                java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+
+        TimeTextField(final String placeholder) {
+            putClientProperty("JTextField.placeholderText", placeholder);
+            putClientProperty("FlatLaf.style", "arc: 10; padding: 0, 34, 0, 10");
+
+            setPreferredSize(new Dimension(260, 42));
+            setMinimumSize(new Dimension(120, 42));
+            setToolTipText("Click the clock icon to select a time");
+
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mousePressed(final java.awt.event.MouseEvent e) {
+                    if (e.getX() >= getWidth() - 36) {
+                        showTimePopup();
+                    }
+                }
+            });
+
+            addKeyListener(new java.awt.event.KeyAdapter() {
+                @Override
+                public void keyPressed(final java.awt.event.KeyEvent e) {
+                    if (e.isAltDown() && e.getKeyCode() == java.awt.event.KeyEvent.VK_DOWN) {
+                        showTimePopup();
+                    }
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(final java.awt.Graphics graphics) {
+            super.paintComponent(graphics);
+
+            final java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
+            final ClockSmallIcon icon = new ClockSmallIcon(17, UiTheme.MUTED);
+            final int iconX = getWidth() - 26;
+            final int iconY = (getHeight() - icon.getIconHeight()) / 2;
+            icon.paintIcon(this, g, iconX, iconY);
+
+            g.dispose();
+        }
+
+        private void showTimePopup() {
+            final javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
+            popup.setBorder(BorderFactory.createLineBorder(UiTheme.BORDER));
+
+            final java.time.LocalTime initialTime = parseCurrentTime();
+            final TimePopupPanel timePanel = new TimePopupPanel(initialTime, selectedTime -> {
+                setText(formatter.format(selectedTime));
+                popup.setVisible(false);
+            });
+
+            popup.add(timePanel);
+            popup.show(this, 0, getHeight() + 4);
+        }
+
+        private java.time.LocalTime parseCurrentTime() {
+            final String value = getText() == null ? "" : getText().trim();
+
+            if (!value.isEmpty()) {
+                try {
+                    return java.time.LocalTime.parse(value, formatter);
+                } catch (RuntimeException ignored) {
+                    // If the typed value is invalid, open the time selector on current time.
+                }
+            }
+
+            final java.time.LocalTime now = java.time.LocalTime.now();
+            return now.withSecond(0).withNano(0);
+        }
+    }
+
+    private static final class TimePopupPanel extends JPanel {
+        private final java.util.function.Consumer<java.time.LocalTime> onSelect;
+        private final TimeSelector hourSelector;
+        private final TimeSelector minuteSelector;
+
+        TimePopupPanel(final java.time.LocalTime initialTime,
+                       final java.util.function.Consumer<java.time.LocalTime> onSelect) {
+            super(new BorderLayout(0, 14));
+
+            this.onSelect = onSelect;
+            this.hourSelector = new TimeSelector("Hour", initialTime.getHour(), 0, 23);
+            this.minuteSelector = new TimeSelector("Minute", initialTime.getMinute(), 0, 59);
+
+            setBackground(UiTheme.CARD);
+            setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+            setPreferredSize(new Dimension(356, 252));
+
+            add(header(), BorderLayout.NORTH);
+            add(center(), BorderLayout.CENTER);
+            add(actions(), BorderLayout.SOUTH);
+        }
+
+        private JPanel header() {
+            final JPanel header = new JPanel(new BorderLayout(10, 0));
+            header.setOpaque(false);
+
+            final JLabel title = new JLabel("Select time", new ClockSmallIcon(18, UiTheme.BLUE), SwingConstants.LEFT);
+            title.setIconTextGap(8);
+            title.setForeground(UiTheme.TEXT);
+            title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
+
+            final JButton now = smallButton("Now");
+            now.setPreferredSize(new Dimension(78, 34));
+            now.addActionListener(e -> {
+                final java.time.LocalTime current = java.time.LocalTime.now().withSecond(0).withNano(0);
+                hourSelector.setValue(current.getHour());
+                minuteSelector.setValue(current.getMinute());
+            });
+
+            header.add(title, BorderLayout.WEST);
+            header.add(now, BorderLayout.EAST);
+
+            return header;
+        }
+
+        private JPanel center() {
+            final JPanel center = new JPanel(new BorderLayout(0, 14));
+            center.setOpaque(false);
+
+            final JPanel selectors = new JPanel(new GridLayout(1, 2, 14, 0));
+            selectors.setOpaque(false);
+            selectors.add(hourSelector);
+            selectors.add(minuteSelector);
+            center.add(selectors, BorderLayout.CENTER);
+
+            final JPanel quickTimes = new JPanel(new GridLayout(1, 4, 8, 0));
+            quickTimes.setOpaque(false);
+            quickTimes.add(quickTime("00:00"));
+            quickTimes.add(quickTime("06:00"));
+            quickTimes.add(quickTime("12:00"));
+            quickTimes.add(quickTime("18:00"));
+            center.add(quickTimes, BorderLayout.SOUTH);
+
+            return center;
+        }
+
+        private JPanel actions() {
+            final JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            actions.setOpaque(false);
+
+            final JButton apply = smallButton("Apply");
+            apply.setPreferredSize(new Dimension(92, 36));
+            apply.setBackground(UiTheme.BLUE);
+            apply.setForeground(java.awt.Color.WHITE);
+            apply.addActionListener(e -> onSelect.accept(selectedTime()));
+
+            actions.add(apply);
+
+            return actions;
+        }
+
+        private JButton quickTime(final String value) {
+            final JButton button = smallButton(value);
+            button.setPreferredSize(new Dimension(72, 34));
+            button.addActionListener(e -> {
+                final java.time.LocalTime parsed = java.time.LocalTime.parse(
+                        value,
+                        java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+                );
+                hourSelector.setValue(parsed.getHour());
+                minuteSelector.setValue(parsed.getMinute());
+            });
+            return button;
+        }
+
+        private JButton smallButton(final String text) {
+            final JButton button = new JButton(text);
+            button.setFocusPainted(false);
+            button.setBorder(BorderFactory.createLineBorder(UiTheme.BORDER));
+            button.setBackground(UiTheme.CARD);
+            button.setForeground(UiTheme.TEXT);
+            button.putClientProperty("FlatLaf.style", "arc: 10");
+            return button;
+        }
+
+        private java.time.LocalTime selectedTime() {
+            return java.time.LocalTime.of(hourSelector.value(), minuteSelector.value());
+        }
+
+        private static final class TimeSelector extends JPanel {
+            private final String title;
+            private final int minimum;
+            private final int maximum;
+            private final JLabel valueLabel = new JLabel("", SwingConstants.CENTER);
+            private Runnable onChange;
+            private int value;
+
+            TimeSelector(final String title, final int initialValue, final int minimum, final int maximum) {
+                super(new BorderLayout(0, 8));
+
+                this.title = title;
+                this.minimum = minimum;
+                this.maximum = maximum;
+                this.value = clamp(initialValue);
+
+                setOpaque(false);
+
+                final JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
+                titleLabel.setForeground(UiTheme.MUTED);
+                titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 12f));
+                add(titleLabel, BorderLayout.NORTH);
+
+                final JPanel box = new RoundedPanel(14, new java.awt.Color(248, 250, 252), UiTheme.BORDER, true);
+                box.setLayout(new BorderLayout(8, 0));
+                box.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+                final JButton minus = selectorButton("−");
+                final JButton plus = selectorButton("+");
+
+                minus.addActionListener(e -> changeBy(-1));
+                plus.addActionListener(e -> changeBy(1));
+
+                valueLabel.setForeground(UiTheme.TEXT);
+                valueLabel.setFont(valueLabel.getFont().deriveFont(Font.BOLD, 32f));
+                valueLabel.setPreferredSize(new Dimension(58, 52));
+
+                box.add(minus, BorderLayout.WEST);
+                box.add(valueLabel, BorderLayout.CENTER);
+                box.add(plus, BorderLayout.EAST);
+
+                add(box, BorderLayout.CENTER);
+
+                refreshText();
+            }
+
+            void setOnChange(final Runnable onChange) {
+                this.onChange = onChange;
+            }
+
+            int value() {
+                return value;
+            }
+
+            void setValue(final int value) {
+                this.value = clamp(value);
+                refreshText();
+
+                if (onChange != null) {
+                    onChange.run();
+                }
+            }
+
+            private void changeBy(final int delta) {
+                int next = value + delta;
+
+                if (next > maximum) {
+                    next = minimum;
+                } else if (next < minimum) {
+                    next = maximum;
+                }
+
+                setValue(next);
+            }
+
+            private int clamp(final int candidate) {
+                return Math.max(minimum, Math.min(maximum, candidate));
+            }
+
+            private void refreshText() {
+                valueLabel.setText(String.format("%02d", value));
+                valueLabel.setToolTipText(title + ": " + String.format("%02d", value));
+            }
+
+            private JButton selectorButton(final String text) {
+                final JButton button = new JButton(text);
+                button.setFocusPainted(false);
+                button.setForeground(UiTheme.BLUE);
+                button.setBackground(java.awt.Color.WHITE);
+                button.setPreferredSize(new Dimension(38, 46));
+                button.setFont(button.getFont().deriveFont(Font.BOLD, 18f));
+                button.setBorder(BorderFactory.createLineBorder(new java.awt.Color(191, 219, 254)));
+                button.putClientProperty("FlatLaf.style", "arc: 12");
+                return button;
+            }
+        }
+    }
+
+    private static final class ClockSmallIcon implements javax.swing.Icon {
+        private final int size;
+        private final java.awt.Color color;
+
+        ClockSmallIcon(final int size, final java.awt.Color color) {
+            this.size = size;
+            this.color = color;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return size;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return size;
+        }
+
+        @Override
+        public void paintIcon(final Component c, final java.awt.Graphics graphics, final int x, final int y) {
+            final java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+
+            g.translate(x, y);
+            g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g.setColor(color);
+            g.setStroke(new java.awt.BasicStroke(1.7f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+
+            final int center = size / 2;
+            final int radius = Math.max(5, size / 2 - 2);
+
+            g.drawOval(center - radius, center - radius, radius * 2, radius * 2);
+            g.drawLine(center, center, center, center - radius + 3);
+            g.drawLine(center, center, center + radius - 4, center + 2);
 
             g.dispose();
         }

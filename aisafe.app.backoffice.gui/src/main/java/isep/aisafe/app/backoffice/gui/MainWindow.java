@@ -254,6 +254,23 @@ public final class MainWindow extends JFrame {
         if (isWeatherProfile(authz)) {
             return new WeatherDashboardPanel(this, hasAny(authz, AisafePermissions.WEATHER_DATA_MANAGEMENT));
         }
+
+        if (hasAny(authz, AisafeRoles.ADMIN) || hasAny(authz, AisafeRoles.BACKOFFICE_OPERATOR)) {
+            return new DashboardPanel(this);
+        }
+
+        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            return new AirCompanyDashboardPanel(this);
+        }
+
+        if (hasAny(authz, AisafePermissions.FLIGHT_CONTROL)) {
+            return new FlightControlDashboardPanel(this);
+        }
+
+        if (hasAny(authz, AisafePermissions.FLIGHT_PLAN_MANAGEMENT)) {
+            return new PilotDashboardPanel(this, hasAny(authz, AisafePermissions.FLIGHT_PLAN_WEATHER_DATA_INSERTION));
+        }
+
         return new DashboardPanel(this);
     }
 
@@ -290,7 +307,8 @@ public final class MainWindow extends JFrame {
         }
         if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
             addModule(navPanel, "Aircraft", aircraftPanel(authz));
-            addModule(navPanel, "Companies", companiesPanel(authz));
+            addModule(navPanel, "Pilots", pilotsPanel(authz));
+            addModule(navPanel, "Flight Routes", flightRoutesPanel(authz));
             addModule(navPanel, "Flight Plans", flightPlansPanel(authz));
             return;
         }
@@ -397,15 +415,30 @@ public final class MainWindow extends JFrame {
             tabs.addTab("Register Aircraft", new RegisterAircraftPanel());
             tabs.addTab("List Fleet", new ListAircraftFleetPanel());
             tabs.addTab("Decommission", new DecommissionAircraftPanel());
-            tabs.addTab("Add Pilot", new AddPilotPanel());
-            tabs.addTab("Pilot Roster", new ListPilotRosterPanel());
-            tabs.addTab("Deactivate Pilot", new DeactivatePilotPanel());
         }
         if (hasAny(authz, AisafeRoles.BACKOFFICE_OPERATOR)) {
             tabs.addTab("Aircraft Model", new RegisterAircraftModelPanel());
             tabs.addTab("Engine Model", new RegisterEngineModelPanel());
         }
         return modulePage("Aircraft", "Manage aircraft, models, engines and fleet status.", tabs);
+    }
+
+    private JPanel pilotsPanel(final AisafeAuthorizationService authz) {
+        final JTabbedPane tabs = moduleTabs();
+        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            tabs.addTab("Add Pilot", new AddPilotPanel());
+            tabs.addTab("Pilot Roster", new ListPilotRosterPanel());
+            tabs.addTab("Deactivate Pilot", new DeactivatePilotPanel());
+        }
+        return modulePage("Pilots", "Manage company pilot roster and pilot availability.", tabs);
+    }
+
+    private JPanel flightRoutesPanel(final AisafeAuthorizationService authz) {
+        final JTabbedPane tabs = moduleTabs();
+        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
+            tabs.addTab("Register Flight Route", new RegisterFlightRoutePanel());
+        }
+        return modulePage("Flight Routes", "Create and manage company flight routes.", tabs);
     }
 
     private JPanel companiesPanel(final AisafeAuthorizationService authz) {
@@ -415,10 +448,7 @@ public final class MainWindow extends JFrame {
             tabs.addTab("Register Collaborator", new RegisterCustomerCollaboratorPanel());
             tabs.addTab("List Collaborators", new ListCustomerCollaboratorsPanel());
         }
-        if (hasAny(authz, AisafePermissions.AIR_COMPANY_CONFIGURATION)) {
-            tabs.addTab("Register Flight Route", new RegisterFlightRoutePanel());
-        }
-        return modulePage("Companies", "Manage companies, collaborators and routes.", tabs);
+        return modulePage("Companies", "Manage companies and collaborators.", tabs);
     }
 
     private JPanel flightPlansPanel(final AisafeAuthorizationService authz) {
