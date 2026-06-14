@@ -44,10 +44,34 @@ public class GenerateSimulationReportUI {
         ConsoleStyle.printSection("Generate Simulation Report");
 
         final String simulationIdentifier = readRequiredText("Simulation identifier: ");
-        final boolean passedValidation = readYesNo("Did the scheduled flight plan pass validation? (y/n): ");
-        final List<SimulationFlightResult> flightResults = readFlightResults();
-        final List<SimulationSafetyViolation> safetyViolations = readSafetyViolations();
         final Path outputDirectory = Path.of(readTextWithDefault("Output directory [reports]: ", "reports"));
+
+        boolean passedValidation;
+        List<SimulationFlightResult> flightResults;
+        List<SimulationSafetyViolation> safetyViolations;
+
+        if (readYesNo("Import data from C Simulation Report file? (y/n): ")) {
+            final String cReportPath = readTextWithDefault(
+                    "Path to C simulation report [scomp-simulation/simulation_report.txt]: ",
+                    "scomp-simulation/simulation_report.txt");
+            try {
+                final isep.aisafe.application.report.SimulationResultFileReader reader =
+                        new isep.aisafe.application.report.SimulationResultFileReader();
+                final isep.aisafe.application.report.SimulationResultFileReader.ParsedData data =
+                        reader.readFile(Path.of(cReportPath));
+                passedValidation = data.passedValidation;
+                flightResults = data.flightResults;
+                safetyViolations = data.safetyViolations;
+                ConsoleStyle.printInfo("Imported " + flightResults.size() + " flights and " + safetyViolations.size() + " violations.");
+            } catch (Exception e) {
+                ConsoleStyle.printWarning("Failed to import C simulation report: " + e.getMessage());
+                return;
+            }
+        } else {
+            passedValidation = readYesNo("Did the scheduled flight plan pass validation? (y/n): ");
+            flightResults = readFlightResults();
+            safetyViolations = readSafetyViolations();
+        }
 
         final Path reportFile = controller.generateSimulationReportFile(
                 simulationIdentifier,
