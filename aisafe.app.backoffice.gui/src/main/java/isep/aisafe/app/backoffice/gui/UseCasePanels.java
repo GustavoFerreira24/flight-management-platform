@@ -78,8 +78,16 @@ import static isep.aisafe.app.backoffice.gui.MainWindow.*;
 
 
 abstract class FullWidthUseCasePanel extends JPanel implements javax.swing.Scrollable {
+    private static final int FULLSCREEN_CONTENT_WIDTH = 1190;
+
     FullWidthUseCasePanel(final java.awt.LayoutManager layout) {
         super(layout);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        final Dimension preferred = super.getPreferredSize();
+        return new Dimension(Math.max(FULLSCREEN_CONTENT_WIDTH, preferred.width), preferred.height);
     }
 
     @Override
@@ -713,6 +721,9 @@ final class RegisterAircraftPanel extends FullWidthUseCasePanel {
                 new PanelUi.Tip("check", "Unique registration", "Each aircraft registration must be unique.", PanelUi.SUCCESS),
                 new PanelUi.Tip("warning", "Seat capacity", "Total seats cannot exceed model capacity.", PanelUi.WARNING),
                 new PanelUi.Tip("info", "Certified engine", "Only certified engines are available for the selected model.", UiTheme.BLUE));
+
+        form.setPreferredSize(new Dimension(740, Math.max(640, form.getPreferredSize().height)));
+        side.setPreferredSize(new Dimension(410, Math.max(640, side.getPreferredSize().height)));
 
         final JPanel workspace = new JPanel(new GridBagLayout());
         workspace.setOpaque(false);
@@ -2863,7 +2874,7 @@ final class RegisterWeatherDataPanel extends FullWidthUseCasePanel {
     }
 }
 
-final class ConsultWeatherDataPanel extends FullWidthUseCasePanel {
+final class ConsultWeatherDataPanel extends JPanel {
     ConsultWeatherDataPanel() {
         super(new BorderLayout(0, 18));
         setOpaque(false);
@@ -2872,38 +2883,90 @@ final class ConsultWeatherDataPanel extends FullWidthUseCasePanel {
         final JTextField day = PanelUi.dateIso();
 
         final JLabel measurementCount = PanelUi.bigValue("0");
-        final JLabel providerCount = PanelUi.bigValue("-");
+        final JLabel providerValue = PanelUi.bigValue("-");
         final JLabel areaValue = PanelUi.bigValue("-");
 
-        final JTable table = new JTable(tableModel("Parameter", "Value", "Unit", "Altitude", "Provider", "Coordinates"));
+        final JTable table = new JTable(tableModel(
+                "Day",
+                "Area",
+                "Provider",
+                "Parameter",
+                "Value",
+                "Unit",
+                "Altitude",
+                "Coordinates"
+        ));
         PanelUi.table(table);
 
-        final JPanel filters = PanelUi.formCard("Weather Query", "Choose the weather day and controlled airspace.");
-        PanelUi.addField(filters, 0, 0, "Air control area *", area);
-        PanelUi.addField(filters, 0, 1, "Weather day *", day);
-        PanelUi.addInfoStrip(filters, 1, "Results are shown as measurement cards and a detailed table.");
+        final DefaultTableModel placeholder = tableModel(
+                "Day",
+                "Area",
+                "Provider",
+                "Parameter",
+                "Value",
+                "Unit",
+                "Altitude",
+                "Coordinates"
+        );
+        placeholder.addRow(new Object[] {
+                "-",
+                "-",
+                "-",
+                "No weather data consulted yet.",
+                "-",
+                "-",
+                "-",
+                "-"
+        });
+        table.setModel(placeholder);
+
+        final JPanel query = PanelUi.formCard(
+                "Weather Query",
+                "Choose the weather day and controlled airspace."
+        );
+        query.setPreferredSize(new Dimension(0, 230));
+        query.setMinimumSize(new Dimension(560, 230));
+
+        PanelUi.addField(query, 0, 0, "Air control area *", area);
+        PanelUi.addField(query, 0, 1, "Weather day *", day);
+        PanelUi.addInfoStrip(query, 1, "Results are shown as measurement cards and a detailed table.");
 
         final JPanel summary = PanelUi.card(new GridBagLayout());
+        summary.setPreferredSize(new Dimension(390, 230));
+        summary.setMinimumSize(new Dimension(350, 230));
+
         final GridBagConstraints sc = new GridBagConstraints();
         sc.gridx = 0;
         sc.gridy = 0;
-        sc.gridwidth = 1;
+        sc.gridwidth = 3;
+        sc.anchor = GridBagConstraints.WEST;
         sc.fill = GridBagConstraints.HORIZONTAL;
         sc.weightx = 1;
-        sc.insets = new Insets(0, 0, 18, 0);
-        summary.add(PanelUi.sectionHeader("Weather Summary", "Updated after consultation.", "cloudSearch"), sc);
+        sc.insets = new Insets(0, 0, 16, 0);
+        summary.add(
+                PanelUi.sectionHeader(
+                        "Weather Summary",
+                        "Updated after consultation.",
+                        "cloud"
+                ),
+                sc
+        );
 
+        sc.gridwidth = 1;
         sc.gridy++;
         sc.fill = GridBagConstraints.BOTH;
-        sc.insets = new Insets(0, 0, 12, 0);
-        summary.add(PanelUi.summaryCard("Measurements", measurementCount, "chart", UiTheme.BLUE, "Records found"), sc);
+        sc.weightx = 1;
+        sc.weighty = 1;
+        sc.insets = new Insets(0, 0, 0, 12);
+        summary.add(compactSummaryCard("Measurements", measurementCount, "chart", UiTheme.BLUE, "Records found"), sc);
 
-        sc.gridy++;
-        summary.add(PanelUi.summaryCard("Provider", providerCount, "cloud", new java.awt.Color(2, 132, 199), "Data source"), sc);
+        sc.gridx++;
+        sc.insets = new Insets(0, 0, 0, 12);
+        summary.add(compactSummaryCard("Provider", providerValue, "cloud", new java.awt.Color(2, 132, 199), "Data source"), sc);
 
-        sc.gridy++;
+        sc.gridx++;
         sc.insets = new Insets(0, 0, 0, 0);
-        summary.add(PanelUi.summaryCard("Area", areaValue, "map", new java.awt.Color(79, 70, 229), "Selected code"), sc);
+        summary.add(compactSummaryCard("Area", areaValue, "map", new java.awt.Color(79, 70, 229), "Selected code"), sc);
 
         final JPanel top = new JPanel(new GridBagLayout());
         top.setOpaque(false);
@@ -2915,7 +2978,7 @@ final class ConsultWeatherDataPanel extends FullWidthUseCasePanel {
         tc.weightx = 0.68;
         tc.weighty = 1;
         tc.insets = new Insets(0, 0, 0, 22);
-        top.add(filters, tc);
+        top.add(query, tc);
 
         tc.gridx = 1;
         tc.weightx = 0.32;
@@ -2923,46 +2986,125 @@ final class ConsultWeatherDataPanel extends FullWidthUseCasePanel {
         top.add(summary, tc);
 
         final JPanel tableCard = PanelUi.card(new BorderLayout(0, 16));
-        tableCard.add(PanelUi.sectionHeader("Measurement Details", "Each row represents a weather measurement.", "cloud"), BorderLayout.NORTH);
-        tableCard.add(new JScrollPane(table), BorderLayout.CENTER);
+        tableCard.add(
+                PanelUi.sectionHeader(
+                        "Measurement Details",
+                        "Detailed weather measurements returned by the query.",
+                        "grid"
+                ),
+                BorderLayout.NORTH
+        );
 
-        final JPanel content = new JPanel(new BorderLayout(0, 22));
+        final JScrollPane tableScroll = new JScrollPane(table);
+        tableScroll.setBorder(BorderFactory.createLineBorder(UiTheme.BORDER));
+        tableScroll.getVerticalScrollBar().setUnitIncrement(16);
+        tableCard.add(tableScroll, BorderLayout.CENTER);
+
+        final JPanel content = new JPanel(new GridBagLayout());
         content.setOpaque(false);
-        content.add(top, BorderLayout.NORTH);
-        content.add(tableCard, BorderLayout.CENTER);
+
+        final GridBagConstraints gc = new GridBagConstraints();
+        gc.gridx = 0;
+        gc.gridy = 0;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.weightx = 1;
+        gc.weighty = 0;
+        gc.insets = new Insets(0, 0, 22, 0);
+        content.add(top, gc);
+
+        gc.gridy++;
+        gc.fill = GridBagConstraints.BOTH;
+        gc.weightx = 1;
+        gc.weighty = 1;
+        gc.insets = new Insets(0, 0, 0, 0);
+        content.add(tableCard, gc);
+
         add(content, BorderLayout.CENTER);
 
         add(PanelUi.actions(
                 PanelUi.secondary("Clear", e -> {
                     PanelUi.clear(day);
+
                     if (area.getItemCount() > 0) {
                         area.setSelectedIndex(0);
                     }
 
-                    table.setModel(tableModel("Parameter", "Value", "Unit", "Altitude", "Provider", "Coordinates"));
-                    PanelUi.table(table);
-
                     measurementCount.setText("0");
-                    providerCount.setText("-");
+                    providerValue.setText("-");
                     areaValue.setText("-");
+
+                    final DefaultTableModel clearModel = tableModel(
+                            "Day",
+                            "Area",
+                            "Provider",
+                            "Parameter",
+                            "Value",
+                            "Unit",
+                            "Altitude",
+                            "Coordinates"
+                    );
+
+                    clearModel.addRow(new Object[] {
+                            "-",
+                            "-",
+                            "-",
+                            "No weather data consulted yet.",
+                            "-",
+                            "-",
+                            "-",
+                            "-"
+                    });
+
+                    table.setModel(clearModel);
+                    PanelUi.table(table);
                 }),
                 PanelUi.primary("Consult", e -> runSafely(() -> {
+                    final String selectedArea = firstPart(selected(area));
+
                     final WeatherData data = new ConsultWeatherDataController()
-                            .consultWeatherData(required(day, "Day"), firstPart(selected(area)))
+                            .consultWeatherData(required(day, "Weather day"), selectedArea)
                             .orElseThrow(() -> new IllegalArgumentException("No weather data found."));
 
-                    final DefaultTableModel model = tableModel("Parameter", "Value", "Unit", "Altitude", "Provider", "Coordinates");
+                    final DefaultTableModel model = tableModel(
+                            "Day",
+                            "Area",
+                            "Provider",
+                            "Parameter",
+                            "Value",
+                            "Unit",
+                            "Altitude",
+                            "Coordinates"
+                    );
 
                     String provider = "-";
-                    for (WeatherMeasurement m : data.measurements()) {
-                        provider = String.valueOf(m.providerType());
+
+                    for (WeatherMeasurement measurement : data.measurements()) {
+                        if ("-".equals(provider) && measurement.providerType() != null) {
+                            provider = String.valueOf(measurement.providerType());
+                        }
+
                         model.addRow(new Object[] {
-                                m.parameter(),
-                                m.value(),
-                                m.unit(),
-                                m.altitude(),
-                                m.providerType(),
-                                m.coordinates()
+                                data.day(),
+                                data.airControlAreaCode(),
+                                measurement.providerType(),
+                                measurement.parameter(),
+                                measurement.value(),
+                                measurement.unit(),
+                                measurement.altitude(),
+                                measurement.coordinates()
+                        });
+                    }
+
+                    if (data.measurements().isEmpty()) {
+                        model.addRow(new Object[] {
+                                data.day(),
+                                data.airControlAreaCode(),
+                                "-",
+                                "No measurements found for this weather record.",
+                                "-",
+                                "-",
+                                "-",
+                                "-"
                         });
                     }
 
@@ -2970,10 +3112,52 @@ final class ConsultWeatherDataPanel extends FullWidthUseCasePanel {
                     PanelUi.table(table);
 
                     measurementCount.setText(String.valueOf(data.measurements().size()));
-                    providerCount.setText(provider);
+                    providerValue.setText(provider);
                     areaValue.setText(String.valueOf(data.airControlAreaCode()));
+
+                    showSuccess(this, "Weather data loaded successfully.");
                 }))
         ), BorderLayout.SOUTH);
+    }
+
+    private static JPanel compactSummaryCard(final String title,
+                                             final JLabel value,
+                                             final String icon,
+                                             final java.awt.Color color,
+                                             final String subtitle) {
+        final JPanel card = new RoundedPanel(14, java.awt.Color.WHITE, UiTheme.BORDER, true);
+        card.setLayout(new BorderLayout(10, 0));
+        card.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        card.setPreferredSize(new Dimension(0, 86));
+        card.setMinimumSize(new Dimension(120, 86));
+
+        final JLabel iconLabel = new JLabel(new LineIcon(icon, 22, color));
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        iconLabel.setPreferredSize(new Dimension(34, 34));
+        card.add(iconLabel, BorderLayout.WEST);
+
+        final JLabel text = new JLabel(
+                "<html>" +
+                        "<div style='font-size:10px;color:#64748B'><b>" + title + "</b></div>" +
+                        "<div style='font-size:10px;color:" + hex(color) + ";padding-top:2px'>" + subtitle + "</div>" +
+                        "</html>"
+        );
+
+        value.setFont(value.getFont().deriveFont(Font.BOLD, 21f));
+        value.setHorizontalAlignment(SwingConstants.LEFT);
+
+        final JPanel copy = new JPanel(new BorderLayout(0, 1));
+        copy.setOpaque(false);
+        copy.add(text, BorderLayout.NORTH);
+        copy.add(value, BorderLayout.CENTER);
+
+        card.add(copy, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private static String hex(final java.awt.Color color) {
+        return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 }
 
