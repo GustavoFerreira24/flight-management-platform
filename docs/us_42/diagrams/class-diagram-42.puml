@@ -33,6 +33,7 @@ class ImportBulkWeatherDataController <<Controller>> {
     - ensureReadableFile(file : Path) : void
     - weatherDataRepository() : WeatherDataRepository
     - airControlAreaRepository() : AirControlAreaRepository
+    - weatherProviderRepository() : WeatherProviderRepository
 }
 
 note right of ImportBulkWeatherDataController
@@ -137,7 +138,7 @@ class WeatherData <<Aggregate Root>> {
     - day : LocalDate
     - airControlAreaCode : AirControlAreaCode
     - measurements : List<WeatherMeasurement>
-    + addMeasurement(provider, parameter, value, unit, altitude, coordinates) : void
+    + addMeasurement(provider : WeatherProvider, providerType : WeatherProviderType, parameter : WeatherParameter, value : double, unit : WeatherUnit, altitude : double, coordinates : WeatherCoordinates) : void
     + measurements() : List<WeatherMeasurement>
 }
 

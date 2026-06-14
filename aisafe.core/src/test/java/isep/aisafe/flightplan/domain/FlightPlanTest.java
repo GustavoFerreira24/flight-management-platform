@@ -48,6 +48,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests the flight plan aggregate behavior relevant to weather data association and validation lifecycle.
+ */
 class FlightPlanTest {
 
     /**
@@ -74,12 +77,19 @@ class FlightPlanTest {
 
         // Assert
         assertEquals(FlightPlanIdentifier.valueOf("FP001"), flightPlan.identity());
+        assertEquals(FlightPlanIdentifier.valueOf("FP001"), flightPlan.identifier());
         assertSame(flight, flightPlan.flight());
         assertSame(aircraft, flightPlan.aircraft());
         assertSame(pilot, flightPlan.pilot());
         assertEquals(FlightPlanStatus.DRAFT, flightPlan.status());
         assertEquals(fuelQuantity, flightPlan.fuelQuantity());
+        assertEquals(LocalDateTime.of(2027, 1, 10, 10, 0), flightPlan.flightDepartureDateTime());
+        assertEquals("TP123", flightPlan.flightDesignator());
+        assertEquals("CS-TXA", flightPlan.aircraftRegistration());
+        assertEquals("ABC", flightPlan.pilotIdentifier());
         assertTrue(flightPlan.weatherDataIds().isEmpty());
+        assertEquals(0, flightPlan.weatherDataCount());
+        assertFalse(flightPlan.hasWeatherData());
         assertTrue(flightPlan.canBeTested());
     }
 
@@ -99,8 +109,28 @@ class FlightPlanTest {
 
         // Assert
         assertEquals(1, flightPlan.weatherDataIds().size());
+        assertEquals(1, flightPlan.weatherDataCount());
         assertEquals(weatherData.identity(), flightPlan.weatherDataIds().get(0));
+        assertTrue(flightPlan.hasWeatherData());
         assertEquals(FlightPlanStatus.DRAFT, flightPlan.status());
+    }
+
+    /**
+     * Purpose: verify aggregate identity comparison.
+     * Scenario: compare flight plans with the same and different identifiers.
+     * Expected output: sameAs returns true only when the aggregate identity matches.
+     */
+    @Test
+    void ensureSameAsUsesFlightPlanIdentifier() {
+        // Arrange
+        final FlightPlan first = flightPlan("FP001");
+        final FlightPlan second = flightPlan("FP001");
+        final FlightPlan third = flightPlan("FP002");
+
+        // Act / Assert
+        assertTrue(first.sameAs(second));
+        assertFalse(first.sameAs(third));
+        assertFalse(first.sameAs("not a flight plan"));
     }
 
     /**
@@ -392,9 +422,24 @@ class FlightPlanTest {
         ));
     }
 
+    /**
+     * Purpose: verify the persistence constructor remains available.
+     * Scenario: instantiate a flight plan through its protected no-argument constructor.
+     * Expected output: an instance can be created for JPA without calling the public constructor.
+     */
+    @Test
+    void ensureFlightPlanPersistenceConstructorIsAvailable() {
+        // Arrange / Act / Assert
+        assertNotNull(new FlightPlan());
+    }
+
     private FlightPlan flightPlan() {
+        return flightPlan("FP001");
+    }
+
+    private FlightPlan flightPlan(final String identifier) {
         return new FlightPlan(
-                FlightPlanIdentifier.valueOf("FP001"),
+                FlightPlanIdentifier.valueOf(identifier),
                 flight(),
                 aircraft(),
                 pilot(),

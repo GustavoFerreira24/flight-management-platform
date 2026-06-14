@@ -56,6 +56,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests weather data insertion in flight plan application behavior.
+ */
 class InsertWeatherDataInFlightPlanControllerTest {
 
     /**

@@ -67,7 +67,7 @@ The `ConsultWeatherDataController` coordinates the use case:
 6. Retrieves weather data through `WeatherDataRepository.findByDayAndAirControlArea(...)`.
 7. Returns `Optional<WeatherData>` so the UI can distinguish found data from an empty result.
 
-The Backoffice console exposes consultation in the Weather Person menu and through a weather consultation menu for authenticated users that have consultation permission but no weather management menu.
+The Backoffice console exposes consultation in the Weather Person menu, in the Pilot flight plan management menu, in the Flight Control menu, and through a weather consultation menu for authenticated users that have consultation permission but no more specific operational menu.
 
 ### 4.2. Supported Filters
 
@@ -171,8 +171,8 @@ Weather data consultation is available to users with `WEATHER_DATA_CONSULTATION`
 | Role | Access |
 |------|--------|
 | `WEATHER_PERSON` | Weather Management Console |
-| `PILOT` | Weather Consultation Console |
-| `FLIGHT_CONTROL_OPERATOR` | Weather Consultation Console |
+| `PILOT` | Flight Plan Management Console |
+| `FLIGHT_CONTROL_OPERATOR` | Flight Control Console |
 
 ### Consultation flow
 

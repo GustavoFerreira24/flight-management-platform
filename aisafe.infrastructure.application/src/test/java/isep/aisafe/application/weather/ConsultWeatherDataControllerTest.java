@@ -22,6 +22,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests weather data consultation application behavior.
+ */
 class ConsultWeatherDataControllerTest {
 
     /**

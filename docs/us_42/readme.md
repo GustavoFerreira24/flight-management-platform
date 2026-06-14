@@ -248,7 +248,7 @@ For an invalid file path, unsupported extension, malformed CSV/XLSX structure or
 
 ## 7. Observations
 
-The current CSV parser is intentionally simple and does not support quoted commas. This is acceptable for the initial development format described by US042. The supplied XLSX importer is intentionally scoped to the `WeatherData_v0` Wind sheet layout. Future provider-specific formats should be added as new `WeatherDataImporter` implementations instead of adding provider-specific logic to `ImportBulkWeatherDataController`.
+The current CSV parser is intentionally simple and does not support quoted commas. This is acceptable for the initial development format described by US042. The supplied XLSX importer is intentionally scoped to the provided `WeatherData_v0` workbooks, where the `Wind` worksheet is the second worksheet in the file. Future provider-specific formats should be added as new `WeatherDataImporter` implementations instead of adding provider-specific logic to `ImportBulkWeatherDataController`.
 
 Manual weather registration uses the authenticated username as provider name and `MANUAL_INPUT` as provider type. CSV import keeps provider name and provider type from the file, allowing records such as `IPMA/SATELLITE`, `IPMA/GROUND_SENSOR` or `IPMA/BALLOON`. In both cases, the provider must already be registered and must support the submitted provider type.
 

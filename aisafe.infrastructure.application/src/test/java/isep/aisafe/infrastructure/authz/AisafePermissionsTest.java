@@ -8,6 +8,9 @@ import java.lang.reflect.Modifier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests AISafe permission constants used by protected application actions.
+ */
 class AisafePermissionsTest {
 
     /**

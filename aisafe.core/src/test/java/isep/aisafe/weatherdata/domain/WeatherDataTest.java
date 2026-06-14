@@ -7,6 +7,9 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests weather data aggregate and measurement domain behavior.
+ */
 class WeatherDataTest {
 
     /**
@@ -263,6 +266,18 @@ class WeatherDataTest {
         assertTrue(first.sameAs(second));
         assertFalse(first.sameAs(third));
         assertFalse(first.sameAs("not weather data"));
+    }
+
+    /**
+     * Purpose: verify persistence constructors remain available.
+     * Scenario: instantiate weather aggregate and measurement through protected no-argument constructors.
+     * Expected output: instances can be created for JPA without using domain factory methods.
+     */
+    @Test
+    void ensureWeatherPersistenceConstructorsAreAvailable() {
+        // Arrange / Act / Assert
+        assertNotNull(new WeatherData());
+        assertNotNull(new WeatherMeasurement());
     }
 
     private WeatherData weatherData() {

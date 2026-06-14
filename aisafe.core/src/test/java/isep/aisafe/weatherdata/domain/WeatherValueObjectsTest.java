@@ -7,6 +7,9 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests weather data value objects and weather provider domain behavior.
+ */
 class WeatherValueObjectsTest {
 
     /**
@@ -110,6 +113,27 @@ class WeatherValueObjectsTest {
     }
 
     /**
+     * Purpose: verify weather provider identity behavior.
+     * Scenario: create provider identities with equal and ordered values.
+     * Expected output: identity accessors, comparison and hash code use the normalized provider name.
+     */
+    @Test
+    void ensureWeatherProviderIdUsesNormalizedProviderName() {
+        // Arrange
+        final WeatherProviderId first = WeatherProviderId.valueOf(" ipma ");
+        final WeatherProviderId second = WeatherProviderId.valueOf("IPMA");
+        final WeatherProviderId third = WeatherProviderId.valueOf("METEO");
+
+        // Act / Assert
+        assertEquals(first, second);
+        assertEquals(first.hashCode(), second.hashCode());
+        assertNotEquals(first, third);
+        assertTrue(first.compareTo(third) < 0);
+        assertEquals("IPMA", first.toString());
+        assertThrows(IllegalArgumentException.class, () -> WeatherProviderId.valueOf(" "));
+    }
+
+    /**
      * Purpose: verify weather provider behavior.
      * Scenario: create providers with normalized names and supported types.
      * Expected output: provider exposes its identity and supported acquisition types.
@@ -180,5 +204,18 @@ class WeatherValueObjectsTest {
         assertNotEquals(windSpeed, "not a parameter");
         assertThrows(IllegalArgumentException.class, () -> WeatherParameter.valueOf("cloudiness"));
         assertThrows(IllegalArgumentException.class, () -> WeatherParameter.valueOf(" "));
+    }
+
+    /**
+     * Purpose: verify persistence constructors remain available.
+     * Scenario: instantiate value objects/entities through their protected no-argument constructors.
+     * Expected output: instances can be created for JPA without invoking public factories.
+     */
+    @Test
+    void ensureWeatherProviderPersistenceConstructorsAreAvailable() {
+        // Arrange / Act / Assert
+        assertNotNull(new WeatherProvider());
+        assertNotNull(new WeatherProviderId());
+        assertNotNull(new WeatherProviderType());
     }
 }
