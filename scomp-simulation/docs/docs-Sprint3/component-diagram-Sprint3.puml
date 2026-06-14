@@ -1,0 +1,62 @@
+@startuml
+title SCOMP Sprint 3 - Hybrid Simulation
+
+top to bottom direction
+
+actor "Terminal User" as User
+
+rectangle "hybrid_main.c\nStarts the hybrid simulator" as Main
+
+rectangle "Parent Process\nhybrid_simulation.c" as Parent
+
+rectangle "Scheduler Thread\nControls timesteps" as Scheduler
+
+rectangle "Safety Detection Thread\nChecks safety violations" as SafetyThread
+
+rectangle "Report Thread\nBuilds the final report" as ReportThread
+
+rectangle "Flight Child Processes\nCreated with fork()" as FlightChildren
+
+rectangle "Shared Memory\nshared_simulation.c\nStores flight plans and position updates" as SharedMemory
+
+rectangle "Semaphores\nhybrid_sync.c\nSynchronize each timestep" as Semaphores
+
+rectangle "Condition Variable + Mutex\nsafety_report_notifier.c\nNotifies report thread when a violation is found" as Notifier
+
+rectangle "Safety Monitor\nsafety_monitor.c" as SafetyMonitor
+
+rectangle "Report Generator\nreport.c" as ReportGenerator
+
+rectangle "simulation_report.txt\nFinal report file" as ReportFile
+
+User --> Main
+Main --> Parent
+
+Parent --> Scheduler
+Parent --> SafetyThread
+Parent --> ReportThread
+Parent --> FlightChildren
+
+Parent --> SharedMemory : creates/maps
+Parent --> Semaphores : creates/opens
+
+Scheduler --> Semaphores : releases next timestep
+Semaphores --> FlightChildren : allows one step
+
+FlightChildren --> SharedMemory : writes position updates
+FlightChildren --> Semaphores : signals update ready
+
+Scheduler --> SharedMemory : reads completed updates
+Scheduler --> Semaphores : signals timestep complete
+Semaphores --> SafetyThread : allows safety check
+
+SafetyThread --> SharedMemory : reads positions
+SafetyThread --> SafetyMonitor : checks violations
+SafetyThread --> Notifier : sends violation event
+SafetyThread --> FlightChildren : SIGUSR1 notification
+
+ReportThread --> Notifier : waits for events
+ReportThread --> ReportGenerator : adds violations/results
+ReportGenerator --> ReportFile : writes final report
+
+@enduml
