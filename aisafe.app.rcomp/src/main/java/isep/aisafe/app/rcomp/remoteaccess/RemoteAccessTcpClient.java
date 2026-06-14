@@ -144,6 +144,8 @@ public final class RemoteAccessTcpClient {
             System.out.println("2 - Register aircraft");
             System.out.println("3 - Decommission aircraft");
             System.out.println("4 - Create flight route");
+            System.out.println("5 - Create flight");
+            System.out.println("6 - Manage pilots");
             System.out.println("8 - Send raw command");
             System.out.println("9 - Help");
             System.out.println("0 - Logout");
@@ -167,6 +169,12 @@ public final class RemoteAccessTcpClient {
                 case "4":
                     createFlightRoute(consoleIn, serverIn, serverOut);
                     break;
+                case "5":
+                    createFlight(consoleIn, serverIn, serverOut);
+                    break;
+                case "6":
+                    managePilotsMenu(consoleIn, serverIn, serverOut);
+                    break;
                 case "8":
                     sendRawCommand(consoleIn, serverIn, serverOut);
                     break;
@@ -175,6 +183,46 @@ public final class RemoteAccessTcpClient {
                     break;
                 case "0":
                     logout(serverIn, serverOut);
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Invalid option.");
+                    break;
+            }
+        }
+    }
+
+    private static void managePilotsMenu(
+            final BufferedReader consoleIn,
+            final BufferedReader serverIn,
+            final PrintWriter serverOut) throws IOException {
+
+        boolean running = true;
+
+        while (running) {
+            System.out.println();
+            System.out.println("=== Manage Pilots ===");
+            System.out.println("1 - Add pilot to roster");
+            System.out.println("2 - List pilot roster");
+            System.out.println("3 - Delete / Deactivate pilot");
+            System.out.println("0 - Back");
+
+            final String option = prompt(consoleIn, "Option");
+            if (option == null) {
+                return;
+            }
+
+            switch (option) {
+                case "1":
+                    addPilot(consoleIn, serverIn, serverOut);
+                    break;
+                case "2":
+                    printResponse(sendCommand(serverIn, serverOut, "LIST_PILOT_ROSTER"));
+                    break;
+                case "3":
+                    deactivatePilot(consoleIn, serverIn, serverOut);
+                    break;
+                case "0":
                     running = false;
                     break;
                 default:
@@ -312,6 +360,41 @@ public final class RemoteAccessTcpClient {
                 serverOut,
                 joinCommand("CREATE_ROUTE", routeDesignator, departureAirportIcao, destinationAirportIcao)
         ));
+    }
+
+    private static void createFlight(
+            final BufferedReader consoleIn,
+            final BufferedReader serverIn,
+            final PrintWriter serverOut) throws IOException {
+
+        final String routeDesignator = prompt(consoleIn, "Route designator");
+        final String flightDesignator = prompt(consoleIn, "Flight designator");
+        final String departureDay = prompt(consoleIn, "Departure day");
+        final String departureTime = prompt(consoleIn, "Departure time");
+
+        printResponse(sendCommand(
+                serverIn,
+                serverOut,
+                joinCommand("CREATE_FLIGHT", routeDesignator, flightDesignator, departureDay, departureTime)
+        ));
+    }
+
+    private static void addPilot(
+            final BufferedReader consoleIn,
+            final BufferedReader serverIn,
+            final PrintWriter serverOut) throws IOException {
+
+        final String pilotId = prompt(consoleIn, "Pilot ID");
+        printResponse(sendCommand(serverIn, serverOut, joinCommand("ADD_PILOT", pilotId)));
+    }
+
+    private static void deactivatePilot(
+            final BufferedReader consoleIn,
+            final BufferedReader serverIn,
+            final PrintWriter serverOut) throws IOException {
+
+        final String pilotId = prompt(consoleIn, "Pilot ID");
+        printResponse(sendCommand(serverIn, serverOut, joinCommand("DEACTIVATE_PILOT", pilotId)));
     }
 
     private static void sendRawCommand(
