@@ -16,6 +16,7 @@ participant "aircraftRepo\n:AircraftRepository" as ARepo
 participant "weatherDataRepo\n:WeatherDataRepository" as WRepo
 participant "<<external>>\n:CSimulationModule" as CSim
 participant "simulation\n:Simulation" as Sim
+participant "report\n:SimulationReport" as Report
 
 FCO -> UI : request simulation execution
 UI -> C : executeSimulation(simulationId)
@@ -41,7 +42,8 @@ C -> Sim : concludeWith(simulationResults)
 activate Sim
 Sim -> Sim : recordFlightExecutions(...)
 Sim -> Sim : recordSafetyViolations(...)
-Sim -> Sim : generateReport(...)
+Sim -> Report ++ : generate from flight executions and violations
+Report --> Sim : simulation report
 Sim -> Sim : validateInvariants()
 deactivate Sim
 

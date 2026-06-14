@@ -17,13 +17,24 @@ control ":SimulationReportFileWriter" as Writer
 participant "report\n:SimulationReport" as Report
 participant "reportFile\n:Path" as ReportFile
 
+participant "reader\n:SimulationResultFileReader" as Reader
+
 FCO -> UI : request simulation report generation
-UI -> FCO : ask simulation identifier and validation result
-FCO -> UI : submit simulation metadata
-UI -> FCO : ask simulated flight results
-FCO -> UI : submit flight identifiers and statuses
-UI -> FCO : ask safety violations
-FCO -> UI : submit violation timestamp, position and description
+UI -> FCO : ask to import from C simulation report
+alt import from file
+    FCO -> UI : confirm import and provide file path
+    UI -> Reader ++ : readFile(filePath)
+    Reader -> Reader : parse file
+    Reader --> UI -- : ParsedData (flights, violations, validationResult)
+else enter manually
+    UI -> FCO : ask simulation identifier and validation result
+    FCO -> UI : submit simulation metadata
+    UI -> FCO : ask simulated flight results
+    FCO -> UI : submit flight identifiers and statuses
+    UI -> FCO : ask safety violations
+    FCO -> UI : submit violation timestamp, position and description
+end
+
 UI -> FCO : ask output directory
 FCO -> UI : submit output directory or default
 

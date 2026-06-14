@@ -1,3 +1,4 @@
+@startuml
 skinparam {
     BackgroundColor white
     RoundCorner 8
@@ -46,9 +47,9 @@ package "Simulation Aggregate" {
         value
     }
 
-    class Report <<Value Object>> {
+    class SimulationReport <<Value Object>> {
         totalFlights
-        result
+        passedValidation
         generatedAt
     }
 
@@ -75,10 +76,12 @@ package "Simulation Aggregate" {
         longitude
     }
 
-    Simulation *-- Report
+    Simulation *-- SimulationReport
     Simulation *-- SafetyViolation
     Simulation *-- FlightExecution
     Simulation *-- SimulationStatus
+    SimulationReport --> FlightExecution
+    SimulationReport --> SafetyViolation
     SafetyViolation "1" --> "*" FlightExecution
     FlightExecution *-- AircraftPosition
     AircraftPosition *-- Coordinates

@@ -47,11 +47,11 @@ The minimum information needed to generate the report is:
 
 ### 3.1 Data Source Boundary
 
-The current implementation does not automatically read simulation results from the C/SCOMP simulator, shared memory, logs, sockets or a database table. The available Java codebase does not yet include a persisted `Simulation` aggregate or a simulation result repository.
+The simulation execution is performed by an external C component (SCOMP). Instead of requiring manual input for simulation results, the Java implementation now features a file-based integration boundary. The C component generates a text report (`simulation_report.txt` from US109) containing the simulation outcome.
 
-For this reason, the current console UI collects the result data from the Flight Control Operator and passes it to the application controller. This is an interim boundary that allows the report-generation rules, format, authorization and file storage to be implemented and tested independently from the future simulation integration.
+The Java application provides an adapter (`SimulationResultFileReader`) that parses this C-generated report and extracts the necessary domain data (flight execution statuses, safety violations, and validation result). The UI allows the Flight Control Operator to either import this file automatically or enter the data manually as a fallback.
 
-The intended future integration point is to replace the manual UI data collection with an adapter/provider that obtains concluded simulation results from the real simulation component or from persisted simulation data. The controller and domain report objects can remain stable because they already receive structured result data.
+In the global domain model, the generated report belongs to the `Simulation` aggregate as `SimulationReport`, produced from `FlightExecution` and `SafetyViolation` data. The current Java implementation does not yet include the full persisted `Simulation` aggregate, so `SimulationFlightResult` and `SimulationSafetyViolation` are temporary structured inputs used by the report-generation boundary. They correspond to the data that will later come from `FlightExecution` and `SafetyViolation`.
 
 ### 3.2 Validation Result Rule
 
@@ -76,12 +76,13 @@ The `GenerateSimulationReportController` coordinates the use case:
 
 ### 4.2 Main Classes
 
-- `SimulationReport`: immutable report object with simulation identifier, generation timestamp, validation result, flight execution statuses and safety violations.
-- `SimulationFlightResult`: immutable value object representing one simulated flight and its final execution status.
-- `SimulationSafetyViolation`: immutable value object representing one violation event with timestamp, position and description.
+- `SimulationReport`: immutable report concept generated for a concluded simulation, with simulation identifier, generation timestamp, validation result, flight execution statuses and safety violations.
+- `SimulationFlightResult`: temporary structured input representing the execution status data of one simulated flight.
+- `SimulationSafetyViolation`: temporary structured input representing one violation event with timestamp, position and description.
 - `SimulationReportGenerator`: creates `SimulationReport` instances from result data.
 - `SimulationReportRenderer`: renders `SimulationReport` as plain text.
 - `SimulationReportFileWriter`: writes rendered reports to the filesystem.
+- `SimulationResultFileReader`: adapter that parses C simulation reports (`simulation_report.txt`) into domain data.
 - `GenerateSimulationReportController`: application controller that coordinates authorization, generation, rendering and storage.
 - `GenerateSimulationReportUI`: console UI available from the Flight Control menu.
 
@@ -178,14 +179,20 @@ The UI is available in the Flight Control menu:
 Generate Simulation Report (US111)
 ```
 
-The current UI asks for:
+The current UI asks the user if they want to import data from a C Simulation Report file.
 
-- simulation identifier;
+**If the user chooses to import:**
+- The system asks for the file path (defaulting to `scomp-simulation/simulation_report.txt`).
+- The system parses the file automatically.
+
+**If the user chooses manual entry:**
 - validation result;
 - number of simulated flights;
 - each simulated flight identifier and execution status;
 - number of safety violations;
 - each violation timestamp, position and description;
+
+Finally, in both flows, it asks for:
 - output directory, with `reports` as default.
 
 ### 6.2 User Feedback
@@ -243,11 +250,7 @@ Implemented in `GenerateSimulationReportControllerTest.ensureExecuteRequiresFlig
 
 Implemented in `SimulationReportTest.ensureSimulationReportKeepsDefensiveCopies`, `SimulationReportTest.ensureRequiredSimulationReportDataIsValidated`, `SimulationReportTest.ensureFlightResultRequiredDataIsValidated` and `SimulationReportTest.ensureSafetyViolationRequiredDataIsValidated`.
 
-## 8. Observations
-
-The current implementation intentionally separates report generation from simulation execution. This avoids adding fake simulation behaviour to the Java application and keeps the use case focused on the acceptance criteria for US111.
-
-The main limitation is the current data source. Since there is no implemented Java repository or adapter for concluded simulation results, the console UI collects the result data manually. When the simulation execution/integration layer becomes available, the UI can be changed to select a concluded simulation and the controller can receive data from a `SimulationResultProvider` or similar adapter.
+The current implementation separates report generation from simulation execution. By introducing the `SimulationResultFileReader`, the system bridges the gap between the C and Java components using the filesystem as an integration boundary, avoiding the need for manual data entry while keeping the domain model completely decoupled from the C simulator internals.
 
 ## 9. Tests
 

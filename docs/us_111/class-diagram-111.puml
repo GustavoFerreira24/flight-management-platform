@@ -27,6 +27,10 @@ class GenerateSimulationReportController <<Controller>> {
     + generateSimulationReportFile(simulationIdentifier : String, passedValidation : boolean, flightResults : Iterable<SimulationFlightResult>, safetyViolations : Iterable<SimulationSafetyViolation>, outputDirectory : Path) : Path
 }
 
+class SimulationResultFileReader <<Adapter>> {
+    + readFile(filePath : Path) : ParsedData
+}
+
 class SimulationReportGenerator <<Service>> {
     + generate(simulationIdentifier : String, passedValidation : boolean, flightResults : Iterable<SimulationFlightResult>, safetyViolations : Iterable<SimulationSafetyViolation>, generatedAt : LocalDateTime) : SimulationReport
 }
@@ -55,14 +59,14 @@ class SimulationReport <<Value Object>> {
     + safetyViolations() : List<SimulationSafetyViolation>
 }
 
-class SimulationFlightResult <<Value Object>> {
+class SimulationFlightResult {
     - flightIdentifier : String
     - executionStatus : String
     + flightIdentifier() : String
     + executionStatus() : String
 }
 
-class SimulationSafetyViolation <<Value Object>> {
+class SimulationSafetyViolation {
     - timestamp : LocalDateTime
     - position : String
     - description : String
@@ -80,6 +84,7 @@ class AisafePermissions <<Permissions>> {
 }
 
 GenerateSimulationReportUI --> GenerateSimulationReportController
+GenerateSimulationReportUI --> SimulationResultFileReader
 GenerateSimulationReportUI --> SimulationFlightResult
 GenerateSimulationReportUI --> SimulationSafetyViolation
 
