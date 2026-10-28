@@ -1,107 +1,133 @@
-# <span style="color:#E67E22">Project AIControl</span>
+# Flight Management & Simulation Platform
 
-## <span style="color:#2E75B6">1. Description of the Project</span>
+Academic group project developed at **ISEP – Polytechnic of Porto** as part of the fourth-semester integrated project.
 
-AIControl is an integrative project developed in the 4th semester of the Licenciatura em Engenharia Informática  at ISEP, integrating the course units EAPLI, LPROG, RCOMP, and SCOMP.
+The system is a flight management and simulation platform designed for a fictional air-traffic technology company. It combines **software architecture, domain modelling, persistence, networking, domain-specific languages and concurrent systems programming** in a single multi-module application.
 
-The system is a back-office management platform developed for **AISafe**, a startup targeting the aircraft flight control market. The platform covers three main areas:
+## Project Scope
 
-- **<span style="color:#70AD47">Basic configuration</span>** — registration and management of aircraft models,
-  engine models, manufacturers, air transport companies, airports, air
-  control areas, and users.
+The platform covers three main areas:
 
-- **<span style="color:#70AD47">Flight management</span>** — creation and management of flight routes and
-  flight plans, including import and validation of flight plans described
-  in a custom **Domain Specific Language (DSL)** processed with ANTLR.
+- **Flight Management** — management of aircraft, airports, air transport companies, flight routes and flight plans.
+- **Flight Plan Validation** — creation, import and validation of flight plans, including a custom Domain Specific Language processed with ANTLR.
+- **Flight Simulation** — simulation of multiple concurrent flights and detection of potential safety violations between aircraft.
 
-- **<span style="color:#70AD47">Flight simulation</span>** — simulation of individual flight plans (validating
-  fuel load and altitude requirements) and full air control area simulations,
-  detecting potential safety violations across multiple concurrent flights.
+The project also includes remote-access services and communication between different system components using TCP and UDP.
 
-The solution is implemented primarily in **Java**, with simulation components in **C**. Networking features expose functionality via **TCP** and **UDP**. The project follows **Domain-Driven Design (DDD)**, **SCRUM**, and a **Test-Driven Development (TDD)** approach, with JPA/ORM for data persistence.
+## Technical Highlights
 
----
+### Software Architecture
 
-## <span style="color:#2E75B6">2. Planning and Technical Documentation</span>
+- Domain-Driven Design (DDD)
+- Layered and modular architecture
+- Domain modelling and aggregate design
+- JPA / ORM persistence
+- Maven multi-module project
+- UML and PlantUML documentation
 
-[Planning and Technical Documentation](docs/readme.md)
+### Flight Plan DSL
 
----
+A custom Domain Specific Language was designed to represent and validate flight plans.
 
-## <span style="color:#2E75B6">3. How to Build</span>
+The DSL is parsed using **ANTLR**, allowing the application to transform structured flight-plan files into domain objects while validating their syntax and business rules.
 
-    mvn clean install
+### Flight Simulation
 
----
+The simulation component was implemented in **C using POSIX APIs**.
 
-## <span style="color:#2E75B6">4. How to Execute Tests</span>
+It includes:
 
-    mvn test
+- one process per simulated flight;
+- inter-process communication using pipes;
+- process synchronization;
+- POSIX shared memory;
+- named semaphores;
+- threads;
+- mutexes and condition variables;
+- signal handling;
+- timestep synchronization;
+- real-time aircraft safety monitoring.
 
----
+The simulator detects current and predicted safety violations based on aircraft positions, altitude and movement.
 
-## <span style="color:#2E75B6">5. How to Run</span>
+### Networking
 
-    mvn exec:java
+Remote-access functionality uses networking concepts including:
 
-### <span style="color:#70AD47">RCOMP Remote Access</span>
+- TCP client/server communication
+- UDP communication
+- Remote service access
+- Centralized event logging
+- HTTP-based monitoring dashboards
 
-Start the Remote Access Logging Server:
+### Persistence
 
-    mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessLoggingServer -Dexec.args="9001 8080"
+The application uses **JPA/ORM** to manage persistent domain entities and separate persistence concerns from the business logic.
 
-Start the Remote Access TCP Server:
+## Technologies
 
-    mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpServer -Dexec.args="9000 localhost 9001"
+- Java
+- C
+- JPA / ORM
+- ANTLR
+- Maven
+- TCP / UDP
+- POSIX Processes & Threads
+- Shared Memory
+- Semaphores
+- Git
+- GitHub Actions
+- PlantUML
+- JUnit
 
-Start a TCP client:
+## Architecture
 
-    mvn -pl aisafe.app.rcomp -am exec:java -Dexec.mainClass=isep.aisafe.app.rcomp.remoteaccess.RemoteAccessTcpClient -Dexec.args="localhost 9000 US44"
+The repository is organized as a multi-module Maven project separating the application's main responsibilities.
 
-Use `US44`, `US78` or `US86` as the last client argument depending on the remote service to test.
+```text
+aisafe.core/                        # Domain and application logic
+aisafe.infrastructure.application/ # Infrastructure services
+persistence.impl.jpa/              # JPA persistence implementation
+aisafe.app.backoffice.console/     # Console back-office application
+aisafe.app.backoffice.gui/         # Graphical back-office application
+aisafe.app.rcomp/                   # Networking and remote access
+scomp-simulation/                   # C/POSIX flight simulation
+docs/                               # Requirements, analysis and design documentation
+datasets/                           # Application datasets
+```
 
-Logging dashboards:
+## Testing
 
-    http://localhost:8080/events
-    http://localhost:8080/active-users
+The project includes automated testing across multiple components.
 
----
+Java modules use **JUnit** and Maven-based test execution, while the C simulation includes dedicated build and execution scenarios for normal operation and safety-violation cases.
 
-## <span style="color:#2E75B6">6. How to Install/Deploy into Another Machine (or Virtual Machine)</span>
+The complete Java test suite can be executed with:
 
-### <span style="color:#70AD47">Prerequisites</span>
+```bash
+mvn test
+```
 
-- Java 21+
-- Maven 3.8+
-- A relational database (e.g. PostgreSQL or MySQL) running and accessible
-- (For simulation components) GCC compiler with POSIX support (Linux only)
+The flight simulation can be built and executed independently using the provided Makefile.
 
-### <span style="color:#70AD47">Steps</span>
+## Documentation
 
-1. Clone the repository:
+Detailed technical documentation is available in the [`docs/`](docs/) directory and includes:
 
-       git clone <https://github.com/Departamento-de-Engenharia-Informatica/sem4pi2526-sem4pi2526_2di3.git>
+- Requirements engineering
+- Domain model
+- Aggregate design
+- Sequence diagrams
+- User-story analysis
+- System design
+- Networking components
+- Flight DSL specification
+- Simulation design
 
-2. Configure the database connection in `application.properties` (or the
-   equivalent configuration file), setting the correct URL, username and
-   password.
+The flight simulation also contains dedicated documentation inside [`scomp-simulation/`](scomp-simulation/).
 
-3. Build the project:
+## Academic Context
 
-       mvn clean install
+This project was developed collaboratively by a student team at ISEP, integrating knowledge from several fourth-semester subjects including software engineering, programming languages, computer networks and computer systems.
 
-4. Run the database bootstrap to initialize default data:
-
-       mvn exec:java -Dexec.mainClass="<bootstrap-main-class>"
-
-5. Deploy and run the application:
-
-       mvn exec:java
-
----
-
-## <span style="color:#2E75B6">7. How to Generate PlantUML Diagrams</span>
-
-To generate plantuml diagrams for documentation execute the script (for the moment, only for linux/unix/macos):
-
-    ./generate-plantuml-diagrams.sh
+This repository is a personal public copy of the original university project and preserves the original project structure, documentation and contributors for portfolio purposes.
